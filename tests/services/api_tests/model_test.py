@@ -78,7 +78,15 @@ MODEL = {
                    'permission/d', 'permission/e'],
         'role/b': ['permission/a', 'permission/b', 'permission/c'],
         'role/c': ['permission/f', 'permission/g', 'permission/h'],
-        'role/d': ['permission/f', 'permission/g', 'permission/i']
+        'role/d': ['permission/f', 'permission/g', 'permission/i'],
+        # Include legacy roles for project(owner|editor|viewer) expansion
+        'roles/viewer': ['permission/a'],
+        'roles/editor': ['permissions/a', 'permissions/b', 'permissions/c',
+                         'permission/d', 'permission/e', 'permission/f',
+                         'permission/g'],
+        'roles/owner': ['permissions/a', 'permissions/b', 'permissions/c',
+                        'permission/d', 'permission/e', 'permission/f',
+                        'permission/g', 'permissions/j'],
     },
     'bindings': {
         'organization/org1': {
@@ -86,9 +94,22 @@ MODEL = {
         },
         'project/project2': {
             'role/a': ['group/b'],
+            'roles/viewer': ['user/e'],
+        },
+        'project/project1': {
+            'roles/editor': ['user/b', 'group/b'],
+            'roles/owner': ['group/c'],
         },
         'vm/instance-1': {
             'role/a': ['user/a'],
+        },
+        'bucket/bucket1': {
+            'role/c': ['projecteditor/project1'],
+            'role/d': ['projectowner/project1'],
+        },
+        'bucket/bucket2': {
+            'role/c': ['projectviewer/project2'],
+            'role/d': ['allauthenticatedusers'],
         },
     },
 }
@@ -105,7 +126,7 @@ def create_tester():
         ])
 
 def expand_message(messages, type):
-    """Get the access_details in the form of 
+    """Get the access_details in the form of
        set([member resource permission ])
     """
     details = set()
@@ -166,15 +187,19 @@ class ExplainerTest(ForsetiTestCase):
             list_members_reply = client.explain.list_members('')
             self.assertEqual(set(list_members_reply.member_names),
                              set([
+                                 'allauthenticatedusers',
                                  'group/a',
                                  'group/b',
+                                 'group/c',
+                                 'projecteditor/project1',
+                                 'projectowner/project1',
+                                 'projectviewer/project2',
                                  'user/a',
                                  'user/b',
                                  'user/c',
                                  'user/d',
                                  'user/e',
-                                 'group/c',
-                                 'user/f'
+                                 'user/f',
                                  ]))
         self.setup.run(test)
 
@@ -189,7 +214,10 @@ class ExplainerTest(ForsetiTestCase):
                                  'role/a',
                                  'role/b',
                                  'role/c',
-                                 'role/d'
+                                 'role/d',
+                                 'roles/editor',
+                                 'roles/owner',
+                                 'roles/viewer'
                                  ]))
         self.setup.run(test)
 
@@ -202,7 +230,8 @@ class ExplainerTest(ForsetiTestCase):
             bindings_reply = {binding.role: set(binding.members)
                               for binding in get_iam_policy_reply.bindings}
             self.assertEqual(bindings_reply,
-                             {'role/a': set(['group/b'])})
+                             {'role/a': set(['group/b']),
+                              'roles/viewer': set(['user/e'])})
         self.setup.run(test)
 
     def test_check_policy(self):
@@ -234,6 +263,26 @@ class ExplainerTest(ForsetiTestCase):
                 'vm/instance-1',
                 'permission/e',
                 'user/c').result)
+            # Transitive for projecteditor/project1
+            self.assertTrue(client.explain.check_iam_policy(
+                'bucket/bucket1',
+                'permission/h',
+                'user/b').result)
+            # Transitive for projectowner/project1
+            self.assertTrue(client.explain.check_iam_policy(
+                'bucket/bucket1',
+                'permission/i',
+                'user/f').result)
+            # Transitive for projectviewer/project2
+            self.assertTrue(client.explain.check_iam_policy(
+                'bucket/bucket2',
+                'permission/h',
+                'user/e').result)
+            # Transitive for allauthenticatedusers
+            self.assertTrue(client.explain.check_iam_policy(
+                'bucket/bucket2',
+                'permission/i',
+                'user/unknown').result)
         self.setup.run(test)
 
     def test_explain_denied(self):
@@ -276,19 +325,35 @@ class ExplainerTest(ForsetiTestCase):
                 expand_groups=True)
             access_details = expand_message(response.accesses, "access_by_resource")
             self.assertEqual(access_details,set([
-                'group/b project/project2 role/a',
-                'user/a project/project2 role/a',
-                'user/d project/project2 role/a',
                 'group/a project/project2 role/b',
+                'group/b project/project2 role/a',
+                'group/b project/project2 role/b',
+                'group/c project/project2 role/a',
+                'group/c project/project2 role/b',
+                'user/a project/project2 role/a',
                 'user/a project/project2 role/b',
                 'user/b project/project2 role/b',
                 'user/c project/project2 role/b',
+                'user/d project/project2 role/a',
                 'user/d project/project2 role/b',
-                'group/b project/project2 role/b',
-                'group/c project/project2 role/b',
-                'group/c project/project2 role/a',
+                'user/f project/project2 role/a',
                 'user/f project/project2 role/b',
-                'user/f project/project2 role/a'
+                ]))
+        self.setup.run(test)
+
+    def test_query_access_by_resource_special_members(self):
+        """Test query_access_by_resources for special member expansion."""
+        def test(client):
+            """Test implementation with API client."""
+            response = client.explain.query_access_by_resources(
+                resource_name='bucket/bucket2',
+                permission_names=['permission/h'],
+                expand_groups=True)
+            access_details = expand_message(response.accesses,
+                                            "access_by_resource")
+            self.assertEqual(access_details,set([
+                'projectviewer/project2 bucket/bucket2 role/c',
+                'user/e bucket/bucket2 role/c',
                 ]))
         self.setup.run(test)
 
@@ -303,11 +368,11 @@ class ExplainerTest(ForsetiTestCase):
             access_details = expand_message(response.accesses, "access_by_member")
             self.assertEqual(access_details,set([
                 'group/a bucket/bucket1 role/b',
-                'group/a project/project1 role/b',
-                'group/a vm/instance-1 role/b',
                 'group/a bucket/bucket2 role/b',
+                'group/a organization/org1 role/b',
+                'group/a project/project1 role/b',
                 'group/a project/project2 role/b',
-                'group/a organization/org1 role/b'
+                'group/a vm/instance-1 role/b',
                 ]))
         self.setup.run(test)
 
@@ -322,18 +387,36 @@ class ExplainerTest(ForsetiTestCase):
                 expand_resources=True)
             access_details = expand_message(response, "access_by_resource")
             self.assertEqual(access_details,set([
-                'group/b vm/instance-1 role/a',
-                'user/a vm/instance-1 role/a',
-                'user/d vm/instance-1 role/a',
-                'group/b project/project2 role/a',
-                'user/a project/project2 role/a',
-                'user/d project/project2 role/a',
                 'group/b bucket/bucket2 role/a',
+                'group/b project/project2 role/a',
+                'group/b vm/instance-1 role/a',
                 'user/a bucket/bucket2 role/a',
+                'user/a project/project2 role/a',
+                'user/a vm/instance-1 role/a',
                 'user/d bucket/bucket2 role/a',
+                'user/d project/project2 role/a',
+                'user/d vm/instance-1 role/a',
                 'user/f bucket/bucket2 role/a',
+                'user/f project/project2 role/a',
                 'user/f vm/instance-1 role/a',
-                'user/f project/project2 role/a'
+                ]))
+        self.setup.run(test)
+
+    def test_query_access_by_permissions_special_members(self):
+        """Test query_access_by_permissions with special member expansion."""
+        def test(client):
+            """Test implementation with API client."""
+            response = client.explain.query_access_by_permissions(
+                'role/d',
+                '',
+                expand_groups=True,
+                expand_resources=True)
+            access_details = expand_message(response, "access_by_resource")
+            self.assertEqual(access_details,set([
+                'allauthenticatedusers bucket/bucket2 role/d',
+                'projectowner/project1 bucket/bucket1 role/d',
+                'user/a bucket/bucket1 role/d',
+                'user/f bucket/bucket1 role/d',
                 ]))
         self.setup.run(test)
 
@@ -353,7 +436,7 @@ class ExplainerTest(ForsetiTestCase):
                 'role/a permission/e',
                 'role/b permission/a',
                 'role/b permission/b',
-                'role/b permission/c'
+                'role/b permission/c',
                 ]))
         self.setup.run(test)
 
