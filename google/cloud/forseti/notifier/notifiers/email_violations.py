@@ -189,8 +189,8 @@ class EmailViolations(base_notification.BaseNotification):
         else:
             try:
                 self.connector.send(
-                    email_sender = self.notification_config['sender'],
-                    email_recipient = self.notification_config['recipient'],
+                    email_sender=self.notification_config['sender'],
+                    email_recipient=self.notification_config['recipient'],
                     email_subject=subject,
                     email_content=content,
                     content_type='text/html',

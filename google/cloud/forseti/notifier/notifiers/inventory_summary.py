@@ -113,24 +113,24 @@ class InventorySummary(object):
 
             details_data (list): Details of inventory data as a list of dicts.
                 Example: [[{resource_type, count}, {}, {}, ...]
+
+        Raises:
+            InvalidInputError: Indicating that invalid input was encountered.
         """
         LOGGER.debug('Sending inventory summary by email.')
-
-        email_summary_config = (
-            self.notifier_config.get('inventory').get('email_summary'))
 
         try:
             if self.notifier_config.get('email_connector'):
                 email_connector_config_auth = (
-                                                  self.notifier_config
-                                                      .get('email_connector')
-                                                      .get('auth'))
+                    self.notifier_config
+                    .get('email_connector')
+                    .get('auth'))
 
                 email_util = SendgridConnector(
                     self.notifier_config.get('email_connector')
-                        .get('sender'),
+                    .get('sender'),
                     self.notifier_config.get('email_connector')
-                        .get('recipient'),
+                    .get('recipient'),
                     email_connector_config_auth)
         except:
             LOGGER.exception(
