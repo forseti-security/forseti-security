@@ -220,8 +220,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 resource_class = IAM_TYPE_RESOURCE_MAP[policy.parent.type]
                 policy_data.append(
                     (resource_class(policy.parent.name,
-                            policy.parent.full_name,
-                            policy.data),
+                                    policy.parent.full_name,
+                                    policy.data),
                      policy, policy_bindings))
 
         if not policy_data:
