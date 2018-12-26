@@ -1083,7 +1083,10 @@ def define_model(model_name, dbengine, model_seed):
                 resource_type_name (str): type_name of the resource
                 policy (dict): the policy to set on the resource
                 update_members (bool): If true, then add new members to Member
-                    table
+                    table. This must be set when the call to set_iam_policy
+                    happens outside of the model InventoryImporter class. Tests
+                    or users that manually add an IAM policy need to mark this
+                    as true to ensure the model remains consistent.
 
             Raises:
                 Exception: Etag doesn't match
