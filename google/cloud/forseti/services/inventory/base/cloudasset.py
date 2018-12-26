@@ -144,6 +144,7 @@ def _export_assets(cloudasset_client, config, content_type):
     asset_types = config.get_cai_asset_types()
     if not asset_types:
         asset_types = DEFAULT_ASSET_TYPES
+    timeout = config.get_cai_timeout()
 
     root_id = config.get_root_resource_id()
     timestamp = int(time.time())
@@ -164,7 +165,7 @@ def _export_assets(cloudasset_client, config, content_type):
                                                   content_type=content_type,
                                                   asset_types=asset_types,
                                                   blocking=True,
-                                                  timeout=3600)
+                                                  timeout=timeout)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
