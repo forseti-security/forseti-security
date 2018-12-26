@@ -140,6 +140,19 @@ class DaoTest(ForsetiTestCase):
     for check in checks:
       self.assertTrue(check in all_member_names)
 
+  def test_list_group_members_by_member_type(self):
+    """Test listing of group members."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
+    member_types = ['user']
+
+    all_member_names = data_access.list_group_members(
+        session, '', member_types=member_types)
+    checks = {u'user/u1', u'user/u2'}
+    self.assertEqual(checks, set(all_member_names))
+
   def test_iter_groups(self):
     """Test fetching all groups in model."""
     session_maker, data_access = session_creator('test')
@@ -243,6 +256,32 @@ class DaoTest(ForsetiTestCase):
     self.assertEqual(set([
         u'group/g1']), members)
 
+  def test_reverse_expand_members_special_groups(self):
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+
+    members = data_access.reverse_expand_members(session,
+                                                 ['user/b'])
+
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'allauthenticatedusers',
+        u'group/a',
+        u'projecteditor/project1',
+        u'user/b',
+        ]), members)
+
+    # Unknown members expand to allauthenticatedusers
+    members = data_access.reverse_expand_members(session,
+                                                 ['user/unknown'])
+
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'allauthenticatedusers',
+        ]), members)
+
   def test_expand_members(self):
     """Test expand_members."""
     session_maker, data_access = session_creator('test')
@@ -269,6 +308,29 @@ class DaoTest(ForsetiTestCase):
         u'group/g3g2g1'
         ]), members)
 
+  def test_expand_members_special_groups(self):
+    """Test expand_members with special groups."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+    members = data_access.expand_members(session, ['projectviewer/project2',
+                                                   'projecteditor/project1',
+                                                   'projectowner/project1'])
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'group/b',
+        u'group/c',
+        u'projecteditor/project1',
+        u'projectowner/project1',
+        u'projectviewer/project2',
+        u'user/a',
+        u'user/b',
+        u'user/d',
+        u'user/e',
+        u'user/f',
+        ]), members)
+
   def test_expand_members_map(self):
     """Test expand_members_map."""
     session_maker, data_access = session_creator('test')
@@ -285,6 +347,25 @@ class DaoTest(ForsetiTestCase):
             u'user/g1g1u2',
             u'user/g1g1u3',
         ]), members_map[u'group/g1'])
+
+  def test_expand_members_map_special_groups(self):
+    """Test expand_members_map with special groups."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+    members_map = data_access.expand_members_map(session,
+                                                 ['projecteditor/project1'])
+
+    self.assertEqual(set([
+        'projecteditor/project1',
+        u'group/b',
+        u'group/c',
+        u'user/a',
+        u'user/b',
+        u'user/d',
+        u'user/f',
+        ]), members_map['projecteditor/project1'])
 
   def test_explain_granted(self):
     """Test explain_granted."""
@@ -726,6 +807,17 @@ class DaoTest(ForsetiTestCase):
       self.assertEqual(policy_expected, res['bindings'])
       self.assertIn('etag', res, 'Etag must be in policy')
       self.assertEqual(resource, res['resource'])
+
+  def test_get_iam_policy_by_role(self):
+    """Test check_iam_policy."""
+    session_maker, data_access = session_creator('test', None, None, False)
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.EXPLAIN_GRANTED_1, client)
+    expected_bindings = {u'viewer': [u'group/g1']}
+    iam_policy = data_access.get_iam_policy(session, 'r/res1',
+                                            roles=['viewer', 'writer'])
+    self.assertEqual(expected_bindings, iam_policy['bindings'])
 
   def test_check_iam_policy(self):
     """Test check_iam_policy."""
