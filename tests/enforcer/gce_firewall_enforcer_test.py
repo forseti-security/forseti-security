@@ -691,6 +691,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
                         'example.com:testing/global/networks/'
                         'test-net').format(fe.API_VERSION),
             'sourceRanges': [u'10.2.3.4/32'],
+            'logConfig': {'enable': False},
             'priority': 1000,
             'direction': u'INGRESS'
         }
