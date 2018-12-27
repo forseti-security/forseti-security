@@ -74,7 +74,7 @@ class LogSink(resource.Resource):
             include_children=sink_dict.get('includeChildren', False),
             writer_identity=sink_dict.get('writerIdentity', ''),
             parent=parent,
-            raw_json=json.dumps(sink_dict)
+            raw_json=json.dumps(sink_dict, sort_keys=True)
         )
 
     @staticmethod

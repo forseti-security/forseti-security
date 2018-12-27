@@ -68,7 +68,7 @@ PROJECT4 = project.Project(
 
 def build_bucket_violations(bucket, rule_name):
     data_lifecycle = bucket.get_lifecycle_rule()
-    data_lifecycle_str = json.dumps(data_lifecycle)
+    data_lifecycle_str = json.dumps(data_lifecycle, sort_keys=True)
 
     return [rre.RuleViolation(
         resource_name='buckets/'+bucket.id,

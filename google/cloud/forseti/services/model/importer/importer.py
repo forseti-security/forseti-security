@@ -77,7 +77,8 @@ class EmptyImporter(object):
         self.session.add(self.model)
         self.model.add_description(
             json.dumps(
-                {'source': 'empty', 'pristine': True}
+                {'source': 'empty', 'pristine': True},
+                sort_keys=True
             )
         )
         self.model.set_done()
@@ -220,7 +221,8 @@ class InventoryImporter(object):
                         ['gsuite_group', 'gsuite_user'])
                 }
                 LOGGER.debug('Model description: %s', description)
-                self.model.add_description(json.dumps(description))
+                self.model.add_description(json.dumps(description,
+                                                      sort_keys=True))
 
                 if root.get_resource_type() in ['organization']:
                     LOGGER.debug('Root resource is organization: %s', root)

@@ -841,7 +841,8 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Deleting firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
     def insert_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
@@ -895,7 +896,8 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Inserting firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
     def update_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
@@ -949,7 +951,8 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Updating firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
     def get_forwarding_rules(self, project_id, region=None):
