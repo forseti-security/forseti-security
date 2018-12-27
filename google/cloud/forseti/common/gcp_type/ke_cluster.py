@@ -145,7 +145,7 @@ class KeCluster(resource.Resource):
             instance_group_urls=cluster_dict.get('instanceGroupUrls', []),
             current_node_count=cluster_dict.get('currentNodeCount'),
             expire_time=cluster_dict.get('expireTime'),
-            data=json.dumps(cluster_dict),
+            data=json.dumps(cluster_dict, sort_keys=True),
         )
 
     @property

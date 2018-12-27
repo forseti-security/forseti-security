@@ -82,7 +82,7 @@ def json_stringify(obj_to_jsonify):
         str: The json-stringified dict.
     """
     # TODO: We should probably try and catch something here.
-    return json.dumps(obj_to_jsonify)
+    return json.dumps(obj_to_jsonify, sort_keys=True)
 
 
 def json_unstringify(json_to_objify, default=None):

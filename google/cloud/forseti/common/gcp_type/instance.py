@@ -104,7 +104,7 @@ class Instance(resource.Resource):
             'status': instance.get('status'),
             'status_message': instance.get('statusMessage'),
             'tags': instance.get('tags'),
-            'data': json.dumps(instance),
+            'data': json.dumps(instance, sort_keys=True),
         }
         return cls(instance_key.name, parent=parent,
                    locations=[instance_key.zone], **kwargs)
@@ -137,7 +137,7 @@ class Instance(resource.Resource):
 
         # Strip out empty values
         resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
-        return json.dumps(resource_dict)
+        return json.dumps(resource_dict, sort_keys=True)
 
     @property
     def json(self):
