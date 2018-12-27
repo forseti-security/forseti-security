@@ -237,7 +237,7 @@ class ViolationAccess(object):
                 rule_name=violation.get('rule_name'),
                 scanner_index_id=scanner_index_id,
                 violation_data=json.dumps(
-                    violation.get('violation_data')),
+                    violation.get('violation_data'), sort_keys=True),
                 violation_hash=violation_hash,
                 violation_type=violation.get('violation_type')
             )

@@ -448,7 +448,7 @@ class Resource(object):
         return ('{}<data="{}", parent_resource_type="{}", '
                 'parent_resource_id="{}">').format(
                     self.__class__.__name__,
-                    json.dumps(self._data),
+                    json.dumps(self._data, sort_keys=True),
                     self.parent().type(),
                     self.parent().key())
 # pylint: enable=too-many-instance-attributes, too-many-public-methods

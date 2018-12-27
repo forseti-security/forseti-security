@@ -306,7 +306,7 @@ class FirewallRules(object):
                     # network_name
                     LOGGER.info('Firewall rule does not apply to network %s, '
                                 'skipping: %s', rule_network,
-                                json.dumps(new_rule))
+                                json.dumps(new_rule, sort_keys=True))
                     return
             else:
                 new_rule['network'] = build_network_url(self._project,

@@ -170,7 +170,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
             {'resource_id': NODE_VERSION_NOT_ALLOWED_ID,
              'resource_name': u'node-version-not-allowed',
              'rule_name': 'Disallowed node pool version',
-             'resource_data': '{"name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1", "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "selfLink": "node-version-not-allowed.com"}',
+             'resource_data': '{"currentMasterVersion": "1.7.11-gke.1", "currentNodeVersion": "1.7.10-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "nodePools": [{"name": "default-pool", "version": "1.7.10-gke.1"}], "selfLink": "node-version-not-allowed.com"}',
              'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
              'rule_index': 2,
              'violation_data': {
@@ -187,7 +187,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
             {'resource_id': MASTER_VERSION_INVALID_ID,
              'resource_name': u'master-version-invalid',
              'rule_name': 'Unsupported master version',
-             'resource_data': '{"name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1", "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "selfLink": "master-version-invalid.com"}',
+             'resource_data': '{"currentMasterVersion": "1.6.13-gke.1", "currentNodeVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "nodePools": [{"name": "default-pool", "version": "1.6.13-gke.1"}], "selfLink": "master-version-invalid.com"}',
              'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
              'rule_index': 1,
              'violation_data': {
@@ -203,7 +203,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
             {'resource_id': NODE_VERSION_INVALID_ID,
              'resource_name': u'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
-             'resource_data': '{"name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1", "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "selfLink": "node-version-invalid.com"}',
+             'resource_data': '{"currentMasterVersion": "1.8.6-gke.0", "currentNodeVersion": "1.8.4-gke.1", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "nodePools": [{"name": "default-pool", "version": "1.8.4-gke.1"}], "selfLink": "node-version-invalid.com"}',
              'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
              'rule_index': 0,
              'violation_data': {
@@ -217,8 +217,15 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER}]
-        mock_output_results.assert_called_once_with(mock.ANY,
-                                                    expected_violations)
+
+        # Get the violations from the first call to the mock object.
+        # call objects in Mock.mock_calls, are three-tuples of
+        # (name, positional args, keyword args).
+        results = mock_output_results.mock_calls[0][1][1]
+        # Order of results is undefined, so sort before comparing
+        self.assertEqual(
+            sorted(expected_violations, key=lambda k: k['rule_index']),
+            sorted(results, key=lambda k: k['rule_index']))
 
 
 if __name__ == '__main__':

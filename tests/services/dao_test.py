@@ -99,14 +99,14 @@ class DaoTest(ForsetiTestCase):
     client = ModelCreatorClient(session, data_access)
     _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
 
-    memberships = {
-        'user/t1': ['group/g1'],
-        'user/t2': ['group/g2', 'group/g3'],
-        'user/t3': ['group/g3g2g1', 'group/g3'],
-        'group/t4': ['group/g3g2g1', 'group/g3'],
-        'group/t5': ['group/t4'],
-        'user/t6': ['group/t5', 'group/t4'],
-    }
+    memberships = [
+        ('group/t4', ['group/g3g2g1', 'group/g3']),
+        ('group/t5', ['group/t4']),
+        ('user/t1', ['group/g1']),
+        ('user/t2', ['group/g2', 'group/g3']),
+        ('user/t3', ['group/g3g2g1', 'group/g3']),
+        ('user/t6', ['group/t5', 'group/t4']),
+    ]
 
     checks = {
         'user/t1': ['group/g1'],
@@ -115,7 +115,7 @@ class DaoTest(ForsetiTestCase):
         'group/t5': ['group/g3g2'],
     }
 
-    for member, parents in memberships.iteritems():
+    for member, parents in memberships:
       data_access.add_group_member(session, member, parents)
 
     for member, groups in checks.iteritems():
@@ -596,8 +596,7 @@ class DaoTest(ForsetiTestCase):
             (u'r/res1', set([u'user/u1'])),
             (u'r/res2', set([u'user/u1'])),
             (u'r/res3', set([u'user/u1'])),
-            (u'r/res4', set([u'user/u1'])),
-            (u'r/res4', set([u'group/g2'])),
+            (u'r/res4', set([u'user/u1', u'group/g2'])),
         ],
     }
 

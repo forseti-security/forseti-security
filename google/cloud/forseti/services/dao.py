@@ -157,7 +157,7 @@ class Model(MODEL_BASE):
         for new_item in new_desc:
             model_desc[new_item] = new_desc[new_item]
 
-        self.description = json.dumps(model_desc)
+        self.description = json.dumps(model_desc, sort_keys=True)
 
     def set_done(self, message=''):
         """Indicate a finished import.
@@ -948,6 +948,8 @@ def define_model(model_name, dbengine, model_seed):
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
+                    .order_by(expanded_resources.name.asc(),
+                              Binding.role_name.asc())
                 )
             else:
                 qry = (
@@ -957,9 +959,8 @@ def define_model(model_name, dbengine, model_seed):
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
+                    .order_by(Resource.name.asc(), Binding.role_name.asc())
                 )
-
-            qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
 
             if expand_groups:
                 to_expand = set([m.name for _, _, m in
