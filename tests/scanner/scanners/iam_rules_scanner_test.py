@@ -1050,7 +1050,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         # Call the method under test.
         policy_data, resource_counts = self.scanner._retrieve()
 
-        # Check the Billing Account policy was retrieved
+        # Check the Dataset policy was retrieved
         self.assertEqual(1, resource_counts['dataset'])
         [(dataset, dataset_bindings)] = [
                 (r, bs) for (r, _, bs) in policy_data
