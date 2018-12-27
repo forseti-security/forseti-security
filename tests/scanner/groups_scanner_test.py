@@ -54,7 +54,7 @@ class GroupsScannerTest(ForsetiTestCase):
                 rows.append(u"%s%s" % (fill,
                                        json.dumps(line, sort_keys=True)))
 
-        return str('\n'.join(rows))
+        return '\n'.join(rows)
 
     def _create_mock_service_config(self):
         mock_data_access = mock.MagicMock()
