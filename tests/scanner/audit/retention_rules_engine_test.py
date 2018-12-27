@@ -73,7 +73,6 @@ class RetentionRulesEngineTest(ForsetiTestCase):
 
     def setUp(self):
         """Set up."""
-        self.maxDiff = None
 
     def test_invalid_rule_with_no_applies_to(self):
         """Test that a rule without applies_to cannot be created"""
