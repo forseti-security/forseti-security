@@ -26,10 +26,6 @@ import httplib2
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
 # The name of the GCE API.
 API_NAME = 'compute'
 
@@ -102,23 +98,15 @@ class FirewallQuotaExceededError(FirewallEnforcementFailedError):
     """Raised if the proposed changes would exceed firewall quota."""
 
 
-def http_retry(e):
-    """retry_on_exception for retry. Returns True for exceptions to retry."""
-    if isinstance(e, RETRY_EXCEPTIONS):
-        return True
-
-    return False
-
-
 def get_network_name_from_url(network_url):
     """Given a network URL, return the name of the network.
 
     Args:
-      network_url: str - the fully qualified network url, such as
-        ('<root>/compute/v1/projects/my-proj/global/networks/my-network')
+        network_url (str): The fully qualified network url, such as
+            ('<root>/compute/v1/projects/my-proj/global/networks/my-network')
 
     Returns:
-      str - the network name, my-network in the previous example
+        str: The network name, my-network in the previous example
     """
     return network_url.split('/')[-1]
 
@@ -127,11 +115,11 @@ def build_network_url(project, network):
     """Render the network url from project and network names.
 
     Args:
-      project: A str- The name of the GCE project to operate upon.
-      network: A str- The name of the network to operate upon.
+        project (str): The name of the GCE project to operate upon.
+        network (str): The name of the network to operate upon.
 
     Returns:
-      The fully qualified network url for the given project/network.
+        str: The fully qualified network url for the given project/network.
     """
     return (u'%(root)s%(api_name)s/%(version)s/projects/%(project)s/global/'
             'networks/%(network)s') % {'api_name': API_NAME,
@@ -149,7 +137,8 @@ def _is_successful(operation):
     False.
 
     Args:
-        operation: A Compute GlobalOperations response object from an API call.
+        operation (dict): A Compute GlobalOperations response object from an API
+            call.
 
     Returns:
         bool: True if there were no errors, or all errors are ignored, otherwise
@@ -181,12 +170,12 @@ def filter_rules_by_network(rules, network):
     """Returns the subset of rules that apply to the specified network(s).
 
     Args:
-        rules: A list of rule dicts to filter.
-        network: The network name to restrict rules to. If no network specified
-            then all rules are returned.
+        rules (list): A list of rule dicts to filter.
+        network (str): The network name to restrict rules to. If no network
+            specified then all rules are returned.
 
     Returns:
-      A list of rules that apply to the filtered networks.
+        list: A list of rules that apply to the filtered networks.
     """
     if not network:
         return rules
@@ -209,15 +198,16 @@ class FirewallRules(object):
         """Constructor.
 
         Args:
-          project: The GCE project id the rules apply to.
-          rules: A list of rule dicts to add to the object.
-          add_rule_callback: A callback function that checks whether a firewall
-            rule should be applied. If the callback returns False, that rule
-            will not be modified.
+            project (str): The GCE project id the rules apply to.
+            rules (list): A list of rule dicts to add to the object.
+            add_rule_callback (function): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
-          InvalidFirewallRuleError: One or more rules failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         self._project = project
         self.rules = {}
@@ -226,23 +216,38 @@ class FirewallRules(object):
             self.add_rules(rules)
 
     def __eq__(self, other):
-        """Equality."""
+        """Equality.
+
+        Args:
+            other (FirewallRules): The other object to compare with.
+
+        Returns:
+            bool: True if equal, else false.
+        """
         return self.rules == other.rules
 
     def __ne__(self, other):
-        """Not Equal."""
+        """Not Equal.
+
+        Args:
+            other (FirewallRules): The other object to compare with.
+
+        Returns:
+            bool: True if not equal, else false.
+        """
         return self.rules != other.rules
 
     def add_rules_from_api(self, compute_client):
         """Loads rules from compute.firewalls().list().
 
         Args:
-          compute_client: A ComputeClient instance for interfacing with GCE
-              API.
+          compute_client (object): A ComputeClient instance for interfacing with
+              GCE API.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two rules have the same name.
-          InvalidFirewallRuleError: A rule failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
             LOGGER.warn(
@@ -261,17 +266,18 @@ class FirewallRules(object):
         """Adds rules from a list of rule dicts.
 
         Args:
-          rules: A list of rule dicts to add to the object
-          network_name: If set, rules which have no network currently defined
-              will have their network set to network_name, and network_name will
-              be prepended to the rule name.
+            rules (list): A list of rule dicts to add to the object
+            network_name (str): If set, rules which have no network currently
+                defined will have their network set to network_name, and
+                network_name will be prepended to the rule name.
 
-              Rules that do have a network defined have their network matched
-              against network_name, and if they differ the rule is not added.
+                Rules that do have a network defined have their network matched
+                against network_name, and if they differ the rule is not added.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
-          InvalidFirewallRuleError: One or more rules failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         for rule in rules:
             self.add_rule(rule, network_name=network_name)
@@ -280,17 +286,18 @@ class FirewallRules(object):
         """Adds rule to the self.rules dictionary.
 
         Args:
-          rule: A valid dict representing a GCE firewall rule
-          network_name: If set, rules which have no network currently defined
-              will have their network set to network_name, and network_name will
-              be prepended to the rule name.
+            rule (dict): A valid dict representing a GCE firewall rule
+            network_name (str): If set, rules which have no network currently
+                defined will have their network set to network_name, and
+                network_name will be prepended to the rule name.
 
-              Rules that do have a network defined have their network matched
-              against network_name, and if they differ the rule is not added.
+                Rules that do have a network defined have their network matched
+                against network_name, and if they differ the rule is not added.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
-          InvalidFirewallRuleError: One or more rules failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         if not isinstance(rule, dict):
             raise InvalidFirewallRuleError(
@@ -349,10 +356,11 @@ class FirewallRules(object):
         """Returns the subset of rules that apply to the specified network(s).
 
         Args:
-          networks: A list of one or more network names to fetch rules for.
+            networks (list): A list of one or more network names to fetch rules
+                for.
 
         Returns:
-          A dictionary of rules that apply to the filtered networks.
+            dict: A dictionary of rules that apply to the filtered networks.
         """
         if not networks:
             return self.rules
@@ -372,7 +380,8 @@ class FirewallRules(object):
         for details. Only the fields in ALLOWED_RULE_ITEMS are permitted.
 
         Returns:
-          A JSON string with an array of rules sorted by network and name.
+            str: A JSON string with an array of rules sorted by network and
+                name.
         """
         rules = sorted(
             self.rules.values(), key=operator.itemgetter('network', 'name'))
@@ -390,11 +399,13 @@ class FirewallRules(object):
         the key 'items'.
 
         Args:
-          json_rules: The JSON formatted string containing the rules to import.
+          json_rules (str): The JSON formatted string containing the rules to
+              import.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
-          InvalidFirewallRuleError: One or more rules failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
             LOGGER.warn('Can not import from JSON into a FirewallRules object '
@@ -420,10 +431,10 @@ class FirewallRules(object):
         lists will compare equal when tested.
 
         Args:
-          unsorted_rule: A rule dictionary that has not been sorted.
+            unsorted_rule (dict): A rule dictionary that has not been sorted.
 
         Returns:
-          A new rule dictionary with the lists sorted
+            dict: A new rule dictionary with the lists sorted
         """
         sorted_rule = {}
         for key, value in unsorted_rule.items():
@@ -452,14 +463,16 @@ class FirewallRules(object):
         the rule.
 
         Args:
-          rule: The rule to validate.
+            rule (dict): The rule to validate.
 
         Returns:
-          True if rule is valid, False if the add_rule_callback returns False.
+            bool: True if rule is valid, False if the add_rule_callback returns
+                False.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
-          InvalidFirewallRuleError: One or more rules failed validation.
+            DuplicateFirewallRuleNameError: Two or more rules have the same
+                name.
+            InvalidFirewallRuleError: One or more rules failed validation.
         """
         unknown_keys = set(rule.keys()) - ALLOWED_RULE_ITEMS
         if unknown_keys:
@@ -577,23 +590,24 @@ class FirewallEnforcer(object):
         """Constructor.
 
         Args:
-          project: The id of the cloud project to enforce the firewall on.
-          compute_client: A ComputeClient instance for interfacing with GCE
-              API.
-          expected_rules: A FirewallRules object with the expected rules to be
-              enforced on the project.
-          current_rules: A FirewallRules object with the current rules for the
-              project. If not defined, the API will be queried and the existing
-              rules imported into current_rules when apply_firewall is called
-              for the project.
-          project_sema: An optional semaphore object, used to limit the number
-              of concurrent projects getting written to.
-          operation_sema: [DEPRECATED] An optional semaphore object, used to
-              limit the number of concurrent write operations on project
-              firewalls.
-          add_rule_callback: A callback function that checks whether a firewall
-              rule should be applied. If the callback returns False, that rule
-              will not be modified.
+            project (str): The id of the cloud project to enforce the firewall
+                on.
+            compute_client (object): A ComputeClient instance for interfacing
+                with GCE API.
+            expected_rules (object): A FirewallRules object with the expected
+                rules to be enforced on the project.
+            current_rules (object): A FirewallRules object with the current
+                rules for the project. If not defined, the API will be queried
+                and the existing rules imported into current_rules when
+                apply_firewall is called for the project.
+            project_sema (object): An optional semaphore object, used to limit
+                the number of concurrent projects getting written to.
+            operation_sema (object): [DEPRECATED] An optional semaphore object,
+                used to limit the number of concurrent write operations on
+                project firewalls.
+            add_rule_callback (function): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
         """
         self.project = project
         self.compute_client = compute_client
@@ -628,53 +642,56 @@ class FirewallEnforcer(object):
         """Enforce the expected firewall rules on the project.
 
         Args:
-          prechange_callback: An optional callback function that will get called
-              if the firewall policy for a project does not match the expected
-              policy, before any changes are actually applied. If the callback
-              returns False then no changes will be made to the project. If it
-              returns True then the changes will be pushed. If
-              prechange_callback is set to None then the callback will be
-              skipped and enforcement will continue as though it had returned
-              True.
+            prechange_callback (function): An optional callback function that
+                will get called if the firewall policy for a project does not
+                match the expected policy, before any changes are actually
+                applied. If the callback returns False then no changes will be
+                made to the project. If it returns True then the changes will be
+                pushed. If prechange_callback is set to None then the callback
+                will be skipped and enforcement will continue as though it had
+                returned True.
 
-              The callback template is callback_func(project,
-                                                     rules_to_delete,
-                                                     rules_to_insert,
-                                                     rules_to_update)
+                The callback template is callback_func(project,
+                                                       rules_to_delete,
+                                                       rules_to_insert,
+                                                       rules_to_update)
 
-              The callback may be used to limit the kinds of firewall changes
-              that are allowed to be pushed for a project, limit the number of
-              rules that can get changed, to check if the project should have
-              rules changed, etc.
+                The callback may be used to limit the kinds of firewall changes
+                that are allowed to be pushed for a project, limit the number of
+                rules that can get changed, to check if the project should have
+                rules changed, etc.
 
-              The callback may also raise FirewallEnforcementFailedError if it
-              determines that the set of changes to the policy could result in
-              an outage for an underlying service, or otherwise are inconsistent
-              with business rules. This will cause the enforcement to fail.
+                The callback may also raise FirewallEnforcementFailedError if it
+                determines that the set of changes to the policy could result in
+                an outage for an underlying service, or otherwise are
+                inconsistent with business rules. This will cause the
+                enforcement to fail.
 
-          networks: A list of networks to limit rule changes to. Rules on
-              networks not in the list will not be changed.
+            networks (list): A list of networks to limit rule changes to. Rules
+                on networks not in the list will not be changed.
 
-              Note- This can lead to duplicate rule name collisions since all
-                    rules are not included when building the change set. The
-                    change set will be validated before getting enforced and any
-                    errors will cause a FirewallEnforcementFailedError exception
-                    to be raised.
+                Note- This can lead to duplicate rule name collisions since all
+                      rules are not included when building the change set. The
+                      change set will be validated before getting enforced and
+                      any errors will cause a FirewallEnforcementFailedError
+                      exception to be raised.
 
-          allow_empty_ruleset: If set to true and expected_rules has no rules,
-              all current firewall rules will be deleted from the project.
+            allow_empty_ruleset (booL): If set to true and expected_rules has no
+                rules, all current firewall rules will be deleted from the
+                project.
 
         Returns:
-          The total number of firewall rules deleted, inserted and updated.
+            int: The total number of firewall rules deleted, inserted and
+                updated.
 
         Raises:
-          EmptyProposedFirewallRuleSetError: An error occurred while updating
-              the firewall. The calling code should validate the current state
-              of the project firewall, and potentially revert to the old
-              firewall rules.
+            EmptyProposedFirewallRuleSetError: An error occurred while updating
+                the firewall. The calling code should validate the current state
+                of the project firewall, and potentially revert to the old
+                firewall rules.
 
-              Any rules changed before the error occurred can be retrieved by
-              calling the Get(Deleted|Inserted|Updated)Rules methods.
+                Any rules changed before the error occurred can be retrieved by
+                calling the Get(Deleted|Inserted|Updated)Rules methods.
         """
         # Reset change sets to empty lists
         self._rules_to_delete = []
@@ -733,19 +750,36 @@ class FirewallEnforcer(object):
         self.current_rules = current_rules
 
     def get_deleted_rules(self):
-        """Returns the list of deleted rules."""
+        """Returns the list of deleted rules.
+
+        Returns:
+            list: The list of deleted rules.
+        """
         return self._deleted_rules
 
     def get_inserted_rules(self):
-        """Returns the list of inserted rules."""
+        """Returns the list of inserted rules.
+
+        Returns:
+            list: The list of inserted rules.
+        """
         return self._inserted_rules
 
     def get_updated_rules(self):
-        """Returns the list of updated rules."""
+        """Returns the list of updated rules.
+
+        Returns:
+            list: The list of updated rules.
+        """
         return self._updated_rules
 
     def _build_change_set(self, networks=None):
-        """Enumerate changes between the current and expected firewall rules."""
+        """Enumerate changes between the current and expected firewall rules.
+
+        Args:
+            networks (list): The network names to restrict rules to. If no
+                networks specified then all rules are returned.
+        """
         if networks:
             # Build new firewall rules objects from the subset of rules for
             # networks
@@ -769,7 +803,19 @@ class FirewallEnforcer(object):
                     self._rules_to_update.append(rule_name)
 
     def _validate_change_set(self, networks=None):
-        """Validate the changeset will not leave the project in a bad state."""
+        """Validate the changeset will not leave the project in a bad state.
+
+        Args:
+            networks (list): The network names to restrict rules to. If no
+                networks specified then all rules are returned.
+
+        Raises:
+            FirewallRuleValidationError: Raised if a rule name to be inserted
+                already exists on the project.
+
+            NetworkImpactValidationError: Raised if a rule to be changed exists
+                on a network not in the networks list.
+        """
         for rule_name in self._rules_to_insert:
             if (rule_name in self.current_rules.rules and
                     rule_name not in self._rules_to_delete):
@@ -799,16 +845,16 @@ class FirewallEnforcer(object):
         before adding the new rules would allow the project to stay below quota.
 
         Args:
-          insert_count: The number of rules that will be inserted.
-          delete_count: The number of rules that will be deleted.
+            insert_count (int): The number of rules that will be inserted.
+            delete_count (int): The number of rules that will be deleted.
 
         Returns:
-          True if existing rules should be deleted before new rules are
-          inserted, otherwise false.
+            bool: True if existing rules should be deleted before new rules are
+              inserted, otherwise false.
 
         Raises:
-          FirewallQuotaExceededError: Raised if there is not enough quota for
-          the required policy to be applied.
+            FirewallQuotaExceededError: Raised if there is not enough quota for
+                the required policy to be applied.
         """
         delete_before_insert = False
 
@@ -848,17 +894,16 @@ class FirewallEnforcer(object):
         these operations.
 
         Args:
-            delete_before_insert: If true, delete operations are completed
-                before inserts. Otherwise insert operations are completed first.
-            network: The network to limit rule changes to. Rules on
+            delete_before_insert (bool): If true, delete operations are
+                completed before inserts. Otherwise insert operations are
+                completed first.
+            network (str): The network to limit rule changes to. Rules on
                 other networks will not be changed. If not set, then all rules
                 are in the change set are applied.
 
         Returns:
-            The total number of firewall rules deleted, inserted and updated.
-
-        Raises:
-            FirewallEnforcementFailedError: Raised if one or more changes fails.
+            int: The total number of firewall rules deleted, inserted and
+                updated.
         """
         change_count = 0
         if delete_before_insert:
@@ -872,7 +917,19 @@ class FirewallEnforcer(object):
         return change_count
 
     def _insert_rules(self, network):
-        """Insert new rules into the project firewall."""
+        """Insert new rules into the project firewall.
+
+        Args:
+            network (str): The network name to restrict rules to. If no network
+                specified then all new rules are inserted.
+
+        Returns:
+            int: The count of rules inserted.
+
+        Raises:
+            FirewallEnforcementInsertFailedError: Raised if one or more changes
+                fails.
+        """
         change_count = 0
         if self._rules_to_insert:
             LOGGER.info('Inserting rules: %s', ', '.join(self._rules_to_insert))
@@ -894,7 +951,19 @@ class FirewallEnforcer(object):
         return change_count
 
     def _delete_rules(self, network):
-        """Delete old rules from the project firewall."""
+        """Delete old rules from the project firewall.
+
+        Args:
+            network (str): The network name to restrict rules to. If no network
+                specified then all unexpected rules are deleted.
+
+        Returns:
+            int: The count of rules deleted.
+
+        Raises:
+            FirewallEnforcementDeleteFailedError: Raised if one or more changes
+                fails.
+        """
         change_count = 0
         if self._rules_to_delete:
             LOGGER.info('Deleting rules: %s', ', '.join(self._rules_to_delete))
@@ -915,7 +984,19 @@ class FirewallEnforcer(object):
         return change_count
 
     def _update_rules(self, network):
-        """Update existing rules in the project firewall."""
+        """Update existing rules in the project firewall.
+
+        Args:
+            network (str): The network name to restrict rules to. If no network
+                specified then all changed rules are updated.
+
+        Returns:
+            int: The count of rules updated.
+
+        Raises:
+            FirewallEnforcementUpdateFailedError: Raised if one or more changes
+                fails.
+        """
         change_count = 0
         if self._rules_to_update:
             LOGGER.info('Updating rules: %s', ', '.join(self._rules_to_update))
@@ -944,13 +1025,13 @@ class FirewallEnforcer(object):
         acquired.
 
         Args:
-          firewall_function: The delete|insert|update function to call for this
-              set of rules
-          rules: A list of rules to pass to the firewall_function.
+            firewall_function (function): The delete|insert|update function to
+                call for this set of rules
+            rules (list): A list of rules to pass to the firewall_function.
 
         Returns:
-          A tuple with the rules successfully changed by this function and the
-          rules that failed.
+            tuple: A tuple with the rules successfully changed by this function
+                and the rules that failed.
         """
         applied_rules = []
         failed_rules = []
