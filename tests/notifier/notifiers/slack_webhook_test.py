@@ -48,7 +48,7 @@ class SlackWebhooknotifierTest(ForsetiTestCase):
             slack_notifier.resource = 'buckets_acl_violations'
             actual_output = slack_notifier._compose(violation=violation)
 
-            expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*role*:\t\t`READER`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`"
+            expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`\n\t*role*:\t\t`READER`"
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
 

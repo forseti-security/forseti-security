@@ -14,6 +14,7 @@
 """Rules engine for checking service account key age."""
 
 from collections import namedtuple
+import json
 import threading
 
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
@@ -344,7 +345,7 @@ class Rule(object):
                     project_id=service_account.project_id,
                     key_id=key_id,
                     key_created_time=created_time,
-                    resource_data=str(key)))
+                    resource_data=json.dumps(key, sort_keys=True)))
 
         return violations
 

@@ -31,6 +31,18 @@ from google.cloud.forseti.services.inventory.base import iam_helpers
 LOGGER = logger.get_logger(__name__)
 
 
+def size_t_hash(key):
+    """Hash the key using size_t.
+
+    Args:
+        key (str): The key to hash.
+
+    Returns:
+        str: The hashed key.
+    """
+    return '%u' % ctypes.c_size_t(hash(key)).value
+
+
 def from_root_id(client, root_id):
     """Start the crawling from root if the root type is supported.
 
@@ -436,7 +448,7 @@ class Resource(object):
         return ('{}<data="{}", parent_resource_type="{}", '
                 'parent_resource_id="{}">').format(
                     self.__class__.__name__,
-                    json.dumps(self._data),
+                    json.dumps(self._data, sort_keys=True),
                     self.parent().type(),
                     self.parent().key())
 # pylint: enable=too-many-instance-attributes, too-many-public-methods
@@ -477,7 +489,7 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
             if hash_key:
                 # Resource does not have a globally unique ID, use size_t hash
                 # of key data.
-                return '%u' % ctypes.c_size_t(hash(self[key_field])).value
+                return size_t_hash(self[key_field])
 
             return self[key_field]
 
@@ -774,16 +786,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('bigquery-json.googleapis.com'))
 
-    def cloudsql_api_enabled(self):
-        """Check if the cloudsql api is enabled.
-
-        Returns:
-            bool: if this API service is enabled on the project.
-        """
-        # CloudSQL Admin API depends on billing being enabled
-        return (self.billing_enabled() and
-                self.is_api_enabled('sql-component.googleapis.com'))
-
     def compute_api_enabled(self):
         """Check if the compute api is enabled.
 
@@ -873,6 +875,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             iam_policy = client.fetch_bigquery_iam_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             dataset_policy = iam_helpers.convert_iam_to_bigquery_policy(
@@ -896,6 +899,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             dataset_policy = client.fetch_bigquery_dataset_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             iam_policy = iam_helpers.convert_bigquery_policy_to_iam(
@@ -906,6 +910,11 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             LOGGER.warn('Could not get Dataset Policy: %s', e)
             self.add_warning(e)
             return None
+
+
+# BigqueryTable resource classes
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
+    """The Resource implementation for bigquery table."""
 
 
 # Billing resource classes
@@ -1062,8 +1071,17 @@ class ComputeTargetTcpProxy(resource_class_factory('compute_targettcpproxy',
     """The Resource implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGateway(resource_class_factory('compute_targetvpngateway',
+                                                     'id')):
+    """The Resource implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMap(resource_class_factory('compute_urlmap', 'id')):
     """The Resource implementation for Compute UrlMap."""
+
+
+class ComputeVpnTunnel(resource_class_factory('compute_vpntunnel', 'id')):
+    """The Resource implementation for Compute VpnTunnel."""
 
 
 # Cloud DNS resource classes
@@ -1592,6 +1610,13 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Dataset."""
 
 
+class BigqueryTableIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_tables',
+        resource_name='bigquery_table',
+        api_method_arg_key='datasetReference')):
+    """The Resource iterator implementation for Bigquery Table."""
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -1602,7 +1627,7 @@ class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
         api_method_arg_key='projectNumber',
-        resource_validation_method_name='cloudsql_api_enabled')):
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
@@ -1747,6 +1772,12 @@ class ComputeNetworkIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute Network."""
 
 
+class ComputeProjectIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_project',
+        resource_name='compute_project')):
+    """The Resource iterator implementation for Compute Project."""
+
+
 class ComputeRouterIterator(compute_iter_class_factory(
         api_method_name='iter_compute_routers',
         resource_name='compute_router')):
@@ -1807,32 +1838,22 @@ class ComputeTargetTcpProxyIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGatewayIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_targetvpngateways',
+        resource_name='compute_targetvpngateway')):
+    """The Resource iterator implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMapIterator(compute_iter_class_factory(
         api_method_name='iter_compute_urlmaps',
         resource_name='compute_urlmap')):
     """The Resource iterator implementation for Compute UrlMap."""
 
 
-# Compute project iterator uses a fetch function, does not support using the
-# class factory.
-class ComputeProjectIterator(ResourceIterator):
-    """The Resource iterator implementation for Compute Project."""
-
-    def iter(self):
-        """Resource iterator.
-
-        Yields:
-            Resource: ComputeProject created
-        """
-        gcp = self.client
-        if self.resource.compute_api_enabled():
-            try:
-                data = gcp.fetch_compute_project(
-                    project_number=self.resource['projectNumber'])
-                yield FACTORIES['compute_project'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
+class ComputeVpnTunnelIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_vpntunnels',
+        resource_name='compute_vpntunnel')):
+    """The Resource iterator implementation for Compute VpnTunnel."""
 
 
 class DnsManagedZoneIterator(resource_iter_class_factory(
@@ -2155,7 +2176,9 @@ FACTORIES = {
             ComputeTargetPoolIterator,
             ComputeTargetSslProxyIterator,
             ComputeTargetTcpProxyIterator,
+            ComputeTargetVpnGatewayIterator,
             ComputeUrlMapIterator,
+            ComputeVpnTunnelIterator,
             DnsManagedZoneIterator,
             DnsPolicyIterator,
             IamProjectRoleIterator,
@@ -2206,6 +2229,13 @@ FACTORIES = {
     'bigquery_dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
+        'contains': [
+            BigqueryTableIterator
+        ]}),
+
+    'bigquery_table': ResourceFactory({
+        'dependsOn': ['bigquery_dataset'],
+        'cls': BigqueryTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
@@ -2348,9 +2378,19 @@ FACTORIES = {
         'cls': ComputeTargetTcpProxy,
         'contains': []}),
 
+    'compute_targetvpngateway': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeTargetVpnGateway,
+        'contains': []}),
+
     'compute_urlmap': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeUrlMap,
+        'contains': []}),
+
+    'compute_vpntunnel': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeVpnTunnel,
         'contains': []}),
 
     'crm_lien': ResourceFactory({

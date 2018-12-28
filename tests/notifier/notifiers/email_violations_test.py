@@ -90,6 +90,7 @@ class EmailViolationsTest(ForsetiTestCase):
         evp._make_attachment_csv()
         self.assertTrue(connector.create_attachment.called)
         test = connector.create_attachment.call_args[1]['file_location']
+        self.assertTrue(mail_util.create_attachment.called)
         self.assertTrue(
             filecmp.cmp(
                 connector.create_attachment.call_args[1]['file_location'],

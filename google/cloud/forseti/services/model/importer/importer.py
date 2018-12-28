@@ -77,7 +77,8 @@ class EmptyImporter(object):
         self.session.add(self.model)
         self.model.add_description(
             json.dumps(
-                {'source': 'empty', 'pristine': True}
+                {'source': 'empty', 'pristine': True},
+                sort_keys=True
             )
         )
         self.model.set_done()
@@ -163,7 +164,9 @@ class InventoryImporter(object):
             'compute_targetpool',
             'compute_targetsslproxy',
             'compute_targettcpproxy',
+            'compute_targetvpngateway',
             'compute_urlmap',
+            'compute_vpntunnel',
             'crm_org_policy',
             'dataset',
             'disk',
@@ -220,7 +223,8 @@ class InventoryImporter(object):
                         ['gsuite_group', 'gsuite_user'])
                 }
                 LOGGER.debug('Model description: %s', description)
-                self.model.add_description(json.dumps(description))
+                self.model.add_description(json.dumps(description,
+                                                      sort_keys=True))
 
                 if root.get_resource_type() in ['organization']:
                     LOGGER.debug('Root resource is organization: %s', root)
@@ -291,6 +295,9 @@ class InventoryImporter(object):
                                    fetch_iam_policy=True),
                     self._store_iam_policy
                 )
+
+                self.dao.expand_special_members(self.session)
+
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             buf = StringIO()
@@ -541,7 +548,9 @@ class InventoryImporter(object):
             'compute_targetpool': self._convert_computeengine_resource,
             'compute_targetsslproxy': self._convert_computeengine_resource,
             'compute_targettcpproxy': self._convert_computeengine_resource,
+            'compute_targetvpngateway': self._convert_computeengine_resource,
             'compute_urlmap': self._convert_computeengine_resource,
+            'compute_vpntunnel': self._convert_computeengine_resource,
             'crm_org_policy': self._convert_crm_org_policy,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,

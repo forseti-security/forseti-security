@@ -109,47 +109,61 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset IAM Policy.
         """
+        bigquery_name_fmt = '//bigquery.googleapis.com/projects/{}/datasets/{}'
+
+        # Try fetching with project id, if that returns nothing, fall back to
+        # project number.
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
+            'google.cloud.bigquery.Dataset',
+            bigquery_name_fmt.format(project_id, dataset_id),
             self.session)
+
+        if not resource:
+            resource = self.dao.fetch_cai_asset(
+                ContentTypes.iam_policy,
+                'google.cloud.bigquery.Dataset',
+                bigquery_name_fmt.format(project_number, dataset_id),
+                self.session)
+
         if resource:
             return resource
+
         return {}
 
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id, project_number,
+                                      dataset_id):
         """Dataset policy Iterator for a dataset from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
-            self.session)
+
+        resource = self.fetch_bigquery_iam_policy(
+            project_id, project_number, dataset_id)
+
         if resource:
             return iam_helpers.convert_iam_to_bigquery_policy(resource)
+
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
-            project_number, dataset_id)
+            project_id, project_number, dataset_id)
 
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from Cloud Asset data.
@@ -160,12 +174,21 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of datasets.
         """
-        resources = self.dao.iter_cai_assets(
+
+        resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.bigquery.Dataset',
+            'google.cloud.bigquery.Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.session))
+
+        if resources and not all('location' in ds for ds in resources):
+            LOGGER.info('Datasets missing location key in CAI, '
+                        'falling back to live API.')
+            resources = list(
+                super(CaiApiClientImpl,
+                      self).iter_bigquery_datasets(project_number))
+
         for dataset in resources:
             yield dataset
 
@@ -202,6 +225,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.session)
         for account in resources:
             yield account
+
+    def iter_cloudsql_instances(self, project_number):
+        """Iterate Cloud sql instances from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of cloudsql instance.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.sql.Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for instance in resources:
+            yield instance
 
     def _iter_compute_resources(self, asset_type, project_number):
         """Iterate Compute resources from Cloud Asset data.
@@ -508,6 +549,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for network in resources:
             yield _fixup_resource_keys(network, cai_to_gcp_key_map)
 
+    def iter_compute_project(self, project_number):
+        """Iterate Project from Cloud Asset data.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        cai_to_gcp_key_map = {
+            'enabledFeature': 'enabledFeatures',
+        }
+        resources = self._iter_compute_resources('Project', project_number)
+        for project in resources:
+            yield _fixup_resource_keys(project, cai_to_gcp_key_map)
+
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from Cloud Asset data.
 
@@ -666,6 +726,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for targettcpproxy in resources:
             yield targettcpproxy
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of target tcp proxy resources.
+        """
+        cai_to_gcp_key_map = {
+            'forwardingRule': 'forwardingRules',
+            'tunnel': 'tunnels',
+        }
+        resources = self._iter_compute_resources('TargetVpnGateway',
+                                                 project_number)
+        for targetvpngateway in resources:
+            yield _fixup_resource_keys(targetvpngateway, cai_to_gcp_key_map)
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from Cloud Asset data.
 
@@ -689,6 +767,19 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             # turn on only_fixup_lists, so the singular instance isn't munged.
             yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
                                        only_fixup_lists=True)
+
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of vpn tunnel resources.
+        """
+        resources = self._iter_compute_resources('VpnTunnel', project_number)
+        for vpntunnel in resources:
+            yield vpntunnel
 
     def iter_container_clusters(self, project_number):
         """Iterate Kubernetes Engine Cluster from Cloud Asset data.

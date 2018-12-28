@@ -41,19 +41,22 @@ class ApiClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
 
     @abc.abstractmethod
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
@@ -64,6 +67,15 @@ class ApiClient(object):
 
         Args:
             project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
         """
 
     @abc.abstractmethod
@@ -254,6 +266,17 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
@@ -334,8 +357,24 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -1003,22 +1042,27 @@ class ApiClientImpl(ApiClient):
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
+        del project_id
+
         return self.bigquery.get_dataset_access(project_number, dataset_id)
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
@@ -1040,6 +1084,21 @@ class ApiClientImpl(ApiClient):
         """
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
             yield dataset
+
+    @create_lazy('bigquery', _create_bq)
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
+
+        Yields:
+            dict: Generator of tables.
+        """
+        for table in self.bigquery.get_tables(dataset_reference['projectId'],
+                                              dataset_reference['datasetId']):
+            yield table
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_account_iam_policy(self, account_id):
@@ -1339,6 +1398,20 @@ class ApiClientImpl(ApiClient):
         for network in self.compute.get_networks(project_number):
             yield network
 
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        yield self.fetch_compute_project(project_number)
+
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
@@ -1461,6 +1534,18 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute TargetTcpProxies are not '
                                    'supported by this API client')
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetVpnGateways are not '
+                                   'supported by this API client')
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
 
@@ -1472,6 +1557,18 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute UrlMaps are not supported by this '
                                    'API client')
+
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute VpnTunnels are not supported by '
+                                   'this API client')
 
     @create_lazy('container', _create_container)
     def fetch_container_serviceconfig(self, project_id, zone=None,
