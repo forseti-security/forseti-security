@@ -67,9 +67,12 @@ import pdb
 # #
 # # pdb.set_trace()
 #
+dss
+
+#tests
 actual_version = utils.get_forseti_version()
-mock_version = utils.get_latest_patch_tag("v1.1.0"")
-mock_version_2 = utils.get_latest_patch_tag("v1.0.1"")
+mock_version = utils.get_latest_patch_tag("v1.1.0")
+mock_version_2 = utils.get_latest_patch_tag("v1.0.1")
 mock_version_3 = utils.get_latest_patch_tag("v88.0.0")
 mock_version_4 = utils.get_latest_patch_tag("v1.0.2-pre")
 
