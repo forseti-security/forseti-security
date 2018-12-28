@@ -357,8 +357,24 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -1518,6 +1534,18 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute TargetTcpProxies are not '
                                    'supported by this API client')
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetVpnGateways are not '
+                                   'supported by this API client')
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
 
@@ -1529,6 +1557,18 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute UrlMaps are not supported by this '
                                    'API client')
+
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute VpnTunnels are not supported by '
+                                   'this API client')
 
     @create_lazy('container', _create_container)
     def fetch_container_serviceconfig(self, project_id, zone=None,

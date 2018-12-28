@@ -726,6 +726,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for targettcpproxy in resources:
             yield targettcpproxy
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of target tcp proxy resources.
+        """
+        cai_to_gcp_key_map = {
+            'forwardingRule': 'forwardingRules',
+            'tunnel': 'tunnels',
+        }
+        resources = self._iter_compute_resources('TargetVpnGateway',
+                                                 project_number)
+        for targetvpngateway in resources:
+            yield _fixup_resource_keys(targetvpngateway, cai_to_gcp_key_map)
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from Cloud Asset data.
 
@@ -749,6 +767,19 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             # turn on only_fixup_lists, so the singular instance isn't munged.
             yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
                                        only_fixup_lists=True)
+
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of vpn tunnel resources.
+        """
+        resources = self._iter_compute_resources('VpnTunnel', project_number)
+        for vpntunnel in resources:
+            yield vpntunnel
 
     def iter_container_clusters(self, project_number):
         """Iterate Kubernetes Engine Cluster from Cloud Asset data.
