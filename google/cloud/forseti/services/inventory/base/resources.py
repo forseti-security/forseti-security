@@ -1071,8 +1071,17 @@ class ComputeTargetTcpProxy(resource_class_factory('compute_targettcpproxy',
     """The Resource implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGateway(resource_class_factory('compute_targetvpngateway',
+                                                     'id')):
+    """The Resource implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMap(resource_class_factory('compute_urlmap', 'id')):
     """The Resource implementation for Compute UrlMap."""
+
+
+class ComputeVpnTunnel(resource_class_factory('compute_vpntunnel', 'id')):
+    """The Resource implementation for Compute VpnTunnel."""
 
 
 # Cloud DNS resource classes
@@ -1829,10 +1838,22 @@ class ComputeTargetTcpProxyIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGatewayIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_targetvpngateways',
+        resource_name='compute_targetvpngateway')):
+    """The Resource iterator implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMapIterator(compute_iter_class_factory(
         api_method_name='iter_compute_urlmaps',
         resource_name='compute_urlmap')):
     """The Resource iterator implementation for Compute UrlMap."""
+
+
+class ComputeVpnTunnelIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_vpntunnels',
+        resource_name='compute_vpntunnel')):
+    """The Resource iterator implementation for Compute VpnTunnel."""
 
 
 class DnsManagedZoneIterator(resource_iter_class_factory(
@@ -2155,7 +2176,9 @@ FACTORIES = {
             ComputeTargetPoolIterator,
             ComputeTargetSslProxyIterator,
             ComputeTargetTcpProxyIterator,
+            ComputeTargetVpnGatewayIterator,
             ComputeUrlMapIterator,
+            ComputeVpnTunnelIterator,
             DnsManagedZoneIterator,
             DnsPolicyIterator,
             IamProjectRoleIterator,
@@ -2355,9 +2378,19 @@ FACTORIES = {
         'cls': ComputeTargetTcpProxy,
         'contains': []}),
 
+    'compute_targetvpngateway': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeTargetVpnGateway,
+        'contains': []}),
+
     'compute_urlmap': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeUrlMap,
+        'contains': []}),
+
+    'compute_vpntunnel': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeVpnTunnel,
         'contains': []}),
 
     'crm_lien': ResourceFactory({
