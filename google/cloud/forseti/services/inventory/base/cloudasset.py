@@ -79,6 +79,7 @@ DEFAULT_ASSET_TYPES = [
     'google.container.Cluster',
     'google.iam.Role',
     'google.iam.ServiceAccount',
+    'google.pubsub.Subscription',
     'google.pubsub.Topic',
     'google.spanner.Database',
     'google.spanner.Instance',
