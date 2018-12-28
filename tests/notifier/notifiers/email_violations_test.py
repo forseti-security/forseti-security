@@ -90,7 +90,6 @@ class EmailViolationsTest(ForsetiTestCase):
         evp._make_attachment_csv()
         self.assertTrue(connector.create_attachment.called)
         test = connector.create_attachment.call_args[1]['file_location']
-        self.assertTrue(mail_util.create_attachment.called)
         self.assertTrue(
             filecmp.cmp(
                 connector.create_attachment.call_args[1]['file_location'],
@@ -101,10 +100,6 @@ class EmailViolationsTest(ForsetiTestCase):
         """Test _make_attachment_json() leaves no temp files behind."""
         connector = mock.MagicMock(spec=SendgridConnector)
         mock_get_connector.return_value = connector
-        # email_mock = mock.MagicMock(spec=EmailFactory)
-        # email_mock.get_connector.return_value = connector
-        # email_factory.EmailFactory(
-        #     fake_violations.NOTIFIER_CONFIGS).return_value = email_mock
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_json()
         self.assertTrue(connector.create_attachment.called)

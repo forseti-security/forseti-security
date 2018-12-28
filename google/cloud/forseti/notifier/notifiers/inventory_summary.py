@@ -22,9 +22,8 @@ from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 
-from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
 from google.cloud.forseti.common.util.email.email_factory import InvalidInputError
-from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
+from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 
@@ -119,19 +118,18 @@ class InventorySummary(object):
         """
         LOGGER.debug('Sending inventory summary by email.')
 
+        email_summary_config = (
+            self.notifier_config.get('inventory').get('email_summary')
+        )
+
         try:
             if self.notifier_config.get('email_connector'):
-                email_connector_config_auth = (
-                    self.notifier_config
-                    .get('email_connector')
-                    .get('auth'))
-
-                email_util = SendgridConnector(
-                    self.notifier_config.get('email_connector')
-                    .get('sender'),
-                    self.notifier_config.get('email_connector')
-                    .get('recipient'),
-                    email_connector_config_auth)
+                email_connector = (
+                    EmailFactory(self.notifier_config).get_connector())
+            # else block below is added for backward compatibility
+            else:
+                email_connector = (
+                    EmailFactory(email_summary_config).get_connector())
         except:
             LOGGER.exception(
                 'Error occurred while fetching connector details')
@@ -148,7 +146,7 @@ class InventorySummary(object):
 
         gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
-        email_content = BaseEmailConnector.render_from_template(
+        email_content = email_connector.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
@@ -158,13 +156,25 @@ class InventorySummary(object):
 
         if self.notifier_config.get('email_connector'):
             try:
-                email_util.send(
+                email_connector.send(
                     email_sender=self.notifier_config
                     .get('email_connector')
                     .get('sender'),
                     email_recipient=self.notifier_config
                     .get('email_connector')
                     .get('recipient'),
+                    email_subject=email_subject,
+                    email_content=email_content,
+                    content_type='text/html')
+                LOGGER.debug('Inventory summary sent successfully by email.')
+            except util_errors.EmailSendError:
+                LOGGER.exception('Unable to send inventory summary email')
+        # else block below is added for backward compatibility
+        else:
+            try:
+                email_connector.send(
+                    email_sender=email_summary_config.get('sender'),
+                    email_recipient=email_summary_config.get('recipient'),
                     email_subject=email_subject,
                     email_content=email_content,
                     content_type='text/html')

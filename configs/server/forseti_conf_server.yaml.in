@@ -253,6 +253,8 @@ notifier:
         - resource: audit_logging_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -263,6 +265,8 @@ notifier:
         - resource: blacklist_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -273,6 +277,8 @@ notifier:
         - resource: bigquery_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -283,6 +289,8 @@ notifier:
         - resource: buckets_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -293,6 +301,8 @@ notifier:
         - resource: cloudsql_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -303,6 +313,8 @@ notifier:
         - resource: enabled_apis_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -313,6 +325,8 @@ notifier:
         - resource: firewall_rule_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -323,6 +337,8 @@ notifier:
         - resource: forwarding_rule_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -333,6 +349,8 @@ notifier:
         - resource: ke_version_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -343,6 +361,8 @@ notifier:
         - resource: ke_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -353,6 +373,8 @@ notifier:
         - resource: groups_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -363,6 +385,8 @@ notifier:
         - resource: instance_network_interface_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -373,6 +397,8 @@ notifier:
         - resource: iap_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -383,6 +409,8 @@ notifier:
         - resource: lien_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -393,6 +421,8 @@ notifier:
         - resource: location_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -403,6 +433,8 @@ notifier:
         - resource: log_sink_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -413,6 +445,8 @@ notifier:
         - resource: service_account_key_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -423,6 +457,8 @@ notifier:
         - resource: external_project_access_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:

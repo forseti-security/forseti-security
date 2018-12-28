@@ -58,34 +58,38 @@ class EmailFactory(object):
             object: Connector class
 
         Raises:
-            InvalidInputError: if not valid
+            InvalidInputError: Raised if invalid input is encountered.
         """
-        if not self.notifier_config:
-            raise InvalidInputError(self.notifier_config)
-        if self.notifier_config.get('email_connector'):
-            try:
-                connector_name = self.email_connector_config.get('name')
-                auth = self.email_connector_config.get('auth')
-                sender = self.email_connector_config.get('sender')
-                recipient = self.email_connector_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
-                                                               recipient,
-                                                               auth)
-            except:
-                LOGGER.exception(
-                    'Error occurred while fetching connector details')
+        if self.notifier_config:
+            if self.notifier_config.get('email_connector'):
+                try:
+                    connector_name = self.email_connector_config.get('name')
+                    auth = self.email_connector_config.get('auth')
+                    sender = self.email_connector_config.get('sender')
+                    recipient = self.email_connector_config.get('recipient')
+                    return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                                   recipient,
+                                                                   auth)
+                except KeyError:
+                    LOGGER.exception('Specified connector not found',
+                                     connector_name)
+                except:
+                    LOGGER.exception(
+                        'Error occurred while fetching connector details')
                 raise InvalidInputError(self.notifier_config)
-        # else block below is added for backward compatibility.
+            # else block below is added for backward compatibility.
+            else:
+                try:
+                    connector_name = 'sendgrid'
+                    auth = self.notifier_config
+                    sender = self.notifier_config.get('sender')
+                    recipient = self.notifier_config.get('recipient')
+                    return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                                   recipient,
+                                                                   auth)
+                except:
+                    LOGGER.exception(
+                        'Error occurred while fetching connector details')
+                    raise InvalidInputError(self.notifier_config)
         else:
-            try:
-                connector_name = 'sendgrid'
-                auth = self.notifier_config
-                sender = self.notifier_config.get('sender')
-                recipient = self.notifier_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
-                                                               recipient,
-                                                               auth)
-            except:
-                LOGGER.exception(
-                    'Error occurred while fetching connector details')
-                raise InvalidInputError(self.notifier_config)
+            LOGGER.exception('Notifier config is missing.')

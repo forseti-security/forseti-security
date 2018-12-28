@@ -26,10 +26,10 @@ import sendgrid
 from sendgrid.helpers import mail
 from retrying import retry
 
-from google.cloud.forseti.common.util.email import base_email_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
+from google.cloud.forseti.common.util.email import base_email_connector
 
 
 LOGGER = logger.get_logger(__name__)
@@ -51,6 +51,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
         self.recipient = recipient
         if kwargs.get('api_key'):
             api_key = kwargs.get('api_key')
+        # else block below is for backward compatibility
         else:
             api_key = kwargs.get('sendgrid_api_key')
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)

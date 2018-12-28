@@ -16,6 +16,7 @@
 
 import tempfile
 
+# pylint: disable=line-too-long
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
@@ -25,6 +26,8 @@ from google.cloud.forseti.common.util import string_formats
 
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.common.util.email import email_factory
+from google.cloud.forseti.common.util.email.email_factory import InvalidInputError
+
 
 LOGGER = logger.get_logger(__name__)
 
@@ -46,6 +49,9 @@ class EmailViolations(base_notification.BaseNotification):
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
             notification_config (dict): notifier configurations.
+
+        Raises:
+            InvalidInputError: Raised if invalid input is encountered.
         """
         super(EmailViolations, self).__init__(resource,
                                               inventory_index_id,
@@ -53,13 +59,19 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        if self.notifier_config.get('email_connector'):
-            self.connector = email_factory.EmailFactory(
-                self.notifier_config).get_connector()
-        # else block below is added for backward compatibility.
-        else:
-            self.connector = email_factory.EmailFactory(
-                self.notification_config).get_connector()
+        try:
+            if self.notifier_config.get('email_connector'):
+                self.connector = email_factory.EmailFactory(
+                    self.notifier_config).get_connector()
+            # else block below is added for backward compatibility.
+            else:
+                self.connector = email_factory.EmailFactory(
+                    self.notification_config).get_connector()
+        except:
+            LOGGER.exception(
+                'Error occurred while fetching connector details')
+            raise InvalidInputError(self.notifier_config)
+
 
     def _make_attachment_csv(self):
         """Create the attachment object in csv format.
