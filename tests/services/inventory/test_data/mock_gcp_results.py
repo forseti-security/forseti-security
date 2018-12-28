@@ -269,15 +269,6 @@ GAE_GET_INSTANCES = {
 BQ_GET_DATASETS_FOR_PROJECTID = {
     PROJECT_ID_PREFIX + "3": [{
         "datasetReference": {
-            "datasetId": "bq_test_ds1",
-            "projectId": "project3"
-        },
-        "id": "project3:bq_test_ds1",
-        "kind": "bigquery#dataset",
-        "location": "us"
-    }],
-    PROJECT_ID_PREFIX + "3": [{
-        "datasetReference": {
             "datasetId": "dataset1",
             "projectId": "project3"
         },
@@ -301,20 +292,7 @@ BQ_GET_DATASET_ACCESS = {
         }, {
             "role": "READER",
             "specialGroup": "projectReaders"
-        }],
-        "bq_test_ds1": [{
-            "role": "WRITER",
-            "specialGroup": "projectWriters"
-        }, {
-            "role": "OWNER",
-            "specialGroup": "projectOwners"
-        }, {
-            "role": "OWNER",
-            "userByEmail": "a_user@forseti.test"
-        }, {
-            "role": "READER",
-            "specialGroup": "projectReaders"
-        }],
+        }]
     }
 }
 
