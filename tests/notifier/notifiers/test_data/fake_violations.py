@@ -68,12 +68,7 @@ NOTIFIER_CONFIGS_EMAIL_JSON = {
     },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com',
-                'data_format': 'json'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
@@ -89,11 +84,7 @@ NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
     },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
@@ -109,12 +100,7 @@ NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
     },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com',
-                'data_format': 'xyz-invalid'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
