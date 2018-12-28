@@ -124,19 +124,21 @@ def get_latest_patch_tag(curr_tag):
     segments = curr_tag.split('.')
     if len(segments) != 3: #if tag is not in x.y.z format, return tag
         return curr_tag
-    # patch_query = (".").join(segments[:2]) + ".{[0-9],[0-9][0,9]}" #make query of everything up to and excluding the patch
-    tag_query = (".").join(segments[:2]) + "[0-9][0-9]"
-    if segments[2][1].isdigit():  # add everything after the patch number to query
-        tag_query += segments[2][2:]
-        latest_version = (curr_tag, int(segments[2][1][:2]))
+    start_const = (".").join(segments[:2])
+    if len(segments[2]) > 1 and segments[2][1].isdigit():  # add everything after the patch number to query
+        end_const = segments[2][2:]
+        latest_version = (curr_tag, int(segments[2][:2]))
     else:
-        tag_query += segments[2][1:]
-        latest_version = (curr_tag, int(segments[2][1][:1]))
+        end_const = segments[2][1:]
+        latest_version = (curr_tag, int(segments[2][0]))
+    tag_queries = ["{}.[0-9]{}", "{}.[0-9][0-9]{}"]
+    tag_queries = [query.format(start_const, end_const) for query in tag_queries]
 
     return_code, out, _ = run_command(  # run query for matches and find latest version
-        ['git', 'tag', '-l', tag_query],
+        ['git', 'tag', '-l', tag_queries[0], tag_queries[1]],
         number_of_retry=0,
         suppress_output=False)
+    # pdb.set_trace()
     matches = out.split("\n")[:-1]
     for match in matches:
         patch = match.split(".")[2][:2]
@@ -413,7 +415,6 @@ def run_command(cmd_args, number_of_retry=5,
         str: Output, if command was successful.
         err: Error output, if there was an error.
     """
-    print("hit correct piece of code relative")
     proc = subprocess.Popen(cmd_args,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
