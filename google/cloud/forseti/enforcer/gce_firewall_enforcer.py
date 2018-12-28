@@ -43,8 +43,8 @@ RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,
 
 # Allowed items in a firewall rule.
 ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
-                                'disabled', 'name', 'network', 'priority',
-                                'sourceRanges', 'destinationRanges',
+                                'disabled', 'logConfig', 'name', 'network',
+                                'priority', 'sourceRanges', 'destinationRanges',
                                 'sourceTags', 'targetTags'))
 
 # Maximum time to allow an active API operation to wait for status=Done
@@ -193,6 +193,7 @@ class FirewallRules(object):
 
     DEFAULT_PRIORITY = 1000
     DEFAULT_DIRECTION = 'INGRESS'
+    DEFAULT_LOGCONFIG = {'enable': False}
 
     def __init__(self, project, rules=None, add_rule_callback=None):
         """Constructor.
@@ -348,6 +349,9 @@ class FirewallRules(object):
 
         if 'direction' not in new_rule:
             new_rule['direction'] = self.DEFAULT_DIRECTION
+
+        if 'logConfig' not in new_rule:
+            new_rule['logConfig'] = self.DEFAULT_LOGCONFIG
 
         if self._check_rule_before_adding(new_rule):
             self.rules[new_rule['name']] = new_rule
