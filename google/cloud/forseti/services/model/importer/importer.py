@@ -185,6 +185,7 @@ class InventoryImporter(object):
             'kubernetes_cluster',
             'lien',
             'network',
+            'pubsub_subscription',
             'pubsub_topic',
             'serviceaccount',
             'serviceaccount_key',
@@ -572,7 +573,8 @@ class InventoryImporter(object):
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
             'project': self._convert_project,
-            'pubsub_topic': self._convert_pubsub_topic,
+            'pubsub_subscription': self._convert_pubsub_resource,
+            'pubsub_topic': self._convert_pubsub_resource,
             'serviceaccount': self._convert_serviceaccount,
             'serviceaccount_key': self._convert_serviceaccount_key,
             'sink': self._convert_sink,
@@ -742,13 +744,13 @@ class InventoryImporter(object):
         self._convert_resource(organization, cached=True,
                                display_key='displayName')
 
-    def _convert_pubsub_topic(self, topic):
-        """Convert a PubSub Topic to a database object.
+    def _convert_pubsub_resource(self, resource):
+        """Convert a PubSub resource to a database object.
 
         Args:
-            topic (object): Pubsub Topic to store.
+            resource (object): Pubsub resource to store.
         """
-        self._convert_resource(topic, cached=True)
+        self._convert_resource(resource, cached=True)
 
     def _convert_project(self, project):
         """Convert a project to a database object.
