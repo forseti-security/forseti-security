@@ -22,9 +22,9 @@ from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 
+from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
 from google.cloud.forseti.common.util.email.email_factory import InvalidInputError
 from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
-from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 
