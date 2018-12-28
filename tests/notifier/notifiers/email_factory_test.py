@@ -44,7 +44,7 @@ class EmailFactoryTest(ForsetiTestCase):
     def test_get_connector_invalid_input(self):
         """Test get_connector() with invalid input."""
         incomplete_notifier_config = {
-            'email_connector_config': {
+            'email_connector': {
                 'sender': 'abc',
                 'recipient': 'xyz',
                 'data_format': 'csv',
