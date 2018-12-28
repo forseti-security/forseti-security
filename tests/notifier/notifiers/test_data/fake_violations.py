@@ -14,6 +14,15 @@
 """Fake violation data."""
 
 NOTIFIER_CONFIGS = {
+    'email_connector': {
+        'name': 'sendgrid',
+        'auth': {
+            'api_key': 'SG.O9'
+        },
+        'sender': 'forseti-notify@mycompany',
+        'recipient': 'john@john.com',
+        'data_format': 'csv'
+    },
     'resources': [
         {'resource': 'iam_policy_violations',
          'notifiers': [
@@ -63,7 +72,7 @@ NOTIFIER_CONFIGS_EMAIL_JSON = {
             'api_key': 'SG.O9'
         },
         'sender': 'forseti-notify@mycompany',
-        'recipient': "john@john.com",
+        'recipient': 'john@john.com',
         'data_format': 'json'
     },
     'resources': [
@@ -79,7 +88,7 @@ NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
             'api_key': 'SG.O9'
         },
         'sender': 'forseti-notify@mycompany',
-        'recipient': "john@john.com",
+        'recipient': 'john@john.com',
         'data_format': 'csv'
     },
     'resources': [
@@ -95,7 +104,7 @@ NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
             'api_key': 'SG.O9'
         },
         'sender': 'forseti-notify@mycompany',
-        'recipient': "john@john.com",
+        'recipient': 'john@john.com',
         'data_format': 'xyz-invalid'
     },
     'resources': [
