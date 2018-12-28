@@ -106,6 +106,46 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print(border)
     print('')
 
+def get_latest_patch_tag(curr_tag):
+    """Given current tag, get latest patch
+    :param curr_tag:
+
+    In case that curr_tag is in version format (x.y.z at some point ie 2.3.4)
+    we look for everything matching x.y and any constants in curr_tag to return the
+    the matching tag where z is greatest (ie for 2.3.8_B, highest match could be 2.3.99_B).
+
+    Returns
+        str: tag matching latest patch of curr_tag
+    """
+    """
+    :param curr_tag: 
+    :return: 
+    """
+    segments = curr_tag.split('.')
+    if len(segments) != 3: #if tag is not in x.y.z format, return tag
+        return curr_tag
+    # patch_query = (".").join(segments[:2]) + ".{[0-9],[0-9][0,9]}" #make query of everything up to and excluding the patch
+    tag_query = (".").join(segments[:2]) + "[0-9][0-9]"
+    if segments[2][1].isdigit():  # add everything after the patch number to query
+        tag_query += segments[2][2:]
+        latest_version = (curr_tag, int(segments[2][1][:2]))
+    else:
+        tag_query += segments[2][1:]
+        latest_version = (curr_tag, int(segments[2][1][:1]))
+
+    return_code, out, _ = run_command(  # run query for matches and find latest version
+        ['git', 'tag', '-l', tag_query],
+        number_of_retry=0,
+        suppress_output=False)
+    matches = out.split("\n")[:-1]
+    for match in matches:
+        patch = match.split(".")[2][:2]
+        if len(patch) > 1 and not patch[1].isdigit():
+            patch = patch[0]
+        if int(patch) > latest_version[1]:
+            latest_version = (match, int(patch))
+
+    return latest_version[0]
 
 def get_forseti_version():
     """Get the current Forseti version.
@@ -126,7 +166,7 @@ def get_forseti_version():
     # The git command above will return the tag name if we checked out
     # a tag, will throw an exception otherwise.
     if not return_code:
-        return 'tags/{}'.format(out.strip())
+        return 'tags/{}'.format(get_latest_patch_tag(out.strip()))
 
     # Check version by branch. Allow installs from development branches.
     return_code, out, err = run_command(
@@ -373,7 +413,9 @@ def run_command(cmd_args, number_of_retry=5,
         str: Output, if command was successful.
         err: Error output, if there was an error.
     """
+    print("hit correct piece of code relative")
     proc = subprocess.Popen(cmd_args,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
 
@@ -381,6 +423,8 @@ def run_command(cmd_args, number_of_retry=5,
 
     timer.start()
     out, err = proc.communicate()
+    # import pdb
+    # pdb.set_trace()
     timer.cancel()
 
     if proc.returncode and number_of_retry >= 1:
