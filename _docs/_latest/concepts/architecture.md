@@ -21,11 +21,11 @@ security risks.
    available to other modules.
  * Scanner periodically compares your rules about GCP resource policies against
    the policies collected by Inventory, and saves the output for your review.
+ * Explain helps you understand, test, and develop Cloud Identity and Access
+   Management (Cloud IAM) policies.
  * Enforcer uses Google Cloud APIs to change resource policy state to match the
    state you define.
  * Notifier keeps you up to date about Forseti findings and actions.
- * Explain helps you understand, test, and develop Cloud Identity and Access
-   Management (Cloud IAM) policies.
 
 ---
 
