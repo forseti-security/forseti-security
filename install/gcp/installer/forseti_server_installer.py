@@ -184,6 +184,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'VPC_HOST_NETWORK': self.config.vpc_host_network,
             'VPC_HOST_SUBNETWORK': self.config.vpc_host_subnetwork,
             'FORSETI_VERSION': self.version,
+            'MATCHING_PATCHES_QUERY': self.matching_patches_query,
             'RAND_MINUTE': random.randint(0, 59)
         }
 

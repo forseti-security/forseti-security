@@ -193,7 +193,15 @@ class ForsetiInstaller(object):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
+
         self.version = utils.infer_version(self.config.advanced_mode)
+
+        return_code, out, _ = utils.run_command(#TODO
+            ['git', 'describe', '--tags', '--exact-match'],
+            number_of_retry=0,
+            suppress_output=True)
+        self.matching_patches_query = utils.get_latest_patch_tag(out.strip())
+
         service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,

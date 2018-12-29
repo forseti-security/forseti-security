@@ -22,10 +22,10 @@ def GenerateConfig(context):
     DOWNLOAD_FORSETI = (
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
-
-    FORSETI_VERSION = (
-        "git checkout {forseti_version}".format(
-            forseti_version=context.properties['forseti-version']))
+    #find how git tag list can be put into variable,
+    GET_VERSION_PATCHES = (
+        "matches=$(git tag -l {matching_patches_query})".format(
+            matching_patches_query=context.properties['matching_patches_query'])) #TODO
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -146,7 +146,19 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-{checkout_forseti_version}
+{get_version_patches}
+for match in "${matches[@]}"
+do
+   segments=(${match//./ })
+   patch=${segments[2]}
+   patch=${patch:0:2}  
+   patch=$(echo $patch | sed 's/[^0-9]*//g')
+   if !((${#latest_version[@]})) || ((patch > ${latest_version[1]}));
+   then
+     latest_version=($match, $patch)
+   fi
+done
+git checkout ${latest_version[1]}
 
 # Forseti Host Setup
 sudo apt-get install -y git unzip
@@ -237,8 +249,8 @@ echo "Execution of startup script finished"
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
 
-    # Checkout Forseti version.
-    checkout_forseti_version=FORSETI_VERSION,
+    #get all patches (tags) matching tag on install
+    get_version_patches=GET_VERSION_PATCHES,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,
