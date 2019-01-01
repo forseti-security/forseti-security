@@ -51,6 +51,7 @@ class EmailFactory(object):
             self.email_connector_config = (
                 notifier_config.get('email_connector'))
 
+    # pylint: disable=inconsistent-return-statements
     def get_connector(self):
         """Gets the connector and executes it.
 
@@ -60,6 +61,7 @@ class EmailFactory(object):
         Raises:
             InvalidInputError: Raised if invalid input is encountered.
         """
+        # pylint: disable=logging-too-many-args
         if self.notifier_config:
             if self.notifier_config.get('email_connector'):
                 try:
@@ -71,9 +73,9 @@ class EmailFactory(object):
                                                                    recipient,
                                                                    auth)
                 except KeyError:
-                    LOGGER.exception('Specified connector not found',
+                    LOGGER.exception('Specified connector not found:',
                                      connector_name)
-                except:
+                except Exception:  # pylint: disable=broad-except
                     LOGGER.exception(
                         'Error occurred while fetching connector details')
                 raise InvalidInputError(self.notifier_config)
@@ -87,9 +89,10 @@ class EmailFactory(object):
                     return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
                                                                    recipient,
                                                                    auth)
-                except:
+                except Exception:
                     LOGGER.exception(
                         'Error occurred while fetching connector details')
                     raise InvalidInputError(self.notifier_config)
         else:
-            LOGGER.exception('Notifier config is missing.')
+            LOGGER.exception('Notifier config is missing')
+            raise InvalidInputError(self.notifier_config)
