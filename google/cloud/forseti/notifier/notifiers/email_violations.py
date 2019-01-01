@@ -72,7 +72,6 @@ class EmailViolations(base_notification.BaseNotification):
                 'Error occurred while fetching connector details')
             raise InvalidInputError(self.notifier_config)
 
-
     def _make_attachment_csv(self):
         """Create the attachment object in csv format.
 
