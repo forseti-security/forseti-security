@@ -1,0 +1,528 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.data_access.csv_writer"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.data_access.csv_writer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Writes the csv files for upload to Cloud SQL.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">import</span> <span class="nn">unicodecsv</span> <span class="k">as</span> <span class="nn">csv</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.data_access.errors</span> <span class="k">import</span> <span class="n">CSVFileError</span>
+
+<span class="n">APPENGINE_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;dispatch_rules&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;auth_domain&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;location_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;code_bucket&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;default_cookie_expiration&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;serving_status&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;default_hostname&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;default_bucket&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;iap&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;gcr_domain&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_application&#39;</span>
+<span class="p">]</span>
+
+<span class="n">APPENGINE_SERVICES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service&#39;</span>
+<span class="p">]</span>
+
+<span class="n">APPENGINE_VERSIONS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;version_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;version&#39;</span>
+<span class="p">]</span>
+
+<span class="n">APPENGINE_INSTANCES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;version_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance&#39;</span>
+<span class="p">]</span>
+
+<span class="n">BACKEND_SERVICES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;affinity_cookie_ttl_sec&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;backends&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cdn_policy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;connection_draining&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;enable_cdn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;health_checks&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;iap&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_balancing_scheme&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;port_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;port&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;protocol&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;session_affinity&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;timeout_sec&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_backend_service&#39;</span>
+<span class="p">]</span>
+
+<span class="n">BIGQUERY_DATASET_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;dataset_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_domain&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_user_by_email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_special_group&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_group_by_email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_view_project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_view_table_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;access_view_dataset_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_access_map&#39;</span>
+<span class="p">]</span>
+
+<span class="n">BUCKETS_ACL_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;bucket&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;domain&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;entity&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;entity_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;acl_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_team&#39;</span><span class="p">,</span>  <span class="c1"># TODO: flatten this</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_acl_selflink&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_bucket_acl&#39;</span>
+<span class="p">]</span>
+
+<span class="c1"># TODO: Add pydoc to describe the mapping of the custom field naming</span>
+<span class="c1"># to the field names in the resource objects.</span>
+<span class="c1"># https://cloud.google.com/storage/docs/json_api/v1/buckets#resource</span>
+<span class="n">BUCKETS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_storage_class&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_location&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_create_time&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_update_time&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_selflink&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;bucket_lifecycle_raw&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_bucket&#39;</span>
+<span class="p">]</span>
+
+<span class="n">CLOUDSQL_INSTANCES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;backend_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;connection_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;current_disk_size&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;database_version&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;failover_replica_available&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;failover_replica_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ipv6_address&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;master_instance_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;max_disk_size&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;on_premises_configuration_host_port&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;on_premises_configuration_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;replica_configuration&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;replica_names&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;self_link&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;server_ca_cert&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service_account_email_address&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_activation_policy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_authorized_gae_applications&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_availability_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_backup_configuration_binary_log_enabled&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_backup_configuration_enabled&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_backup_configuration_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_backup_configuration_start_time&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_crash_safe_replication_enabled&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_data_disk_size_gb&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_data_disk_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_database_flags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_database_replication_enabled&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_ip_configuration_ipv4_enabled&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_ip_configuration_require_ssl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_labels&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_location_preference_follow_gae_application&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_location_preference_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_location_preference_zone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_maintenance_window&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_pricing_plan&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_replication_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_settings_version&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_storage_auto_resize&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_storage_auto_resize_limit&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;settings_tier&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;state&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;suspension_reason&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_cloudsql_instance&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">CLOUDSQL_IPADDRESSES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ip_address&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;time_to_retire&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;expiration_time&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">FIREWALL_RULES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;firewall_rule_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_network&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_priority&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_direction&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_source_ranges&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_destination_ranges&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_source_tags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_target_tags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_source_service_accounts&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_target_service_accounts&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_allowed&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_denied&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_self_link&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;firewall_rule_create_time&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_firewall_rule&#39;</span>
+<span class="p">]</span>
+
+<span class="n">FOLDER_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;folder_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_domain&#39;</span>
+<span class="p">]</span>
+
+<span class="n">FOLDERS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;folder_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;display_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lifecycle_state&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parent_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parent_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_folder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;create_time&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">RAW_FOLDER_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;folder_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;iam_policy&#39;</span>
+<span class="p">]</span>
+
+<span class="n">FORWARDING_RULES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ip_address&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ip_protocol&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;port_range&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ports&#39;</span><span class="p">,</span>  <span class="c1"># json list</span>
+    <span class="s1">&#39;target&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_balancing_scheme&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;subnetwork&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;network&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;backend_service&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_forwarding_rule&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">GROUP_MEMBERS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;group_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_status&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_member&#39;</span>
+<span class="p">]</span>
+
+<span class="n">GROUPS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;group_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;group_email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;group_kind&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;direct_member_count&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_group&#39;</span>
+<span class="p">]</span>
+
+<span class="n">INSTANCES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;can_ip_forward&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cpu_platform&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;disks&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;machine_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;network_interfaces&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;scheduling&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;service_accounts&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;status&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;status_message&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;tags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;zone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_instance&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">INSTANCE_GROUPS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_urls&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;named_ports&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;network&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;size&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;subnetwork&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;zone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_instance_group&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">INSTANCE_TEMPLATES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;properties&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_instance_template&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">INSTANCE_GROUP_MANAGERS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;base_instance_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;current_actions&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_group&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;instance_template&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;named_ports&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;target_pools&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;target_size&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;zone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_instance_group_manager&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">INV_SUMMARY_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">ORG_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;org_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_domain&#39;</span>
+<span class="p">]</span>
+
+<span class="n">ORGANIZATIONS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;org_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;display_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lifecycle_state&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;creation_time&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">VIOLATION_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;resource_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;full_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;violation_data&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">PROJECT_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;member_domain&#39;</span>
+<span class="p">]</span>
+
+<span class="n">PROJECTS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lifecycle_state&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parent_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parent_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_project&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;create_time&#39;</span>
+<span class="p">]</span>
+
+<span class="n">RAW_BUCKETS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;buckets&#39;</span>
+<span class="p">]</span>
+
+<span class="n">RAW_ORG_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;org_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;iam_policy&#39;</span>
+<span class="p">]</span>
+
+<span class="n">RAW_PROJECT_IAM_POLICIES_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;iam_policy&#39;</span>
+<span class="p">]</span>
+
+<span class="n">SERVICE_ACCOUNTS_FIELDNAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;oauth2_client_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;account_keys&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;raw_service_account&#39;</span>
+<span class="p">]</span>
+
+<span class="n">CSV_FIELDNAME_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;appengine&#39;</span><span class="p">:</span> <span class="n">APPENGINE_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;appengine_services&#39;</span><span class="p">:</span> <span class="n">APPENGINE_SERVICES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;appengine_versions&#39;</span><span class="p">:</span> <span class="n">APPENGINE_VERSIONS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;appengine_instances&#39;</span><span class="p">:</span> <span class="n">APPENGINE_INSTANCES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;backend_services&#39;</span><span class="p">:</span> <span class="n">BACKEND_SERVICES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;bigquery_datasets&#39;</span><span class="p">:</span> <span class="n">BIGQUERY_DATASET_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;buckets&#39;</span><span class="p">:</span> <span class="n">BUCKETS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;buckets_acl&#39;</span><span class="p">:</span> <span class="n">BUCKETS_ACL_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;raw_buckets&#39;</span><span class="p">:</span> <span class="n">RAW_BUCKETS_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;cloudsql_instances&#39;</span><span class="p">:</span> <span class="n">CLOUDSQL_INSTANCES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;cloudsql_ipaddresses&#39;</span><span class="p">:</span> <span class="n">CLOUDSQL_IPADDRESSES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;cloudsql_ipconfiguration_authorizednetworks&#39;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES</span>
+    <span class="p">),</span>
+
+    <span class="s1">&#39;firewall_rules&#39;</span><span class="p">:</span> <span class="n">FIREWALL_RULES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;folder_iam_policies&#39;</span><span class="p">:</span> <span class="n">FOLDER_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;folders&#39;</span><span class="p">:</span> <span class="n">FOLDERS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;raw_folder_iam_policies&#39;</span><span class="p">:</span> <span class="n">RAW_FOLDER_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;forwarding_rules&#39;</span><span class="p">:</span> <span class="n">FORWARDING_RULES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;group_members&#39;</span><span class="p">:</span> <span class="n">GROUP_MEMBERS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="n">GROUPS_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;instances&#39;</span><span class="p">:</span> <span class="n">INSTANCES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;instance_groups&#39;</span><span class="p">:</span> <span class="n">INSTANCE_GROUPS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;instance_templates&#39;</span><span class="p">:</span> <span class="n">INSTANCE_TEMPLATES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;instance_group_managers&#39;</span><span class="p">:</span> <span class="n">INSTANCE_GROUP_MANAGERS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;inv_summary&#39;</span><span class="p">:</span> <span class="n">INV_SUMMARY_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;org_iam_policies&#39;</span><span class="p">:</span> <span class="n">ORG_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;organizations&#39;</span><span class="p">:</span> <span class="n">ORGANIZATIONS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;raw_org_iam_policies&#39;</span><span class="p">:</span> <span class="n">RAW_ORG_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;project_iam_policies&#39;</span><span class="p">:</span> <span class="n">PROJECT_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="n">PROJECTS_FIELDNAMES</span><span class="p">,</span>
+    <span class="s1">&#39;raw_project_iam_policies&#39;</span><span class="p">:</span> <span class="n">RAW_PROJECT_IAM_POLICIES_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;service_accounts&#39;</span><span class="p">:</span> <span class="n">SERVICE_ACCOUNTS_FIELDNAMES</span><span class="p">,</span>
+
+    <span class="s1">&#39;violations&#39;</span><span class="p">:</span> <span class="n">VIOLATION_FIELDNAMES</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="write_csv"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.data_access.csv_writer.html#google.cloud.forseti.common.data_access.csv_writer.write_csv">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">write_csv</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">write_header</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Start the csv writing flow.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource_name (str): The resource name.</span>
+<span class="sd">        data (iterable): An iterable of data to be written to csv.</span>
+<span class="sd">        write_header (bool): If True, write the header in the csv file.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">       object: The CSV temporary file pointer.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        CSVFileError: If there was an error writing the CSV file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">csv_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span>
+                                <span class="n">extrasaction</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span>
+                                <span class="n">fieldnames</span><span class="o">=</span><span class="n">CSV_FIELDNAME_MAP</span><span class="p">[</span><span class="n">resource_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">write_header</span><span class="p">:</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># Not ready to send these data via CSV attachment as they break</span>
+            <span class="c1"># across multiple columns.</span>
+            <span class="n">i</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;inventory_data&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c1"># This must be closed before returned for loading.</span>
+        <span class="n">csv_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">csv_file</span>
+
+        <span class="c1"># Remove the csv file after loading.</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">csv_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">csv</span><span class="o">.</span><span class="n">Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CSVFileError</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+</pre></div>

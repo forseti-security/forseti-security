@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.groups\_scanner module
+============================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.groups_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -19,17 +19,11 @@ trap 'return_code=$?' ERR
 # TODO(drmorris): change branch from "stable" to "master" when after release
 ./scripts/generate_sphinx_docs.sh "stable"
 
-if  [ -z ${JGT+x} ]; then
-    # We don't have access to the encrypted vars.
-    bundle exec jekyll build
-else
-    # We do have access to the encrypted vars.
-    JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
-fi
+JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 
 bundle exec htmlproofer --check-img-http --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
---url-ignore '/GoogleCloudPlatform/forseti-security/edit/,/maxcdn.bootstrapcdn.com/' \
+--url-ignore '/GoogleCloudPlatform/forseti-security/edit/,/maxcdn.bootstrapcdn.com/,/d3js.org/' \
 --file-ignore '/develop/reference/' './_www/www/'
 
 exit ${return_code}

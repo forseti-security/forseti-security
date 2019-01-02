@@ -186,10 +186,7 @@ or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.8+.
 - `Organization Admin`
 - `Security Center Admin`
 - `Security Center Sources Admin`
-1. Cloud SCC Registration Information (after marketplace on-boarding)
-- The `source_id` created for your organization.
-- The `Security Center Findings` Editor role has been assigned to your Forseti
-server service account, on the organization level.
+- `Service Account Admin`
 
 #### Setup
 1. Select `Add Security Sources` on the Cloud SCC Beta Dashboard.
@@ -212,7 +209,7 @@ the UI or API:
 - Note: You will need to have either owner, editor or service management roles
   in the Project in order to enable the API
 
-1. Enable the  API connector config to Cloud SCC.  Specifically this means,
+1. Enable the  API connector config to Cloud SCC.  Specifically, this means
 in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
  as follows:
 
