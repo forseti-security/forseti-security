@@ -172,7 +172,7 @@ def get_latest_patch_query(curr_tag):
         end_const = segments[2][2:]
     else:
         end_const = segments[2][1:]
-    return "%s.{{[0-9],[0-9][0-9]}}%s" % (start_const, end_const)
+    return "%s.{[0-9],[0-9][0-9]}%s" % (start_const, end_const)
 
 def get_forseti_version():
     """Get the current Forseti version.

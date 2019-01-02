@@ -23,9 +23,9 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
     #find how git tag list can be put into variable,
-    # GET_VERSION_PATCHES = (
-    #     "matches=$(git tag -l {matching_patches_query})".format(
-    #         matching_patches_query=context.properties['matching_patches_query'])) #TODO
+    GET_VERSION_PATCHES = (
+        "matches=$(git tag -l {matching_patches_query})".format(
+            matching_patches_query=context.properties['matching_patches_query'])) #TODO
     # print("GET_VERSION_PATCHES in generateconfig is {}".format(GET_VERSION_PATCHES))
 
 
@@ -148,20 +148,20 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-matches=$(git tag -l v88.0.{{[0-9],[0-9][0-9]}})
-matches=(${matches//;/ })
-for match in "${matches[@]}"
+{get_version_patches}
+matches=(${{matches//;/ }})
+for match in "${{matches[@]}}"
 do
-segments=(${match//./ })
-patch=${segments[2]}
-patch=${patch:0:2}  
+segments=(${{match//./ }})
+patch=${{segments[2]}}
+patch=${{patch:0:2}}  
 patch=$(echo $patch | sed 's/[^0-9]*//g')
-if !((${#latest_version[@]})) || ((patch > ${latest_version[1]}));
+if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
 then
   latest_version=($match $patch)
 fi
 done
-git checkout ${latest_version[0]}
+git checkout ${{latest_version[0]}}
 
 # Forseti Host Setup
 sudo apt-get install -y git unzip
@@ -253,7 +253,7 @@ echo "Execution of startup script finished"
     download_forseti=DOWNLOAD_FORSETI,
 
     #get all patches (tags) matching tag on install
-    # get_version_patches=GET_VERSION_PATCHES,
+    get_version_patches=GET_VERSION_PATCHES,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,
