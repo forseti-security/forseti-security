@@ -200,7 +200,7 @@ class ForsetiInstaller(object):
             ['git', 'describe', '--tags', '--exact-match'],
             number_of_retry=0,
             suppress_output=True)
-        self.matching_patches_query = utils.get_latest_patch_tag(out.strip())
+        self.matching_patches_query = utils.get_latest_patch_query(out.strip())
         print("matching patches query in forseti_general_installer is {}".format(self.matching_patches_query))
 
         service_account_key_file = self.config.service_account_key_file

@@ -149,6 +149,31 @@ def get_latest_patch_tag(curr_tag):
 
     return latest_version[0]
 
+def get_latest_patch_query(curr_tag):
+    """Given current tag, return a patch query
+    :param curr_tag:
+
+    In case that curr_tag is in version format (x.y.z at some point ie 2.3.4)
+    we look for everything matching x.y and any constants in curr_tag to return the
+    the matching tag where z is greatest (ie for 2.3.8_B, highest match could be 2.3.99_B).
+
+    Returns
+        str: tag matching latest patch of curr_tag
+    """
+    """
+    :param curr_tag: 
+    :return: 
+    """
+    segments = curr_tag.split('.')
+    if len(segments) != 3: #if tag is not in x.y.z format, return tag
+        return curr_tag
+    start_const = (".").join(segments[:2])
+    if len(segments[2]) > 1 and segments[2][1].isdigit():  # add everything after the patch number to query
+        end_const = segments[2][2:]
+    else:
+        end_const = segments[2][1:]
+    return "{strt}.{[0-9],[0-9][0-9]}{end}".format(start=start_const, end=end_const)
+
 def get_forseti_version():
     """Get the current Forseti version.
 
