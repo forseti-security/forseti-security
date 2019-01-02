@@ -70,7 +70,7 @@ resources:
     vpc-host-project-id: {VPC_HOST_PROJECT_ID}
     vpc-host-network: {VPC_HOST_NETWORK}
     vpc-host-subnetwork: {VPC_HOST_SUBNETWORK}
-    
+
     matching_patches_query: {MATCHING_PATCHES_QUERY}
 
     # --- Forseti version
@@ -79,7 +79,6 @@ resources:
     # See https://github.com/GoogleCloudPlatform/forseti-security/releases
     # for a list of releases.
     forseti-version: {FORSETI_VERSION}
-    xyz:
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
