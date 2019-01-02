@@ -148,7 +148,7 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-matches=$(git tag -l v88.0.{[0-9],[0-9][0-9]})
+matches=$(git tag -l v88.0.{{[0-9],[0-9][0-9]}})
 matches=(${matches//;/ })
 for match in "${matches[@]}"
 do
