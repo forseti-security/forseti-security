@@ -26,6 +26,8 @@ def GenerateConfig(context):
     GET_VERSION_PATCHES = (
         "matches=$(git tag -l {matching_patches_query})".format(
             matching_patches_query=context.properties['matching_patches_query'])) #TODO
+    print("GET_VERSION_PATCHES in generateconfig is {}".format(GET_VERSION_PATCHES))
+
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
