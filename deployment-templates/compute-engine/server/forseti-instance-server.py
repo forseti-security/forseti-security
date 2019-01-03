@@ -25,28 +25,25 @@ def GenerateConfig(context):
 
     if context.properties['matching_patches_query']:
         CHECKOUT_FORSETI_VERSION = (
-            """
-            matches=$(git tag -l {matching_patches_query})
-            matches=(${{matches //; /}})
-            for match in "${{matches[@]}}"
-                do
-            segments = (${{match //./}})
-            patch =${{segments[2]}}
-            patch =${{patch: 0: 2}}
-            patch =$(echo $patch | sed 's/[^0-9]*//g')
-            if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
-            then
-            latest_version=($match $patch)
-            fi
-            done
-            git checkout ${{latest_version[0]}}
-            """.format(matching_patches_query=context.properties['matching_patches_query'])
-        )
+        """matches=$(git tag -l {matching_patches_query})
+        matches=(${{matches //; /}})
+        for match in "${{matches[@]}}"
+        do
+        segments=(${{match //./}})
+        patch=${{segments[2]}}
+        patch=${{patch: 0: 2}}
+        patch=$(echo $patch | sed 's/[^0-9]*//g')
+        if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+        then
+          latest_version=($match $patch)
+        fi
+        done
+        git checkout ${{latest_version[0]}}"""
+        .format(matching_patches_query="v88.0.0"))
     else:
         CHECKOUT_FORSETI_VERSION = (
             "git checkout {forseti_version}".format(
-                forseti_version=context.properties['forseti-version']
-        ))
+                forseti_version=context.properties['forseti-version']))
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
