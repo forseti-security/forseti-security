@@ -45,7 +45,7 @@ def GenerateConfig(context):
         CHECKOUT_FORSETI_VERSION = (
             "git checkout {forseti_version}".format(
                 forseti_version=context.properties['forseti-version']
-        )
+        ))
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
