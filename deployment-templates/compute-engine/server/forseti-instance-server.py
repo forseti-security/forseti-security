@@ -38,7 +38,7 @@ then
   latest_version=($match $patch)
 fi
 done
-    git checkout ${{latest_version[0]}}"""
+git checkout ${{latest_version[0]}}"""
         .format(matching_patches_query=context.properties['matching_patches_query']))
     else:
         CHECKOUT_FORSETI_VERSION = (
