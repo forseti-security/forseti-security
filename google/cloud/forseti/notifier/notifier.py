@@ -152,22 +152,11 @@ def run(inventory_index_id,
                             notifier['name'], resource['resource']))
                     progress_queue.put(log_message)
                     LOGGER.info(log_message)
-                    if notifier['name'] == 'email_violations':
-                        notifiers.append(
-                            email_violations.EmailViolations(
-                                resource['resource'],
-                                inventory_index_id,
-                                violation_map[resource['resource']],
-                                global_configs,
-                                notifier_configs,
-                                notifier.get('configuration')))
-
-                    if notifier['name'] != 'email_violations':
-                        chosen_pipeline = find_notifiers(notifier['name'])
-                        notifiers.append(chosen_pipeline(
-                            resource['resource'], inventory_index_id,
-                            violation_map[resource['resource']], global_configs,
-                            notifier_configs, notifier.get('configuration')))
+                    chosen_pipeline = find_notifiers(notifier['name'])
+                    notifiers.append(chosen_pipeline(
+                        resource['resource'], inventory_index_id,
+                        violation_map[resource['resource']], global_configs,
+                        notifier_configs, notifier.get('configuration')))
 
             # Run the notifiers.
             for notifier in notifiers:
