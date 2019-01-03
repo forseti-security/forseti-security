@@ -1084,6 +1084,39 @@ class ComputeVpnTunnel(resource_class_factory('compute_vpntunnel', 'id')):
     """The Resource implementation for Compute VpnTunnel."""
 
 
+# Cloud Dataproc resource classes
+class DataprocCluster(resource_class_factory('dataproc_cluster',
+                                             'clusterUuid')):
+    """The Resource implementation for Dataproc Cluster."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Dataproc Cluster IAM policy.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Dataproc Cluster IAM policy.
+        """
+        try:
+            # Dataproc resource does not contain a direct reference to the
+            # region name except in an embedded label.
+            region = self['labels']['goog-dataproc-location']
+            cluster = 'projects/{}/regions/{}/clusters/{}'.format(
+                self['projectId'], region, self['clusterName'])
+            return client.fetch_dataproc_cluster_iam_policy(cluster)
+        except (api_errors.ApiExecutionError,
+                ResourceNotSupported,
+                KeyError,
+                TypeError) as e:
+            if isinstance(e, TypeError):
+                e = 'Cluster has no labels.'
+            LOGGER.warn('Could not get IAM policy: %s', e)
+            self.add_warning('Could not get IAM policy: %s' % e)
+            return None
+
+
 # Cloud DNS resource classes
 class DnsManagedZone(resource_class_factory('dns_managedzone', 'id')):
     """The Resource implementation for Cloud DNS ManagedZone."""
@@ -1884,6 +1917,14 @@ class ComputeVpnTunnelIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute VpnTunnel."""
 
 
+class DataprocClusterIterator(resource_iter_class_factory(
+        api_method_name='iter_dataproc_clusters',
+        resource_name='dataproc_cluster',
+        api_method_arg_key='projectId',
+        resource_validation_method_name='enumerable')):
+    """The Resource iterator implementation for Cloud Dataproc Cluster."""
+
+
 class DnsManagedZoneIterator(resource_iter_class_factory(
         api_method_name='iter_dns_managedzones',
         resource_name='dns_managedzone',
@@ -2178,6 +2219,7 @@ FACTORIES = {
             ComputeTargetVpnGatewayIterator,
             ComputeUrlMapIterator,
             ComputeVpnTunnelIterator,
+            DataprocClusterIterator,
             DnsManagedZoneIterator,
             DnsPolicyIterator,
             IamProjectRoleIterator,
@@ -2401,6 +2443,11 @@ FACTORIES = {
     'crm_org_policy': ResourceFactory({
         'dependsOn': ['folder', 'organization', 'project'],
         'cls': ResourceManagerOrgPolicy,
+        'contains': []}),
+
+    'dataproc_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': DataprocCluster,
         'contains': []}),
 
     'dns_managedzone': ResourceFactory({

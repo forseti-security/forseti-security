@@ -659,6 +659,17 @@ class CaiTemporaryStore(object):
             # parent project.
             return '/'.join(asset_pb.name.split('/')[:-4])
 
+        elif asset_pb.asset_type == 'google.cloud.dataproc.Cluster':
+            # Dataproc Clusters are parented by a region under a project, but
+            # the region is not directly discoverable without iterating all
+            # regions, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all clusters
+            # in all regions to fix this broken behavior.
+            #
+            # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
+            # parent project.
+            return '/'.join(asset_pb.name.split('/')[:-4])
+
         elif (asset_pb.asset_type.startswith('google.appengine') or
               asset_pb.asset_type.startswith('google.cloud.bigquery') or
               asset_pb.asset_type.startswith('google.cloud.kms') or

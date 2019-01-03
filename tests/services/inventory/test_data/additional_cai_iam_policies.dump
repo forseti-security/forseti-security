@@ -6,6 +6,10 @@
 {"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.cloud.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project2"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project2","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project2"]}]}}
 # Bigquery Dataset with project id
 {"name":"//bigquery.googleapis.com/projects/project3/datasets/bq_test_ds1","asset_type":"google.cloud.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project3"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project3","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project3"]}]}}
+# Dataproc Cluster
+{"name":"//dataproc.googleapis.com/projects/project2/regions/us-west1/clusters/test-cluster","asset_type":"google.cloud.dataproc.Cluster","iam_policy":{"bindings":[{"role":"roles/dataproc.editor","members":["group:test-group@forseti.testing"]}]}}
+# Dataproc Cluster missing labels - this IAM policy will not be discovered in testing.
+{"name":"//dataproc.googleapis.com/projects/project2/regions/us-west1/clusters/test-missing-region","asset_type":"google.cloud.dataproc.Cluster","iam_policy":{"bindings":[{"role":"roles/dataproc.editor","members":["user:user@forseti.testing"]}]}}
 # KMS CryptoKey
 {"name":"//cloudkms.googleapis.com/projects/project2/locations/us/keyRings/test-kr/cryptoKeys/test-key","asset_type":"google.cloud.kms.CryptoKey","iam_policy":{"etag":"ACAB","bindings":[{"role":"roles/cloudkms.cryptoKeyEncrypterDecrypter","members":["user:user@forseti.testing"]}]}}
 # KMS KeyRing

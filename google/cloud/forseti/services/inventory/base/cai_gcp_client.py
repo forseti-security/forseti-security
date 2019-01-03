@@ -954,6 +954,47 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+
+        Returns:
+            dict: Cluster IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.dataproc.Cluster',
+            '//dataproc.googleapis.com/{}'.format(cluster),
+            self.session)
+        if resource:
+            return resource
+
+        # Clusters with no IAM policy return an empty dict.
+        return {}
+
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+
+        Yields:
+            dict: Generator of Cluster resources.
+        """
+        del region  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.dataproc.Cluster',
+            '//dataproc.googleapis.com/projects/{}'.format(project_id),
+            self.session)
+        for cluster in resources:
+            yield cluster
+
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from Cloud Asset data.
 

@@ -36,6 +36,7 @@ DEFAULT_ASSET_TYPES = [
     'google.appengine.Version',
     'google.cloud.bigquery.Dataset',
     'google.cloud.billing.BillingAccount',
+    'google.cloud.dataproc.Cluster',
     'google.cloud.dns.ManagedZone',
     'google.cloud.dns.Policy',
     'google.cloud.kms.CryptoKey',
