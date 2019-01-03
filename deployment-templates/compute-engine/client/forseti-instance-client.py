@@ -28,10 +28,10 @@ def GenerateConfig(context):
         CHECKOUT_FORSETI_VERSION = (
         """
 matches=$(git tag -l {matching_patches_query})
-matches=(${matches//;/ })
+matches=(${{matches//;/ }})
 for match in "${{matches[@]}}"
 do
-segments=(${match//./ })
+segments=(${{match//./ }})
 patch=${{segments[2]}}
 patch=${{patch: 0: 2}}
 patch=$(echo $patch | sed 's/[^0-9]*//g')
