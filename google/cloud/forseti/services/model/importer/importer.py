@@ -168,6 +168,7 @@ class InventoryImporter(object):
             'compute_urlmap',
             'compute_vpntunnel',
             'crm_org_policy',
+            'dataproc_cluster',
             'dataset',
             'disk',
             'dns_managedzone',
@@ -553,6 +554,7 @@ class InventoryImporter(object):
             'compute_urlmap': self._convert_computeengine_resource,
             'compute_vpntunnel': self._convert_computeengine_resource,
             'crm_org_policy': self._convert_crm_org_policy,
+            'dataproc_cluster': self._convert_dataproc_cluster,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,
             'dns_managedzone': self._convert_clouddns_resource,
@@ -667,6 +669,15 @@ class InventoryImporter(object):
         """
         self._convert_resource(org_policy, cached=False,
                                display_key='constraint')
+
+    def _convert_dataproc_cluster(self, cluster):
+        """Convert a dataproc cluster to a database object.
+
+        Args:
+            cluster (object): Dataproc Cluster to store.
+        """
+        self._convert_resource(cluster, cached=True,
+                               display_key='clusterName')
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.

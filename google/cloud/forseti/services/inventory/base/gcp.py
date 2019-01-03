@@ -497,6 +497,25 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from GCP API.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+        """
+
+    @abc.abstractmethod
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from GCP API.
 
@@ -1776,6 +1795,33 @@ class ApiClientImpl(ApiClient):
                                           parent_type=parent_type):
             for project in page.get('projects', []):
                 yield project
+
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from GCP API.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud Dataproc Clusters are not supported '
+                                   'by this API client')
+
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud Dataproc Clusters are not supported '
+                                   'by this API client')
 
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from GCP API.
