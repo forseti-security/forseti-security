@@ -163,6 +163,17 @@ def run(inventory_index_id,
                                     violation_map[resource['resource']],
                                     global_configs,
                                     notifier_configs, None))
+                        # else block below is added for backward compatibility
+                        else:
+                            notifiers.append(
+                                email_violations.EmailViolations(
+                                    resource['resource'],
+                                    inventory_index_id,
+                                    violation_map[resource['resource']],
+                                    global_configs,
+                                    notifier_configs,
+                                    notifier['configuration']))
+
                     if notifier['name'] != 'email_violations':
                         chosen_pipeline = find_notifiers(notifier['name'])
                         notifiers.append(chosen_pipeline(

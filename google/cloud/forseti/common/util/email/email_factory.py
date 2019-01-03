@@ -16,25 +16,14 @@
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import sendgrid_connector
+from google.cloud.forseti.common.util.errors import InvalidInputError
+
 
 LOGGER = logger.get_logger(__name__)
 
 EMAIL_CONNECTOR_FACTORY = {
     'sendgrid': sendgrid_connector.SendgridConnector
 }
-
-
-class InvalidInputError(Exception):
-    """Exception raised when an invalid input is encountered."""
-
-    def __init__(self, invalid_input):
-        """Constructor for the base notifier.
-
-        Args:
-            invalid_input (dict): the invalid data format in question.
-        """
-        super(InvalidInputError, self).__init__(
-            'Invalid input found: %s' % invalid_input)
 
 
 class EmailFactory(object):
@@ -51,7 +40,6 @@ class EmailFactory(object):
             self.email_connector_config = (
                 notifier_config.get('email_connector'))
 
-    # pylint: disable=inconsistent-return-statements
     def get_connector(self):
         """Gets the connector and executes it.
 
@@ -62,37 +50,29 @@ class EmailFactory(object):
             InvalidInputError: Raised if invalid input is encountered.
         """
         # pylint: disable=logging-too-many-args
-        if self.notifier_config:
-            if self.notifier_config.get('email_connector'):
-                try:
-                    connector_name = self.email_connector_config.get('name')
-                    auth = self.email_connector_config.get('auth')
-                    sender = self.email_connector_config.get('sender')
-                    recipient = self.email_connector_config.get('recipient')
-                    return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
-                                                                   recipient,
-                                                                   auth)
-                except KeyError:
-                    LOGGER.exception('Specified connector not found:',
-                                     connector_name)
-                except Exception:  # pylint: disable=broad-except
-                    LOGGER.exception(
-                        'Error occurred while fetching connector details')
-                raise InvalidInputError(self.notifier_config)
-            # else block below is added for backward compatibility.
-            else:
-                try:
-                    connector_name = 'sendgrid'
-                    auth = self.notifier_config
-                    sender = self.notifier_config.get('sender')
-                    recipient = self.notifier_config.get('recipient')
-                    return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
-                                                                   recipient,
-                                                                   auth)
-                except Exception:
-                    LOGGER.exception(
-                        'Error occurred while fetching connector details')
-                    raise InvalidInputError(self.notifier_config)
-        else:
+        if not self.notifier_config:
             LOGGER.exception('Notifier config is missing')
+            raise InvalidInputError(self.notifier_config)
+
+        if self.notifier_config.get('email_connector'):
+            connector_name = self.email_connector_config.get('name')
+            auth = self.email_connector_config.get('auth')
+            sender = self.email_connector_config.get('sender')
+            recipient = self.email_connector_config.get('recipient')
+        else:
+            connector_name = 'sendgrid'
+            auth = self.notifier_config
+            sender = self.notifier_config.get('sender')
+            recipient = self.notifier_config.get('recipient')
+
+        try:
+            connector = EMAIL_CONNECTOR_FACTORY[connector_name]
+        except KeyError:
+            LOGGER.exception('Specified connector not found.', connector_name)
+
+        try:
+            return connector(sender, recipient, auth)
+        except Exception:
+            LOGGER.exception(
+                'Error occurred while fetching connector details')
             raise InvalidInputError(self.notifier_config)

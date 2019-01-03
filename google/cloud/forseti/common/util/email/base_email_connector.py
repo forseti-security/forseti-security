@@ -16,6 +16,7 @@
 
 import abc
 import os
+
 import jinja2
 
 from google.cloud.forseti.common.util import logger

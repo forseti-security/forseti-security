@@ -185,30 +185,23 @@ class EmailViolations(base_notification.BaseNotification):
         attachment = notification_map['attachment']
 
         if self.notifier_config.get('email_connector'):
-            try:
-                self.connector.send(
-                    email_sender=self.notifier_config
-                    .get('email_connector').get('sender'),
-                    email_recipient=self.notifier_config
-                    .get('email_connector').get('recipient'),
-                    email_subject=subject,
-                    email_content=content,
-                    content_type='text/html',
-                    attachment=attachment)
-            except util_errors.EmailSendError:
-                LOGGER.warn('Unable to send Violations email')
+            sender = (
+                self.notifier_config.get('email_connector').get('sender'))
+            recipient = (
+                self.notifier_config.get('email_connector').get('recipient'))
         # else block below is added for backward compatibility.
         else:
-            try:
-                self.connector.send(
-                    email_sender=self.notification_config['sender'],
-                    email_recipient=self.notification_config['recipient'],
-                    email_subject=subject,
-                    email_content=content,
-                    content_type='text/html',
-                    attachment=attachment)
-            except util_errors.EmailSendError:
-                LOGGER.warn('Unable to send Violations email')
+            sender = self.notification_config['sender']
+            recipient = self.notification_config['recipient']
+        try:
+            self.connector.send(email_sender=sender,
+                                email_recipient=recipient,
+                                email_subject=subject,
+                                email_content=content,
+                                content_type='text/html',
+                                attachment=attachment)
+        except util_errors.EmailSendError:
+            LOGGER.warn('Unable to send Violations email')
 
     def run(self):
         """Run the email notifier"""

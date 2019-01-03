@@ -13,7 +13,6 @@
 # limitations under the License.
 """Upload inventory summary to GCS."""
 
-# pylint: disable=line-too-long
 from googleapiclient.errors import HttpError
 
 from google.cloud.forseti.common.util import date_time
@@ -22,7 +21,7 @@ from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 
-from google.cloud.forseti.common.util.email.email_factory import InvalidInputError
+from google.cloud.forseti.common.util.errors import InvalidInputError
 from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
@@ -119,8 +118,7 @@ class InventorySummary(object):
         LOGGER.debug('Sending inventory summary by email.')
 
         email_summary_config = (
-            self.notifier_config.get('inventory').get('email_summary')
-        )
+            self.notifier_config.get('inventory').get('email_summary'))
 
         try:
             if self.notifier_config.get('email_connector'):
@@ -155,32 +153,23 @@ class InventorySummary(object):
              'details_data': details_data})
 
         if self.notifier_config.get('email_connector'):
-            try:
-                email_connector.send(
-                    email_sender=self.notifier_config
-                    .get('email_connector')
-                    .get('sender'),
-                    email_recipient=self.notifier_config
-                    .get('email_connector')
-                    .get('recipient'),
-                    email_subject=email_subject,
-                    email_content=email_content,
-                    content_type='text/html')
-                LOGGER.debug('Inventory summary sent successfully by email.')
-            except util_errors.EmailSendError:
-                LOGGER.exception('Unable to send inventory summary email')
-        # else block below is added for backward compatibility
+            sender = (
+                self.notifier_config.get('email_connector').get('sender'))
+            recipient = (
+                self.notifier_config.get('email_connector').get('recipient'))
+        # else block below is added for backward compatibility.
         else:
-            try:
-                email_connector.send(
-                    email_sender=email_summary_config.get('sender'),
-                    email_recipient=email_summary_config.get('recipient'),
-                    email_subject=email_subject,
-                    email_content=email_content,
-                    content_type='text/html')
-                LOGGER.debug('Inventory summary sent successfully by email.')
-            except util_errors.EmailSendError:
-                LOGGER.exception('Unable to send inventory summary email')
+            sender = email_summary_config.get('sender')
+            recipient = email_summary_config.get('recipient')
+        try:
+            email_connector.send(email_sender=sender,
+                                 email_recipient=recipient,
+                                 email_subject=email_subject,
+                                 email_content=email_content,
+                                 content_type='text/html')
+            LOGGER.debug('Inventory summary sent successfully by email.')
+        except util_errors.EmailSendError:
+            LOGGER.warn('Unable to send Violations email')
 
     @staticmethod
     def transform_to_template(data):
@@ -281,8 +270,6 @@ class InventorySummary(object):
         try:
             is_gcs_summary_enabled = (
                 inventory_notifier_config.get('gcs_summary').get('enabled'))
-            if self.notifier_config.get('email_connector'):
-                is_email_summary_enabled = True
             if inventory_notifier_config.get('email_summary'):
                 is_email_summary_enabled = (
                     inventory_notifier_config.get('email_summary')
