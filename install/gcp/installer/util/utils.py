@@ -106,7 +106,7 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print(border)
     print('')
 
-def get_latest_patch_query():
+def get_latest_patch_query(test_tag=None):
     """Given current tag, return a patch query
     :param curr_tag:
 
@@ -121,10 +121,15 @@ def get_latest_patch_query():
     :param curr_tag: 
     :return: 
     """
-    return_code, out, _ = run_command(
-        ['git', 'describe', '--tags', '--exact-match'],
-        number_of_retry=0,
-        suppress_output=True)
+    if test_tag:
+        out = test_tag
+        return_code = False
+    else:
+        return_code, out, _ = run_command(
+            ['git', 'describe', '--tags', '--exact-match'],
+            number_of_retry=0,
+            suppress_output=True)
+        
     if return_code:
         return None
     curr_tag = out.strip()
@@ -405,7 +410,6 @@ def run_command(cmd_args, number_of_retry=5,
         err: Error output, if there was an error.
     """
     proc = subprocess.Popen(cmd_args,
-                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
 
@@ -413,8 +417,6 @@ def run_command(cmd_args, number_of_retry=5,
 
     timer.start()
     out, err = proc.communicate()
-    # import pdb
-    # pdb.set_trace()
     timer.cancel()
 
     if proc.returncode and number_of_retry >= 1:
