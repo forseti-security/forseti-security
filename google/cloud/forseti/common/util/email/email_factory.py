@@ -36,9 +36,8 @@ class EmailFactory(object):
             notifier_config (dict): Notifier configurations.
         """
         self.notifier_config = notifier_config
-        if notifier_config.get('email_connector'):
-            self.email_connector_config = (
-                notifier_config.get('email_connector'))
+        self.email_connector_config = (self.notifier_config
+                                       .get('email_connector'))
 
     def get_connector(self):
         """Gets the connector and executes it.
@@ -54,11 +53,12 @@ class EmailFactory(object):
             LOGGER.exception('Notifier config is missing')
             raise InvalidInputError(self.notifier_config)
 
-        if self.notifier_config.get('email_connector'):
+        if self.email_connector_config:
             connector_name = self.email_connector_config.get('name')
             auth = self.email_connector_config.get('auth')
             sender = self.email_connector_config.get('sender')
             recipient = self.email_connector_config.get('recipient')
+        # else block below is added for backward compatibility.
         else:
             connector_name = 'sendgrid'
             auth = self.notifier_config
@@ -74,5 +74,5 @@ class EmailFactory(object):
             return connector(sender, recipient, auth)
         except Exception:
             LOGGER.exception(
-                'Error occurred while fetching connector details')
+                'Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)

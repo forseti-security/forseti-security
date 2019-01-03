@@ -67,9 +67,9 @@ class EmailViolations(base_notification.BaseNotification):
             else:
                 self.connector = email_factory.EmailFactory(
                     self.notification_config).get_connector()
-        except:
+        except Exception:
             LOGGER.exception(
-                'Error occurred while fetching connector details')
+                'Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)
 
     def _make_attachment_csv(self):
@@ -148,8 +148,9 @@ class EmailViolations(base_notification.BaseNotification):
         email_map = {}
 
         if self.notifier_config.get('email_connector'):
-            data_format = self.notifier_config.get('email_connector')\
-                .get('data_format', 'csv')
+            data_format = (
+                self.notifier_config.get('email_connector')
+                .get('data_format', 'csv'))
         # else block below is added for backward compatibility.
         else:
             data_format = self.notification_config.get('data_format', 'csv')

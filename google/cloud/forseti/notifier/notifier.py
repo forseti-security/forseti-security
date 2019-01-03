@@ -25,8 +25,6 @@ from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotifi
 from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.notifier.notifiers import email_violations
 from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
-
-
 # pylint: enable=line-too-long
 
 
@@ -155,31 +153,21 @@ def run(inventory_index_id,
                     progress_queue.put(log_message)
                     LOGGER.info(log_message)
                     if notifier['name'] == 'email_violations':
-                        if notifier_configs.get('email_connector'):
-                            notifiers.append(
-                                email_violations.EmailViolations(
-                                    resource['resource'],
-                                    inventory_index_id,
-                                    violation_map[resource['resource']],
-                                    global_configs,
-                                    notifier_configs, None))
-                        # else block below is added for backward compatibility
-                        else:
-                            notifiers.append(
-                                email_violations.EmailViolations(
-                                    resource['resource'],
-                                    inventory_index_id,
-                                    violation_map[resource['resource']],
-                                    global_configs,
-                                    notifier_configs,
-                                    notifier['configuration']))
+                        notifiers.append(
+                            email_violations.EmailViolations(
+                                resource['resource'],
+                                inventory_index_id,
+                                violation_map[resource['resource']],
+                                global_configs,
+                                notifier_configs,
+                                notifier.get('configuration')))
 
                     if notifier['name'] != 'email_violations':
                         chosen_pipeline = find_notifiers(notifier['name'])
                         notifiers.append(chosen_pipeline(
                             resource['resource'], inventory_index_id,
                             violation_map[resource['resource']], global_configs,
-                            notifier_configs, notifier['configuration']))
+                            notifier_configs, notifier.get('configuration')))
 
             # Run the notifiers.
             for notifier in notifiers:

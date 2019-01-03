@@ -20,7 +20,6 @@ from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-
 from google.cloud.forseti.common.util.errors import InvalidInputError
 from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.notifier.notifiers import base_notification
@@ -130,7 +129,7 @@ class InventorySummary(object):
                     EmailFactory(email_summary_config).get_connector())
         except:
             LOGGER.exception(
-                'Error occurred while fetching connector details')
+                'Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)
 
         email_subject = 'Inventory Summary: {0}'.format(
@@ -169,7 +168,7 @@ class InventorySummary(object):
                                  content_type='text/html')
             LOGGER.debug('Inventory summary sent successfully by email.')
         except util_errors.EmailSendError:
-            LOGGER.warn('Unable to send Violations email')
+            LOGGER.exception('Unable to send Violations email')
 
     @staticmethod
     def transform_to_template(data):
@@ -270,10 +269,8 @@ class InventorySummary(object):
         try:
             is_gcs_summary_enabled = (
                 inventory_notifier_config.get('gcs_summary').get('enabled'))
-            if inventory_notifier_config.get('email_summary'):
-                is_email_summary_enabled = (
-                    inventory_notifier_config.get('email_summary')
-                    .get('enabled'))
+            is_email_summary_enabled = (
+                inventory_notifier_config.get('email_summary').get('enabled'))
         except AttributeError:
             LOGGER.exception(
                 'Inventory summary can not be created because unable to get '
