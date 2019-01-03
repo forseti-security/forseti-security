@@ -25,15 +25,16 @@ def GenerateConfig(context):
 
     if context.properties['matching_patches_query']:
         CHECKOUT_FORSETI_VERSION = (
-            """matches=$(git tag -l {matching_patches_query})
-            matches = (${{matches //; /}})
+            """
+            matches=$(git tag -l {matching_patches_query})
+            matches=(${{matches //; /}})
             for match in "${{matches[@]}}"
                 do
             segments = (${{match //./}})
             patch =${{segments[2]}}
             patch =${{patch: 0: 2}}
             patch =$(echo $patch | sed 's/[^0-9]*//g')
-            if !((${{  # latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+            if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
             then
             latest_version=($match $patch)
             fi
