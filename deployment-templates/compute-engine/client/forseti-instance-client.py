@@ -24,9 +24,29 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    FORSETI_VERSION = (
-        "git checkout {forseti_version}".format(
-            forseti_version=context.properties['forseti-version']))
+    if context.properties['matching_patches_query']:
+        CHECKOUT_FORSETI_VERSION = (
+            """matches=$(git tag -l {matching_patches_query})
+            matches = (${{matches //; /}})
+            for match in "${{matches[@]}}"
+                do
+            segments = (${{match //./}})
+            patch =${{segments[2]}}
+            patch =${{patch: 0: 2}}
+            patch =$(echo $patch | sed 's/[^0-9]*//g')
+            if !((${{  # latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+            then
+            latest_version=($match $patch)
+            fi
+            done
+            git checkout ${{latest_version[0]}}
+            """.format(matching_patches_query=context.properties['matching_patches_query'])
+        )
+    else:
+        CHECKOUT_FORSETI_VERSION = (
+            "git checkout {forseti_version}".format(
+                forseti_version=context.properties['forseti-version']
+        ))
 
     FORSETI_CLIENT_CONF = ('gs://{bucket_name}/configs/'
                            'forseti_conf_client.yaml').format(
@@ -150,8 +170,8 @@ echo "Execution of startup script finished"
                         # Install Forseti.
                         download_forseti=DOWNLOAD_FORSETI,
 
-                        # Checkout Forseti version.
-                        checkout_forseti_version=FORSETI_VERSION,
+                        # if on tag, checkout latest patch to that version, else checkout current branch version
+                        checkout_forseti_version=CHECKOUT_FORSETI_VERSION,
 
                         # Set ownership for Forseti conf and rules dirs
                         forseti_home=FORSETI_HOME,

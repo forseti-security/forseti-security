@@ -195,7 +195,7 @@ class ForsetiInstaller(object):
         self.check_run_properties()
 
         self.version = utils.infer_version(self.config.advanced_mode)
-        
+
         self.matching_patches_query = utils.get_latest_patch_query()
 
         service_account_key_file = self.config.service_account_key_file

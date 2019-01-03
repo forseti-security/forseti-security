@@ -171,7 +171,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 the forseti deployment template.
         """
         bucket_name = self.generate_bucket_name()
-        print("matching patches query in forseti_server_installer is {}".format(self.matching_patches_query))
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
