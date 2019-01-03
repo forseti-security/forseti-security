@@ -106,50 +106,7 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print(border)
     print('')
 
-def get_latest_patch_tag(curr_tag):
-    """Given current tag, get latest patch
-    :param curr_tag:
-
-    In case that curr_tag is in version format (x.y.z at some point ie 2.3.4)
-    we look for everything matching x.y and any constants in curr_tag to return the
-    the matching tag where z is greatest (ie for 2.3.8_B, highest match could be 2.3.99_B).
-
-    Returns
-        str: tag matching latest patch of curr_tag
-    """
-    """
-    :param curr_tag: 
-    :return: 
-    """
-    segments = curr_tag.split('.')
-    if len(segments) != 3: #if tag is not in x.y.z format, return tag
-        return curr_tag
-    start_const = (".").join(segments[:2])
-    if len(segments[2]) > 1 and segments[2][1].isdigit():  # add everything after the patch number to query
-        end_const = segments[2][2:]
-        latest_version = (curr_tag, int(segments[2][:2]))
-    else:
-        end_const = segments[2][1:]
-        latest_version = (curr_tag, int(segments[2][0]))
-    tag_queries = ["{}.[0-9]{}", "{}.[0-9][0-9]{}"]
-    tag_queries = [query.format(start_const, end_const) for query in tag_queries]
-
-    return_code, out, _ = run_command(  # run query for matches and find latest version
-        ['git', 'tag', '-l', tag_queries[0], tag_queries[1]],
-        number_of_retry=0,
-        suppress_output=False)
-    # pdb.set_trace()
-    matches = out.split("\n")[:-1]
-    for match in matches:
-        patch = match.split(".")[2][:2]
-        if len(patch) > 1 and not patch[1].isdigit():
-            patch = patch[0]
-        if int(patch) > latest_version[1]:
-            latest_version = (match, int(patch))
-
-    return latest_version[0]
-
-def get_latest_patch_query(curr_tag):
+def get_latest_patch_query():
     """Given current tag, return a patch query
     :param curr_tag:
 
@@ -164,6 +121,13 @@ def get_latest_patch_query(curr_tag):
     :param curr_tag: 
     :return: 
     """
+    return_code, out, _ = run_command(
+        ['git', 'describe', '--tags', '--exact-match'],
+        number_of_retry=0,
+        suppress_output=True)
+    if return_code:
+        return None
+    curr_tag = out.strip()
     segments = curr_tag.split('.')
     if len(segments) != 3: #if tag is not in x.y.z format, return tag
         return curr_tag
@@ -193,7 +157,7 @@ def get_forseti_version():
     # The git command above will return the tag name if we checked out
     # a tag, will throw an exception otherwise.
     if not return_code:
-        return 'tags/{}'.format(get_latest_patch_tag(out.strip()))
+        return 'tags/{}'.format(out.strip())
 
     # Check version by branch. Allow installs from development branches.
     return_code, out, err = run_command(

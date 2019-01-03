@@ -22,12 +22,30 @@ def GenerateConfig(context):
     DOWNLOAD_FORSETI = (
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
-    #find how git tag list can be put into variable,
-    GET_VERSION_PATCHES = (
-        "matches=$(git tag -l {matching_patches_query})".format(
-            matching_patches_query=context.properties['matching_patches_query'])) #TODO
-    # print("GET_VERSION_PATCHES in generateconfig is {}".format(GET_VERSION_PATCHES))
 
+    if context.properties['matching_patches_query']:
+        CHECKOUT_FORSETI_VERSION = (
+            """matches=$(git tag -l {matching_patches_query})
+            matches = (${{matches //; /}})
+            for match in "${{matches[@]}}"
+                do
+            segments = (${{match //./}})
+            patch =${{segments[2]}}
+            patch =${{patch: 0: 2}}
+            patch =$(echo $patch | sed 's/[^0-9]*//g')
+            if !((${{  # latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+            then
+            latest_version=($match $patch)
+            fi
+            done
+            git checkout ${{latest_version[0]}}
+            """.format(matching_patches_query=matching_patches_query)
+        )
+    else:
+        CHECKOUT_FORSETI_VERSION = (
+            "git checkout {forseti_version}".format(
+                forseti_version=context.properties['forseti-version']
+        )
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -148,20 +166,7 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-{get_version_patches}
-matches=(${{matches//;/ }})
-for match in "${{matches[@]}}"
-do
-segments=(${{match//./ }})
-patch=${{segments[2]}}
-patch=${{patch:0:2}}  
-patch=$(echo $patch | sed 's/[^0-9]*//g')
-if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
-then
-  latest_version=($match $patch)
-fi
-done
-git checkout ${{latest_version[0]}}
+{checkout_forseti_version}
 
 # Forseti Host Setup
 sudo apt-get install -y git unzip
@@ -252,8 +257,8 @@ echo "Execution of startup script finished"
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
 
-    #get all patches (tags) matching tag on install
-    get_version_patches=GET_VERSION_PATCHES,
+    #if on tag, checkout latest patch to that version, else checkout current branch version
+    checkout_forseti_version=CHECKOUT_FORSETI_VERSION,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,

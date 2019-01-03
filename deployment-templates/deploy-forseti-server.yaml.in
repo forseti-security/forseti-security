@@ -71,8 +71,8 @@ resources:
     vpc-host-network: {VPC_HOST_NETWORK}
     vpc-host-subnetwork: {VPC_HOST_SUBNETWORK}
 
-    matching_patches_query: {MATCHING_PATCHES_QUERY}
-
+    matching_patches_query: {MATCHING_PATCHES_QUERY} #glob matching all current version patches
+    #if install is based on tag
     # --- Forseti version
     # "forseti-version": Can be a tag or a branch.
     #
