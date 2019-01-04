@@ -197,6 +197,7 @@ class ForsetiInstaller(object):
         self.version = utils.infer_version(self.config.advanced_mode)
 
         self.matching_patches_query = utils.get_latest_patch_query()
+        print("matching patches query is {0}".format(self.matching_patches_query))
 
         service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()

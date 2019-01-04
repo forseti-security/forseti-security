@@ -129,6 +129,7 @@ def get_latest_patch_query():
         
     if return_code:
         return None
+    print("WTF HOW DID THIUS RUN {}".format(out))
     curr_tag = out.strip()
     segments = curr_tag.split('.')
     if len(segments) != 3: #if tag is not in x.y.z format, return tag
