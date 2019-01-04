@@ -125,6 +125,7 @@ def get_latest_patch_query():
         ['git', 'describe', '--tags', '--exact-match'],
         number_of_retry=0,
         suppress_output=True)
+    print("return code: {}, out: {}".format(return_code, out))
         
     if return_code:
         return None
