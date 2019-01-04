@@ -86,8 +86,7 @@ elif ${DEPLOY_SERVER}; then
     # Create a Cluster IP Service for Cloud SQL Proxy
     # Deploy forseti server in its own pod
     # Create a Cluster IP Service for forseti server
-    # TODO As PoC deploy client in its own pod ?
-    # TODO As PoC Create a Cluster IP Service for forstei client?
+    # TODO As PoC deploy client in its own pod / service?
  	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.server.yaml
