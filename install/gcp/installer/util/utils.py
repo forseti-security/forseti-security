@@ -119,10 +119,7 @@ def get_latest_patch_query():
 
         none: if no tag
     """
-    """
-    :param curr_tag: 
-    :return: 
-    """
+
     print("get latest patch query was run")
     return_code, out, _ = run_command(
         ['git', 'describe', '--tags', '--exact-match'],
