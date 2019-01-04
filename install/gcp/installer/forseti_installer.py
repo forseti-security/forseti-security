@@ -460,7 +460,12 @@ class ForsetiInstaller(object):
         Args:
             other_installer (ForsetiInstaller): The other installer.
         """
+        print('class running populate')
+        print(type(self).__name__)
+        print('prev class being used')
+        print(type(other_installer).__name__)
         self.version = other_installer.version
+        self.matching_patches_query = other_installer.matching_patches_query
         self.project_id = other_installer.project_id
         self.organization_id = other_installer.organization_id
 
