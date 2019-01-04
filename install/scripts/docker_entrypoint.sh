@@ -217,15 +217,15 @@ main(){
     fi
 
     # Run server or client; not both in same container
-    if [[ ${RUN_SERVER}="true" ]]; then
+    if ${RUN_SERVER}; then
         download_server_configuration_files
         start_server
-    elif [[ ${RUN_CLIENT}="true" ]]; then
+    elif ${RUN_CLIENT}; then
         download_client_configuration_files
         # start_client not needed?
     fi
 
-    if [[ ${RUN_CRONJOB}="true" ]]; then
+    if ${RUN_CRONJOB}; then
         run_cron_job
     fi
 }
