@@ -120,16 +120,13 @@ def get_latest_patch_query():
         none: if no tag
     """
 
-    print("get latest patch query was run")
     return_code, out, _ = run_command(
         ['git', 'describe', '--tags', '--exact-match'],
         number_of_retry=0,
         suppress_output=True)
-    print("return code: {}, out: {}".format(return_code, out))
         
     if return_code:
         return None
-    print("WTF HOW DID THIUS RUN {}".format(out))
     curr_tag = out.strip()
     segments = curr_tag.split('.')
     if len(segments) != 3: #if tag is not in x.y.z format, return tag
@@ -297,7 +294,6 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
-    print("infer version was run")
     cur_version = get_forseti_version()
 
     if not cur_version:

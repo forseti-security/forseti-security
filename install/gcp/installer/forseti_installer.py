@@ -193,11 +193,9 @@ class ForsetiInstaller(object):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
-        print("preflight checks being run")
         self.version = utils.infer_version(self.config.advanced_mode)
 
         self.matching_patches_query = utils.get_latest_patch_query()
-        print("matching patches query is {0}".format(self.matching_patches_query))
 
         service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
@@ -461,10 +459,6 @@ class ForsetiInstaller(object):
         Args:
             other_installer (ForsetiInstaller): The other installer.
         """
-        print('class running populate')
-        print(type(self).__name__)
-        print('prev class being used')
-        print(type(other_installer).__name__)
         self.version = other_installer.version
         self.matching_patches_query = other_installer.matching_patches_query
         self.project_id = other_installer.project_id

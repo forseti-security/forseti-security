@@ -170,7 +170,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti deployment template.
         """
-        print("server matching patches query is {}".format(self.matching_patches_query))
         bucket_name = self.generate_bucket_name()
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
