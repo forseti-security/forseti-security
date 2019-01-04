@@ -193,7 +193,6 @@ class ForsetiInstaller(object):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
-
         self.version = utils.infer_version(self.config.advanced_mode)
 
         self.matching_patches_query = utils.get_latest_patch_query()
