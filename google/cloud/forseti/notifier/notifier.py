@@ -23,7 +23,6 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.notifier.notifiers import cscc_notifier
-from google.cloud.forseti.notifier.notifiers import email_violations
 from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 # pylint: enable=line-too-long
 

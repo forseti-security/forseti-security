@@ -20,11 +20,10 @@ from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.common.util.errors import InvalidInputError
 from google.cloud.forseti.common.util.email.email_factory import EmailFactory
+from google.cloud.forseti.common.util.errors import InvalidInputError
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
-
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
@@ -168,7 +167,7 @@ class InventorySummary(object):
                                  content_type='text/html')
             LOGGER.debug('Inventory summary sent successfully by email.')
         except util_errors.EmailSendError:
-            LOGGER.exception('Unable to send Violations email')
+            LOGGER.exception('Unable to send Inventory summary email')
 
     @staticmethod
     def transform_to_template(data):
