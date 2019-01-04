@@ -65,7 +65,8 @@ provide valid values for all the fields mentioned below.
   `john@mycompany.com,jane@mycompany.com`.
   
 * `data_format`
-  * **Description**: The format of the data for the inventory summary.
+  * **Description**: The format of the data generated for a given violation, and
+  inventory summary.
   * **Valid values**: one of valid `csv` or `json`.
   * **Note**: Slack only supports the `json` type.
   
@@ -155,7 +156,7 @@ any combination of notifiers for each resource.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`
-  * **Description**: The format of the data for the inventory summary.
+  * **Description**: The format of the data for a given violation.
   * **Valid values**: one of valid `csv` or `json`.
   * **Note**: Slack only supports the `json` type.
 
