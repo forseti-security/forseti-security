@@ -86,6 +86,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 the forseti deployment template
         """
         bucket_name = self.generate_bucket_name()
+        print("client version is {}".format(self.version))
+        print("matching patches query is {}".format(self.matching_patches_query))
         return {
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,

@@ -106,29 +106,28 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print(border)
     print('')
 
-def get_latest_patch_query(test_tag=None):
-    """Given current tag, return a patch query
-    :param curr_tag:
+def get_latest_patch_query():
+    """Based on current commit's tag, return a glob matching all patches of that version
+    if its indeed a version tag we are on.
 
-    In case that curr_tag is in version format (x.y.z at some point ie 2.3.4)
-    we look for everything matching x.y and any constants in curr_tag to return the
-    the matching tag where z is greatest (ie for 2.3.8_B, highest match could be 2.3.99_B).
+    In case that curr_tag is in version format (x.y.z at some point ie pre_2.3.4_post), returns
+    "pre_2.3.{[0-9],[0-9][0-9]}_post"
 
     Returns
-        str: tag matching latest patch of curr_tag
+        str: glob expression matching all patches for a version tag
+             if we are on a non-version tag, returns the tag name
+
+        none: if no tag
     """
     """
     :param curr_tag: 
     :return: 
     """
-    if test_tag:
-        out = test_tag
-        return_code = False
-    else:
-        return_code, out, _ = run_command(
-            ['git', 'describe', '--tags', '--exact-match'],
-            number_of_retry=0,
-            suppress_output=True)
+    print("get latest patch query was run")
+    return_code, out, _ = run_command(
+        ['git', 'describe', '--tags', '--exact-match'],
+        number_of_retry=0,
+        suppress_output=True)
         
     if return_code:
         return None
@@ -299,7 +298,7 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
-
+    print("infer version was run")
     cur_version = get_forseti_version()
 
     if not cur_version:
