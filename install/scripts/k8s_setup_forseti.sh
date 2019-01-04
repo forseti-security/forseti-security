@@ -12,6 +12,12 @@
 # User is responsible for secure handling of the forseti service account credentials file
 # This Proof of Concept has not been reviewed for security vulnerabilities; run this in a Sandbox environment
 
+# Exit script on error
+set -e
+
+# Print commands
+set -x
+
 ## VARIABLES, need to be set before running
 # Variables for cluster creation (development defaults), what is appropriate disk size for production?
 CLUSTER=forseti-cluster
@@ -66,17 +72,15 @@ export CRON_SCHEDULE="*/60 * * * *"
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
 	envsubst < forseti.server.template.yaml > forseti.server.yaml
 
-if [[ ${DEPLOY_CRONJOB}=true ]]; then
+if ${DEPLOY_CRONJOB}; then
     # Example forseti as k8s CronJob
     # Deploy Cloud SQL Proxy in its own pod
     # Create a Cluster IP Service for Cloud SQL Proxy
     # Deploy forseti as k8s CronJob
-
 	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.cronjob.yaml
-
-elif [[ ${DEPLOY_SERVER}=true ]]; then
+elif ${DEPLOY_SERVER}; then
     # Example, forseti server as k8s Cluster IP Service
     # Deploy Cloud SQL Proxy in its own pod
     # Create a Cluster IP Service for Cloud SQL Proxy
@@ -84,7 +88,6 @@ elif [[ ${DEPLOY_SERVER}=true ]]; then
     # Create a Cluster IP Service for forseti server
     # TODO As PoC deploy client in its own pod ?
     # TODO As PoC Create a Cluster IP Service for forstei client?
-
  	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.server.yaml
