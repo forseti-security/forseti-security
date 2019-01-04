@@ -29,6 +29,62 @@ and varying formats to you to events in your Google Cloud Platform
 
 ## Configuring Notifier
 
+### Email Connector Config
+
+Forseti security provides an interface to add the email connector of your
+choice. A new section named `email_connector` has been introduced under 
+`notifier` as part of the new design where connector details needs to be 
+provided, and it will be used to notify violations when found for the enabled
+scanners. The connector details entered in this section  will also be used to 
+send inventory summary email, if enabled.
+
+To configure `email_connector`, follow the steps below:
+
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
+2. Navigate to the `notifier` > `email_connector` section.
+
+If you want the notifier to send violations and/or inventory summary via email, 
+provide valid values for all the fields mentioned below.
+
+* `auth`
+  * **Description**: The connector you want to use to receive emails.
+  * **Valid values**: String
+  
+* `auth`
+  * **Description**: The authentication/authorization details required key used to authorize requests to SendGrid.
+  * **Valid values**: String
+
+* `sender`
+  * **Description**: The email address of the sender of the email.
+  * **Valid values**: String
+
+* `recipient`
+  * **Description**: The email addresses of the recipients of the email.
+  * **Valid values**: String
+  * **Note**: Multiple email recipients as delimited by comma, like
+  `john@mycompany.com,jane@mycompany.com`.
+  
+* `data_format`
+  * **Description**: The format of the data for the inventory summary.
+  * **Valid values**: one of valid `csv` or `json`.
+  * **Note**: Slack only supports the `json` type.
+  
+YAML below shows the email connector config for SendGrid.
+
+To configure other email connector, `name` and `auth` fields should be modified
+accordingly.
+
+  ```yaml
+  notifier:
+    email_connector:
+      name: sendgrid
+      auth:
+        api_key: <SENDGRID_API_KEY>
+      sender: <SENDER EMAIL>
+      recipient: <RECIPIENT EMAIL>
+      data_format: csv
+  ```
+
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
@@ -48,10 +104,6 @@ bucket, edit `gcs_summary`:
   * **Description**: Whether to send the inventory summary.
   * **Valid values**: one of valid `true` or `false`.
 
-* `data_format`
-  * **Description**: The format of the data for the inventory summary.
-  * **Valid values**: one of valid `csv` or `json`.
-
 * `gcs_path`
   * **Description**: The path to a Cloud Storage bucket.
   * **Valid values**: String
@@ -66,34 +118,18 @@ bucket, edit `gcs_summary`:
         gcs_path: gs://path_to_foo_bucket
   ```
 
-If you want the notifier to send the inventory summary via email, edit `email_summary`:
+If you want the notifier to send the inventory summary via email, edit 
+`email_summary`:
 
 * `enabled`
   * **Description**: Whether to send the inventory summary.
   * **Valid values**: one of valid `true` or `false`
-
-* `sendgrid_api_key`
-  * **Description**: The key used to authorize requests to SendGrid.
-  * **Valid values**: String
-
-* `sender`
-  * **Description**: The email address of the sender of the email.
-  * **Valid values**: String
-
-* `recipient`
-  * **Description**: The email addresses of the recipients of the email.
-  * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, like
-  `john@mycompany.com,jane@mycompany.com`.
 
   ```yaml
   notifier:
     inventory:
       email_summary:
         enabled: true
-        sendgrid_api_key: <SENDGRID_API_KEY>
-        sender: <SENDER EMAIL>
-        recipient: <RECIPIENT EMAIL>
   ```
 
 ### Violation Notifications
@@ -119,7 +155,7 @@ any combination of notifiers for each resource.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`
-  * **Description**: The format of the data generated for a given violation.
+  * **Description**: The format of the data for the inventory summary.
   * **Valid values**: one of valid `csv` or `json`.
   * **Note**: Slack only supports the `json` type.
 
@@ -128,23 +164,14 @@ any combination of notifiers for each resource.
   * **Valid values**: String
   * **Note**: Must start with `gs://`.
 
-* `sendgrid_api_key`
-  * **Description**: The key used to authorize requests to SendGrid.
-  * **Valid values**: String
-
-* `sender`
-  * **Description**: The email address of the sender of the email.
-  * **Valid values**: String
-
-* `recipient`
-  * **Description**: The email addresses of the recipients of the email.
-  * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
-
 * `webhook_url`
   * **Description**: The url of the Slack channel to receive the notification.
   * **Valid values**: String
   * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
+
+Note: To send violation notifications via email, you need to use `name`
+field only. Connector details needs to be provided in the `email_connector` 
+section.
 
 The following example shows how to update a `.yaml` file to add email, Slack,
 and Cloud Storage notifier for Cloud SQL violations:
@@ -160,11 +187,6 @@ notifier:
             data_format: csv
             gcs_path: gs://path_to_foo_bucket
         - name: email_violations
-          configuration:
-            data_format: csv
-            sendgrid_api_key: foobar_key
-            sender: forseti-notify@mycompany.org
-            recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
         - name: slack_webhook
           configuration:
             data_format: json
@@ -241,10 +263,10 @@ To verify violations appear in the Cloud SCC Beta Dashboard, [run the notifier](
 after you have [built an inventory]({% link _docs/latest/use/cli/inventory.md %})
 and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
 
-### Email notifications with SendGrid
+### Email notifications
 
-Forseti Security can send email notifications using the SendGrid API. SendGrid
-is the suggested free email service provider for GCP. For information about
+Forseti Security can send email notifications using the SendGrid API as well. 
+SendGrid is the free email service provider for GCP. For information about
 how to get 12,000 free emails every month, see
 [Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
@@ -254,18 +276,20 @@ process below:
 1. [Sign up for a SendGrid account](https://sendgrid.com/).
 1. Create a general
     [API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
-1. Edit the following in `forseti_conf_server.yaml`:
-    1. `email_recipient`
-       * **Description**: The Email address of notification recipient.
-    1. `email_sender`
-       * **Description**: The Sender email address for notifications
-    1. `sendgrid_api_key`
-       * **Description**: The API key for SendGrid email service.
+1. Edit the `email_connector` section in `forseti_conf_server.yaml` to provide
+SendGrid specific details.
 
 Note that SendGrid automatically includes an invisible tracking pixel in your
 emails. This may cause email warnings about opening images. To disable this,
 disable SendGrid
 [Open Tracking](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
+
+### Add the email connector
+
+To add the email connector of your choice, create the connector specific class 
+under `google.cloud.forseti.common.util.email` that inherits the base email 
+connector class, base_email_connector.py, and implements the methods to send out 
+emails using the new connector that's being added.
 
 ## What's next
 
