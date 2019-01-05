@@ -182,8 +182,13 @@ class InventoryIndex(BASE):
             .group_by(func.json_extract(resource_data, '$.lifecycleState'))
             .all())
 
+        LOGGER.debug('Lifecycle details for %s:\n%s',
+                     resource_type_input, details)
+
         # Lifecycle can be None if Forseti is installed to a non-org level.
         for key in details.keys():
+            if key is None:
+                continue
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
             details[new_key] = details.pop(key)
