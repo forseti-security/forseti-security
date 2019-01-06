@@ -216,6 +216,9 @@ class InventoryIndexTest(ForsetiTestCase):
         inv_summary = inv_index.get_summary(self.session)
         self.assertEquals(expected, inv_summary)
 
+class LifecycleStateTest(ForsetiTestCase):
+    """Test inventory storage."""
+
     def test_get_lifecycle_state_details_can_handle_none_result(self):
         mock_session222 = mock.MagicMock
         mock_session222.query = mock.MagicMock
