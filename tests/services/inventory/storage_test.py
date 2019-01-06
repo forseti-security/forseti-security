@@ -217,15 +217,15 @@ class InventoryIndexTest(ForsetiTestCase):
         self.assertEquals(expected, inv_summary)
 
     def test_get_lifecycle_state_details_can_handle_none_result(self):
-        mock_session = mock.MagicMock
-        mock_session.query = mock.MagicMock
-        mock_session.query.filter = mock.MagicMock
-        mock_session.query.group_by = mock.MagicMock
-        mock_session.query.all = mock.MagicMock
-        mock_session.query.all.return_value = [None]
+        mock_session222 = mock.MagicMock
+        mock_session222.query = mock.MagicMock
+        mock_session222.query.filter = mock.MagicMock
+        mock_session222.query.group_by = mock.MagicMock
+        mock_session222.query.all = mock.MagicMock
+        mock_session222.query.all.return_value = [None]
 
         inventory_index = InventoryIndex()
-        details = inventory_index.get_lifecycle_state_details(mock_session,
+        details = inventory_index.get_lifecycle_state_details(mock_session222,
                                                               'abc')
 
         self.assertEquals({}, details)
