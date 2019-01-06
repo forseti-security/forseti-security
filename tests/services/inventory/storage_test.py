@@ -219,16 +219,21 @@ class InventoryIndexTest(ForsetiTestCase):
 class LifecycleStateTest(ForsetiTestCase):
     """Test inventory storage."""
 
+    def setUp(self):
+        self.mock_session = mock.MagicMock
+        self.mock_session.query = mock.MagicMock
+        self.mock_session.query.filter = mock.MagicMock
+        self.mock_session.query.group_by = mock.MagicMock
+        self.mock_session.query.all = mock.MagicMock
+        self.mock_session.query.all.return_value = [None]
+
+    def tearDown(self):
+        self.mock_session = None
+
     def test_get_lifecycle_state_details_can_handle_none_result(self):
-        mock_session222 = mock.MagicMock
-        mock_session222.query = mock.MagicMock
-        mock_session222.query.filter = mock.MagicMock
-        mock_session222.query.group_by = mock.MagicMock
-        mock_session222.query.all = mock.MagicMock
-        mock_session222.query.all.return_value = [None]
 
         inventory_index = InventoryIndex()
-        details = inventory_index.get_lifecycle_state_details(mock_session222,
+        details = inventory_index.get_lifecycle_state_details(self.mock_session,
                                                               'abc')
 
         self.assertEquals({}, details)
