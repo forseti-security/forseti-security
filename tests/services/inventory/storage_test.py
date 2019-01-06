@@ -224,10 +224,10 @@ class InventoryIndexTest(ForsetiTestCase):
         mock_session222.query.all = mock.MagicMock
 
         inventory_index = InventoryIndex()
-    #     details = inventory_index.get_lifecycle_state_details(mock_session,
-    #                                                           'abc')
-    #
-    #     self.assertEquals({}, details)
+        details = inventory_index.get_lifecycle_state_details(mock_session,
+                                                              'abc')
+
+        self.assertEquals({}, details)
 
 
 class CaiTemporaryStoreTest(ForsetiTestCase):
