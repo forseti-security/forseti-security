@@ -222,8 +222,8 @@ class InventoryIndexTest(ForsetiTestCase):
         mock_session222.query.filter = mock.MagicMock
         mock_session222.query.group_by = mock.MagicMock
         mock_session222.query.all = mock.MagicMock
-    #
-    #     inventory_index = InventoryIndex()
+
+        inventory_index = InventoryIndex()
     #     details = inventory_index.get_lifecycle_state_details(mock_session,
     #                                                           'abc')
     #
