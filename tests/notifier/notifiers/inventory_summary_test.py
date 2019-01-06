@@ -361,6 +361,7 @@ class InventorySummaryTest(ForsetiTestCase):
             'project - DELETE PENDING': 1}
 
         mock_session = mock.MagicMock()
+        mock_session.query = mock.MagicMock()
         mock_session.query.return_value.get.return_value = mock_inventory_index
 
         mock_service_config = mock.MagicMock()
