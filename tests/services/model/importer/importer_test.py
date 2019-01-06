@@ -106,7 +106,9 @@ class ImporterTest(ForsetiTestCase):
         expected_abc_user_accesses = [
             ('roles/appengine.appViewer', ['project/project3']),
             ('roles/appengine.codeViewer', ['project/project3']),
+            # Matched to AllAuthenticatedUsers on IAM policy
             ('roles/bigquery.dataViewer', ['dataset/project2:bq_test_ds']),
+            ('roles/bigquery.dataViewer', ['dataset/project3:bq_test_ds1']),
         ]
         abc_user_accesses = data_access.query_access_by_member(
             session, 'user/abc_user@forseti.test', [])
