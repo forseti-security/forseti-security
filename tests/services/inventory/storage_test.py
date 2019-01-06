@@ -216,6 +216,7 @@ class InventoryIndexTest(ForsetiTestCase):
         inv_summary = inv_index.get_summary(self.session)
         self.assertEquals(expected, inv_summary)
 
+    @unittest.skip('The return value for query.all will leak to other tests.')
     def test_get_lifecycle_state_details_can_handle_none_result(self):
         mock_session = mock.MagicMock
         mock_session.query = mock.MagicMock
