@@ -106,37 +106,6 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print(border)
     print('')
 
-def get_latest_patch_query():
-    """Based on current commit's tag, return a glob matching all patches of that version
-    if its indeed a version tag we are on.
-
-    In case that curr_tag is in version format (x.y.z at some point ie pre_2.3.4_post), returns
-    "pre_2.3.{[0-9],[0-9][0-9]}_post"
-
-    Returns
-        str: glob expression matching all patches for a version tag
-             if we are on a non-version tag, returns the tag name
-
-        none: if no tag
-    """
-
-    return_code, out, _ = run_command(
-        ['git', 'describe', '--tags', '--exact-match'],
-        number_of_retry=0,
-        suppress_output=True)
-        
-    if return_code:
-        return None
-    curr_tag = out.strip()
-    segments = curr_tag.split('.')
-    if len(segments) != 3: #if tag is not in x.y.z format, return tag
-        return curr_tag
-    start_const = (".").join(segments[:2])
-    if len(segments[2]) > 1 and segments[2][1].isdigit():  # add everything after the patch number to query
-        end_const = segments[2][2:]
-    else:
-        end_const = segments[2][1:]
-    return "%s.{[0-9],[0-9][0-9]}%s" % (start_const, end_const)
 
 def get_forseti_version():
     """Get the current Forseti version.
@@ -294,6 +263,7 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
+
     cur_version = get_forseti_version()
 
     if not cur_version:

@@ -194,9 +194,6 @@ class ForsetiInstaller(object):
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
         self.version = utils.infer_version(self.config.advanced_mode)
-
-        self.matching_patches_query = utils.get_latest_patch_query()
-
         service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
@@ -460,7 +457,6 @@ class ForsetiInstaller(object):
             other_installer (ForsetiInstaller): The other installer.
         """
         self.version = other_installer.version
-        self.matching_patches_query = other_installer.matching_patches_query
         self.project_id = other_installer.project_id
         self.organization_id = other_installer.organization_id
 
