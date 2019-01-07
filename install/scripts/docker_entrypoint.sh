@@ -133,7 +133,7 @@ download_client_configuration_files(){
 # I think we need to start as background for cronjob and foreground for long running server
 start_server(){
 
-if ${run_server}; then # long lived server, start as foreground process
+if ${RUN_SERVER}; then # long lived server, start as foreground process
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
