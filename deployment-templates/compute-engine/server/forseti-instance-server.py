@@ -175,7 +175,6 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-echo "the test worked"
 {checkout_forseti_version}
 
 # Forseti Host Setup
