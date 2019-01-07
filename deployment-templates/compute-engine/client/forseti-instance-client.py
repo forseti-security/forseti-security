@@ -33,7 +33,7 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    patch_search_expression = glob_expr_matching_patches(context.properties['forseti-version')
+    patch_search_expression = glob_expr_matching_patches(context.properties['forseti-version'])
     if patch_search_expression:
         CHECKOUT_FORSETI_VERSION = (
             """matches=$(git tag -l {patch_search_expression})
