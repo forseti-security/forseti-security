@@ -127,7 +127,21 @@ download_client_configuration_files(){
     echo "TODO. download_client_configuration_files is not implemented yet."
 }
 
+# TODO Should this be started as a background or foreground process?
+# For cron job we start as a background process and the container finishes when the cronjob completes
+# For long running server, starting as a background process causes the container to keep re-starting
+# I think we need to start as background for cronjob and foreground for long running server
 start_server(){
+
+if ${run_server}; then # long lived server, start as foreground process
+    forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
+    --services ${SERVICES} \
+    --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
+    --log_level=${LOG_LEVEL}
+    #--enable_console_log
+else # we are just running short lived cronjob, start as background process
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -135,6 +149,7 @@ start_server(){
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} &
     #--enable_console_log
+fi
 }
 
 # remove start_client() I don't think their is anything to be started.
