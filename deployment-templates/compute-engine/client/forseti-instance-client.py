@@ -24,23 +24,24 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    if context.properties['matching_patches_query']:
+    patch_search_expression = glob_expr_matching_patches(context.properties['forseti-version')
+    if patch_search_expression:
         CHECKOUT_FORSETI_VERSION = (
-        """matches=$(git tag -l {matching_patches_query})
-matches=(${{matches//;/ }})
-for match in "${{matches[@]}}"
-do
-segments=(${{match//./ }})
-patch=${{segments[2]}}
-patch=${{patch: 0: 2}}
-patch=$(echo $patch | sed 's/[^0-9]*//g')
-if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
-then
-  latest_version=($match $patch)
-fi
-done
-git checkout ${{latest_version[0]}}"""
-        .format(matching_patches_query=context.properties['matching_patches_query']))
+            """matches=$(git tag -l {patch_search_expression})
+    matches=(${{matches//;/ }})
+    for match in "${{matches[@]}}"
+    do
+    segments=(${{match//./ }})
+    patch=${{segments[2]}}
+    patch=${{patch: 0: 2}}
+    patch=$(echo $patch | sed 's/[^0-9]*//g')
+    if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+    then
+      latest_version=($match $patch)
+    fi
+    done
+    git checkout ${{latest_version[0]}}"""
+                .format(patch_search_expression=patch_search_expression))
     else:
         CHECKOUT_FORSETI_VERSION = (
             "git checkout {forseti_version}".format(
