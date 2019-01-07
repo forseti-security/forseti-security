@@ -13,6 +13,7 @@
 # limitations under the License.
 """Importer implementations."""
 
+# pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
 import json
