@@ -405,7 +405,7 @@ class Rule(object):
         if not table_expiration:
             yield self.generate_table_violation(table)
         else:
-            table_creation = table_dict.['creationTime']
+            table_creation = table_dict['creationTime']
             diff = long(table_expiration) - long(table_creation)
             if diff > self.max_retention * 24 * 3600000:
                 yield self.generate_table_violation(table)

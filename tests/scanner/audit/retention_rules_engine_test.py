@@ -864,6 +864,18 @@ rules:
     maximum_retention: 90
 
 """
+    def test_bigquery_retention_on_project_no_expiration_time(self):
+        """Test a bigquery table without expiration time."""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.resource_rules_map))
+
+        data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
+
+        fake_table = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_table))
+        expected_violations = frsd.build_table_violations(
+            fake_table, 'bigquery retention on projects')
+        self.assertEqual(got_violations, expected_violations)
 
     def test_bigquery_retention_on_project_too_big(self):
         """Test that a rule with a resource.type equal to 'project'"""
