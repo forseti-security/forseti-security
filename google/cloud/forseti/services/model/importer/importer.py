@@ -968,8 +968,8 @@ class InventoryImporter(object):
         Args:
             table (object): table to store.
         """
-        # cached should be True or False?
-        self._convert_resource(table, cached=False)
+
+        self._convert_resource(table, cached=True)
 
     def _add_to_cache(self, resource, resource_id):
         """Add a resource to the cache for parent lookup.

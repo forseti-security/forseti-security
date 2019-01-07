@@ -18,6 +18,7 @@ import itertools
 import threading
 import json
 
+from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import date_time as dt
 from google.cloud.forseti.common.util import logger
@@ -28,7 +29,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket', 'bigquery_table'])
+SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket',
+                                           resource.ResourceType.TABLE])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
 RuleViolation = collections.namedtuple(
@@ -401,12 +403,12 @@ class Rule(object):
         table_dict = json.loads(table.data)
         table_expiration = table_dict.get('expirationTime')
         if not table_expiration:
-            self.generate_table_violation(table)
-
-        table_creation = table_dict.get('creationTime')
-        diff = long(table_expiration) - long(table_creation)
-        if diff > self.max_retention * 24 * 3600000:
             yield self.generate_table_violation(table)
+        else:
+            table_creation = table_dict.['creationTime']
+            diff = long(table_expiration) - long(table_creation)
+            if diff > self.max_retention * 24 * 3600000:
+                yield self.generate_table_violation(table)
 
     def table_min_retention_violation(self, table):
         """Get a generator for violations especially for minimum retention.
