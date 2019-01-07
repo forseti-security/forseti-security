@@ -87,7 +87,7 @@ RESOURCE_TYPE_ARGS_MAP = {
 # Roles
 GCP_READ_IAM_ROLES = [
     'roles/appengine.appViewer',
-    'roles/bigquery.dataViewer',
+    'roles/bigquery.metadataViewer',
     'roles/browser',
     'roles/cloudasset.viewer',
     'roles/cloudsql.viewer',

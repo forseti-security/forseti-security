@@ -63,7 +63,7 @@ class BucketAccessControls(object):
             email=acl.get('email', ''),
             domain=acl.get('domain', ''),
             role=acl.get('role', ''),
-            raw_json=json.dumps(acl)
+            raw_json=json.dumps(acl, sort_keys=True)
         )
 
     @staticmethod

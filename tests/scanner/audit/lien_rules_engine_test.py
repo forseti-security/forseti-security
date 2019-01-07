@@ -44,14 +44,14 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
     projects_rule = base_rule + """
     resource:
       - type: project
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
 def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
@@ -108,6 +108,12 @@ class LienRulesEngineTest(ForsetiTestCase):
     def test_find_violations_project_missing_lien(self):
         rules_engine = get_rules_engine_with_rule(
             Rules.projects_rule, data.PROJECT.id)
+        got_violations = list(rules_engine.find_violations(data.PROJECT, []))
+        self.assertEqual(got_violations, data.VIOLATIONS)
+
+    def test_find_violations_project_wildcard(self):
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, '*')
         got_violations = list(rules_engine.find_violations(data.PROJECT, []))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
