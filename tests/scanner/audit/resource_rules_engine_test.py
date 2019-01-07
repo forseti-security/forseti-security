@@ -139,7 +139,7 @@ rules:
             [data.PROJECT1, data.PROJECT2]))
         self.assertEqual(got_violations, [])
 
-    def test_find_violations_child(self):
+    def test_find_violations_child_found(self):
         rule = """
 rules:
 - name: Resource test rule
@@ -182,6 +182,67 @@ rules:
             resource_data='',
         )
         self.assertEqual(got_violations, [violation])
+
+    def test_find_violations_child_missing(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [organization, project]
+  resource_trees:
+  - type: organization
+    resource_id: '234'
+    children:
+    - type: project
+      resource_id: p1
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(
+            [data.ORGANIZATION]))
+        violation = resource_rules_engine.RuleViolation(
+            resource_id='p1',
+            resource_name='p1',
+            resource_type='project',
+            full_name='p1',
+            rule_index=0,
+            rule_name='Resource test rule',
+            violation_type='RESOURCE_VIOLATION',
+            violation_data='',
+            resource_data='',
+        )
+        self.assertEqual(got_violations, [violation])
+
+    def test_find_violations_wrong_parent(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [project, bucket]
+  resource_trees:
+  - type: project
+    resource_id: p1
+  - type: project
+    resource_id: p2
+    children:
+    - type: bucket
+      resource_id: p1-bucket1
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(
+            [data.PROJECT1, data.PROJECT2, data.BUCKET]))
+        node_violation = resource_rules_engine.RuleViolation(
+            resource_id='p1-bucket1',
+            resource_name='p1-bucket1',
+            resource_type='bucket',
+            full_name='p1-bucket1',
+            rule_index=0,
+            rule_name='Resource test rule',
+            violation_type='RESOURCE_VIOLATION',
+            violation_data='',
+            resource_data='',
+        )
+        self.assertEqual(got_violations,
+                         data.build_violations(data.BUCKET) + [node_violation])
 
     def test_find_violations_wildcard(self):
         rule = """
