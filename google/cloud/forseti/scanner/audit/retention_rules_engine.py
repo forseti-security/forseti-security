@@ -18,7 +18,7 @@ import itertools
 import threading
 import json
 
-from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import resource as type_resource
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import date_time as dt
 from google.cloud.forseti.common.util import logger
@@ -29,8 +29,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RES_TYPES = frozenset([resource.ResourceType.BUCKET,
-                                           resource.ResourceType.TABLE])
+SUPPORTED_RETENTION_RES_TYPES = frozenset([type_resource.ResourceType.BUCKET,
+                                           type_resource.ResourceType.TABLE])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
 RuleViolation = collections.namedtuple(
@@ -323,9 +323,9 @@ class Rule(object):
             ValueError: Raised if the resource type is not supported.
         """
 
-        if res.type == resource.ResourceType.BUCKET:
+        if res.type == type_resource.ResourceType.BUCKET:
             return self.find_violations_in_bucket(res)
-        elif res.type == resource.ResourceType.TABLE:
+        elif res.type == type_resource.ResourceType.TABLE:
             return self.find_violations_in_table(res)
         raise ValueError(
             'only bucket and bigquery table is currently supported'
