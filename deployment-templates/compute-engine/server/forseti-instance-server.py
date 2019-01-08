@@ -15,21 +15,23 @@
 """Creates a GCE instance template for Forseti Security."""
 
 def get_patch_search_expression(forseti_version):
-    """Returns a glob expression matching all patches to the version of passed in parameter
+    """Returns a glob expression matching all patches to the version of
+        passed in parameter.
 
-    #TODO update in client/forseti-instance-client if update here
+    TODO: Update in client/forseti-instance-client if update here.
 
     Args:
         forseti_version (str): Installed forseti version.  Should start with
-        'tags/v' if patches are to be updated automatically
+            'tags/v' if patches are to be updated automatically.
 
     Returns:
-        str: Glob expression matching all patches of given forseti_version
-        None: Returns None if forseti_version is not in 'tags/vX.Y.Z' format
+        str: Glob expression matching all patches of given forseti_version.
+        None: Returns None if forseti_version is not in 'tags/vX.Y.Z' format.
     """
+
     if forseti_version[:6] != 'tags/v':
         return None
-    segments = forseti_version.replace('tags/v', '''''').split('.')
+    segments = forseti_version.replace('tags/v', '').split('.')
 
     for segment in segments:
         if not segment.isdigit():
@@ -50,20 +52,21 @@ def GenerateConfig(context):
     patch_search_expression = get_patch_search_expression(context.properties['forseti-version'])
     if patch_search_expression:
         CHECKOUT_FORSETI_VERSION = (
-        """matches=$(git tag -l {patch_search_expression})
-matches=(${{matches//;/ }})
-for match in "${{matches[@]}}"
+        """versions=$(git tag -l {patch_search_expression})
+versions=(${{versions//;/ }})
+for version in "${{versions[@]}}"
 do
-segments=(${{match//./ }})
+segments=(${{version//./ }})
 patch=${{segments[2]}}
 patch=${{patch: 0: 2}}
 patch=$(echo $patch | sed 's/[^0-9]*//g')
 if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
 then
-  latest_version=($match $patch)
+  latest_version=($version $patch)
 fi
 done
 git checkout ${{latest_version[0]}}"""
+#  latest_version is an array [full_version, patch_number]
         .format(patch_search_expression=patch_search_expression))
     else:
         CHECKOUT_FORSETI_VERSION = (
