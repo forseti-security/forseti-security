@@ -191,6 +191,7 @@ rm -rf *forseti*
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+git fetch --tags
 git fetch --all
 {checkout_forseti_version}
 
