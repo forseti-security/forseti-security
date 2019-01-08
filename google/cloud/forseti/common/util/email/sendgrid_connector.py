@@ -18,11 +18,9 @@
 # this is needed because quiet the Sendgrid no-member error on Travis.
 # pylint: disable=no-member,useless-suppression
 
-import base64
-import os
-import urllib2
 
-import jinja2
+import base64
+import urllib2
 
 import sendgrid
 from sendgrid.helpers import mail
@@ -31,20 +29,31 @@ from retrying import retry
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
+from google.cloud.forseti.common.util.email import base_email_connector
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class EmailUtil(object):
-    """Utility for sending emails."""
+class SendgridConnector(base_email_connector.BaseEmailConnector):
+    """Utility for sending emails using Sendgrid API Key."""
 
-    def __init__(self, api_key):
+    def __init__(self, sender, recipient, kwargs):
         """Initialize the email util.
 
         Args:
-            api_key (str): The SendGrid api key to auth email service.
+            sender (str): The email sender.
+            recipient (str): The email recipient.
+            **kwargs (dict): A set of authentication attributes
+            corresponding to the selected connector.
         """
+        self.sender = sender
+        self.recipient = recipient
+        if kwargs.get('api_key'):
+            api_key = kwargs.get('api_key')
+        # else block below is for backward compatibility
+        else:
+            api_key = kwargs.get('sendgrid_api_key')
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -73,7 +82,7 @@ class EmailUtil(object):
             email_recipients (Str): comma-separated text of the email recipients
 
         Returns:
-            SendGrid: SendGrid mail object with mulitiple recipients.
+            SendGrid: SendGrid mail object with multiple recipients.
         """
         personalization = mail.Personalization()
         recipients = email_recipients.split(',')
@@ -134,26 +143,6 @@ class EmailUtil(object):
                          email_subject, response.status_code,
                          response.body, response.headers)
             raise util_errors.EmailSendError
-
-    @classmethod
-    def render_from_template(cls, template_file, template_vars):
-        """Fill out an email template with template variables.
-
-        Args:
-            template_file (str): The location of email template in filesystem.
-            template_vars (dict): The template variables to fill into the
-                template.
-
-        Returns:
-            str: The template content, rendered with the provided variables.
-        """
-        template_searchpath = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '../email_templates'))
-        template_loader = jinja2.FileSystemLoader(
-            searchpath=template_searchpath)
-        template_env = jinja2.Environment(loader=template_loader)
-        template = template_env.get_template(template_file)
-        return template.render(template_vars)
 
     @classmethod
     def create_attachment(cls, file_location, content_type, filename,

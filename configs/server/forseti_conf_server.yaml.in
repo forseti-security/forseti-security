@@ -1,11 +1,5 @@
 global:
 
-    # Remove or comment out the email properties if you do not want Forseti to
-    # send email notifications.
-    email_recipient: {EMAIL_RECIPIENT}
-    email_sender: {EMAIL_SENDER}
-    sendgrid_api_key: {SENDGRID_API_KEY}
-
 ##############################################################################
 
 inventory:
@@ -224,6 +218,15 @@ scanner:
 
 notifier:
 
+    # Provide connector details
+    email_connector:
+      name: sendgrid
+      auth:
+        api_key: ''
+      sender: ''
+      recipient: ''
+      data_format: csv
+
     # For every resource type you can set up a notification pipeline
     # to send alerts for every violation found
     resources:
@@ -232,11 +235,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                data_format: csv
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -257,10 +255,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -273,10 +267,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -289,10 +279,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -305,10 +291,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -321,10 +303,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -337,10 +315,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -353,10 +327,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -369,10 +339,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -385,10 +351,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -401,10 +363,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -417,10 +375,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -433,10 +387,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -449,10 +399,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -465,10 +411,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -481,10 +423,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -497,10 +435,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -513,10 +447,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -529,10 +459,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -566,6 +492,3 @@ notifier:
         gcs_path: gs://{FORSETI_BUCKET}/inventory_summary
       email_summary:
         enabled: true
-        sendgrid_api_key: {SENDGRID_API_KEY}
-        sender: {EMAIL_SENDER}
-        recipient: {EMAIL_RECIPIENT}
