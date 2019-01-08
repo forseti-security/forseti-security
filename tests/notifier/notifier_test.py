@@ -100,7 +100,7 @@ class NotifierTest(ForsetiTestCase):
         mock_email_violations_cls.return_value = mock_email_violations
         mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
         mock_gcs_violations_cls.return_value = mock_gcs_violations
-        mock_find_notifiers.side_effect = [mock_gcs_violations_cls]
+        mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
         notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
 
         # The notifiers were only run once i.e. for 'policy_violations'
