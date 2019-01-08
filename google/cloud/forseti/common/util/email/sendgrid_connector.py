@@ -78,11 +78,11 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
         """Add multiple recipients to the sendgrid email object.
 
         Args:
-            email (mail): Connector mail object
+            email (SendGrid): SendGrid mail object
             email_recipients (Str): comma-separated text of the email recipients
 
         Returns:
-            email: Connector mail object with multiple recipients.
+            SendGrid: SendGrid mail object with multiple recipients.
         """
         personalization = mail.Personalization()
         recipients = email_recipients.split(',')
@@ -149,7 +149,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
                           disposition='attachment', content_id=None):
         """Create a SendGrid attachment.
 
-        Email connector attachments file content must be base64 encoded.
+        SendGrid attachments file content must be base64 encoded.
 
         Args:
             file_location (str): The path of the file.
@@ -159,7 +159,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             content_id (str): The content id.
 
         Returns:
-            Attachment: A Connector Attachment.
+            Attachment: A SendGrid Attachment.
         """
         file_content = ''
         with open(file_location, 'rb') as f:

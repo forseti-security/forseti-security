@@ -66,8 +66,7 @@ class EmailViolations(base_notification.BaseNotification):
                 self.connector = email_factory.EmailFactory(
                     self.notification_config).get_connector()
         except Exception:
-            LOGGER.exception(
-                'Error occurred to instantiate connector.')
+            LOGGER.exception('Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)
 
     def _make_attachment_csv(self):

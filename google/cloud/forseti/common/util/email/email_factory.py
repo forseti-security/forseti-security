@@ -48,7 +48,6 @@ class EmailFactory(object):
         Raises:
             InvalidInputError: Raised if invalid input is encountered.
         """
-        # pylint: disable=logging-too-many-args
         if not self.notifier_config:
             LOGGER.exception('Notifier config is missing')
             raise InvalidInputError(self.notifier_config)
@@ -68,11 +67,12 @@ class EmailFactory(object):
         try:
             connector = EMAIL_CONNECTOR_FACTORY[connector_name]
         except KeyError:
-            LOGGER.exception('Specified connector not found.', connector_name)
+            LOGGER.exception('Specified connector not found: %s',
+                             connector_name)
+            raise InvalidInputError(self.notifier_config)
 
         try:
             return connector(sender, recipient, auth)
         except Exception:
-            LOGGER.exception(
-                'Error occurred to instantiate connector.')
+            LOGGER.exception('Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)
