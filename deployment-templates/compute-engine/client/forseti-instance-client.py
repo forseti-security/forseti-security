@@ -60,13 +60,14 @@ segments=(${{version//./ }})
 patch=${{segments[2]}}
 patch=${{patch: 0: 2}}
 patch=$(echo $patch | sed 's/[^0-9]*//g')
+#  latest_version is an array [full_version, patch_number]
 if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
 then
   latest_version=($version $patch)
 fi
 done
 git checkout ${{latest_version[0]}}"""
-#  latest_version is an array [full_version, patch_number]
+
                 .format(patch_search_expression=patch_search_expression))
     else:
         CHECKOUT_FORSETI_VERSION = (
