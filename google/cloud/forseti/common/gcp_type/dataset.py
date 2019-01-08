@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A Dataset Resource.
+
 See: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets
 """
 
@@ -41,6 +42,7 @@ class Dataset(resource.Resource):
             locations=None,
             lifecycle_state=DatasetLifecycleState.UNSPECIFIED):
         """Initialize.
+
         Args:
             dataset_id (int): The dataset id.
             full_name (str): The full resource name and ancestry.

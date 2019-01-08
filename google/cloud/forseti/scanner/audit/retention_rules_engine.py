@@ -65,11 +65,11 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         self.rule_book = RetentionRuleBook(self._load_rule_definitions())
 
     def find_violations(self, resource, force_rebuild=False):
-        """Determine whether bucket lifecycle violates rules.
+        """Determine whether supported resources violates rules.
 
         Args:
             resource (Resource): Object
-                containing lifecycle data
+                containing retention data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -81,9 +81,9 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
 
         violations = itertools.chain()
         resource_rules = self.rule_book.get_resource_rules(resource.type)
-        starting_res = resource_util.create_resource(resource.id, resource.type)
+        res = resource_util.create_resource(resource.id, resource.type)
         resource_ancestors = (relationship.find_ancestors(
-            starting_res, resource.full_name))
+            res, resource.full_name))
 
         for related_resources in resource_ancestors:
             rules = resource_rules.get(related_resources, [])
@@ -253,6 +253,8 @@ class RetentionRuleBook(bre.BaseRuleBook):
 class Rule(object):
     """Rule properties from the rule definition file. Also finds violations."""
 
+    _MS_PER_DAY = 24 * 60 * 60 * 1000
+
     def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
 
@@ -327,9 +329,8 @@ class Rule(object):
             return self.find_violations_in_bucket(res)
         elif res.type == type_resource.ResourceType.TABLE:
             return self.find_violations_in_table(res)
-        raise ValueError(
-            'only bucket and bigquery table is currently supported'
-        )
+        raise ValueError('only %s are currently supported.'%', '.join(
+            SUPPORTED_RETENTION_RES_TYPES))
 
     def bucket_max_retention_violation(self, bucket):
         """Generate violations for bucket that exceeded the maximum retention.
@@ -404,7 +405,7 @@ class Rule(object):
         else:
             table_creation = table_dict['creationTime']
             diff = long(table_expiration) - long(table_creation)
-            if diff > self.max_retention * 24 * 3600000:
+            if diff > self.max_retention * Rule._MS_PER_DAY:
                 yield self.generate_table_violation(table)
 
     def table_min_retention_violation(self, table):
@@ -426,7 +427,7 @@ class Rule(object):
 
         table_creation = table_dict.get('creationTime')
         diff = long(table_expiration) - long(table_creation)
-        if diff < self.min_retention * 24 * 3600000:
+        if diff < self.min_retention * Rule._MS_PER_DAY:
             yield self.generate_table_violation(table)
 
     def find_violations_in_table(self, table):

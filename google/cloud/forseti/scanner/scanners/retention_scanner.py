@@ -115,13 +115,13 @@ class RetentionScanner(base_scanner.BaseScanner):
             for resource_type in rre.SUPPORTED_RETENTION_RES_TYPES:
                 for resource in data_access.scanner_iter(
                         session, resource_type):
-                    tmp_parent = resource_util.create_resource(
+                    parent = resource_util.create_resource(
                         resource_id=resource.parent.name,
                         resource_type=resource.parent.type
                     )
-                    tmp_parent.full_name = resource.parent.full_name
+                    parent.full_name = resource.parent.full_name
                     new_res = resource_util.create_resource_from_json(
-                        resource_type, tmp_parent, resource.data)
+                        resource_type, parent, resource.data)
                     retention_res.append(new_res)
 
         return retention_res
