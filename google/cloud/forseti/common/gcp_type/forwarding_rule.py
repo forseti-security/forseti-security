@@ -104,7 +104,7 @@ class ForwardingRule(object):
             subnetwork=forwarding_rule.get('subnetwork', ''),
             network=forwarding_rule.get('network', ''),
             backend_service=forwarding_rule.get('backend_service', ''),
-            raw_json=json.dumps(forwarding_rule)
+            raw_json=json.dumps(forwarding_rule, sort_keys=True)
         )
 
     @staticmethod
