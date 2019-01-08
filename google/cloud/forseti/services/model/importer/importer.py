@@ -168,6 +168,7 @@ class InventoryImporter(object):
             'compute_urlmap',
             'compute_vpntunnel',
             'crm_org_policy',
+            'dataproc_cluster',
             'dataset',
             'disk',
             'dns_managedzone',
@@ -185,6 +186,7 @@ class InventoryImporter(object):
             'kubernetes_cluster',
             'lien',
             'network',
+            'pubsub_subscription',
             'pubsub_topic',
             'serviceaccount',
             'serviceaccount_key',
@@ -552,6 +554,7 @@ class InventoryImporter(object):
             'compute_urlmap': self._convert_computeengine_resource,
             'compute_vpntunnel': self._convert_computeengine_resource,
             'crm_org_policy': self._convert_crm_org_policy,
+            'dataproc_cluster': self._convert_dataproc_cluster,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,
             'dns_managedzone': self._convert_clouddns_resource,
@@ -572,7 +575,8 @@ class InventoryImporter(object):
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
             'project': self._convert_project,
-            'pubsub_topic': self._convert_pubsub_topic,
+            'pubsub_subscription': self._convert_pubsub_resource,
+            'pubsub_topic': self._convert_pubsub_resource,
             'serviceaccount': self._convert_serviceaccount,
             'serviceaccount_key': self._convert_serviceaccount_key,
             'sink': self._convert_sink,
@@ -666,6 +670,15 @@ class InventoryImporter(object):
         self._convert_resource(org_policy, cached=False,
                                display_key='constraint')
 
+    def _convert_dataproc_cluster(self, cluster):
+        """Convert a dataproc cluster to a database object.
+
+        Args:
+            cluster (object): Dataproc Cluster to store.
+        """
+        self._convert_resource(cluster, cached=True,
+                               display_key='clusterName')
+
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
 
@@ -742,13 +755,13 @@ class InventoryImporter(object):
         self._convert_resource(organization, cached=True,
                                display_key='displayName')
 
-    def _convert_pubsub_topic(self, topic):
-        """Convert a PubSub Topic to a database object.
+    def _convert_pubsub_resource(self, resource):
+        """Convert a PubSub resource to a database object.
 
         Args:
-            topic (object): Pubsub Topic to store.
+            resource (object): Pubsub resource to store.
         """
-        self._convert_resource(topic, cached=True)
+        self._convert_resource(resource, cached=True)
 
     def _convert_project(self, project):
         """Convert a project to a database object.

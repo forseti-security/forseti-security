@@ -182,10 +182,19 @@ class InventoryIndex(BASE):
             .group_by(func.json_extract(resource_data, '$.lifecycleState'))
             .all())
 
+        LOGGER.debug('Lifecycle details for %s:\n%s',
+                     resource_type_input, details)
+
+        # Lifecycle can be None if Forseti is installed to a non-org level.
         for key in details.keys():
+            if key is None:
+                continue
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
             details[new_key] = details.pop(key)
+
+        if len(details) == 1 and details.keys()[0] is None:
+            return {}
 
         if len(details) == 1:
             if 'ACTIVE' in details.keys()[0]:
@@ -656,6 +665,17 @@ class CaiTemporaryStore(object):
             # in all locations to fix this broken behavior.
             #
             # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
+            # parent project.
+            return '/'.join(asset_pb.name.split('/')[:-4])
+
+        elif asset_pb.asset_type == 'google.cloud.dataproc.Cluster':
+            # Dataproc Clusters are parented by a region under a project, but
+            # the region is not directly discoverable without iterating all
+            # regions, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all clusters
+            # in all regions to fix this broken behavior.
+            #
+            # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
             # parent project.
             return '/'.join(asset_pb.name.split('/')[:-4])
 
