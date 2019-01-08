@@ -27,7 +27,7 @@ EMAIL_CONNECTOR_FACTORY = {
 
 
 class EmailFactory(object):
-    """Email Factory to select connector."""
+    """Tests for Email Factory"""
 
     def __init__(self, notifier_config):
         """Constructor for the email factory.
