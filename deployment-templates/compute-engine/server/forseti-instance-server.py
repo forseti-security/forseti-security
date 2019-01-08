@@ -15,8 +15,7 @@
 """Creates a GCE instance template for Forseti Security."""
 
 def get_patch_search_expression(forseti_version):
-    """Returns a glob expression matching all patches to the version of
-        passed in parameter.
+    """Returns a glob expression matching all patches of the given version.
 
     TODO: Update in client/forseti-instance-client if update here.
 

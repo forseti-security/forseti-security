@@ -16,8 +16,7 @@
 
 
 def get_patch_search_expression(forseti_version):
-    """Returns a glob expression matching all patches to the version of
-        passed in parameter.
+    """Returns a glob expression matching all patches of the given version.
 
     TODO: Update in server/forseti-instance-server if update here.
 
@@ -32,6 +31,7 @@ def get_patch_search_expression(forseti_version):
 
     if forseti_version[:6] != 'tags/v':
         return None
+
     segments = forseti_version.replace('tags/v', '').split('.')
     for segment in segments:
         if not segment.isdigit():
