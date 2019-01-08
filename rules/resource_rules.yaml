@@ -13,7 +13,8 @@
 # limitations under the License.
 
 # Note: `resource_id` must be an exact string or '*'. Partial string wildcards
-# are not currently supported.
+# are not currently supported. If there is an exact match for the `resource_id`
+# AND a wildcard, the exact match node is given preference.
 
 # rules:
 #   resource_types:
