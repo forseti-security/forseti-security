@@ -169,6 +169,7 @@ rm -rf *forseti*
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+# Fetch tags updates tag changes which fetch all doesn't do
 git fetch --tags
 git fetch --all
 {checkout_forseti_version}
