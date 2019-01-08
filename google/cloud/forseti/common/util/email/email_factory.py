@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email factory to select connector"""
+"""Tests for Email Factory"""
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import sendgrid_connector
