@@ -14,14 +14,14 @@
 
 """Email Factory to call connector class"""
 
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util.email import email_factory
 from google.cloud.forseti.common.util.email import sendgrid_connector
-from google.cloud.forseti.common.util.email.email_factory import InvalidInputError
+from google.cloud.forseti.common.util.errors import InvalidInputError
+from tests.unittest_utils import ForsetiTestCase
 
 
 class EmailFactoryTest(ForsetiTestCase):
-    """Tests for email_factory."""
+    """Tests for Email Factory"""
 
     def test_get_connector_correctness(self):
         """Test get_connector() correctness."""
