@@ -14,14 +14,29 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
-def glob_expr_matching_patches(forseti_version):
+
+def get_patch_search_expression(forseti_version):
+    """Returns a glob expression matching all patches to the version of passed in parameter
+
     #TODO update in server/forseti-instance-server if update here
-    """Returns a glob expression matching all patches to the version of passed in parameter"""
-    segments = forseti_version[6:].split('.')
-    if forseti_version[:6] == "tags/v" and all(segment.isdigit() for segment in segments):
-        return "v{}.{}.{{[0-9],[0-9][0-9]}}".format(segments[0], segments[1])
-    else:
+
+    Args:
+        forseti_version (str): Installed forseti version.  Should start with
+        'tags/v' if patches are to be updated automatically
+
+    Returns:
+        str: Glob expression matching all patches of given forseti_version
+        None: Returns None if forseti_version is not in 'tags/vX.Y.Z' format
+    """
+    if forseti_version[:6] != 'tags/v':
         return None
+    segments = forseti_version.replace('tags/v', '''''').split('.')
+
+    for segment in segments:
+        if not segment.isdigit():
+            return None
+
+    return 'v{}.{}.{{[0-9],[0-9][0-9]}}'.format(segments[0], segments[1])
 
 
 def GenerateConfig(context):
@@ -33,7 +48,7 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    patch_search_expression = glob_expr_matching_patches(context.properties['forseti-version'])
+    patch_search_expression = get_patch_search_expression(context.properties['forseti-version'])
     if patch_search_expression:
         CHECKOUT_FORSETI_VERSION = (
             """matches=$(git tag -l {patch_search_expression})
@@ -178,7 +193,8 @@ echo "Execution of startup script finished"
                         # Install Forseti.
                         download_forseti=DOWNLOAD_FORSETI,
 
-                        # if on tag, checkout latest patch to that version, else checkout current branch version
+                        # If installed on a version tag, checkout latest patch.
+                        # Otherwise checkout originally installed version.
                         checkout_forseti_version=CHECKOUT_FORSETI_VERSION,
 
                         # Set ownership for Forseti conf and rules dirs
