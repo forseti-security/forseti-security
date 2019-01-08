@@ -133,15 +133,7 @@ download_client_configuration_files(){
 # I think we need to start as background for cronjob and foreground for long running server
 start_server(){
 
-if ${RUN_SERVER}; then # long lived server, start as foreground process
-    forseti_server \
-    --endpoint "localhost:50051" \
-    --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
-    --services ${SERVICES} \
-    --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
-    --log_level=${LOG_LEVEL}
-    #--enable_console_log
-else # we are just running short lived cronjob, start as background process
+if ${RUN_CRONJOB}; then # short lived cronjob, start as background process
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -149,7 +141,17 @@ else # we are just running short lived cronjob, start as background process
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} &
     #--enable_console_log
+
+else # long lived server, start as foreground process
+    forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
+    --services ${SERVICES} \
+    --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
+    --log_level=${LOG_LEVEL}
+    #--enable_console_log
 fi
+
 }
 
 # remove start_client() I don't think their is anything to be started.
