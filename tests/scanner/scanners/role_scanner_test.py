@@ -38,7 +38,7 @@ def get_expect_violation_item(res_map, role_name, rule_index):
         resource_id=role_name,
         resource_name=role_name,
         resource_type=res_map.get(role_name).type,
-        full_name=res_map.get(role_name).full_name,
+        full_name=role_name,
         rule_name=rre.create_rule_name_by_role_name(role_name),
         rule_index=rule_index,
         violation_type=rre.VIOLATION_TYPE,

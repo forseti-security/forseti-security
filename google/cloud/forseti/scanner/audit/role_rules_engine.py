@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATION_TYPE = 'ROLE_PERMISSION_VIOLATION'
+VIOLATION_TYPE = 'ROLE_VIOLATION'
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
@@ -58,12 +58,11 @@ class RolePermissionRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = RolePermissionRuleBook(self._load_rule_definitions())
 
-    def find_violations(self, resource, force_rebuild=False):
-        """Determine whether bucket lifecycle violates rules.
+    def find_violations(self, role, force_rebuild=False):
+        """Determine whether the role violates rules.
 
         Args:
-            resource (Resource): Object
-                containing lifecycle data
+            role (Role): Role to be tested.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -74,16 +73,16 @@ class RolePermissionRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
 
         violations = itertools.chain()
-        rule = self.rule_book.get_rule_by_role_name(resource.id)
+        rule = self.rule_book.get_rule_by_role_name(role.id)
         violations = itertools.chain(
             violations,
-            rule.find_violations(resource))
+            rule.find_violations(role))
 
         return set(violations)
 
 
 class RolePermissionRuleBook(bre.BaseRuleBook):
-    """The RuleBook for Retention resources."""
+    """The RuleBook for Role resources."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -191,7 +190,7 @@ class Rule(object):
             resource_name=role.name,
             resource_id=role.id,
             resource_type=role.type,
-            full_name=role.full_name,
+            full_name=role.id,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type=VIOLATION_TYPE,

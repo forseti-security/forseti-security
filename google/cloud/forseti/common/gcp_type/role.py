@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A Dataset Resource.
-See: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets
+"""A Role Resource.
+See: https://cloud.google.com/iam/reference/rest/
 """
 
 import json
@@ -28,62 +28,52 @@ class Role(resource.Resource):
     def __init__(
             self,
             role_id,
-            full_name=None,
             data=None,
-            name=None,
             display_name=None,
-            parent=None,
-            locations=None,
-            lifecycle_state=resource.LifecycleState.UNSPECIFIED):
+            parent=None):
         """Initialize.
         Args:
-            role_id (int): The role id.
+            role_id (str): The role's unique GCP ID, with the format
+                "organizations/{ORGANIZATION_ID}/roles/{ROLE_NAME}" or
+                "projects/{PROJECT_ID}/roles/{ROLE_NAME}".
             full_name (str): The full resource name and ancestry.
             data (str): Resource representation of the dataset.
-            name (str): The dataset's unique GCP name, with the
-                format "datasets/{id}".
+            name (str): Name of the role should be the same as its ID.
             display_name (str): The dataset's display name.
-            locations (List[str]): Locations this dataset resides in. If set,
-                there should be exactly one element in the list.
             parent (Resource): The parent Resource.
-            lifecycle_state (LifecycleState): The lifecycle state of the
-                dataset.
         """
         super(Role, self).__init__(
             resource_id=role_id,
             resource_type=resource.ResourceType.ROLE,
-            name=name,
+            name=role_id,
             display_name=display_name,
-            parent=parent,
-            locations=locations,
-            lifecycle_state=lifecycle_state)
-        self.full_name = full_name
+            parent=parent)
         self.data = data
+        print role_id, self.name
 
     def get_permissions(self):
         """Get permissions of the role.
         Returns:
-            list: List of permissions of the role.
+            list: Permissions list of the role.
         """
         return json.loads(self.data).get('includedPermissions', [])
 
     @classmethod
     def from_json(cls, parent, json_string):
-        """Create a dataset from a JSON string.
+        """Create a role from a JSON string.
 
         Args:
-            parent (Resource): resource this dataset belongs to.
-            json_string(str): JSON string of a dataset GCP API response.
+            parent (Resource): resource this role belongs to.
+            json_string(str): JSON string of a IAM API response.
 
         Returns:
-            Dataset: dataset resource.
+            Role: role resource.
         """
         role_dict = json.loads(json_string)
         role_id = role_dict['name']
         return cls(
             parent=parent,
             role_id=role_id,
-            name=role_id,
             display_name=role_id,
             data=json_string,
         )

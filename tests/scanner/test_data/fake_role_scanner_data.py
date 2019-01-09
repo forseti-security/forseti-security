@@ -130,7 +130,7 @@ def generate_violation(role, index):
         resource_name=role.name,
         resource_id=role.id,
         resource_type=role.type,
-        full_name=role.full_name,
+        full_name=role.id,
         rule_name="Permission Rule of " + role.id,
         rule_index=index,
         violation_type=rre.VIOLATION_TYPE,
