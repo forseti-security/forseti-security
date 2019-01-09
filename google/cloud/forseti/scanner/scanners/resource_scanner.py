@@ -12,26 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Lien rules engine."""
+"""Scanner for the resource Resource rules engine."""
 
-from google.cloud.forseti.common.gcp_type import lien
-from google.cloud.forseti.common.gcp_type import project
+
+from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import lien_rules_engine
+from google.cloud.forseti.scanner.audit import resource_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class LienScanner(base_scanner.BaseScanner):
-    """Scanner for Liens."""
+class ResourceScanner(base_scanner.BaseScanner):
+    """Scanner for Resources."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp,
                  rules):
         """Initialization.
-
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
@@ -40,95 +39,69 @@ class LienScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(LienScanner, self).__init__(
+        super(ResourceScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = lien_rules_engine.LienRulesEngine(
+        self.rules_engine = resource_rules_engine.ResourceRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
     def run(self):
         """Runs the data collection."""
-        parent_resource_to_liens = self._retrieve()
-        all_violations = self._find_violations(parent_resource_to_liens)
+        resources = self._retrieve()
+        all_violations = self._find_violations(resources)
         self._output_results(all_violations)
 
     def _retrieve(self):
         """Retrieves the data for scanner.
 
         Returns:
-            Dict[Resource, List[lien]]: mapping of a resource to the liens it
-                contains.
-
+            List[Resource]: resources to check for violations.
         Raises:
             ValueError: if resources have an unexpected type.
         """
+        resources = []
+        resource_types = (
+            self.rules_engine.rule_book.get_applicable_resource_types())
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            parent_resource_to_liens = {}
+            for resource_type in resource_types:
+                for resource in data_access.scanner_iter(
+                        session, resource_type):
 
-            # liens can only be defined on a project currently
-            for project_resource in data_access.scanner_iter(
-                    session, 'project'):
-
-                proj = project.Project(
-                    project_id=project_resource.name,
-                    full_name=project_resource.full_name,
-                )
-
-                parent_resource_to_liens[proj] = []
-
-            for lien_resource in data_access.scanner_iter(session, 'lien'):
-                parent_resource = lien_resource.parent
-
-                if lien_resource.parent.type != 'project':
-                    raise ValueError(
-                        'Unexpected type of lien resource parent: '
-                        'got %s, want project' % parent_resource.parent.type
+                    resources.append(
+                        resource_util.create_resource_from_db_row(resource)
                     )
 
-                proj = project.Project(
-                    project_id=parent_resource.name,
-                    full_name=parent_resource.full_name,
-                )
+        return resources
 
-                parent_resource_to_liens[proj].append(lien.Lien.from_json(
-                    parent=proj,
-                    json_string=lien_resource.data))
-
-            return parent_resource_to_liens
-
-    def _find_violations(self, parent_resource_to_liens):
-        """Find violations in liens.
+    def _find_violations(self, resources):
+        """Find Resource violations in the given resources.
 
         Args:
-            parent_resource_to_liens (Dict[Resource, List[lien]]): mapping of
-                a resource to the liens it contains.
+            resources (List[resource]): resources to check for violations in.
 
         Returns:
             List[RuleViolation]: A list of all violations.
         """
-        all_violations = []
-        LOGGER.info('Finding lien violations...')
 
-        for parent_resource, liens in parent_resource_to_liens.iteritems():
-            violations = list(self.rules_engine.find_violations(
-                parent_resource, liens))
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
+        LOGGER.info('Finding Resource violations...')
+        violations = self.rules_engine.find_violations(resources)
+        LOGGER.debug(violations)
+        return violations
 
     def _output_results(self, all_violations):
         """Output results.
 
         Args:
-            all_violations (List[RuleViolation]): A list of lien violations.
+            all_violations (List[RuleViolation]): A list of resource Resource
+                violations.
         """
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
@@ -146,12 +119,11 @@ class LienScanner(base_scanner.BaseScanner):
         for violation in violations:
             yield {
                 'resource_id': violation.resource_id,
-                'resource_name': violation.resource_name,
                 'resource_type': violation.resource_type,
                 'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': {'lien': violation.resource_data},
-                'resource_data': violation.resource_data
+                'violation_data': violation.violation_data,
+                'resource_data': violation.resource_data,
             }

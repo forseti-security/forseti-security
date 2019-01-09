@@ -132,7 +132,7 @@ class LienRulesEngineTest(ForsetiTestCase):
             }
 
             liens.append(lien.Lien.from_json(
-                data.PROJECT, 'l1', json.dumps(lien_dict)))
+                data.PROJECT, json.dumps(lien_dict)))
 
         rules_engine = get_rules_engine_with_rule(
             Rules.projects_rule, data.PROJECT.id, restrictions=['a', 'c'])
