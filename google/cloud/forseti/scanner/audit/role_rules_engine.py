@@ -19,6 +19,7 @@ import threading
 import json
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
@@ -34,7 +35,7 @@ RuleViolation = collections.namedtuple(
      'resource_id'])
 
 
-class RolePermissionRulesEngine(bre.BaseRulesEngine):
+class RoleRulesEngine(bre.BaseRulesEngine):
     """Rules engine for roles."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
@@ -46,17 +47,17 @@ class RolePermissionRulesEngine(bre.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(RolePermissionRulesEngine,
+        super(RoleRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build RolePermissionRuleBook from the rules definition file.
+        """Build RoleRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
         """
-        self.rule_book = RolePermissionRuleBook(self._load_rule_definitions())
+        self.rule_book = RoleRuleBook(self._load_rule_definitions())
 
     def find_violations(self, role, force_rebuild=False):
         """Determine whether the role violates rules.
@@ -73,15 +74,16 @@ class RolePermissionRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
 
         violations = itertools.chain()
-        rule = self.rule_book.get_rule_by_role_name(role.id)
-        violations = itertools.chain(
-            violations,
-            rule.find_violations(role))
+        rules = self.rule_book.get_rule_by_role_name(role.id)
+        for rule in rules:
+            violations = itertools.chain(
+                violations,
+                rule.find_violations(role))
 
         return set(violations)
 
 
-class RolePermissionRuleBook(bre.BaseRuleBook):
+class RoleRuleBook(bre.BaseRuleBook):
     """The RuleBook for Role resources."""
 
     def __init__(self, rule_defs=None):
@@ -90,7 +92,7 @@ class RolePermissionRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs (dict): rule definitons
         """
-        super(RolePermissionRuleBook, self).__init__()
+        super(RoleRuleBook, self).__init__()
         self._rules_sema = threading.BoundedSemaphore(value=1)
 
         self.rules_map = {}
@@ -118,25 +120,30 @@ class RolePermissionRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        if 'role_id' not in rule_def:
+        if 'name' not in rule_def:
             raise audit_errors.InvalidRulesSchemaError(
-                'Lack of role_id in rule {}'.format(rule_index))
-        role_id = rule_def['role_id']
-
-        if role_id in self.rules_map:
+                'Lack of role_name in rule {}'.format(rule_index))
+        if 'role_name' not in rule_def:
             raise audit_errors.InvalidRulesSchemaError(
-                'Duplicate role_id in rule {}'.format(rule_index))
-
+                'Lack of role_name in rule {}'.format(rule_index))
+        role_name = rule_def['role_name']
         if 'permissions' not in rule_def:
             raise audit_errors.InvalidRulesSchemaError(
                 'Lack of permissions in rule {}'.format(rule_index))
-        permissions = rule_def['permissions']
+        if 'resource' not in rule_def:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Lack of resource in rule {}'.format(rule_index))
+        res = rule_def['resource']
 
         rule = Rule(rule_index=rule_index,
-                    role_name=role_id,
-                    permissions=permissions)
+                    rule_name=rule_def['name'],
+                    permissions=rule_def['permissions'],
+                    res=res)
 
-        self.rules_map[role_id] = rule
+        if role_name not in self.rules_map:
+            self.rules_map[role_name] = [rule]
+        else:
+            self.rules_map[role_name].append(rule)
 
     def get_rule_by_role_name(self, role_name):
         """Get the rule of a given role.
@@ -149,31 +156,34 @@ class RolePermissionRuleBook(bre.BaseRuleBook):
         return self.rules_map.get(role_name)
 
 
-def create_rule_name_by_role_name(role_name):
-    """Create a rule name based on the name of a given role.
-
-    Args:
-        role_name (str): Name of a role.
-    Returns:
-        str: Name of the rule.
-    """
-    return 'Permission Rule of ' + role_name
-
-
 class Rule(object):
     """Rule properties from the rule definition file. Also finds violations."""
 
-    def __init__(self, rule_index, role_name, permissions):
+    def __init__(self, rule_index, rule_name, permissions, res):
         """Initialize.
 
         Args:
             rule_index (int): The index of the rule.
-            role_name(str): Name of the role.
-            permissions(int): Expected permissions of the role.
+            rule_name (str): Name of the rule.
+            permissions (int): Expected permissions of the role.
+            res (dict): Parent resource of the role that should obey the rule.
         """
-        self.rule_name = create_rule_name_by_role_name(role_name)
+        self.rule_name = rule_name
         self.rule_index = rule_index
         self.permissions = permissions[:]
+        self.res_types = res[:]
+
+        for res_item in self.res_types:
+            if 'type' not in res_item:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Lack of resource:type in rule {}'.format(rule_index))
+            if 'resource_ids' not in res_item:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Lack of resource:resource_ids in rule {}'.format(
+                        rule_index))
+
+            if '*' in res_item['resource_ids']:
+                res_item = ['*']
 
     def generate_violation(self, role):
         """Generate a violation.
@@ -221,9 +231,36 @@ class Rule(object):
 
         Args:
             role (role): Find violation from the role.
+        Returns:
+            RuleViolation: All violations of the role breaking the rule.
+        """
+        resource_ancestors = (relationship.find_ancestors(
+            role, role.full_name))
+
+        violations = itertools.chain()
+        for related_resources in resource_ancestors:
+            violations = itertools.chain(
+                violations,
+                self.find_violations_by_ancestor(related_resources, role))
+        return violations
+
+    def find_violations_by_ancestor(self, ancestor, role):
+        """Get a generator on a given ancestor of the role.
+
+        Args:
+            role (role): Role to find violation from.
+            ancestor (Resource): Ancestor of the role or the role itself.
         Yields:
             RuleViolation: All violations of the role breaking the rule.
         """
-
-        if set(role.get_permissions()) != set(self.permissions):
-            yield self.generate_violation(role)
+        for res in self.res_types:
+            if ancestor.type != res['type']:
+                continue
+            if '*' in res['resource_ids']:
+                if set(role.get_permissions()) != set(self.permissions):
+                    yield self.generate_violation(role)
+            else:
+                for res_id in res['resource_ids']:
+                    if res_id == ancestor.id:
+                        if set(role.get_permissions()) != set(self.permissions):
+                            yield self.generate_violation(role)

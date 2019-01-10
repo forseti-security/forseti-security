@@ -29,22 +29,6 @@ from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.scanner.audit import role_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import role_scanner
 
-def get_expect_violation_item(res_map, role_name, rule_index):
-    """Create violations for expected violation list"""
-    permissions = res_map.get(role_name).get_permissions()
-    permissions_str = json.dumps(permissions)
-
-    return rre.RuleViolation(
-        resource_id=role_name,
-        resource_name=role_name,
-        resource_type=res_map.get(role_name).type,
-        full_name=role_name,
-        rule_name=rre.create_rule_name_by_role_name(role_name),
-        rule_index=rule_index,
-        violation_type=rre.VIOLATION_TYPE,
-        violation_data=permissions_str,
-        resource_data=res_map.get(role_name).data)
-
 
 def get_mock_role(role_data):
     """Get the mock function for testcases"""
@@ -70,33 +54,59 @@ class RoleScannerTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
 
-    def test_bucket_role_on_multi_buckets(self):
+    def test_retrieve_and_find_violation(self):
         """Test a rule that includes more than one bucket IDs"""
 
         rule_yaml = """
 rules:
-  - role_id: "projects/def-project-1/roles/forsetiBigqueryViewer"
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
     permissions:
     - "bigquery.datasets.get"
     - "bigquery.tables.get"
     - "bigquery.tables.list"
-  - role_id: "projects/def-project-1/roles/forsetiCloudsqlViewer"
+    resource:
+    - type: project
+      resource_ids: ['def-project-1']
+  - role_name: "forsetiCloudsqlViewer"
+    name: "forsetiCloudsqlViewer rule"
     permissions:
     - "cloudsql.backupRuns.get"
     - "cloudsql.backupRuns.list"
+    resource:
+    - type: organization
+      resource_ids: ['*']
+  - role_name: "anotherForsetiRole"
+    name: "All anotherForsetiRole from everywhere must obey this rule"
+    permissions:
+    - "cloudsql.instances.get"
+    - "cloudsql.instances.list"
+    resource:
+    - type: role
+      resource_ids: ['anotherForsetiRole']
 
 """
 
         role_test_data=[
             frsd.FakeRoleDataInput(
-                name='projects/def-project-1/roles/forsetiBigqueryViewer',
+                name='forsetiBigqueryViewer',
                 permission=['bigquery.datasets.get', 'bigquery.tables.get', 'bigquery.tables.list'],
                 parent=frsd.PROJECT1
             ),
             frsd.FakeRoleDataInput(
-                name='projects/def-project-1/roles/forsetiCloudsqlViewer',
+                name='forsetiBigqueryViewer',
+                permission=['bigquery.datasets.get', 'bigquery.tables.list'],
+                parent=frsd.PROJECT2
+            ),
+            frsd.FakeRoleDataInput(
+                name='forsetiCloudsqlViewer',
                 permission=['cloudsql.backupRuns.get', 'cloudsql.backupRuns.list','cloudsql.instances.get'],
                 parent=frsd.PROJECT1
+            ),
+            frsd.FakeRoleDataInput(
+                name='anotherForsetiRole',
+                permission=['cloudsql.instances.get', 'cloudsql.instances.list', 'bigquery.tables.list'],
+                parent=frsd.PROJECT2
             ),
         ]
 
@@ -127,7 +137,8 @@ rules:
                 res_map[i.id] = i
 
             expected_violations = set([
-                get_expect_violation_item(res_map, 'projects/def-project-1/roles/forsetiCloudsqlViewer', 1),
+                frsd.generate_violation(res_map['forsetiCloudsqlViewer'], 1, 'forsetiCloudsqlViewer rule'),
+                frsd.generate_violation(res_map['anotherForsetiRole'], 2, 'All anotherForsetiRole from everywhere must obey this rule'),
             ])
 
             self.assertEqual(expected_violations, set(all_violations))

@@ -19,6 +19,26 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
+ROLE_ID_PARENT_TYPE_INDEX = 0
+ROLE_ID_PARENT_ID_INDEX = 1
+ROLE_ID_TYPE_INDEX = 2
+ROLE_ID_NAME_INDEX = 3
+
+
+def _get_res_id_from_role_id(role_id):
+    """Get role's ID from its given GCP ID.
+
+    Args:
+        role_id (str): resource ID (in inventory) of role.
+
+    Returns:
+        str: role ID; None if the given resource ID is incorrect.
+    """
+    split_id = role_id.split('/')
+    if len(split_id) == 4:
+        return split_id[3]
+    return None
+
 
 class Role(resource.Resource):
     """Role resource."""
@@ -36,20 +56,21 @@ class Role(resource.Resource):
             role_id (str): The role's unique GCP ID, with the format
                 "organizations/{ORGANIZATION_ID}/roles/{ROLE_NAME}" or
                 "projects/{PROJECT_ID}/roles/{ROLE_NAME}".
-            full_name (str): The full resource name and ancestry.
             data (str): Resource representation of the dataset.
-            name (str): Name of the role should be the same as its ID.
-            display_name (str): The dataset's display name.
+            display_name (str): Title of the role.
             parent (Resource): The parent Resource.
         """
         super(Role, self).__init__(
-            resource_id=role_id,
+            resource_id=_get_res_id_from_role_id(role_id),
             resource_type=resource.ResourceType.ROLE,
             name=role_id,
             display_name=display_name,
             parent=parent)
         self.data = data
-        print role_id, self.name
+        if parent and parent.full_name:
+            self.full_name = '%srole/%s/' % (parent.full_name, self.id)
+        else:
+            self.full_name = 'role/%s/' % self.id
 
     def get_permissions(self):
         """Get permissions of the role.
@@ -70,10 +91,9 @@ class Role(resource.Resource):
             Role: role resource.
         """
         role_dict = json.loads(json_string)
-        role_id = role_dict['name']
         return cls(
             parent=parent,
-            role_id=role_id,
-            display_name=role_id,
+            role_id=role_dict['name'],
+            display_name=role_dict.get('title'),
             data=json_string,
         )

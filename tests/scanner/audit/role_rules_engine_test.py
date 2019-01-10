@@ -45,7 +45,7 @@ def get_rules_engine_with_rule(rule):
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
         f.write(rule)
         f.flush()
-        rules_engine = rre.RolePermissionRulesEngine(
+        rules_engine = rre.RoleRulesEngine(
             rules_file_path=f.name)
         rules_engine.build_rule_book()
     return rules_engine
@@ -57,18 +57,22 @@ class RoleRulesEngineTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
 
-    def test_invalid_rule_with_no_role_id(self):
-        """Test that a rule without role_id cannot be created"""
-        yaml_str_no_role_id="""
+    def test_invalid_rule_with_no_role_name(self):
+        """Test that a rule without role_name cannot be created"""
+        yaml_str_invalid_rule="""
 rules:
-  - permissions:
+  - name: "forsetiBigqueryViewer rule"
+    permissions:
     - "bigquery.datasets.get"
     - "bigquery.tables.get"
     - "bigquery.tables.list"
+    resource:
+    - type: project
+      resource_ids: ['*']
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_role_id)
+            f.write(yaml_str_invalid_rule)
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -77,29 +81,29 @@ rules:
 
     def test_invalid_rule_with_no_permissions(self):
         """Test that a rule without permissions cannot be created"""
-        yaml_str_no_permissions="""
+        yaml_str_invalid_rule="""
 rules:
-  - role_id: "roles/forsetiBigqueryViewer"
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
+    resource:
+    - type: project
+      resource_ids: ['*']
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_permissions)
+            f.write(yaml_str_invalid_rule)
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
                 self.scanner = rrs.RoleScanner(
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
-    def test_invalid_rules_with_the_same_name(self):
-        """Test that rules with the same role name cannot be created"""
-        yaml_str_with_the_same_name="""
+    def test_invalid_rule_with_no_resource(self):
+        """Test that a rule without resource cannot be created"""
+        yaml_str_invalid_rule="""
 rules:
-  - role_id: "roles/forsetiBigqueryViewer"
-    permissions:
-    - "bigquery.datasets.get"
-    - "bigquery.tables.get"
-    - "bigquery.tables.list"
-  - role_id: "roles/forsetiBigqueryViewer"
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
     permissions:
     - "bigquery.datasets.get"
     - "bigquery.tables.get"
@@ -107,91 +111,182 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_with_the_same_name)
+            f.write(yaml_str_invalid_rule)
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
                 self.scanner = rrs.RoleScanner(
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
-    def test_valid_rules(self):
-        """Test that rules with the same role name cannot be created"""
-        yaml_str_valid_rules="""
+    def test_invalid_rule_with_no_resource_type(self):
+        """Test that a rule without resource:type cannot be created"""
+        yaml_str_invalid_rule="""
 rules:
-  - role_id: "roles/forsetiBigqueryViewer"
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
     permissions:
     - "bigquery.datasets.get"
     - "bigquery.tables.get"
     - "bigquery.tables.list"
-  - role_id: "roles/forsetiCloudsqlViewer"
-    permissions:
-    - "cloudsql.backupRuns.get"
-    - "cloudsql.backupRuns.list"
-    - "cloudsql.databases.get"
-    - "cloudsql.databases.list"
-    - "cloudsql.instances.get"
-    - "cloudsql.instances.list"
-    - "cloudsql.sslCerts.get"
-    - "cloudsql.sslCerts.list"
-    - "cloudsql.users.list"
+    resource:
+    - resource_ids: ['*']
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_valid_rules)
+            f.write(yaml_str_invalid_rule)
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
-            self.scanner = rrs.RoleScanner(
-                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+            with self.assertRaises(InvalidRulesSchemaError):
+                self.scanner = rrs.RoleScanner(
+                    {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
-    yaml_str_two_role_rule = """
+    def test_invalid_rule_with_no_resource_id(self):
+        """Test that a rule without resource:resource_ids cannot be created"""
+        yaml_str_invalid_rule="""
 rules:
-  - role_id: "roles/forsetiBigqueryViewer"
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
     permissions:
     - "bigquery.datasets.get"
     - "bigquery.tables.get"
     - "bigquery.tables.list"
-  - role_id: "roles/forsetiCloudsqlViewer"
+    resource:
+    - type: project
+
+"""
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_invalid_rule)
+            f.flush()
+            rules_local_path = get_datafile_path(__file__, f.name)
+            with self.assertRaises(InvalidRulesSchemaError):
+                self.scanner = rrs.RoleScanner(
+                    {}, {}, mock.MagicMock(), '', '', rules_local_path)
+
+    yaml_str_multiple_rules_on_projects = """
+rules:
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
+    permissions:
+    - "bigquery.datasets.get"
+    - "bigquery.tables.get"
+    - "bigquery.tables.list"
+    resource:
+    - type: project
+      resource_ids: ['*']
+  - role_name: "forsetiCloudsqlViewer"
+    name: "forsetiCloudsqlViewer rule backupRuns"
     permissions:
     - "cloudsql.backupRuns.get"
     - "cloudsql.backupRuns.list"
+    resource:
+    - type: project
+      resource_ids: ['def-project-1']
+  - role_name: "forsetiCloudsqlViewer"
+    name: "forsetiCloudsqlViewer rule databases"
+    permissions:
     - "cloudsql.databases.get"
     - "cloudsql.databases.list"
-    - "cloudsql.instances.get"
-    - "cloudsql.instances.list"
-    - "cloudsql.sslCerts.get"
-    - "cloudsql.sslCerts.list"
-    - "cloudsql.users.list"
+    resource:
+    - type: project
+      resource_ids: ['def-project-2']
 
 """
 
-    def test_no_violation_in_two_rules(self):
-        """Test that a role is correct."""
-        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_two_role_rule)
+    def test_no_violation_for_rules_on_wildcard(self):
+        """Role is a correct forsetiBigqueryViewer that should have no violation."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_projects)
         self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
 
-
-        data_creater = frsd.FakeRoleDataCreater('roles/forsetiBigqueryViewer',
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
                                                 ["bigquery.datasets.get",
                                                  "bigquery.tables.get",
-                                                 "bigquery.tables.list"], None)
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
 
         fake_role = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_role))
         self.assertEqual(got_violations, [])
 
-    def test_one_violation_in_two_rules(self):
-        """Test that a role is incorrect."""
-        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_two_role_rule)
+    def test_violations_for_rules_on_wildcard(self):
+        """Role is a incorrect forsetiBigqueryViewer that should have violations."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_projects)
         self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
 
-
-        data_creater = frsd.FakeRoleDataCreater('roles/forsetiBigqueryViewer',
-                                                ["bigquery.tables.get",
-                                                 "bigquery.tables.list"], None)
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
+                                                ["bigquery.datasets.get",
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
 
         fake_role = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_role))
-        self.assertEqual(got_violations, [frsd.generate_violation(fake_role, 0)])
+        self.assertEqual(got_violations, [frsd.generate_violation(fake_role, 0, 'forsetiBigqueryViewer rule')])
+
+    def test_no_violation_for_rules(self):
+        """Role is a correct forsetiCloudsqlViewer(project 1) that should have no violation."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiCloudsqlViewer',
+                                                ["cloudsql.backupRuns.get",
+                                                 "cloudsql.backupRuns.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+        self.assertEqual(got_violations, [])
+
+    def test_violations_for_rules(self):
+        """Role is a incorrect forsetiCloudsqlViewer(project 1) that should have violations."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiCloudsqlViewer',
+                                                ["cloudsql.databases.get",
+                                                 "cloudsql.databases.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+        self.assertEqual(got_violations, [frsd.generate_violation(fake_role, 1, 'forsetiCloudsqlViewer rule backupRuns')])
+
+    yaml_str_multiple_rules_on_organizations = """
+rules:
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
+    permissions:
+    - "bigquery.datasets.get"
+    - "bigquery.tables.get"
+    - "bigquery.tables.list"
+    resource:
+    - type: organization
+      resource_ids: ['123456']
+
+"""
+
+    def test_no_violation_for_rules_on_org(self):
+        """Role is a correct forsetiBigqueryViewer that should have no violation."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_organizations)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
+                                                ["bigquery.datasets.get",
+                                                 "bigquery.tables.get",
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+
+        self.assertEqual(got_violations, [])
+
+    def test_violations_for_rules_on_org(self):
+        """Role is a incorrect forsetiBigqueryViewer that should have violations."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_rules_on_organizations)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
+                                                ["bigquery.datasets.get",
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+
+        self.assertEqual(got_violations, [frsd.generate_violation(fake_role, 0, 'forsetiBigqueryViewer rule')])
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Copyright 2018 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class RoleScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = rre.RolePermissionRulesEngine(
+        self.rules_engine = rre.RoleRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)

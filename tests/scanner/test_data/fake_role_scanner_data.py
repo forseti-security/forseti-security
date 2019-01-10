@@ -48,6 +48,15 @@ PROJECT2 = project.Project(
     data='fake_project_data_55667788',
 )
 
+PROJECT3 = project.Project(
+    'def-project-3',
+    project_number=12344321,
+    display_name='default project 3',
+    parent=ORGANIZATION,
+    full_name='organization/123456/project/def-project-3/',
+    data='fake_project_data_12344321',
+)
+
 def build_bucket_violations(bucket, rule_name):
     data_lifecycle = bucket.get_lifecycle_rule()
     data_lifecycle_str = json.dumps(data_lifecycle)
@@ -81,7 +90,7 @@ def build_table_violations(table, rule_name):
 
 class FakeRoleDataCreater():
     def __init__(self, name, permissions, parent):
-        self._name = name
+        self._name = '%ss/%s/roles/%s'%(parent.type, parent.id, name)
         self.SetPermissions(permissions)
         self._parent = parent
 
@@ -115,11 +124,11 @@ def get_fake_role_resource(fake_role_data_input):
 
     return data_creater.get_resource()
 
-def generate_violation(role, index):
+def generate_violation(role, index, name):
     """Generate a violation.
 
     Args:
-        role (TODOTODO): The role that triggers the violation.
+        role (Role): The role that triggers the violation.
     Returns:
         RuleViolation: The violation.
     """
@@ -131,7 +140,7 @@ def generate_violation(role, index):
         resource_id=role.id,
         resource_type=role.type,
         full_name=role.id,
-        rule_name="Permission Rule of " + role.id,
+        rule_name=name,
         rule_index=index,
         violation_type=rre.VIOLATION_TYPE,
         violation_data=permissions_str,
