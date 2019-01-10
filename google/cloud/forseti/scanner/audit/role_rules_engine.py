@@ -200,7 +200,7 @@ class Rule(object):
             resource_name=role.name,
             resource_id=role.id,
             resource_type=role.type,
-            full_name=role.id,
+            full_name=role.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type=VIOLATION_TYPE,

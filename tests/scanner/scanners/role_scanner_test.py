@@ -55,7 +55,7 @@ class RoleScannerTest(ForsetiTestCase):
         """Set up."""
 
     def test_retrieve_and_find_violation(self):
-        """Test a rule that includes more than one bucket IDs"""
+        """Test a yaml file that includes more than one rules"""
 
         rule_yaml = """
 rules:
@@ -144,7 +144,7 @@ rules:
             self.assertEqual(expected_violations, set(all_violations))
 
     def test_violations_on_rules_with_multiple_resource_ids(self):
-        """Test a rule that includes more than one bucket IDs"""
+        """Test a rule that has more than one resource_ids."""
 
         rule_yaml = """
 rules:
@@ -205,54 +205,16 @@ rules:
 
             self.assertEqual(expected_violations, set(all_violations))
 
-
-    def test_scanner_run(self):
-        """Test a rule that includes more than one bucket IDs"""
-
-        rule_yaml = """
-rules:
-  - role_name: "forsetiBigqueryViewer"
-    name: "forsetiBigqueryViewer rule"
-    permissions:
-    - "bigquery.datasets.get"
-    - "bigquery.tables.get"
-    - "bigquery.tables.list"
-    resource:
-    - type: project
-      resource_ids: ['def-project-1', 'def-project-2']
-
-"""
-
-        role_test_data=[
-            frsd.FakeRoleDataInput(
-                name='forsetiBigqueryViewer',
-                permission=['bigquery.datasets.get', 'bigquery.tables.get', 'bigquery.tables.list'],
-                parent=frsd.PROJECT1
-            ),
-            frsd.FakeRoleDataInput(
-                name='forsetiBigqueryViewer',
-                permission=['bigquery.datasets.get', 'bigquery.tables.list'],
-                parent=frsd.PROJECT2
-            ),
-        ]
-
-        _mock_bucket = get_mock_role(role_test_data)
-
-        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
-            f.flush()
-            _fake_bucket_list = _mock_bucket(None, 'role')
-
-            self.scanner = role_scanner.RoleScanner(
-                {}, {}, mock.MagicMock(), '', '', f.name)
-
-            mock_data_access = mock.MagicMock()
-            mock_data_access.scanner_iter.side_effect = _mock_bucket
-
-            mock_service_config = mock.MagicMock()
-            mock_service_config.model_manager = mock.MagicMock()
-            mock_service_config.model_manager.get.return_value = (
-                mock.MagicMock(), mock_data_access)
-            self.scanner.service_config = mock_service_config
-
-            self.scanner.run()
+            expected_flatten_violations = [{
+                'resource_name': 'projects/def-project-2/roles/forsetiBigqueryViewer',
+                'resource_id': 'forsetiBigqueryViewer',
+                'resource_type': 'role',
+                'full_name': 'organization/123456/project/def-project-2/role/forsetiBigqueryViewer/',
+                'rule_index': 0,
+                'rule_name': 'forsetiBigqueryViewer rule',
+                'violation_type': 'ROLE_VIOLATION',
+                'violation_data': '["bigquery.datasets.get", "bigquery.tables.list"]',
+                'resource_data': '{"name": "projects/def-project-2/roles/forsetiBigqueryViewer", "includedPermissions": ["bigquery.datasets.get", "bigquery.tables.list"]}'
+            }]
+            self.assertEqual(list(self.scanner._flatten_violations(expected_violations)),
+                            expected_flatten_violations)
