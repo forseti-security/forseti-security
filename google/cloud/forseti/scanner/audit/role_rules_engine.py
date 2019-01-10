@@ -151,9 +151,9 @@ class RoleRuleBook(bre.BaseRuleBook):
         Args:
             role_name (str): Name of a role.
         Returns:
-            Rule: Rule of the given role.
+            list: Rule list of the given role.
         """
-        return self.rules_map.get(role_name)
+        return self.rules_map.get(role_name, {})
 
 
 class Rule(object):

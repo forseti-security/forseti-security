@@ -316,15 +316,14 @@ rules:
         got_violations = list(rules_engine.find_violations(fake_role))
         self.assertEqual(got_violations, [])
 
-    def test_role_full_name(self):
-        """Test the role has a correct full name"""
+    def test_role_has_no_rule(self):
+        """Test the role that is not covered by any rule."""
         rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_resource_ids_rules)
         self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
 
-        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
-                                                ["bigquery.datasets.get",
-                                                 "bigquery.tables.get",
-                                                 "bigquery.tables.list"], frsd.PROJECT1)
+        data_creater = frsd.FakeRoleDataCreater('someRoleName',
+                                                ["bigquery.someres.get",
+                                                 "bigquery.someres.list"], frsd.PROJECT1)
 
         fake_role = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_role))
