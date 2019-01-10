@@ -62,9 +62,9 @@ If you want to execute individual tests:
 
 If you want to execute a subset of tests (e.g., all tests in a specific subdirectory):
 
-    ```bash
-    docker -l error exec -it build /bin/bash -c "python -m unittest discover -s tests/common -p '*_test.py'"
-    ```
+   ```bash
+   docker -l error exec -it build /bin/bash -c "python -m unittest discover -s tests/common -p '*_test.py'"
+   ```
 
 ### Update Code and Re-Run Test
 
@@ -72,14 +72,14 @@ During the Docker image setup process, the code for Forseti is copied over to Do
 This copy is static and not dynamic, so if you make changes to your local code and
 want to run the tests in Docker with your local changes, you need to do the following:
 
-    ```bash
-    # Find the Container ID for the Image "forseti/build"
-    # and use it in <forseti/build_container_id> below
-    docker ps
-    
-    # Copy the files from the local disk to the image
-    docker cp ./ <forseti/build_container_id>:/forseti-security/
-    
-    # If you want to turn down the Docker container:
-    docker kill <forseti/build_container_id>
-    ```
+   ```bash
+   # Find the Container ID for the Image "forseti/build"
+   # and use it in <forseti/build_container_id> below
+   docker ps
+ 
+   # Copy the files from the local disk to the image
+   docker cp ./ <forseti/build_container_id>:/forseti-security/
+
+   # If you want to turn down the Docker container:
+   docker kill <forseti/build_container_id>
+   ```
