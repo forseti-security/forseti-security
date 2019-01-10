@@ -896,9 +896,21 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
-1. Configuration file `forseti_conf_server.yaml` updates:  
+1. Configuration file `forseti_conf_server.yaml` updates: 
+    **Inventory**
+    - Update the `api_timeout` field to configure Cloud Asset API timeout. 
+        ```
+        inventory:
+            ...
+            cai:
+                # Timeout in seconds to wait for the exportAssets API to return success.
+                # Defaults to 3600 if not set.
+                api_timeout: 3600
+        ``` 
     **Notifier** 
     - Update the `notifier` section to add the `email_connector` section. 
+    Functionality will not change if `email_connector` section isn't added as 
+    the code is backward compatible at the moment.
     Example below shows the configuration for SendGrid.
         ```
         notifier:
