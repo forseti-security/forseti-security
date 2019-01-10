@@ -904,64 +904,7 @@ to the Client ID of your service account.
     https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/cloudplatformprojects.readonly
     ```
 1. Configuration file `forseti_conf_server.yaml` updates:  
-    **Inventory**
-    - Update the `api_quota` section to include `disable_polling`. 
-    Set disable_polling to True to disable polling that API for creation of the inventory.
-        ```
-        inventory:
-            ...
-            api_quota:
-                ...
-                appengine:
-                    max_calls: 18
-                    period: 1.0
-                    disable_polling: False
-                ...
-                bigquery:
-                    max_calls: 160
-                    period: 1.0
-                    disable_polling: False
-                ...
-            ...
-        ```
-    - Update the `cai` section to include any asset types to exclude from the inventory. Refer 
-    [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.10.0/configs/server/forseti_conf_server.yaml.in)
-    for the full list of assets to exclude. 
-    
-    - The example below is excluding `google.appengine.Application` and `google.compute.InstanceGroup` from the inventory.
-        ```
-        inventory:
-            ...
-            cai:
-                ...
-                asset_types:
-                    - google.appengine.Application
-                    - google.compute.InstanceGroup
-                ...
-            ...
-        ```
-
-    **Notifier**
-    - Update the `violation` section to include `source_id` where the format is `organizations/ORG_ID/sources/SOURCE_ID`
-    to enable CSCC Beta API. Information
-    [here.](https://cloud.google.com/blog/products/identity-security/cloud-security-command-center-is-now-in-beta)
-    - Update the `resources` section to add the External Project Access Scanner:
-        ```
-        notifier:
-            resources:
-                ...
-                - resource: external_project_access_violations
-                  should_notify: true
-                  notifiers:
-                    # Email violations
-                    - name: email_violations
-                    # Upload violations to GCS.
-                    - name: gcs_violations
-                        configuration:
-                        data_format: csv
-                        # gcs_path should begin with "gs://"
-                        gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
-        ```      
+    **Notifier** 
     - Update the `notifier` section to add the `email_connector` section. 
     Example below shows the configuration for SendGrid.
         ```
@@ -992,23 +935,6 @@ to the Client ID of your service account.
                         # gcs_path should begin with "gs://"
                         gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
         ```
-1. Rule files updates:
-    - Google Groups default rule has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#google-group-rules) 
-    to include Google related service account by default. Add and modify the following to `rules/group_rules.yaml` to enable:
-    
-    ```
-    - name: Allow my company users and gmail users to be in my company groups.
-      group_email: my_customer
-      mode: whitelist
-      conditions:
-        - member_email: '@MYDOMAIN.com'
-        - member_email: '@gmail.com'
-        # GCP Service Accounts
-        # https://cloud.google.com/compute/docs/access/service-accounts
-        - member_email: "gserviceaccount.com"
-        # Big Query Transfer Service
-        - member_email: "@bqdts.google.baggins"
-    ```
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.9.0 to 2.10.0" content=upgrading_2_9_0_to_2_10_0 uid=11 %}
 
