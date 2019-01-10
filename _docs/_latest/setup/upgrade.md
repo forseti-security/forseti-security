@@ -886,7 +886,7 @@ deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml`.
 1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
-deployment_templates/deploy-forseti-server-xxxxx-2-9-0.yaml`.
+deployment_templates/deploy-forseti-server-xxxxx-2-10-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-10-0.yaml`
@@ -896,13 +896,6 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
-1. To enable the [External Project Access Scanner]({% link _docs/latest/configure/scanner/descriptions.md %}#external-project-access-scanner), go to your Google Admin
-[Manage API client access](https://admin.google.com/ManageOauthClients) Security
-settings and add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
-to the Client ID of your service account.
-    ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/cloudplatformprojects.readonly
-    ```
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Notifier** 
     - Update the `notifier` section to add the `email_connector` section. 
