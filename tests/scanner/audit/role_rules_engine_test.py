@@ -52,7 +52,7 @@ def get_rules_engine_with_rule(rule):
 
 
 class RoleRulesEngineTest(ForsetiTestCase):
-    """Tests for the BigqueryRulesEngine."""
+    """Tests for the RoleRulesEngine."""
 
     def setUp(self):
         """Set up."""
