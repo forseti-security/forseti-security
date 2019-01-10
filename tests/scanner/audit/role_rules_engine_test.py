@@ -57,6 +57,28 @@ class RoleRulesEngineTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
 
+    def test_invalid_rule_with_no_name(self):
+        """Test that a rule without name cannot be created"""
+        yaml_str_invalid_rule="""
+rules:
+  - role_name: "forsetiBigqueryViewer"
+    permissions:
+    - "bigquery.datasets.get"
+    - "bigquery.tables.get"
+    - "bigquery.tables.list"
+    resource:
+    - type: project
+      resource_ids: ['*']
+
+"""
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_invalid_rule)
+            f.flush()
+            rules_local_path = get_datafile_path(__file__, f.name)
+            with self.assertRaises(InvalidRulesSchemaError):
+                self.scanner = rrs.RoleScanner(
+                    {}, {}, mock.MagicMock(), '', '', rules_local_path)
+
     def test_invalid_rule_with_no_role_name(self):
         """Test that a rule without role_name cannot be created"""
         yaml_str_invalid_rule="""

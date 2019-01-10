@@ -35,12 +35,6 @@ class RoleTest(ForsetiTestCase):
             full_name='organization/234/',
             data='fake_org_data_234')
 
-        self.folder_56 = Folder(
-            '56',
-            display_name='Folder 56',
-            full_name='folder/56',
-            data='fake_folder_data456456')
-
         self.proj_1 = Project(
             'proj-1',
             project_number=11223344,
@@ -64,10 +58,38 @@ class RoleTest(ForsetiTestCase):
         self.assertEqual('role', role.type)
         self.assertEqual('projects/proj-1/roles/forsetiBigqueryViewer',
                          role.name)
+        self.assertEqual('organization/234/project/proj-1/role/forsetiBigqueryViewer/',
+                         role.full_name)
         self.assertEqual(['bigquery.datasets.get',
                           'bigquery.tables.get',
                           'bigquery.tables.list'],
                          role.get_permissions())
+
+    def test_role_without_parents(self):
+        """Tests creating a Role from a JSON string without a parent."""
+        json_string = (
+            r'{"description": "Access to view BigQuery datasets and tables, but not table contents", '
+            r'"etag": "BwV1mM8N7WM=", "includedPermissions": ["bigquery.datasets.get", '
+            r'"bigquery.tables.get", "bigquery.tables.list"], "name": '
+            r'"projects/proj-1/roles/forsetiBigqueryViewer", '
+            r'"title": "Forseti BigQuery Metadata Viewer"}')
+
+        role = rl.Role.from_json(None, json_string)
+
+        self.assertEqual('forsetiBigqueryViewer', role.id)
+        self.assertEqual('role', role.type)
+        self.assertEqual('projects/proj-1/roles/forsetiBigqueryViewer',
+                         role.name)
+        self.assertEqual('role/forsetiBigqueryViewer/',
+                         role.full_name)
+        self.assertEqual(['bigquery.datasets.get',
+                          'bigquery.tables.get',
+                          'bigquery.tables.list'],
+                         role.get_permissions())
+
+    def test_role_without_parents(self):
+        """Tests function _get_res_id_from_role_id with invalid input."""
+        self.assertIsNone(rl._get_res_id_from_role_id('organization/234/project/proj-1/role/forsetiBigqueryViewer/'))
 
 
 if __name__ == '__main__':
