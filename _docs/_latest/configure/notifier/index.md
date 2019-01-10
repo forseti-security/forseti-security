@@ -44,24 +44,29 @@ To configure `email_connector`, follow the steps below:
 2. Navigate to the `notifier` > `email_connector` section.
 
 If you want the notifier to send violations and/or inventory summary via email, 
-provide valid values for all the fields mentioned below.
+provide the corresponding values for all the fields mentioned below.
 
-* `auth`
+* `name`
   * **Description**: The connector you want to use to receive emails.
+  SendGrid is the only email connector supported at the moment.
   * **Valid values**: String
   
 * `auth`
   * **Description**: The authentication/authorization details required key used to authorize requests to SendGrid.
   * **Valid values**: String
+  
+* `api_key`
+  * **Description**: The key used to authorize requests to SendGrid.
+  * **Valid values**: String
 
 * `sender`
-  * **Description**: The email address of the sender of the email.
+  * **Description**: The email address of the sender.
   * **Valid values**: String
 
 * `recipient`
-  * **Description**: The email addresses of the recipients of the email.
+  * **Description**: The email addresses of the recipients.
   * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, like
+  * **Note**: Multiple email recipients as delimited by comma, for example
   `john@mycompany.com,jane@mycompany.com`.
   
 * `data_format`
