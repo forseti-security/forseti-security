@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the BigqueryRulesEngine."""
+"""Tests the RoleRulesEngine."""
 
 import copy
 import itertools
@@ -287,6 +287,48 @@ rules:
         got_violations = list(rules_engine.find_violations(fake_role))
 
         self.assertEqual(got_violations, [frsd.generate_violation(fake_role, 0, 'forsetiBigqueryViewer rule')])
+
+    yaml_str_multiple_resource_ids_rules = """
+rules:
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
+    permissions:
+    - "bigquery.datasets.get"
+    - "bigquery.tables.get"
+    - "bigquery.tables.list"
+    resource:
+    - type: project
+      resource_ids: ['def-project-1', 'def-project-2']
+
+"""
+
+    def test_no_violation_for_rules_with_multi_resource_ids(self):
+        """Role is a correct forsetiBigqueryViewer that should have no violation."""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_resource_ids_rules)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
+                                                ["bigquery.datasets.get",
+                                                 "bigquery.tables.get",
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+        self.assertEqual(got_violations, [])
+
+    def test_role_full_name(self):
+        """Test the role has a correct full name"""
+        rules_engine = get_rules_engine_with_rule(RoleRulesEngineTest.yaml_str_multiple_resource_ids_rules)
+        self.assertTrue(1 <= len(rules_engine.rule_book.rules_map))
+
+        data_creater = frsd.FakeRoleDataCreater('forsetiBigqueryViewer',
+                                                ["bigquery.datasets.get",
+                                                 "bigquery.tables.get",
+                                                 "bigquery.tables.list"], frsd.PROJECT1)
+
+        fake_role = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_role))
+        self.assertEqual(got_violations, [])
 
 
 if __name__ == '__main__':

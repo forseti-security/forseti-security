@@ -56,7 +56,7 @@ class Role(resource.Resource):
             role_id (str): The role's unique GCP ID, with the format
                 "organizations/{ORGANIZATION_ID}/roles/{ROLE_NAME}" or
                 "projects/{PROJECT_ID}/roles/{ROLE_NAME}".
-            data (str): Resource representation of the dataset.
+            data (str): Resource representation of the role.
             display_name (str): Title of the role.
             parent (Resource): The parent Resource.
         """

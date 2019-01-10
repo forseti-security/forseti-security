@@ -189,7 +189,7 @@ class Rule(object):
         """Generate a violation.
 
         Args:
-            role (TODOTODO): The role that triggers the violation.
+            role (Role): The role that triggers the violation.
         Returns:
             RuleViolation: The violation.
         """

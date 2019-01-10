@@ -105,8 +105,7 @@ class RoleScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: a list of Resources, with a type in
-                SUPPORTED_RETENTION_RES_TYPES
+            list: a list of Roles.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
@@ -114,19 +113,19 @@ class RoleScanner(base_scanner.BaseScanner):
         with scoped_session as session:
             for resource in data_access.scanner_iter(
                     session, 'role'):
-                tmp_parent = resource_util.create_resource(
+                parent = resource_util.create_resource(
                     resource_id=resource.parent.name,
                     resource_type=resource.parent.type
                 )
-                tmp_parent.full_name = resource.parent.full_name
+                parent.full_name = resource.parent.full_name
                 new_res = resource_util.create_resource_from_json(
-                    'role', tmp_parent, resource.data)
+                    'role', parent, resource.data)
                 role_res.append(new_res)
 
         return role_res
 
     def run(self):
-        """Run, he entry point for this scanner."""
+        """Run, the entry point for this scanner."""
         role_info = self._retrieve()
         all_violations = self._find_violations(role_info)
         self._output_results(all_violations)

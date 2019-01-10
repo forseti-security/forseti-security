@@ -142,3 +142,65 @@ rules:
             ])
 
             self.assertEqual(expected_violations, set(all_violations))
+
+    def test_violations_on_rules_with_multiple_resource_ids(self):
+        """Test a rule that includes more than one bucket IDs"""
+
+        rule_yaml = """
+rules:
+  - role_name: "forsetiBigqueryViewer"
+    name: "forsetiBigqueryViewer rule"
+    permissions:
+    - "bigquery.datasets.get"
+    - "bigquery.tables.get"
+    - "bigquery.tables.list"
+    resource:
+    - type: project
+      resource_ids: ['def-project-1', 'def-project-2']
+
+"""
+
+        role_test_data=[
+            frsd.FakeRoleDataInput(
+                name='forsetiBigqueryViewer',
+                permission=['bigquery.datasets.get', 'bigquery.tables.get', 'bigquery.tables.list'],
+                parent=frsd.PROJECT1
+            ),
+            frsd.FakeRoleDataInput(
+                name='forsetiBigqueryViewer',
+                permission=['bigquery.datasets.get', 'bigquery.tables.list'],
+                parent=frsd.PROJECT2
+            ),
+        ]
+
+        _mock_bucket = get_mock_role(role_test_data)
+
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(rule_yaml)
+            f.flush()
+            _fake_bucket_list = _mock_bucket(None, 'role')
+
+            self.scanner = role_scanner.RoleScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
+
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
+
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
+
+            role_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(role_info)
+
+            res_map = {}
+            for i in _fake_bucket_list:
+                res_map[i.id] = i
+
+            expected_violations = set([
+                frsd.generate_violation(res_map['forsetiBigqueryViewer'], 0, 'forsetiBigqueryViewer rule'),
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))
