@@ -48,7 +48,7 @@ provide the corresponding values for all the fields mentioned below.
 * `name`
   * **Description**: The connector you want to use to receive emails.
   SendGrid is the only email connector supported at the moment.
-  * **Valid values**: String
+  * **Valid values**: sendgrid
   
 * `auth`
   * **Description**: The authentication/authorization key used to authorize requests to SendGrid.
