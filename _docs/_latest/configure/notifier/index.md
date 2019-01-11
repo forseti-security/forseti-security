@@ -38,6 +38,8 @@ provided, and it will be used to notify violations when found for the enabled
 scanners. The connector details entered in this section  will also be used to 
 send inventory summary email, if enabled.
 
+The content in the `global` section in `forseti_conf_server.yaml` can be taken 
+off.
 To configure `email_connector`, follow the steps below:
 
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
@@ -271,9 +273,9 @@ and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
 
 ### Email notifications
 
-Forseti Security can send email notifications using the SendGrid API as well. 
-SendGrid is the free email service provider for GCP. For information about
-how to get 12,000 free emails every month, see
+Forseti Security can send email notifications using the SendGrid API. 
+SendGrid is the suggested free email service provider for GCP. For information
+about how to get 12,000 free emails every month, see
 [Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
 To use SendGrid to send email notifications for Forseti Security, follow the
@@ -292,10 +294,11 @@ disable SendGrid
 
 ### Add the email connector
 
-To add the email connector of your choice, create the connector specific class 
-under `google.cloud.forseti.common.util.email` that inherits the base email 
-connector class, base_email_connector.py, and implements the methods to send out 
-emails using the new connector that's being added.
+To add a new email connector of your choice, create the connector specific class
+similar to `sendgrid_connector.py` under 
+`google.cloud.forseti.common.util.email`. This class would inherits the base 
+email connector class, base_email_connector.py, and implements the methods to 
+send out emails using the new connector that's being added.
 
 ## What's next
 
