@@ -1,5 +1,7 @@
 global:
 
+    dummy_key: this_is_just_a_placeholder_see_issue_2486
+
 ##############################################################################
 
 inventory:
