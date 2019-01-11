@@ -907,6 +907,21 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                 # Defaults to 3600 if not set.
                 api_timeout: 3600
         ``` 
+    - Update the `cai` section to include the following newly fetched asset 
+    types from CAI.
+        ```                
+        inventory:
+            ...
+            cai:
+                # If commented out then all currently supported asset types are
+                # exported from Cloud Asset API. The list of default asset types is
+                # in google/cloud/forseti/services/inventory/base/cloudasset.py
+                
+                #asset_types:
+                #   - google.cloud.sql.Instance
+                #   - google.compute.VpnTunnel
+                #   - google.pubsub.Subscription
+        ``` 
     **Notifier** 
     - Update the `notifier` section to add the `email_connector` section. 
     Functionality will not change if `email_connector` section isn't added as 
