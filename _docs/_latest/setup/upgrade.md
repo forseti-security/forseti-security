@@ -1015,6 +1015,6 @@ This will recreate the VM with updated fields.
 * Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
 [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti to send
-[email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+[email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
 * Enable [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
 for processing by Forseti.

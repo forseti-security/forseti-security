@@ -88,7 +88,7 @@ steps below:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
        more information, see how to
-       [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+       [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
      * G Suite super admin email \[Optional\]: This is part of the
@@ -118,7 +118,7 @@ steps below:
   [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti Notifier to send
-  [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+  [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
 * Enable
   [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
   for processing by Forseti.
