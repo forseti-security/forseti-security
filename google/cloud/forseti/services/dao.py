@@ -616,7 +616,8 @@ def define_model(model_name, dbengine, model_seed):
                         roles=[role])
                     LOGGER.info('iam_policy: %s', iam_policy)
                 except NoResultFound:
-                    LOGGER.debug('Found a project in non-existent IAM binding.')
+                    LOGGER.warning('Found a project in non-existent IAM binding'
+                                   'for parent_menber: %s', parent_member)
                     continue
                 members = iam_policy.get('bindings', {}).get(role, [])
                 expanded_members = cls.expand_members(session, members)
