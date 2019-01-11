@@ -940,6 +940,14 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                         # gcs_path should begin with "gs://"
                         gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
         ```
+    - If you are making this change, please remove the email configuration 
+    from `global` section.
+    ```
+    global:
+        email_recipient: {EMAIL_RECIPIENT}
+        email_sender: {EMAIL_SENDER}
+        sendgrid_api_key: {SENDGRID_API_KEY}
+   ```
 1. Update the server service account role at organization level from
  `roles/bigquery.dataViewer` to `roles/bigquery.metadataviewer`.
 {% endcapture %}
