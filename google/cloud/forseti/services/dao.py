@@ -44,6 +44,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import reconstructor
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -608,10 +609,15 @@ def define_model(model_name, dbengine, model_seed):
                     session, '', member_types=member_type_map.keys()):
                 member_type, project_id = parent_member.split('/')
                 role = member_type_map[member_type]
-                iam_policy = cls.get_iam_policy(
-                    session,
-                    'project/{}'.format(project_id),
-                    roles=[role])
+                try:
+                    iam_policy = cls.get_iam_policy(
+                        session,
+                        'project/{}'.format(project_id),
+                        roles=[role])
+                    LOGGER.info('iam_policy: %s', iam_policy)
+                except NoResultFound:
+                    LOGGER.debug('Found a project in non-existent IAM binding.')
+                    continue
                 members = iam_policy.get('bindings', {}).get(role, [])
                 expanded_members = cls.expand_members(session, members)
                 for member in expanded_members:
