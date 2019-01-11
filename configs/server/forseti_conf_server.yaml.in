@@ -1,5 +1,7 @@
 global:
 
+    dummy_key: this_is_just_a_placeholder_see_issue_2486
+
 ##############################################################################
 
 inventory:
@@ -224,9 +226,9 @@ notifier:
     email_connector:
       name: sendgrid
       auth:
-        api_key: ''
-      sender: ''
-      recipient: ''
+        api_key: {SENDGRID_API_KEY}
+      sender: {EMAIL_SENDER}
+      recipient: {EMAIL_RECIPIENT}
       data_format: csv
 
     # For every resource type you can set up a notification pipeline
