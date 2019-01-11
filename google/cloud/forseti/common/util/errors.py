@@ -29,6 +29,19 @@ class InvalidFileExtensionError(Error):
     pass
 
 
+class InvalidInputError(Exception):
+    """Exception raised when an invalid input is encountered."""
+
+    def __init__(self, invalid_input):
+        """Constructor for invalid input error.
+
+        Args:
+            invalid_input (dict): the invalid data format in question.
+        """
+        super(InvalidInputError, self).__init__(
+            'Invalid input found: %s' % invalid_input)
+
+
 class InvalidParserTypeError(Error):
     """No parser exists for the given parser type."""
     pass

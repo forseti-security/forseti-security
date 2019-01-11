@@ -29,6 +29,63 @@ from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
+# Any asset type referenced in cai_gcp_client.py needs to be added here.
+DEFAULT_ASSET_TYPES = [
+    'google.appengine.Application',
+    'google.appengine.Service',
+    'google.appengine.Version',
+    'google.cloud.bigquery.Dataset',
+    'google.cloud.billing.BillingAccount',
+    'google.cloud.dataproc.Cluster',
+    'google.cloud.dns.ManagedZone',
+    'google.cloud.dns.Policy',
+    'google.cloud.kms.CryptoKey',
+    'google.cloud.kms.CryptoKeyVersion',
+    'google.cloud.kms.KeyRing',
+    'google.cloud.resourcemanager.Folder',
+    'google.cloud.resourcemanager.Organization',
+    'google.cloud.resourcemanager.Project',
+    'google.cloud.sql.Instance',
+    'google.cloud.storage.Bucket',
+    'google.compute.Autoscaler',
+    'google.compute.BackendBucket',
+    'google.compute.BackendService',
+    'google.compute.Disk',
+    'google.compute.Firewall',
+    'google.compute.ForwardingRule',
+    'google.compute.HealthCheck',
+    'google.compute.HttpHealthCheck',
+    'google.compute.HttpsHealthCheck',
+    'google.compute.Image',
+    'google.compute.Instance',
+    'google.compute.InstanceGroup',
+    'google.compute.InstanceGroupManager',
+    'google.compute.InstanceTemplate',
+    'google.compute.License',
+    'google.compute.Network',
+    'google.compute.Project',
+    'google.compute.Router',
+    'google.compute.Snapshot',
+    'google.compute.SslCertificate',
+    'google.compute.Subnetwork',
+    'google.compute.TargetHttpProxy',
+    'google.compute.TargetHttpsProxy',
+    'google.compute.TargetInstance',
+    'google.compute.TargetPool',
+    'google.compute.TargetSslProxy',
+    'google.compute.TargetTcpProxy',
+    'google.compute.TargetVpnGateway',
+    'google.compute.UrlMap',
+    'google.compute.VpnTunnel',
+    'google.container.Cluster',
+    'google.iam.Role',
+    'google.iam.ServiceAccount',
+    'google.pubsub.Subscription',
+    'google.pubsub.Topic',
+    'google.spanner.Database',
+    'google.spanner.Instance',
+]
+
 
 def load_cloudasset_data(session, config):
     """Export asset data from Cloud Asset API and load into storage.
@@ -89,6 +146,10 @@ def _export_assets(cloudasset_client, config, content_type):
             error.
     """
     asset_types = config.get_cai_asset_types()
+    if not asset_types:
+        asset_types = DEFAULT_ASSET_TYPES
+    timeout = config.get_cai_timeout()
+
     root_id = config.get_root_resource_id()
     timestamp = int(time.time())
     export_path = _get_gcs_path(config.get_cai_gcs_path(),
@@ -108,7 +169,7 @@ def _export_assets(cloudasset_client, config, content_type):
                                                   content_type=content_type,
                                                   asset_types=asset_types,
                                                   blocking=True,
-                                                  timeout=3600)
+                                                  timeout=timeout)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)

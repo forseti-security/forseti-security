@@ -286,7 +286,6 @@ class CrawlerTest(CrawlerBase):
         expected_counts.pop('gsuite_user')
         expected_counts.pop('gsuite_user_member')
 
-
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_with_apis_disabled(self):
@@ -386,13 +385,17 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetpool': {'resource': 1},
             'compute_targetsslproxy': {'resource': 1},
             'compute_targettcpproxy': {'resource': 1},
+            'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
-            'dataset': {'dataset_policy': 1, 'iam_policy': 1, 'resource': 2},
+            'compute_vpntunnel': {'resource': 1},
+            'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
+            'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
+            'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
@@ -427,12 +430,14 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'backendservice': {'resource': 1},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
+            'cloudsqlinstance': {'resource': 1},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
             'compute_healthcheck': {'resource': 1},
             'compute_httphealthcheck': {'resource': 1},
             'compute_httpshealthcheck': {'resource': 1},
             'compute_license': {'resource': 1},
+            'compute_project': {'resource': 2},
             'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
@@ -441,8 +446,11 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetpool': {'resource': 1},
             'compute_targetsslproxy': {'resource': 1},
             'compute_targettcpproxy': {'resource': 1},
+            'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
-            'dataset': {'dataset_policy': 1, 'iam_policy': 1, 'resource': 2},
+            'compute_vpntunnel': {'resource': 1},
+            'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
+            'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'disk': {'resource': 4},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
@@ -461,6 +469,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'network': {'resource': 2},
             'organization': {'resource': 1},
             'project': {'iam_policy': 2, 'resource': 4},
+            'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 2},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
@@ -549,8 +558,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         storage)
 
         expected_counts = {
-            'cloudsqlinstance': {'resource': 1},
-            'compute_project': {'resource': 2},
             'crm_org_policy': {'resource': 5},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},

@@ -37,7 +37,7 @@ class SlackWebhook(base_notification.BaseNotification):
             output: a string formatted violation
         """
         output = ''
-        for key, value in data.iteritems():
+        for key, value in sorted(data.items()):
             output += '\t' * indent + '*' + str(key) + '*:'
             if isinstance(value, dict):
                 output += '\n' + self._dump_slack_output(value,
@@ -49,33 +49,27 @@ class SlackWebhook(base_notification.BaseNotification):
 
         return output
 
-    def _compose(self, **kwargs):
+    def _compose(self, violation):
         """Composes the slack webhook content
 
         Args:
-            **kwargs: Arbitrary keyword arguments.
+            violation (object): Violation to transform to ascii output.
 
         Returns:
             webhook_payload: a string formatted violation
         """
-        violation = kwargs.get('violation')
 
-        payload = {
-            'type': self.resource,
-            'details': violation.get('violation_data')
-        }
+        return ('*type*:\t`{}`\n*details*:\n'.format(self.resource) +
+                self._dump_slack_output(violation.get('violation_data'), 1))
 
-        return self._dump_slack_output(payload)
-
-    def _send(self, **kwargs):
+    def _send(self, payload):
         """Sends a post to a Slack webhook url
 
         Args:
-            **kwargs: Arbitrary keyword arguments.
-                payload: violation data for body of POST request\
+            payload (str): Payload data to send to slack.
         """
         url = self.notification_config.get('webhook_url')
-        request = requests.post(url, json={'text': kwargs.get('payload')})
+        request = requests.post(url, json={'text': payload})
 
         LOGGER.info(request)
 

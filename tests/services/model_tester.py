@@ -55,7 +55,11 @@ class ModelCreatorClient(object):
 
     def set_iam_policy(self, full_resource_name, policy):
         return self.data_access.set_iam_policy(
-            self.session, utils.full_to_type_name(full_resource_name), policy)
+            self.session, utils.full_to_type_name(full_resource_name), policy,
+            update_members=True)
+
+    def expand_special_members(self):
+        self.data_access.expand_special_members(self.session)
 
     def commit(self):
         self.session.commit()
@@ -144,3 +148,4 @@ class ModelCreator(object):
             client.set_iam_policy(resource_name,
                                   {'bindings': bindings,
                                    'etag': reply.policy.etag})
+        client.expand_special_members()
