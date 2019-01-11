@@ -32,10 +32,8 @@ and varying formats to you to events in your Google Cloud Platform
 ### Email Connector Config
 
 Forseti security provides an interface to add the email connector of your
-choice. A new section named `email_connector` has been introduced under 
-`notifier` as part of the new design. The connector details provided in this
-section will be used to send out inventory summary and violations via email
-when found.
+choice. The `email_connector` information will be used when sending out
+all email notifications.
 
 To configure `email_connector`, follow the steps below:
 
