@@ -33,6 +33,8 @@ SUPPORTED_RETENTION_RES_TYPES = frozenset([type_resource.ResourceType.BUCKET,
                                            type_resource.ResourceType.TABLE])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
+_MS_PER_DAY = 24 * 60 * 60 * 1000
+
 RuleViolation = collections.namedtuple(
     'RuleViolation',
     ['resource_name', 'resource_type', 'full_name', 'rule_name',
@@ -81,9 +83,8 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
 
         violations = itertools.chain()
         resource_rules = self.rule_book.get_resource_rules(resource.type)
-        res = resource_util.create_resource(resource.id, resource.type)
         resource_ancestors = (relationship.find_ancestors(
-            res, resource.full_name))
+            resource, resource.full_name))
 
         for related_resources in resource_ancestors:
             rules = resource_rules.get(related_resources, [])
@@ -253,8 +254,6 @@ class RetentionRuleBook(bre.BaseRuleBook):
 class Rule(object):
     """Rule properties from the rule definition file. Also finds violations."""
 
-    _MS_PER_DAY = 24 * 60 * 60 * 1000
-
     def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
 
@@ -329,7 +328,7 @@ class Rule(object):
             return self.find_violations_in_bucket(res)
         elif res.type == type_resource.ResourceType.TABLE:
             return self.find_violations_in_table(res)
-        raise ValueError('only %s are currently supported.'%', '.join(
+        raise ValueError('only %s are currently supported.' % ', '.join(
             SUPPORTED_RETENTION_RES_TYPES))
 
     def bucket_max_retention_violation(self, bucket):
@@ -405,7 +404,7 @@ class Rule(object):
         else:
             table_creation = table_dict['creationTime']
             diff = long(table_expiration) - long(table_creation)
-            if diff > self.max_retention * Rule._MS_PER_DAY:
+            if diff > self.max_retention * _MS_PER_DAY:
                 yield self.generate_table_violation(table)
 
     def table_min_retention_violation(self, table):
@@ -427,7 +426,7 @@ class Rule(object):
 
         table_creation = table_dict.get('creationTime')
         diff = long(table_expiration) - long(table_creation)
-        if diff < self.min_retention * Rule._MS_PER_DAY:
+        if diff < self.min_retention * _MS_PER_DAY:
             yield self.generate_table_violation(table)
 
     def find_violations_in_table(self, table):

@@ -525,6 +525,7 @@ class InventoryImporter(object):
             'appengine_service': self._convert_gae_resource,
             'appengine_version': self._convert_gae_resource,
             'backendservice': self._convert_computeengine_resource,
+            'bigquery_table': self._convert_bigquery_table,
             'billing_account': self._convert_billing_account,
             'bucket': self._convert_bucket,
             'cloudsqlinstance': self._convert_cloudsqlinstance,
@@ -573,7 +574,6 @@ class InventoryImporter(object):
             'spanner_database': self._convert_spanner_db_resource,
             'spanner_instance': self._convert_spanner_resource,
             'subnetwork': self._convert_computeengine_resource,
-            'bigquery_table': self._convert_bigquery_table,
             None: None,
         }
 

@@ -47,7 +47,7 @@ class Table(resource.Resource):
             full_name (str): The full resource name and ancestry.
             data (str): Resource representation of the table.
             name (str): The table's unique GCP name, with the
-                format "tables/{id}".
+                format "bigquery_tables/{id}".
             display_name (str): The table's display name.
             locations (List[str]): Locations this table resides in. If set,
                 there should be exactly one element in the list.
@@ -68,14 +68,14 @@ class Table(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
-        """Create a bucket from a JSON string.
+        """Create a Table from a JSON string.
 
         Args:
-            parent (Resource): resource this bucket belongs to.
-            json_string(str): JSON string of a bucket GCP API response.
+            parent (Resource): resource this table belongs to.
+            json_string(str): JSON string of a table GCP API response.
 
         Returns:
-            Bucket: bucket resource.
+            Table: table resource.
         """
         table_dict = json.loads(json_string)
         table_id = table_dict['id']

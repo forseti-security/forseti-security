@@ -240,10 +240,12 @@ rules:
 
 """
 
-    def test_number_of_rules(self):
+    def test_number_of_bucket_rules(self):
         """The number of rules should be exactly the same as the length of SUPPORTED_RETENTION_RES_TYPES."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
-        self.assertTrue(len(rre.SUPPORTED_RETENTION_RES_TYPES) == len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map['bucket']))
+        self.assertEqual(0, len(rules_engine.rule_book.resource_rules_map['bigquery_table']))
 
 
     def test_only_max_normal_delete(self):
@@ -834,6 +836,14 @@ rules:
     maximum_retention: 90
 
 """
+
+    def test_number_of_bigquery_rules(self):
+        """The number of rules should be exactly the same as the length of SUPPORTED_RETENTION_RES_TYPES."""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(0, len(rules_engine.rule_book.resource_rules_map['bucket']))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map['bigquery_table']))
+
     def test_bigquery_retention_on_project_no_expiration_time(self):
         """Test a bigquery table without expiration time."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
@@ -852,7 +862,7 @@ rules:
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+91*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+91 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
@@ -866,7 +876,7 @@ rules:
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+89*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+89 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
@@ -879,7 +889,7 @@ rules:
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+90*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+90 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
@@ -907,7 +917,7 @@ rules:
             RetentionRulesEngineTest.yaml_str_bigquery_retention_on_bigquery_table)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+93*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+93 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
@@ -922,7 +932,7 @@ rules:
             RetentionRulesEngineTest.yaml_str_bigquery_retention_on_bigquery_table)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+89*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+89 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
@@ -936,12 +946,42 @@ rules:
             RetentionRulesEngineTest.yaml_str_bigquery_retention_on_bigquery_table)
 
         data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
-        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+91*3600000*24)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+91 * rre._MS_PER_DAY)
 
         fake_table = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_table))
         expected_violations = []
         self.assertEqual(got_violations, expected_violations)
+
+    yaml_str_number_of_rules = """
+rules:
+  - name: only max retention
+    applies_to:
+      - bucket
+    resource:
+      - type: bucket
+        resource_ids:
+          - fake_bucket
+    maximum_retention: 365
+  - name: bigquery retention on projects
+    applies_to:
+      - bigquery_table
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-5
+    minimum_retention: 90
+    maximum_retention: 90
+
+"""
+
+    def test_number_of_rules(self):
+        """The number of rules should be exactly the same as the length of SUPPORTED_RETENTION_RES_TYPES."""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_number_of_rules)
+        self.assertEqual(len(rre.SUPPORTED_RETENTION_RES_TYPES), 2)
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map['bucket']))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map['bigquery_table']))
 
 
 if __name__ == '__main__':

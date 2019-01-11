@@ -446,17 +446,17 @@ rules:
             frsd.FakeTableDataInput(
                 table_id='fake-table-01',
                 dataset=frsd.DATASET1,
-                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+110*3600000*24
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+110 * rre._MS_PER_DAY
             ),
             frsd.FakeTableDataInput(
                 table_id='fake-table-02',
                 dataset=frsd.DATASET1,
-                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+89*3600000*24
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+89 * rre._MS_PER_DAY
             ),
             frsd.FakeTableDataInput(
                 table_id='fake-table-03',
                 dataset=frsd.DATASET1,
-                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+91*3600000*24
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+91 * rre._MS_PER_DAY
             ),
         ]
 
