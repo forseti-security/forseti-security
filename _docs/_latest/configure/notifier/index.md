@@ -35,8 +35,7 @@ Forseti security provides an interface to add the email connector of your
 choice. A new section named `email_connector` has been introduced under 
 `notifier` as part of the new design. The connector details provided in this
 section will be used to send out inventory summary and violations via email
-when found.notify users violations when found for the enabled
-scanners. 
+when found.
 
 The content in the `global` section in `forseti_conf_server.yaml` can be taken 
 off.
