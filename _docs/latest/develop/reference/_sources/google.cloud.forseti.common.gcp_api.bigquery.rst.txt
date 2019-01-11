@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.bigquery module
+====================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api.bigquery
+    :members:
+    :undoc-members:
+    :show-inheritance:

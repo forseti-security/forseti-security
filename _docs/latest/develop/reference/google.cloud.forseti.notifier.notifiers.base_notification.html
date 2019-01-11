@@ -1,0 +1,94 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.notifier.notifiers.base_notification module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.notifier.notifiers.base_notification">
+<span id="google-cloud-forseti-notifier-notifiers-base-notification-module"></span><h1>google.cloud.forseti.notifier.notifiers.base_notification module<a class="headerlink" href="#module-google.cloud.forseti.notifier.notifiers.base_notification" title="Permalink to this headline">¶</a></h1>
+<p>Base notifier to perform notifications</p>
+<dl class="class">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification">
+<em class="property">class </em><code class="descname">BaseNotification</code><span class="sig-paren">(</span><em>resource</em>, <em>inventory_index_id</em>, <em>violations</em>, <em>global_configs</em>, <em>notifier_config</em>, <em>notification_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/base_notification.html#BaseNotification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base notifier to perform notifications</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 185</em><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._get_output_filename">
+<code class="descname">_get_output_filename</code><span class="sig-paren">(</span><em>filename_template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/base_notification.html#BaseNotification._get_output_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._get_output_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the output filename.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename_template</strong> (<em>string</em>) – template to use for the output filename</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The output filename for the violations CSV file.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.check_data_format">
+<em class="property">classmethod </em><code class="descname">check_data_format</code><span class="sig-paren">(</span><em>data_format</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/base_notification.html#BaseNotification.check_data_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.check_data_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise <cite>InvalidDataFormatError</cite> unless <cite>data_format</cite> is supported.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_format</strong> (<em>string</em>) – should be either ‘csv’ or ‘json’</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.notifier.notifiers.base_notification.InvalidDataFormatError" title="google.cloud.forseti.notifier.notifiers.base_notification.InvalidDataFormatError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidDataFormatError</span></code></a> – if not valid</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/base_notification.html#BaseNotification.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the notifier.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.supported_data_formats">
+<code class="descname">supported_data_formats</code><em class="property"> = ['csv', 'json']</em><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.supported_data_formats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.notifier.notifiers.base_notification.InvalidDataFormatError">
+<em class="property">exception </em><code class="descname">InvalidDataFormatError</code><span class="sig-paren">(</span><em>notifier</em>, <em>invalid_data_format</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/base_notification.html#InvalidDataFormatError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.base_notification.InvalidDataFormatError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions.Exception</span></code></p>
+<p>Raised in case of an invalid notifier data format.</p>
+</dd></dl>
+
+</div>
+
