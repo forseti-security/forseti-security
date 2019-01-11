@@ -37,8 +37,6 @@ choice. A new section named `email_connector` has been introduced under
 section will be used to send out inventory summary and violations via email
 when found.
 
-The content in the `global` section in `forseti_conf_server.yaml` can be taken 
-off.
 To configure `email_connector`, follow the steps below:
 
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
@@ -53,7 +51,7 @@ provide the corresponding values for all the fields mentioned below.
   * **Valid values**: String
   
 * `auth`
-  * **Description**: The authentication/authorization details required key used to authorize requests to SendGrid.
+  * **Description**: The authentication/authorization key used to authorize requests to SendGrid.
   * **Valid values**: String
   
 * `api_key`
@@ -74,7 +72,6 @@ provide the corresponding values for all the fields mentioned below.
   * **Description**: The format of the data generated for a given violation, and
   inventory summary.
   * **Valid values**: one of valid `csv` or `json`.
-  * **Note**: Slack only supports the `json` type.
   
 YAML below shows the email connector config for SendGrid.
 
@@ -291,13 +288,16 @@ emails. This may cause email warnings about opening images. To disable this,
 disable SendGrid
 [Open Tracking](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
-### Add the email connector
+### Adding a new email connector
 
-To add a new email connector of your choice, create the connector specific class
-similar to `sendgrid_connector.py` under 
-`google.cloud.forseti.common.util.email`. This class would inherits the base 
-email connector class, base_email_connector.py, and implements the methods to 
-send out emails using the new connector that's being added.
+1. To add a new email connector of your choice, create the connector specific 
+class similar to `sendgrid_connector.py` under 
+`google.cloud.forseti.common.util.email`. 
+1. This class should inherits the base email connector class, 
+base_email_connector.py, and implements the methods to send out emails using 
+the new connector that's being added.
+1. Update the `email_connector` section under `notifier` in 
+`forseti_conf_server.yaml` with configuration details of the new connector.
 
 ## What's next
 
