@@ -948,6 +948,11 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
         email_sender: {EMAIL_SENDER}
         sendgrid_api_key: {SENDGRID_API_KEY}
    ```
+   - Please add the placeholder value in the `global` section as shown below:
+   ```
+   global:
+       dummy_key: this_is_just_a_placeholder_see_issue_2486
+   ```
 1. Update the server service account role at organization level from
  `roles/bigquery.dataViewer` to `roles/bigquery.metadataviewer`.
 {% endcapture %}
