@@ -443,3 +443,32 @@ defaults:
       path: _docs/v2.9/faq
     values:
       category: FAQ (v2.9)
+  - scope:
+      path: _docs/v2.10
+    values:
+      category: Overview (v2.10)
+      layout: docs
+  - scope:
+      path: _docs/v2.10/concepts
+    values:
+      category: Concepts (v2.10)
+  - scope:
+      path: _docs/v2.10/setup
+    values:
+      category: Setup (v2.10)
+  - scope:
+      path: _docs/v2.10/use
+    values:
+      category: Use (v2.10)
+  - scope:
+      path: _docs/v2.10/configure
+    values:
+      category: Configure (v2.10)
+  - scope:
+      path: _docs/v2.10/develop
+    values:
+      category: Develop (v2.10)
+  - scope:
+      path: _docs/v2.10/faq
+    values:
+      category: FAQ (v2.10)

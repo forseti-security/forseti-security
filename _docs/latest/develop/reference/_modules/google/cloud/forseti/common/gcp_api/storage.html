@@ -1,0 +1,750 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.storage"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_api.storage</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper for Storage API client.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">StringIO</span>
+<span class="kn">import</span> <span class="nn">urlparse</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">httplib2</span> <span class="k">import</span> <span class="n">HttpLib2Error</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">_base_repository</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">api_helpers</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">repository_mixins</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">metadata_server</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">GCS_SCHEME</span> <span class="o">=</span> <span class="s1">&#39;gs&#39;</span>
+
+
+<div class="viewcode-block" id="get_bucket_and_path_from"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.get_bucket_and_path_from">[docs]</a><span class="k">def</span> <span class="nf">get_bucket_and_path_from</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the bucket and object path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        full_path (str): The full GCS path. Must be in the format</span>
+<span class="sd">            gs://bucket-name/path/to/object</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: The bucket name and object path.</span>
+<span class="sd">            Ex. (bucket-name, path/to/object)</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        InvalidBucketPathError: Raised if the full path cannot be parsed or</span>
+<span class="sd">            does not look like a GCS bucket URL.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not parse path </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">full_path</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">parsed</span> <span class="ow">or</span> <span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span> <span class="o">!=</span> <span class="n">GCS_SCHEME</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">InvalidBucketPathError</span><span class="p">(</span>
+            <span class="s1">&#39;Invalid bucket path: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span>
+
+    <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span>
+    <span class="n">object_name</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># Skip leading / in path.</span>
+    <span class="k">return</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">object_name</span></div>
+
+
+<div class="viewcode-block" id="_get_projectid_from_metadata"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._get_projectid_from_metadata">[docs]</a><span class="k">def</span> <span class="nf">_get_projectid_from_metadata</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get the current project id from the metadata server, if reachable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The current project id or None if the metadata server is</span>
+<span class="sd">            unreachable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">metadata_server</span><span class="o">.</span><span class="n">can_reach_metadata_server</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">metadata_server</span><span class="o">.</span><span class="n">get_project_id</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="_user_project_missing_error"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._user_project_missing_error">[docs]</a><span class="k">def</span> <span class="nf">_user_project_missing_error</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses the error and checks if it is a no user project exception.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        error (Exception): The error message to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if this is a user project missing error, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">400</span> <span class="ow">and</span>
+                <span class="n">error</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-type&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                    <span class="s1">&#39;application/json&#39;</span><span class="p">)):</span>
+            <span class="n">error_details</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+            <span class="n">all_errors</span> <span class="o">=</span> <span class="n">error_details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;errors&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">user_project_required_errors</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">err</span> <span class="k">for</span> <span class="n">err</span> <span class="ow">in</span> <span class="n">all_errors</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;global&#39;</span> <span class="ow">and</span>
+                    <span class="n">err</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reason&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;required&#39;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">user_project_required_errors</span> <span class="ow">and</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">user_project_required_errors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="StorageRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">StorageRepositoryClient</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Storage API Respository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">credentials</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_max_calls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_period</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            credentials (GoogleCredentials): An optional GoogleCredentials</span>
+<span class="sd">                object to use.</span>
+<span class="sd">            quota_max_calls (int): Allowed requests per &lt;quota_period&gt; for the</span>
+<span class="sd">                API.</span>
+<span class="sd">            quota_period (float): The time period to limit the requests within.</span>
+<span class="sd">            use_rate_limiter (bool): Set to false to disable the use of a rate</span>
+<span class="sd">                limiter for this service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
+            <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buckets</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_acls</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_object_acls</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objects</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_acls</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">StorageRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;storage&#39;</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1&#39;</span><span class="p">],</span>
+            <span class="n">credentials</span><span class="o">=</span><span class="n">credentials</span><span class="p">,</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An _StorageBucketsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buckets</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_buckets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_StorageBucketsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buckets</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bucket_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An _StorageBucketAclsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_acls</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_acls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_StorageBucketAclsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_acls</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_object_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An _StorageDefaultObjectAclsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_object_acls</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_default_object_acls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_StorageDefaultObjectAclsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_object_acls</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An _StorageObjectsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_StorageObjectsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objects</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">object_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An _StorageObjectAclsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_acls</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_acls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_StorageObjectAclsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_acls</span></div>
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+
+<div class="viewcode-block" id="_StorageBucketsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageBucketsRepository">[docs]</a><span class="k">class</span> <span class="nc">_StorageBucketsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Storage Buckets repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_StorageBucketsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;buckets&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Extend the base get_iam_policy implementation to support buckets.</span>
+    <span class="c1"># pylint: disable=arguments-differ</span>
+<div class="viewcode-block" id="_StorageBucketsRepository.get_iam_policy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageBucketsRepository.get_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get Bucket IAM Policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The id of the bucket to fetch.</span>
+<span class="sd">            fields (str): Fields to include in the response - partial response.</span>
+<span class="sd">            **kwargs (dict): Optional additional arguments to pass to the query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: GCE response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The Buckets getIamPolicy does not allow the &#39;body&#39; argument, so this</span>
+        <span class="c1"># overrides the default behavior by setting include_body to False. It</span>
+        <span class="c1"># also takes a bucket id instead of a resource path.</span>
+        <span class="k">return</span> <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">include_body</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">resource_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+    <span class="c1"># pylint: enable=arguments-differ</span>
+
+
+<div class="viewcode-block" id="_StorageBucketAclsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageBucketAclsRepository">[docs]</a><span class="k">class</span> <span class="nc">_StorageBucketAclsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Storage Bucket Access Controls repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_StorageBucketAclsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;bucketAccessControls&#39;</span><span class="p">,</span> <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_StorageDefaultObjectAclsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageDefaultObjectAclsRepository">[docs]</a><span class="k">class</span> <span class="nc">_StorageDefaultObjectAclsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Storage Default Object Access Controls repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_StorageDefaultObjectAclsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;defaultObjectAccessControls&#39;</span><span class="p">,</span> <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_StorageObjectsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectsRepository">[docs]</a><span class="k">class</span> <span class="nc">_StorageObjectsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Iam Projects ServiceAccounts repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_StorageObjectsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;objects&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Extend the base get_iam_policy implementation to support objects.</span>
+    <span class="c1"># pylint: disable=arguments-differ</span>
+<div class="viewcode-block" id="_StorageObjectsRepository.get_iam_policy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectsRepository.get_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get Object IAM Policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The name of the bucket to fetch.</span>
+<span class="sd">            object_name (str): The name of the object to fetch.</span>
+<span class="sd">            fields (str): Fields to include in the response - partial response.</span>
+<span class="sd">            **kwargs (dict): Optional additional arguments to pass to the query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: GCE response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The Objects getIamPolicy does not allow the &#39;body&#39; argument, so this</span>
+        <span class="c1"># overrides the default behavior by setting include_body to False. It</span>
+        <span class="c1"># also takes a bucket id and object id instead of a resource path.</span>
+        <span class="k">return</span> <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">include_body</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">resource_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="nb">object</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="c1"># pylint: enable=arguments-differ</span>
+
+<div class="viewcode-block" id="_StorageObjectsRepository.download"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectsRepository.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Download an object from a bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The name of the bucket to read from.</span>
+<span class="sd">            object_name (str): The name of the object to read.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The contents of the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">verb_arguments</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;bucket&#39;</span><span class="p">:</span> <span class="n">bucket</span><span class="p">,</span>
+            <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">}</span>
+
+        <span class="n">media_request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_request</span><span class="p">(</span><span class="s1">&#39;get_media&#39;</span><span class="p">,</span> <span class="n">verb_arguments</span><span class="p">)</span>
+        <span class="n">media_request</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span>
+
+        <span class="n">file_content</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">out_stream</span> <span class="o">=</span> <span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">downloader</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">MediaIoBaseDownload</span><span class="p">(</span><span class="n">out_stream</span><span class="p">,</span> <span class="n">media_request</span><span class="p">)</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">done</span> <span class="o">=</span> <span class="n">downloader</span><span class="o">.</span><span class="n">next_chunk</span><span class="p">(</span><span class="n">num_retries</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_retries</span><span class="p">)</span>
+            <span class="n">file_content</span> <span class="o">=</span> <span class="n">out_stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">out_stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">file_content</span></div>
+
+<div class="viewcode-block" id="_StorageObjectsRepository.download_to_file"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectsRepository.download_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">download_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Download an object from a bucket.</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">            bucket (str): The name of the bucket to read from.</span>
+<span class="sd">            object_name (str): The name of the object to read.</span>
+<span class="sd">            output_file (file): The file object to write the data to.</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">            int: Total size in bytes of file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">verb_arguments</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;bucket&#39;</span><span class="p">:</span> <span class="n">bucket</span><span class="p">,</span>
+            <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">}</span>
+
+        <span class="n">media_request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_request</span><span class="p">(</span><span class="s1">&#39;get_media&#39;</span><span class="p">,</span> <span class="n">verb_arguments</span><span class="p">)</span>
+        <span class="n">media_request</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span>
+
+        <span class="n">downloader</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">MediaIoBaseDownload</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">media_request</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">progress</span><span class="p">,</span> <span class="n">done</span> <span class="o">=</span> <span class="n">downloader</span><span class="o">.</span><span class="n">next_chunk</span><span class="p">(</span>
+                <span class="n">num_retries</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_retries</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">progress</span><span class="o">.</span><span class="n">total_size</span></div>
+
+<div class="viewcode-block" id="_StorageObjectsRepository.upload"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectsRepository.upload">[docs]</a>    <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">file_content</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Upload an object to a bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The id of the bucket to insert into.</span>
+<span class="sd">            object_name (str): The name of the object to write.</span>
+<span class="sd">            file_content (file): An open file object of the content to write to</span>
+<span class="sd">                the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The resource metadata for the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">object_name</span>
+        <span class="p">}</span>
+        <span class="n">verb_arguments</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;bucket&#39;</span><span class="p">:</span> <span class="n">bucket</span><span class="p">,</span>
+            <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="n">body</span><span class="p">,</span>
+            <span class="s1">&#39;media_body&#39;</span><span class="p">:</span> <span class="n">http</span><span class="o">.</span><span class="n">MediaIoBaseUpload</span><span class="p">(</span><span class="n">file_content</span><span class="p">,</span>
+                                                 <span class="s1">&#39;application/octet-stream&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">verb</span><span class="o">=</span><span class="s1">&#39;insert&#39;</span><span class="p">,</span>
+                                    <span class="n">verb_arguments</span><span class="o">=</span><span class="n">verb_arguments</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="_StorageObjectAclsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage._StorageObjectAclsRepository">[docs]</a><span class="k">class</span> <span class="nc">_StorageObjectAclsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Storage Object Access Controls repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_StorageObjectAclsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;objectAccessControls&#39;</span><span class="p">,</span> <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient">[docs]</a><span class="k">class</span> <span class="nc">StorageClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Storage Client.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args (dict): Default args passed to all API Clients, not used by</span>
+<span class="sd">                the StorageClient.</span>
+<span class="sd">            **kwargs (dict): The kwargs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">args</span>
+        <span class="c1"># Storage API has unlimited rate.</span>
+        <span class="k">if</span> <span class="s1">&#39;user_project&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;user_project&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span> <span class="o">=</span> <span class="n">_get_projectid_from_metadata</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">StorageRepositoryClient</span><span class="p">(</span>
+            <span class="n">credentials</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;credentials&#39;</span><span class="p">),</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StorageClient.put_text_file"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.put_text_file">[docs]</a>    <span class="k">def</span> <span class="nf">put_text_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file_path</span><span class="p">,</span> <span class="n">full_bucket_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Put a text object into a bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            local_file_path (str): The local path of the file to upload.</span>
+<span class="sd">            full_bucket_path (str): The full GCS path for the output.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The uploaded object&#39;s resource metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span> <span class="o">=</span> <span class="n">get_bucket_and_path_from</span><span class="p">(</span>
+            <span class="n">full_bucket_path</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Putting a text object into a bucket, local_file_path&#39;</span>
+                         <span class="s1">&#39; = </span><span class="si">%s</span><span class="s1">, full_bucket_path = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">local_file_path</span><span class="p">,</span> <span class="n">full_bucket_path</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_text_file"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_text_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_text_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_bucket_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets a text file object as a string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            full_bucket_path (str): The full path of the bucket object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The object&#39;s content as a string.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            HttpError: HttpError is raised if the call to the GCP storage API</span>
+<span class="sd">                fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span> <span class="o">=</span> <span class="n">get_bucket_and_path_from</span><span class="p">(</span><span class="n">full_bucket_path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting a text file object as a string,&#39;</span>
+                         <span class="s1">&#39; full_bucket_path = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">full_bucket_path</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Unable to download file.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="StorageClient.download"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_bucket_path</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Downloads a copy of a file from GCS.</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">            full_bucket_path (str): The full path of the bucket object.</span>
+<span class="sd">            output_file (file): The file object to write the data to.</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">            int: Total size in bytes of file.</span>
+
+<span class="sd">         Raises:</span>
+<span class="sd">            HttpError: HttpError is raised if the call to the GCP storage API</span>
+<span class="sd">                fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span> <span class="o">=</span> <span class="n">get_bucket_and_path_from</span><span class="p">(</span><span class="n">full_bucket_path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">download_to_file</span><span class="p">(</span>
+                <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Downloading file object, full_bucket_path = </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                         <span class="s1">&#39;total size = </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">full_bucket_path</span><span class="p">,</span> <span class="n">file_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">file_size</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Unable to download file.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_buckets"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_buckets">[docs]</a>    <span class="k">def</span> <span class="nf">get_buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets all GCS buckets for a project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (int): The project id for a GCP project.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: a list of bucket resource dicts.</span>
+<span class="sd">            https://cloud.google.com/storage/docs/json_api/v1/buckets</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">buckets</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span>
+                                                         <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">paged_results</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all GCS buckets for a project, project_id =&#39;</span>
+                         <span class="s1">&#39; </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">project_id</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;buckets&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_bucket_acls"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_bucket_acls">[docs]</a>    <span class="k">def</span> <span class="nf">get_bucket_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets acls for GCS bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The name of the bucket.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: ACL json for bucket</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">bucket_acls</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting acls for a GCS Bucket, bucket = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">bucket</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket_acls</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;bucketAccessControls&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_bucket_iam_policy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_bucket_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_bucket_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the IAM policy for a bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The bucket to fetch the policy for.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The IAM policies for the bucket.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">buckets</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the IAM policy for a bucket, bucket = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket_iam_policy</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;bucketIamPolicy&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_default_object_acls"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_default_object_acls">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_object_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets acls for GCS bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The name of the bucket.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: ACL json for bucket</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">default_object_acls</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span>
+                                                               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting default object acls for GCS bucket, bucket&#39;</span>
+                         <span class="s1">&#39; = </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">bucket</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_object_acls</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;defaultObjectAccessControls&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_objects"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_objects">[docs]</a>    <span class="k">def</span> <span class="nf">get_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets all objects in a bucket.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The bucket to list to objects in.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: a list of object resource dicts.</span>
+<span class="sd">            https://cloud.google.com/storage/docs/json_api/v1/objects</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span>
+                                                         <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span>
+                                                         <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">paged_results</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the objects in a bucket, bucket = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">bucket</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_objects</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;objects&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_object_acls"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_object_acls">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets acls for GCS object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The name of the bucket.</span>
+<span class="sd">            object_name (str): The name of the object.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: ACL json for bucket</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">object_acls</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span>
+                                                       <span class="nb">object</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting acls for GCS object, bucket = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; object_name = </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object_acls</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;objectAccessControls&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="StorageClient.get_object_iam_policy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient.get_object_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">user_project</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the IAM policy for an object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (str): The bucket to fetch the policy for.</span>
+<span class="sd">            object_name (str): The object name to fetch the policy for.</span>
+<span class="sd">            user_project (str): The user project to bill the bucket access to,</span>
+<span class="sd">                for requester pays buckets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The IAM policies for the object.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">user_project</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;userProject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_project</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span>
+                                                             <span class="n">object_name</span><span class="p">,</span>
+                                                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the IAM policy for an object, bucket = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; object_name = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user_project</span> <span class="ow">and</span> <span class="n">_user_project_missing_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User project required for bucket </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;retrying.&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object_iam_policy</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">_user_project</span><span class="p">)</span>
+
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;objectIamPolicy&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div></div>
+</pre></div>
