@@ -294,10 +294,10 @@ class similar to `sendgrid_connector.py` under
 1. This class should inherits the base email connector class, 
 base_email_connector.py, and implements the methods to send out emails using 
 the new connector that's being added.
-1. Update the `email_connector` section under `notifier` in 
-`forseti_conf_server.yaml` with configuration details of the new connector.
 1. Update the `EMAIL_CONNECTOR_FACTORY` in `email_factory.py` with the 
 new connector and connector specific class that was created.
+1. Update the `email_connector` section under `notifier` in 
+`forseti_conf_server.yaml` with configuration details of the new connector.
 
 ## What's next
 
