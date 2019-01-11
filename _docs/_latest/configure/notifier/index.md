@@ -81,9 +81,9 @@ accordingly.
     email_connector:
       name: sendgrid
       auth:
-        api_key: <SENDGRID_API_KEY>
-      sender: <SENDER EMAIL>
-      recipient: <RECIPIENT EMAIL>
+        api_key: {SENDGRID_API_KEY}
+      sender: {SENDER EMAIL}
+      recipient: {RECIPIENT EMAIL}
       data_format: csv
   ```
 
