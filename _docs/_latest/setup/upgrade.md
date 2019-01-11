@@ -940,6 +940,8 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                         # gcs_path should begin with "gs://"
                         gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
         ```
+1. Update the server service account role at organization level from
+ `roles/bigquery.dataViewer` to `roles/bigquery.metadataviewer`.
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.9.0 to 2.10.0" content=upgrading_2_9_0_to_2_10_0 uid=11 %}
 
