@@ -58,7 +58,9 @@ COMPLEX_MODEL = {
     'resources': {
         'organization/org1': {
             'project/project1': {
-                'bucket/bucket1': {},
+                'bucket/bucket1': {
+                    'projecteditor/project_does_not_exist'
+                },
             },
             'project/project2': {
                 'bucket/bucket2': {},
