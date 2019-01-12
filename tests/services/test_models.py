@@ -115,7 +115,8 @@ COMPLEX_MODEL = {
         'bucket/bucket1': {
             'role/c': ['projecteditor/project1'],
             'role/d': ['projectowner/project1'],
-            'role/e': ['projecteditor/project_does_not_exist'],
+            'role/e': ['projecteditor/project1',
+                       'projecteditor/project_does_not_exist'],
         },
         'bucket/bucket2': {
             'role/c': ['projectviewer/project2'],
