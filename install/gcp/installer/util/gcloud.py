@@ -239,7 +239,7 @@ def grant_server_svc_acct_iam_roles(enable_write,
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
 
-     roles = {
+    roles = {
         '%ss' % access_target: access_target_roles,
         'service_accounts': constants.SVC_ACCT_ROLES,
     }
