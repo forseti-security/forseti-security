@@ -77,6 +77,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
             bool: Whether or not the deployment was successful.
             str: Deployment name.
         """
+
+        self.has_roles_script = gcloud.grant_server_svc_acct_project_roles(
+            self.target_id,
+            self.project_id,
+            self.gcp_service_acct_email,
+            self.user_can_grant_roles)
+
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
 
@@ -94,7 +101,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 constants.RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
-            self.has_roles_script = gcloud.grant_server_svc_acct_roles(
+            self.has_roles_script = gcloud.grant_server_svc_acct_iam_roles(
                 self.enable_write_access,
                 self.access_target,
                 self.target_id,
