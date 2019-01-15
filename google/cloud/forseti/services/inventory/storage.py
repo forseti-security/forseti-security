@@ -758,6 +758,7 @@ class CaiDataAccess(object):
         except SQLAlchemyError as e:
             LOGGER.exception('Attempt to delete data from CAI temporary store '
                              'failed, disabling the use of CAI: %s', e)
+            session.rollback()
 
         return num_rows
 
