@@ -77,7 +77,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             bool: Whether or not the deployment was successful.
             str: Deployment name.
         """
-
         self.has_roles_script = gcloud.grant_server_svc_acct_project_roles(
             self.target_id,
             self.project_id,
