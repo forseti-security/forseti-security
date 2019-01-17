@@ -291,7 +291,8 @@ def grant_server_svc_acct_project_roles(target_id,
         user_can_grant_roles, roles)
 
     return_code, out, err = utils.run_command([
-        'gcloud', 'iam service-accounts', 'get-iam-policy', gcp_service_account])
+        'gcloud', 'iam', 'service-accounts', 'get-iam-policy',
+        gcp_service_account])
     if return_code:
         print(return_code)
         print(err)
