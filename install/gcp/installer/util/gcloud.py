@@ -298,6 +298,9 @@ def grant_server_svc_acct_project_roles(target_id,
         print(out)
     else:
         print("no dice")
+        print(return_code)
+        print(err)
+        print(out)
 
     return has_role_script_rest
 
