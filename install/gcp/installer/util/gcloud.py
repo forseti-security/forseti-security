@@ -304,11 +304,9 @@ def check_project_iam_roles(project_id):
     return_code, out, err = utils.run_command([
         'gcloud', 'iam', 'roles', 'list', '--project', project_id])
     if return_code:
-        print(err)
-        return False
+        return "False: ", err
     else:
-        print(out)
-    return True
+        return "True: ", out
 
 
 def _grant_bucket_roles(gcp_service_account,
