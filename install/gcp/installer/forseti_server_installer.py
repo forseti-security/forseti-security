@@ -17,6 +17,7 @@
 from __future__ import print_function
 import os
 import random
+import time
 
 from forseti_installer import ForsetiInstaller
 from util import constants
@@ -83,8 +84,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.gcp_service_acct_email,
             self.user_can_grant_roles)
 
-        print("Firset time project check: ",
-              gcloud.check_project_iam_roles(self.project_id))
+        # Sleep for 10s to allow service acct permissions to take hold.
+        time.sleep(10)
 
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
@@ -111,9 +112,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_acct_email,
                 self._get_cai_bucket_name(),
                 self.user_can_grant_roles)
-
-            print("Second time checking: ",
-                  gcloud.check_project_iam_roles(self.project_id))
 
             # Waiting for VM to be initialized.
             instance_name = 'forseti-{}-vm-{}'.format(
