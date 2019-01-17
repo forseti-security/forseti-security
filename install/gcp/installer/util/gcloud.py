@@ -261,6 +261,8 @@ def grant_server_svc_acct_iam_roles(enable_write,
 
     return has_role_script_bucket or has_role_script_rest
 
+
+# pylint: disable=name-too-long
 def grant_server_svc_acct_project_roles(target_id,
                                         project_id,
                                         gcp_service_account,
@@ -291,6 +293,7 @@ def grant_server_svc_acct_project_roles(target_id,
         user_can_grant_roles, roles)
 
     return has_role_script_rest
+
 
 def _grant_bucket_roles(gcp_service_account,
                         bucket_name,
