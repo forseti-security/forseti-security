@@ -290,19 +290,26 @@ def grant_server_svc_acct_project_roles(target_id,
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
 
+    return has_role_script_rest
+
+def check_project_iam_roles(project_id):
+    """Check to see whether Project IAM roles were assigned.
+
+    Args:
+        project_id (str): GCP Project Id.
+
+    Returns:
+        bool: Whether or not the project was assigned IAM roles.
+    """
     return_code, out, err = utils.run_command([
         'gcloud', 'iam', 'roles', 'list', '--project', project_id])
     if return_code:
-        print(return_code)
         print(err)
-        print(out)
+        return False
     else:
-        print("no dice")
-        print(return_code)
-        print(err)
         print(out)
+    return True
 
-    return has_role_script_rest
 
 def _grant_bucket_roles(gcp_service_account,
                         bucket_name,

@@ -83,6 +83,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.gcp_service_acct_email,
             self.user_can_grant_roles)
 
+        print("Firset time project check: ",
+              gcloud.check_project_iam_roles(self.project_id))
+
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
 
@@ -108,6 +111,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_acct_email,
                 self._get_cai_bucket_name(),
                 self.user_can_grant_roles)
+
+            print("Second time checking: ",
+                  gcloud.check_project_iam_roles(self.project_id))
 
             # Waiting for VM to be initialized.
             instance_name = 'forseti-{}-vm-{}'.format(
