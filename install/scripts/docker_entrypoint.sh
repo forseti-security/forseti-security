@@ -121,10 +121,12 @@ download_server_configuration_files(){
 }
 
 # TODO
-download_client_configuration_files(){
-    # Download config files from GCS
-    # Use gsutil -DD debug flag if log level is debug
-    echo "TODO. download_client_configuration_files is not implemented yet."
+client_cli_setup(){
+    echo "client_cli_setup is not implemented yet."
+
+    # Just export vars?
+    export FORSETI_HOME=/forseti-security
+    export FORSETI_CLIENT_CONFIG=gs://${BUCKET}/configs/forseti_conf_client.yaml
 }
 
 # TODO Should this be started as a background or foreground process?
@@ -153,14 +155,6 @@ else # long lived server, start as foreground process
 fi
 
 }
-
-# remove start_client() I don't think their is anything to be started.
-# Just provide a docker container for users to log into and run client commands
-# Possibly have a trimmed down client docker image with just the client functions
-# but for now we have an all in one image
-#start_client(){
-#    echo "start_client() not implemented yet."
-#}
 
 run_cron_job(){
     # Below cut and paste from run_forseti.sh
@@ -238,8 +232,7 @@ main(){
         download_server_configuration_files
         start_server
     elif ${RUN_CLIENT}; then
-        download_client_configuration_files
-        # start_client not needed?
+        client_cli_setup
     fi
 
     if ${RUN_CRONJOB}; then
