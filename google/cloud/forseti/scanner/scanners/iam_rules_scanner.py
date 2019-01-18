@@ -70,7 +70,6 @@ def _add_bucket_ancestor_bindings(policy_data):
         'roles/storage.admin',
         'roles/storage.objectViewer',
         'roles/storage.objectCreator',
-        'roles/storage.objectAdmin',
     ])
     bucket_data = []
     for (resource, _, bindings) in policy_data:

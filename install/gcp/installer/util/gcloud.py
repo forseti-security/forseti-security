@@ -252,17 +252,11 @@ def grant_server_svc_acct_roles(enable_write,
         'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
-    has_role_script_bucket = _grant_bucket_roles(
-        gcp_service_account,
-        cai_bucket_name,
-        constants.FORSETI_CAI_BUCKET_ROLES,
-        user_can_grant_roles)
-
     has_role_script_rest = _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
 
-    return has_role_script_bucket or has_role_script_rest
+    return has_role_script_rest
 
 
 def _grant_bucket_roles(gcp_service_account,

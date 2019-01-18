@@ -716,28 +716,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
 
-        proj_2_policy = {
-            'bindings': [
-                {
-                    'role': 'roles/owner',
-                    'members': [
-                        'user:someone@company.com',
-                    ]
-                },
-                {
-                    'role': 'roles/storage.objectAdmin',
-                    'members': [
-                        'user:admin@storage.com',
-                    ]
-                },
-            ]
-        }
-        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
-            iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_2_policy.get('bindings')])
-        policy_data.append(
-                (self.proj_2, self.proj_2_policy_resource, proj_2_bindings))
-
         folder_1_policy = {
             'bindings': [
                 {
@@ -783,11 +761,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource, proj_3_bindings))
 
-        bucket_2_1_bindings = []
-        policy_data.append(
-                (self.bucket_2_1, self.bucket_2_1_policy_resource,
-                    bucket_2_1_bindings))
-
         bucket_3_1_bindings = []
         policy_data.append(
                 (self.bucket_3_1, self.bucket_3_1_policy_resource,
@@ -800,10 +773,8 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
 
-        self.assertEqual(1, len(bucket_2_1_bindings))
         self.assertEqual(2, len(bucket_3_1_bindings))
         self.assertEqual(2, len(bucket_3_2_bindings))
-
 
         expected_b3_policy = {
             'bindings': [
@@ -827,22 +798,6 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         self.assertEqual(expected_b3_bindings, bucket_3_1_bindings)
         self.assertEqual(expected_b3_bindings, bucket_3_2_bindings)
-
-        expected_b2_policy = {
-            'bindings': [
-                {
-                    'role': 'roles/storage.objectAdmin',
-                    'members': [
-                        'user:admin@storage.com',
-                    ]
-                },
-            ]
-        }
-        expected_b2_bindings = filter(None, [ # pylint: disable=bad-builtin
-            iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_b2_policy.get('bindings')])
-
-        self.assertEqual(expected_b2_bindings, bucket_2_1_bindings)
 
     def test_retrieve_finds_bucket_policies(self):
         """IamPolicyScanner::_retrieve() finds bucket policies.
