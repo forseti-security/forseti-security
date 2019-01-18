@@ -100,7 +100,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.target_id,
                 self.project_id,
                 self.gcp_service_acct_email,
-                self._get_cai_bucket_name(),
                 self.user_can_grant_roles)
 
             # Waiting for VM to be initialized.

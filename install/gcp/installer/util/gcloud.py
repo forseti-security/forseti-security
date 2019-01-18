@@ -214,7 +214,6 @@ def grant_server_svc_acct_roles(enable_write,
                                 target_id,
                                 project_id,
                                 gcp_service_account,
-                                cai_bucket_name,
                                 user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
 
@@ -232,7 +231,6 @@ def grant_server_svc_acct_roles(enable_write,
         target_id (str): Id of the access_target.
         project_id (str): GCP Project Id.
         gcp_service_account (str): GCP service account email.
-        cai_bucket_name (str): The name of the CAI bucket.
         user_can_grant_roles (bool): Whether or not user has
             access to grant roles.
 
