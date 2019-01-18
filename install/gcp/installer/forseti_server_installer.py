@@ -84,7 +84,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.gcp_service_acct_email,
             self.user_can_grant_roles)
 
-        # Sleep for 10s to allow service acct permissions to take hold.
+        # Sleep for 10s to allow service acct permissions to take hold to avoid a 
+        # race condition of accessing resources before the permissions take hold. 
+        # There is no other deterministic way to verify the permissions, so using sleep.
         time.sleep(10)
 
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
