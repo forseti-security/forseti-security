@@ -2,29 +2,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: forseti-server
+  name: forseti-client
 spec:
   selector:
     matchLabels:
-      app: forseti-server
+      app: forseti-client
   replicas: 1
   template:
     metadata:
       labels:
-        app: forseti-server
+        app: forseti-client
     spec:
       volumes:
         - name: google-cloud-key
           secret:
-            secretName: server-credentials
+            secretName: client-credentials
       containers:
-        - name: forseti-server
+        - name: forseti-client
           image: ${FORSETI_IMAGE}
           command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
                     "--bucket", "${BUCKET}",
-                    "--log_level", "debug",
-                    "--run_server",
-                    "--services", "scanner model inventory explain notifier"]
+                    "--run_client"]
           securityContext:
             runAsUser: 0  # root user. TODO use 1, non-root as soon as practical
             allowPrivilegeEscalation: true # TODO use false as soon as practical

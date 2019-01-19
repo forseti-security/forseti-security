@@ -127,6 +127,8 @@ client_cli_setup(){
     # Just export vars?
     export FORSETI_HOME=/forseti-security
     export FORSETI_CLIENT_CONFIG=gs://${BUCKET}/configs/forseti_conf_client.yaml
+
+    #todo run python setup script
 }
 
 # TODO Should this be started as a background or foreground process?

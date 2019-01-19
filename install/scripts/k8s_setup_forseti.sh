@@ -28,13 +28,17 @@ DISK_SIZE=10GB
 
 # Full path to Forseti service account credentials json file
 # Needed to create k8s secret
-CREDENTIALS=#<path>/<keyfilename>.json
+SERVER_CREDENTIALS="" #TODO <path>/<keyfilename>.json
+CLIENT_CREDENTIALS="" #TODO <path>/<keyfilename>.json
 
 # Control which architecture to deploy
 # CronJob just runs forseti server as k8s CronJob on the cron schedule and shuts it down after each run
 # Server runs forseti server as k8s Cluster IP Service and keeps it running indefinitely
+# Client, for now use this in conjunction with server to spin up client cli container on same cluster
+# as server and connect to it via Cluster IP service
 DEPLOY_CRONJOB=false
 DEPLOY_SERVER=true
+DEPLOY_CLIENT=true
 
 # Environment variables needed to create deployment files from templates
 # TODO is the export keyword needed?
@@ -52,25 +56,27 @@ export CRON_SCHEDULE="*/60 * * * *"
 	--disk-size=${DISK_SIZE} --enable-stackdriver-kubernetes
 
 # Create Secret 'credentials' containing file 'key.json'
-# copied from the forseti service account credentials file.
+# copied from the forseti service or client account credentials file.
 
 	# Set default cluster for gcloud / kubectl
 	gcloud config set container/cluster ${CLUSTER}
 
-	kubectl create secret generic credentials --from-file=key.json=${CREDENTIALS}
+	kubectl create secret generic server-credentials --from-file=key.json=${SERVER_CREDENTIALS}
 
 	# Optionally verify
 	# kubectl get secret credentials -o yaml
 
-	# The credentials json file should be deleted after the secret created
-	# rm ${CREDENTIALS}
 
+	if ${DEPLOY_CLIENT}; then
+	    kubctl create secret generic client-credentials --from-file=key.json=${CLIENT_CREDENTIALS}
+    fi
 
-	# Create deployment files from the templates
-	# We do this because kubectl apply doesnt support environment variable substitution
+# Create deployment files from the templates
+# We do this because kubectl apply doesnt support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
 	envsubst < forseti.server.template.yaml > forseti.server.yaml
+	envsubst < forseti.client.template.yaml > forseti.client.yaml
 
 if ${DEPLOY_CRONJOB}; then
     # Example forseti as k8s CronJob
@@ -80,15 +86,19 @@ if ${DEPLOY_CRONJOB}; then
 	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.cronjob.yaml
+
 elif ${DEPLOY_SERVER}; then
     # Example, forseti server as k8s Cluster IP Service
     # Deploy Cloud SQL Proxy in its own pod
     # Create a Cluster IP Service for Cloud SQL Proxy
     # Deploy forseti server in its own pod
     # Create a Cluster IP Service for forseti server
-    # TODO As PoC deploy client in its own pod / service?
  	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.server.yaml
 	kubectl apply -f forsetiserverservice.yaml
+fi
+
+if ${DEPLOY_CLIENT}; then
+    kubectl apply -f forseti.client.yaml
 fi
