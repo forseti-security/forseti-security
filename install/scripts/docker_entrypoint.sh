@@ -126,9 +126,9 @@ client_cli_setup(){
 
     # Just export vars?
     export FORSETI_HOME=/forseti-security
-    export FORSETI_CLIENT_CONFIG=gs://${BUCKET}/configs/forseti_conf_client.yaml
+    export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
 
-    #todo run python setup script
+    #TODO Do we need to run python setup script?
 }
 
 # TODO Should this be started as a background or foreground process?
@@ -234,7 +234,8 @@ main(){
         download_server_configuration_files
         start_server
     elif ${RUN_CLIENT}; then
-        client_cli_setup
+        # Run as a background process, else container keeps re-starting on k8s
+        client_cli_setup &
     fi
 
     if ${RUN_CRONJOB}; then

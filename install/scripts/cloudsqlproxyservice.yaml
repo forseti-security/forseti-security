@@ -8,5 +8,6 @@ spec:
   ports:
     - port: 3306
       protocol: TCP
+  clusterIP: 10.43.240.2
   selector:
     app: cloudsqlproxy

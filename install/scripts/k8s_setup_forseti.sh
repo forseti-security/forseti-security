@@ -68,7 +68,7 @@ export CRON_SCHEDULE="*/60 * * * *"
 
 
 	if ${DEPLOY_CLIENT}; then
-	    kubctl create secret generic client-credentials --from-file=key.json=${CLIENT_CREDENTIALS}
+	    kubectl create secret generic client-credentials --from-file=key.json=${CLIENT_CREDENTIALS}
     fi
 
 # Create deployment files from the templates
