@@ -239,7 +239,7 @@ main(){
         # Client CLI is essentially a long running container for  users to log into and
         # run ad hoc commands.
         # TODO This is a hack. Is there a better way to keep the container running?
-        sleep infinity &
+        sleep infinity
     fi
 
     if ${RUN_CRONJOB}; then
