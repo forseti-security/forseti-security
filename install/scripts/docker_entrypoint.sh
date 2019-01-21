@@ -234,8 +234,12 @@ main(){
         download_server_configuration_files
         start_server
     elif ${RUN_CLIENT}; then
-        # Run as a background process, else container keeps re-starting on k8s
-        client_cli_setup &
+        client_cli_setup
+
+        # Client CLI is essentially a long running container for  users to log into and
+        # run ad hoc commands.
+        # TODO This is a hack. Is there a better way to keep the container running?
+        sleep infinity &
     fi
 
     if ${RUN_CRONJOB}; then
