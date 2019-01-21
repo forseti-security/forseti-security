@@ -27,9 +27,12 @@ LOGGER = logger.get_logger(__name__)
 
 API_NAME = 'admin'
 
+GROUP_SETTINGS_API_NAME = "groups"
+
 REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.group.readonly',
-    'https://www.googleapis.com/auth/admin.directory.user.readonly'
+    'https://www.googleapis.com/auth/admin.directory.user.readonly',
+    'https://www.googleapis.com/auth/apps.groups.settings'
 ])
 
 GSUITE_AUTH_FAILURE_MESSAGE = (
@@ -258,3 +261,119 @@ class AdminDirectoryClient(object):
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('users', e)
+
+
+class GroupSettingsClient(object):
+    """GSuite Admin Directory API Client."""
+
+    def __init__(self, global_configs, **kwargs):
+        """Initialize.
+
+        Args:
+            global_configs (dict): Global configurations.
+            **kwargs (dict): The kwargs.
+        """
+        credentials = api_helpers.get_delegated_credential(
+            global_configs.get('domain_super_admin_email'),
+            REQUIRED_SCOPES)
+
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, API_NAME)
+
+        self.repository = GroupSettingsRepositoryClient(
+            credentials=credentials,
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+
+    def get_group_settings(self, customer_id='my_customer'):
+        """Get all the group settings for a given customer_id.
+
+        A note on customer_id='my_customer'. This is a magic string instead
+        of using the real customer id. See:
+
+        https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
+
+        Args:
+            customer_id (str): The customer id to scope the request to.
+
+        Returns:
+            list: A list of group settings objects returned from the API.
+
+        Raises:
+            api_errors.ApiExecutionError: If groups retrieval fails.
+            RefreshError: If the authentication fails.
+        """
+        try:
+            paged_results = self.repository.groups.list(customer=customer_id)
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'groups') #TODO update to be whatever json returns in paged results
+            LOGGER.debug('Getting all the groups for customer_id = %s,'
+                         ' flattened_results = %s',
+                         customer_id, flattened_results)
+            return flattened_results
+        except RefreshError as e:
+            # Authentication failed, log before raise.
+            LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)
+            raise e
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('groups', e)
+
+
+class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
+    """Group Settings API Respository Client."""
+
+    def __init__(self,
+                 credentials,
+                 quota_max_calls=None,
+                 quota_period=1.0,
+                 use_rate_limiter=True):
+        """Constructor.
+
+        Args:
+            credentials (object): An google.auth credentials object. The group
+                settings API needs a service account credential with delegated
+                super admin role.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
+        """
+        if not quota_max_calls:
+            use_rate_limiter = False
+
+        self._groups_settings = None
+
+        super(GroupSettingsRepositoryClient, self).__init__(
+            "groups", versions=['v1'], #TODO figure out if this should be admin since its admin SDK, or groups to match api url
+            credentials=credentials,
+            quota_max_calls=quota_max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=use_rate_limiter)
+
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
+    def group_settings(self):
+        """Returns an _AdminDirectoryGroupSettingsRepository instance."""
+        if not self._group_settings:
+            self._group_settings = self._init_repository(
+                _GroupSettingsRepository)
+        return self._group_settings
+    # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _GroupSettingsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Group Settings repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_GroupSettingsRepository, self).__init__(
+            key_field='groupKey', component='groups', **kwargs)

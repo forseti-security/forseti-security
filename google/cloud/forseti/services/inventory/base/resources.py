@@ -1314,6 +1314,10 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
         return True
 
 
+class GsuiteGroupSettings(resource_class_factory('gsuite_settings', 'id')):
+    """The Resource implementation for GSuite Settings."""
+
+
 class GsuiteUserMember(resource_class_factory('gsuite_user_member', 'id')):
     """The Resource implementation for GSuite User."""
 
@@ -2002,6 +2006,25 @@ class GsuiteUserIterator(ResourceIterator):
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
 
+class GsuiteGroupSettingsIterator(ResourceIterator):
+    """The Resource iterator implementation for Gsuite Group Settings"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: GsuiteGroupSettings created
+        """
+        gsuite = self.client
+        if self.resource.has_directory_resource_id():
+            try:
+                for data in gsuite.iter_gsuite_group_settings(
+                        self.resource['owner']['directoryCustomerId']):
+                    yield FACTORIES['gsuite_group_settings'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
+
 
 class IamOrganizationCuratedRoleIterator(resource_iter_class_factory(
         api_method_name='iter_iam_curated_roles',
@@ -2163,6 +2186,7 @@ FACTORIES = {
         'contains': [
             BillingAccountIterator,
             GsuiteGroupIterator,
+            GsuiteGroupSettingsIterator,
             GsuiteUserIterator,
             IamOrganizationCuratedRoleIterator,
             IamOrganizationRoleIterator,
@@ -2466,6 +2490,11 @@ FACTORIES = {
         'contains': [
             GsuiteMemberIterator,
         ]}),
+
+    'gsuite_group_settings': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': GsuiteGroupSettings,
+        'contains': []}),
 
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],

@@ -575,6 +575,15 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_gsuite_group_settings(self, gsuite_id):
+        """Iterate Gsuite group settings from GCP API.
+
+        Args:
+            gsuite_id (str): Gsuite id.
+        """
+
+
+    @abc.abstractmethod
     def iter_gsuite_groups(self, gsuite_id):
         """Iterate Gsuite groups from GCP API.
 
@@ -912,6 +921,21 @@ class ApiClientImpl(ApiClient):
             raise ResourceNotSupported('Admin API disabled by server '
                                        'configuration.')
         return admin_directory.AdminDirectoryClient(self.config)
+
+    def _create_settings(self):
+        """Create admin gsuite settings API client.
+
+        Returns:
+            object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
+        """
+        if is_api_disabled(self.config, admin_directory.API_NAME):
+            raise ResourceNotSupported('Group Settings API disabled by server '
+                                       'configuration.')
+        return admin_directory.GroupSettingsClient(self.config)
 
     def _create_appengine(self):
         """Create AppEngine API client.
@@ -1929,7 +1953,20 @@ class ApiClientImpl(ApiClient):
         for group in result:
             yield group
 
-    @create_lazy('ad', _create_ad)
+    @create_lazy('settings', _create_settings)
+    def iter_gsuite_group_settings(self, gsuite_id):
+        """Iterate Gsuite group settings from GCP API.
+
+        Args:
+            gsuite_id (str): Gsuite id.
+
+        Yields:
+            dict: Generator of groups settings.
+        """
+        result = self.settings.get_group_settings(gsuite_id)
+        for settings in result:
+            yield settings
+
     def iter_gsuite_users(self, gsuite_id):
         """Iterate Gsuite users from GCP API.
 
