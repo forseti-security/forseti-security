@@ -13,6 +13,7 @@
 # limitations under the License.
 """Importer implementations."""
 
+# pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
 import json
@@ -195,6 +196,7 @@ class InventoryImporter(object):
             'spanner_instance',
             'spanner_database',
             'subnetwork',
+            'bigquery_table',
         ]
 
         gsuite_type_list = [
@@ -532,6 +534,7 @@ class InventoryImporter(object):
             'appengine_service': self._convert_gae_resource,
             'appengine_version': self._convert_gae_resource,
             'backendservice': self._convert_computeengine_resource,
+            'bigquery_table': self._convert_bigquery_table,
             'billing_account': self._convert_billing_account,
             'bucket': self._convert_bucket,
             'cloudsqlinstance': self._convert_cloudsqlinstance,
@@ -981,6 +984,15 @@ class InventoryImporter(object):
             parent=parent)
 
         self.session.add(resource)
+
+    def _convert_bigquery_table(self, table):
+        """Convert a table to a database object.
+
+        Args:
+            table (object): table to store.
+        """
+
+        self._convert_resource(table, cached=True)
 
     def _add_to_cache(self, resource, resource_id):
         """Add a resource to the cache for parent lookup.
