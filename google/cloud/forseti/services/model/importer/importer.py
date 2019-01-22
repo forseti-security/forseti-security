@@ -19,6 +19,8 @@ import json
 from StringIO import StringIO
 import traceback
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 from google.cloud.forseti.services.utils import get_resource_id_from_type_name
@@ -128,6 +130,15 @@ class InventoryImporter(object):
         self.member_cache_policies = {}
 
         self.found_root = False
+
+    def _flush_session(self):
+        """Flush the session with rollback on errors."""
+        try:
+            self.session.flush()
+        except SQLAlchemyError:
+            LOGGER.exception(
+                'Unexpected SQLAlchemyError occurred during model creation.')
+            self.session.rollback()
 
     # pylint: disable=too-many-statements
     def run(self):
@@ -242,48 +253,42 @@ class InventoryImporter(object):
                         # Flush database every 1000 resources
                         LOGGER.debug('Flushing model write session: %s',
                                      item_counter)
-                        self.session.flush()
+                        self._flush_session()
 
                 if item_counter % 1000:
                     # Additional rows added since last flush.
-                    self.session.flush()
+                    self._flush_session()
                 LOGGER.debug('Finished storing resources into models.')
 
                 item_counter += self.model_action_wrapper(
-                    self.session,
                     inventory.iter(['role']),
                     self._convert_role,
                     post_action=self._convert_role_post
                 )
 
                 item_counter += self.model_action_wrapper(
-                    self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_dataset_policy=True),
                     self._convert_dataset_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
                     self._convert_service_config
                 )
 
                 self.model_action_wrapper(
-                    self.session,
                     inventory.iter(gsuite_type_list),
                     self._store_gsuite_principal
                 )
 
                 self.model_action_wrapper(
-                    self.session,
                     inventory.iter(gcp_type_list, fetch_enabled_apis=True),
                     self._convert_enabled_apis
                 )
 
                 self.model_action_wrapper(
-                    self.session,
                     inventory.iter(member_type_list, with_parent=True),
                     self._store_gsuite_membership,
                     post_action=self._store_gsuite_membership_post
@@ -292,7 +297,6 @@ class InventoryImporter(object):
                 self.dao.denorm_group_in_group(self.session)
 
                 self.model_action_wrapper(
-                    self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_iam_policy=True),
                     self._store_iam_policy
@@ -320,8 +324,7 @@ class InventoryImporter(object):
             self.session.autoflush = autoflush
     # pylint: enable=too-many-statements
 
-    @staticmethod
-    def model_action_wrapper(session,
+    def model_action_wrapper(self,
                              inventory_iterable,
                              action,
                              post_action=None,
@@ -329,7 +332,6 @@ class InventoryImporter(object):
         """Model action wrapper. This is used to reduce code duplication.
 
         Args:
-            session (Session): Database session.
             inventory_iterable (Iterable): Inventory iterable.
             action (func): Action taken during the iteration of
                 the inventory list.
@@ -352,11 +354,11 @@ class InventoryImporter(object):
             if not idx % flush_count:
                 # Flush database every flush_count resources
                 LOGGER.debug('Flushing write session: %s.', idx)
-                session.flush()
+                self._flush_session()
 
         if idx % flush_count:
             # Additional rows added since last flush.
-            session.flush()
+            self._flush_session()
 
         if post_action:
             post_action()
