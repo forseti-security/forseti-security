@@ -14,16 +14,53 @@
 
 # Rule Keys:
 # name: The unique name describing the rule
+# mode: Depending on whether you want to allow or block in a given situation,
+# mode can be whitelist or blacklist
 # resource: A mapping of resources that this rule applies to.
 #  * type: The type of resource, can be organization, folder, or project.
 #  * resource_ids: A list of one or more numeric ids to match, or '*' for all.
-# max_age: The maximum age allowed for a service_account key in days
+# key: The configuration of cryptokey that this rule applies to.
+#  * name: The unique name describing the cryptographic key. '*' is also
+# supported to capture all the keys in a organization/folder/project.
+#  * state: Denotes the state of a key version. Optional, if not included
+# state is not compared.
+#  * protection_level: Indicates whether cryptographic operations are performed
+# in software or in Hardware Security Module (HSM). Optional, if not provided
+# protection_level is not
+# compared.
+#  * algorithm: Denotes the algorithm of that key. Optional, if not provided
+# algorithm is not compared.
+#  * purpose: Defines the cryptographic abilities of the key. Optional, if not
+# provided purpose is not compared.
+#  * rotation_range: Denotes the range of the nextRotationTime of multiple keys
+# in a project. Optional, if not provided nextRotationTime of cryptographic keys
+# is not compared.
+#  * rotation_period: Denotes the time period to rotate a key. Optional, if
+# not provided rotation_range is not compared.
+#  * labels: Allows you to group your keys. Optional, if not provided labels are
+# not compared.
 
-rules:
-  # The max allowed age of user managed service account keys (in days)
-  - name: Service account keys not rotated
-    resource:
-      - type: organization
-        resource_ids:
-          - '*'
-    max_age: 100 # days
+#rules:
+#  - name: All cryptographic keys should be rotated by July 2019
+#    mode: blacklist
+#    resource:
+#      - type: project
+#        resource_ids:
+#          - '*'
+#    key:
+#      - name:
+#          - '*'
+#        state:
+          # valid values - ENABLED, DISABLED, DESTROY_SECHEDULED, DESTROYED and
+          #                 PENDING_GENERATION
+#          - ENABLED
+#        protection_level:
+#           valid values - PROTECTION_LEVEL_UNSPECIFIED, SOFTWARE and HSM
+#          - SOFTWARE
+#        algorithm:
+#          - GOOGLE_SYMMETRIC_ENCRYPTION
+#        purpose:
+#          - ENCRYPT_DECRYPT
+#        rotation_range: 2019-02-01T08:00:00Z-2019-07-01T00:00:00Z #date range
+#        rotation_period: 60-600 #range in seconds
+#        labels: {key: value} # metadata pairs that allow you to group keys

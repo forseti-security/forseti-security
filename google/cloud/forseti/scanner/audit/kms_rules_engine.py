@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules engine for if there is a mismatch between ."""
+"""Rules engine for checking crypto keys configuration."""
 
 from collections import namedtuple
 import json
@@ -46,7 +46,7 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         self._lock = threading.Lock()
 
     def build_rule_book(self, global_configs=None):
-        """Build ServiceAccountKeyRuleBook from the rules definition file.
+        """Build KMSRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
@@ -55,12 +55,11 @@ class KMSRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KMSRuleBook(
                 self._load_rule_definitions())
 
-    def find_violations(self, kms, force_rebuild=False):
-        """Determine whether service account key age violates rules.
+    def find_violations(self, keys, force_rebuild=False):
+        """Determine whether crypto key configuration violates rules.
 
         Args:
-            service_account (ServiceAccount): A service account resource to
-            check.
+            keys (CryptoKeys): A crypto key resource to check.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -69,17 +68,29 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
-        return self.rule_book.find_violations(kms)
+
+        violations = self.rule_book.find_violations(keys)
+
+        return set(violations)
+
+    def add_rules(self, rules):
+        """Add rules to the rule book.
+
+        Args:
+            rules (list): The list of rules to add to the book.
+        """
+        if self.rule_book is not None:
+            self.rule_book.add_rules(rules)
 
 
 class KMSRuleBook(bre.BaseRuleBook):
-    """The RuleBook for KMS rules."""
+    """The RuleBook for crypto key rules."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
 
         Args:
-            rule_defs (list): KMS rule definition dicts
+            rule_defs (list): CryptoKeys rule definition dicts
         """
         super(KMSRuleBook, self).__init__()
         self._lock = threading.Lock()
@@ -109,7 +120,6 @@ class KMSRuleBook(bre.BaseRuleBook):
                 Assigned automatically when the rule book is built.
         """
 
-
     def get_resource_rules(self, resource):
         """Get all the resource rules for resource.
 
@@ -120,6 +130,115 @@ class KMSRuleBook(bre.BaseRuleBook):
             ResourceRules: A ResourceRules object.
         """
         return self.resource_rules_map.get(resource)
+
+    def find_violations(self, keys):
+        """Find violations in the rule book.
+
+        Args:
+            keys (CryptoKeys): crypto key resource.
+
+        Returns:
+            list: RuleViolation
+        """
+        LOGGER.debug('Looking for service account key violations: %s',
+                     keys.full_name)
+        violations = []
+        resource_ancestors = resource_util.get_ancestors_from_full_name(
+            keys.full_name)
+
+        LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
+
+        checked_wildcards = set()
+        for curr_resource in resource_ancestors:
+            if not curr_resource:
+                # The leaf node in the hierarchy
+                continue
+
+            resource_rule = self.get_resource_rules(curr_resource)
+            if resource_rule:
+                violations.extend(
+                    resource_rule.find_violations(service_account))
+
+            wildcard_resource = resource_util.create_resource(
+                resource_id='*', resource_type=curr_resource.type)
+            if wildcard_resource in checked_wildcards:
+                continue
+            checked_wildcards.add(wildcard_resource)
+            resource_rule = self.get_resource_rules(wildcard_resource)
+            if resource_rule:
+                violations.extend(
+                    resource_rule.find_violations(keys))
+
+        LOGGER.debug('Returning violations: %r', violations)
+        return violations
+
+
+class ResourceRules(object):
+    """An association of a resource to rules."""
+
+    def __init__(self,
+                 resource=None,
+                 rules=None):
+        """Initialize.
+
+        Args:
+            resource (Resource): The resource to associate with the rule.
+            rules (set): rules to associate with the resource.
+            """
+        if not isinstance(rules, set):
+            rules = set([])
+        self.resource = resource
+        self.rules = rules
+
+    def find_violations(self, keys):
+        """Determine if the policy binding matches this rule's criteria.
+
+        Args:
+            keys (CryptoKeys): crypto keys resource.
+
+        Returns:
+            list: RuleViolation
+        """
+        violations = []
+        for rule in self.rules:
+            rule_violations = rule.find_violations(keys)
+            if rule_violations:
+                violations.extend(rule_violations)
+        return violations
+
+    def __eq__(self, other):
+        """Compare == with another object.
+
+        Args:
+            other (ResourceRules): object to compare with
+
+        Returns:
+            int: comparison result
+        """
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.resource == other.resource and
+                self.rules == other.rules)
+
+    def __ne__(self, other):
+        """Compare != with another object.
+
+        Args:
+            other (object): object to compare with
+
+        Returns:
+            int: comparison result
+        """
+        return not self == other
+
+    def __repr__(self):
+        """String representation of this node.
+
+        Returns:
+            str: debug string
+        """
+        return 'KMSResourceRules<resource={}, rules={}>'.format(
+            self.resource, self.rules)
 
 
 class Rule(object):
@@ -138,3 +257,60 @@ class Rule(object):
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.key_max_age = key_max_age
+
+    def find_violations(self, service_account):
+        """Find service account key age violations based on the max_age.
+
+        Args:
+            service_account (ServiceAccount): ServiceAccount object.
+
+        Returns:
+            list: Returns a list of RuleViolation named tuples
+        """
+
+    def __eq__(self, other):
+        """Test whether Rule equals other Rule.
+
+        Args:
+            other (Rule): object to compare to
+
+        Returns:
+            int: comparison result
+        """
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.rule_name == other.rule_name and
+                self.rule_index == other.rule_index and
+                (self.key_max_age == other.key_max_age))
+
+    def __ne__(self, other):
+        """Test whether Rule is not equal to another Rule.
+
+        Args:
+            other (object): object to compare to
+
+        Returns:
+            int: comparison result
+        """
+        return not self == other
+
+    def __hash__(self):
+        """Make a hash of the rule index.
+
+        For now, this will suffice since the rule index is assigned
+        automatically when the rules map is built, and the scanner
+        only handles one rule file at a time. Later on, we'll need to
+        revisit this hash method when we process multiple rule files.
+
+        Returns:
+            int: The hash of the rule index.
+        """
+        return hash(self.rule_index)
+
+
+RuleViolation = namedtuple('RuleViolation',
+                           ['resource_type', 'resource_id', 'resource_name',
+                            'service_account_name', 'full_name', 'rule_name',
+                            'rule_index', 'violation_type', 'violation_reason',
+                            'project_id', 'key_id', 'key_created_time',
+                            'resource_data'])

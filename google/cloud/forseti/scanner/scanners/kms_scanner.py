@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Service Account Keys."""
+"""Scanner for the KMS rules engine."""
 
-from google.cloud.forseti.common.gcp_type.service_account import ServiceAccount
+from google.cloud.forseti.common.gcp_type.kms import KMS
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import service_account_key_rules_engine
+from google.cloud.forseti.scanner.audit import kms_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
 
-class ServiceAccountKeyScanner(base_scanner.BaseScanner):
-    """Check if ServiceAccount Keys have not been rotated."""
+class KMSScanner(base_scanner.BaseScanner):
+    """Scanner for CryptoKeys data."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -37,7 +37,7 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(ServiceAccountKeyScanner, self).__init__(
+        super(KMSScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
@@ -46,7 +46,7 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
             rules)
 
         self.rules_engine = (
-            service_account_key_rules_engine.ServiceAccountKeyRulesEngine(
+            kms_rules_engine.KMSRulesEngine(
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp))
         self.rules_engine.build_rule_book(self.global_configs)
@@ -64,11 +64,14 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
         for violation in violations:
             violation_data = {
                 'project_id': violation.project_id,
-                'service_account_name': violation.service_account_name,
-                'service_account_id': violation.resource_id,
-                'violation_reason': violation.violation_reason,
-                'key_id': violation.key_id,
-                'key_created_time': violation.key_created_time
+                'project': violation.project,
+                'full_name': violation.full_name,
+                'state': violation.state,
+                'protection_level': violation.protection_level,
+                'purpose': violation.purpose,
+                'rotation_range': violation.rotation_range,
+                'rotation_period': violation.rotation_period,
+                'labels': violation.labels
             }
             yield {
                 'resource_id': violation.resource_id,
@@ -86,26 +89,26 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (list): All violations
+            all_violations (list): All violations.
         """
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, service_accounts):
+    def _find_violations(self, keys):
         """Find violations in the policies.
 
         Args:
-            service_accounts (list): ServiceAccounts to find violations in.
+            keys (list): CryptoKeys to find violations in.
 
         Returns:
             list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding service account key age violations...')
+        LOGGER.info('Finding crypto key rotation violations...')
 
-        for service_account in service_accounts:
+        for key in keys:
             violations = self.rules_engine.find_violations(
-                service_account)
+                keys)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -114,11 +117,11 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
         """Runs the data collection.
 
         Returns:
-            list: ServiceAccount objects
+            list: CryptoKey objects.
         """
 
     def run(self):
         """Run, the entry point for this scanner."""
-        service_accounts = self._retrieve()
-        all_violations = self._find_violations(service_accounts)
+        keys = self._retrieve()
+        all_violations = self._find_violations(keys)
         self._output_results(all_violations)
