@@ -17,6 +17,7 @@
 from forseti_installer import ForsetiInstaller
 from util import constants
 from util import gcloud
+import time
 
 
 class ForsetiClientInstaller(ForsetiInstaller):
@@ -49,14 +50,20 @@ class ForsetiClientInstaller(ForsetiInstaller):
             bool: Whether or not the deployment was successful
             str: Deployment name
         """
+        gcloud.grant_client_svc_acct_roles(
+            self.project_id,
+            self.gcp_service_acct_email,
+            self.user_can_grant_roles)
+
+        # Sleep for 10s to avoid race condition of accessing resources before
+        # the permissions take hold. There is no other deterministic way to
+        # verify the permissions, so using sleep.
+        time.sleep(10)
+
         success, deployment_name = super(ForsetiClientInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            gcloud.grant_client_svc_acct_roles(
-                self.project_id,
-                self.gcp_service_acct_email,
-                self.user_can_grant_roles)
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
                 self.config.identifier)
