@@ -14,7 +14,6 @@
 | [Cloud IAM Project Roles](https://cloud.google.com/iam/reference/rest/v1/projects.roles) |
 | [Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/access-control) |
 | [Cloud Pub/Sub Subscriptions](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) |
-| [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
 | [Cloud SQL Instances](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances) |
 | [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Compute Engine AutoScalers](https://cloud.google.com/compute/docs/reference/rest/v1/autoscalers) |
