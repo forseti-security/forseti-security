@@ -98,6 +98,10 @@ class AbstractInventoryConfig(dict):
         """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
+    def get_cai_timeout(self):
+        """Returns the timeout in seconds for calls to the Cloud Asset API."""
+
+    @abc.abstractmethod
     def get_service_config(self):
         """Returns the service config."""
 
@@ -230,6 +234,14 @@ class InventoryConfig(AbstractInventoryConfig):
             str: The GCS bucket path for CAI data.
         """
         return self.cai_configs.get('gcs_path', '')
+
+    def get_cai_timeout(self):
+        """Returns the timeout in seconds for calls to the Cloud Asset API.
+
+        Returns:
+            int: Timeout in seconds, defaults to 3600 seconds.
+        """
+        return self.cai_configs.get('api_timeout', 3600)
 
     def get_service_config(self):
         """Return the attached service configuration.

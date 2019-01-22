@@ -114,6 +114,21 @@ def create_resource(resource_id, resource_type, **kwargs):
         resource_id, **kwargs)
 
 
+def create_resource_from_db_row(row):
+    """Create a resource type from a database resource row.
+
+    Args:
+        row (Resource): the database resource row.
+
+    Returns:
+        Resource: the concrete resource type.
+    """
+    parent = (
+        create_resource_from_db_row(row.parent) if row.parent else None)
+
+    return create_resource_from_json(row.type, parent, row.data)
+
+
 def create_resource_from_json(resource_type, parent, json_string):
     """Factory to create a certain kind of Resource from JSON data.
 

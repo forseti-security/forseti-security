@@ -155,7 +155,7 @@ def run(inventory_index_id,
                     notifiers.append(chosen_pipeline(
                         resource['resource'], inventory_index_id,
                         violation_map[resource['resource']], global_configs,
-                        notifier_configs, notifier['configuration']))
+                        notifier_configs, notifier.get('configuration')))
 
             # Run the notifiers.
             for notifier in notifiers:

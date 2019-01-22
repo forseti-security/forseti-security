@@ -277,7 +277,7 @@ class Rule(object):
             RuleViolation: The violation.
         """
         data_lifecycle = bucket.get_lifecycle_rule()
-        data_lifecycle_str = json.dumps(data_lifecycle)
+        data_lifecycle_str = json.dumps(data_lifecycle, sort_keys=True)
 
         return RuleViolation(
             resource_name=bucket.name,

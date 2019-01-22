@@ -160,6 +160,7 @@ EXPECTED_FIREWALL_API_RESPONSE = [
         }],
         "direction": "INGRESS",
         "priority": 1000,
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-internal-1"
     }, {
@@ -179,6 +180,7 @@ EXPECTED_FIREWALL_API_RESPONSE = [
         }],
         "direction": "INGRESS",
         "priority": 1000,
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-internal-0"
     }, {
@@ -200,6 +202,7 @@ EXPECTED_FIREWALL_API_RESPONSE = [
         }],
         "direction": "INGRESS",
         "priority": 1000,
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-public-0"
     }
@@ -224,6 +227,7 @@ EXPECTED_FIREWALL_RULES = {
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"10.8.0.0/24"],
         "priority": 1000,
+        "logConfig": {"enable": False},
         "direction": "INGRESS"},
     "test-network-allow-internal-0": {
         "allowed": [{
@@ -243,6 +247,7 @@ EXPECTED_FIREWALL_RULES = {
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"10.0.0.0/8"],
         "priority": 1000,
+        "logConfig": {"enable": False},
         "direction": "INGRESS"},
     "test-network-allow-public-0": {
         "allowed": [{
@@ -264,6 +269,7 @@ EXPECTED_FIREWALL_RULES = {
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"127.0.0.1/32", u"127.0.0.2/32"],
         "priority": 1000,
+        "logConfig": {"enable": False},
         "direction": "INGRESS"},
 }
 
@@ -339,6 +345,7 @@ DEFAULT_FIREWALL_API_RESPONSE = [
         "allowed": [{
             "IPProtocol": u"icmp"
         }],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-icmp"
     }, {
@@ -355,6 +362,7 @@ DEFAULT_FIREWALL_API_RESPONSE = [
         }, {
             "IPProtocol": u"icmp"
         }],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-internal"
     }, {
@@ -369,6 +377,7 @@ DEFAULT_FIREWALL_API_RESPONSE = [
                 "ports": [u"3389"]
             },
         ],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-rdp"
     }, {
@@ -383,6 +392,7 @@ DEFAULT_FIREWALL_API_RESPONSE = [
                 "ports": [u"22"]
             },
         ],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-ssh"
     }
@@ -404,6 +414,7 @@ DEFAULT_FIREWALL_RULES = {
         "allowed": [{
             "IPProtocol": u"icmp"
         }],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-icmp"
     },
@@ -421,6 +432,7 @@ DEFAULT_FIREWALL_RULES = {
         }, {
             "IPProtocol": u"icmp"
         }],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-internal"
     },
@@ -436,6 +448,7 @@ DEFAULT_FIREWALL_RULES = {
                 "ports": [u"3389"]
             },
         ],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-rdp"
     },
@@ -451,6 +464,7 @@ DEFAULT_FIREWALL_RULES = {
                 "ports": [u"22"]
             },
         ],
+        "logConfig": {"enable": False},
         "name":
             u"test-network-allow-ssh"
     }
@@ -466,6 +480,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
     rules_before {
       json: '[{"allowed": [{"IPProtocol": "icmp"}], "description": '
             '"Allow ICMP from anywhere", "direction": "INGRESS", '
+            '"logConfig": {"enable": false}, '
             '"name": "test-network-allow-icmp", '
             '"network": "https://www.googleapis.com/compute/v1/projects/'
             'test-project/global/networks/test-network", "priority": 1000, '
@@ -473,32 +488,34 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '["0.0.0.0/0"]}, {"allowed": [{"IPProtocol": "icmp"}, '
             '{"IPProtocol": "tcp", "ports": ["1-65535"]}, {"IPProtocol": '
             '"udp", "ports": ["1-65535"]}], "description": "Allow internal '
-            'traffic on the default network.", "direction": "INGRESS", "name": '
-            '"test-network-allow-internal", "network": '
+            'traffic on the default network.", "direction": "INGRESS", '
+            '"logConfig": {"enable": false}, '
+            '"name": "test-network-allow-internal", "network": '
             '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["10.240.0.0/16"]},'
             ' {"allowed": [{"IPProtocol": "tcp", "ports": ["3389"]}], '
             '"description": "Allow RDP from anywhere", "direction": "INGRESS", '
-            '"name": '
-            '"test-network-allow-rdp", "network": '
+            '"logConfig": {"enable": false}, '
+            '"name": "test-network-allow-rdp", "network": '
             '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["0.0.0.0/0"]}, '
             '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], '
             '"description": "Allow SSH from anywhere", "direction": "INGRESS", '
-            '"name": '
-            '"test-network-allow-ssh", "network": '
+            '"logConfig": {"enable": false}, '
+            '"name": "test-network-allow-ssh", "network": '
             '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["0.0.0.0/0"]}]'
-      hash: "95722ebeb3056d961e599db84106af51e1707a091f76a104669bd039bda18221"
+      hash: "97dbbc795617157184e572041a55a7330ad552dbd69f50d8dd7d70de40b41f3b"
     }
     rules_after {
       json: '[{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
             '"ports": ["1-65535"]}, {"IPProtocol": "udp", "ports": ["1-65535"]'
             '}], "description": "Allow internal traffic from a range of IP '
             'addresses.", "direction": "INGRESS", '
+            '"logConfig": {"enable": false}, '
             '"name": "test-network-allow-internal-0", "network": '
             '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
@@ -506,7 +523,9 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
             '"ports": ["1-65535"]}, {"IPProtocol": "udp", "ports": ["1-65535"]'
             '}], "description": "Allow communication between instances.", '
-            '"direction": "INGRESS", "name": "test-network-allow-internal-1", '
+            '"direction": "INGRESS", '
+            '"logConfig": {"enable": false}, '
+            '"name": "test-network-allow-internal-1", '
             '"network": '
             '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
@@ -515,12 +534,13 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '{"IPProtocol": "tcp", "ports": ["22"]}, {"IPProtocol": "udp", '
             '"ports": ["9999"]}], "description": "Allow public traffic from '
             'specific IP addresses.", "direction": "INGRESS", '
+            '"logConfig": {"enable": false}, '
             '"name": "test-network-allow-public-0", '
             '"network": "https://www.googleapis.com/compute/v1/projects/'
             'test-project/global/networks/test-network", "priority": 1000, '
             '"sourceRanges": '
             '["127.0.0.1/32", "127.0.0.2/32"]}]'
-      hash: "1c609a785011a6287258c838989b3118e45e852bd5aba3958bdee14597ae2df7"
+      hash: "08c805139d046eb0e40ece533bb5df08b38464b3e569576f63cd8d6143a0fe95"
     }
     rules_added: "test-network-allow-internal-0"
     rules_added: "test-network-allow-internal-1"

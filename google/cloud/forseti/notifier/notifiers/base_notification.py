@@ -46,6 +46,7 @@ class BaseNotification(object):
     def __init__(self, resource, inventory_index_id,
                  violations, global_configs, notifier_config,
                  notification_config):
+
         """Constructor for the base notifier.
 
         Args:

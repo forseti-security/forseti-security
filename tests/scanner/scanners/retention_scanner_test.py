@@ -31,7 +31,8 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
     """Create violations for expected violation list"""
-    lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
+    lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule(),
+                               sort_keys=True)
 
     return rre.RuleViolation(
         resource_id=bucket_id,
