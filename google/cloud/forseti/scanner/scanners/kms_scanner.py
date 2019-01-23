@@ -119,6 +119,18 @@ class KMSScanner(base_scanner.BaseScanner):
         Returns:
             list: CryptoKey objects.
         """
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            crypto_keys = []
+            for crypto_key in data_access.scanner_iter(
+                session, 'cryptokeys'):
+                project_id = crypto_keys.parent.name
+                crypto_keys.append(
+                    KMS.from_json(project_id,
+                                        crypto_key.full_name,
+                                        crypto_key.data,
+                                        None))
 
     def run(self):
         """Run, the entry point for this scanner."""

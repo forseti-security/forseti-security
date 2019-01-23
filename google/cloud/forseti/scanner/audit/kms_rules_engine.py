@@ -119,6 +119,40 @@ class KMSRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
+        with self._lock:
+            for resource in rule_def.get('resource'):
+                resource_ids = resource.get('resource_ids')
+                try:
+                    resource_type = resource_mod.ResourceType.verify(
+                        resource.get('type'))
+                except resource_errors.InvalidResourceTypeError:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'Missing resource type in rule {}'.format(rule_index))
+
+                if not resource_ids or len(resource_ids) < 1:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'Missing resource ids in rule {}'.format(rule_index))
+                key_rotation_period = rule_def.get('key').get('rotation_period')
+
+                # For each resource id associated with the rule, create a
+                # mapping of resource => rules.
+                for resource_id in resource_ids:
+                    gcp_resource = resource_util.create_resource(
+                        resource_id=resource_id,
+                        resource_type=resource_type)
+
+                    rule = Rule(
+                        rule_def.get('name'),
+                        rule_index,
+                        key_rotation_period)
+
+                    resource_rules = self.resource_rules_map.setdefault(
+                        gcp_resource, ResourceRules(resource=gcp_resource))
+
+                    if rule not in resource_rules.rules:
+                        resource_rules.rules.add(rule)
+
+    # pylint: enable=invalid-name
 
     def get_resource_rules(self, resource):
         """Get all the resource rules for resource.
@@ -140,7 +174,7 @@ class KMSRuleBook(bre.BaseRuleBook):
         Returns:
             list: RuleViolation
         """
-        LOGGER.debug('Looking for service account key violations: %s',
+        LOGGER.debug('Looking for crypto key violations: %s',
                      keys.full_name)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
@@ -157,7 +191,7 @@ class KMSRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_violations(service_account))
+                    resource_rule.find_violations(keys))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -245,20 +279,38 @@ class Rule(object):
     """Rule properties from the rule definition file, also finds violations."""
 
     def __init__(self, rule_name, rule_index,
-                 key_max_age):
+                 key_rotation_period):
         """Initialize.
 
         Args:
             rule_name (str): Name of the loaded rule
             rule_index (int): The index of the rule from the rule definitions
-            key_max_age (int): Max allowed age in days of service
-                account key
+            key_rotation_period (string): Rotation Period of the CryptoKey
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.key_max_age = key_max_age
+        self.key_rotation_period = key_rotation_period
 
-    def find_violations(self, service_account):
+    def is_more_than_max_rotation_period(self,
+                                         gcp_rotation_period):
+        """Check if the rotation period has been disabled. key has been rotated: is the key creation time older
+        than max_age in the policy
+
+        Args:
+            created_time (str): The time at which the key was created (this
+                is the validAfterTime in the key API response (in
+                string_formats.DEFAULT_FORSETI_TIMESTAMP) format
+            scan_time (datetime): Snapshot timestamp.
+
+        Returns:
+            bool: Returns true if un_rotated
+        """
+
+        if gcp_rotation_period > self.key_rotation_period:
+            return True
+        return False
+
+    def find_violations(self, crypto_keys):
         """Find service account key age violations based on the max_age.
 
         Args:
@@ -267,6 +319,18 @@ class Rule(object):
         Returns:
             list: Returns a list of RuleViolation named tuples
         """
+
+        violations = []
+        for key in crypto_keys:
+            key_id = key.get('key_id')
+            full_name = key.get('full_name')
+            LOGGER.debug('Checking key rotation for %s', full_name)
+            key_rotation_period = key.get('rotation_period')
+            if self.is_more_than_max_rotation_period(key_rotation_period, ):
+                violation_reason = ('Key ID %s rotation period is greated than'
+                                    ' %s days.' % (key_id, key_rotation_period))
+
+            return violations
 
     def __eq__(self, other):
         """Test whether Rule equals other Rule.
@@ -281,7 +345,7 @@ class Rule(object):
             return NotImplemented
         return (self.rule_name == other.rule_name and
                 self.rule_index == other.rule_index and
-                (self.key_max_age == other.key_max_age))
+                (self.key_rotation_period == other.key_rotation_period))
 
     def __ne__(self, other):
         """Test whether Rule is not equal to another Rule.
@@ -308,9 +372,21 @@ class Rule(object):
         return hash(self.rule_index)
 
 
-RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id', 'resource_name',
-                            'service_account_name', 'full_name', 'rule_name',
-                            'rule_index', 'violation_type', 'violation_reason',
-                            'project_id', 'key_id', 'key_created_time',
-                            'resource_data'])
+# pylint: enable=inconsistent-return-statements
+
+# Rule violation.
+# resource_type: string
+# resource_id: string
+# rule_name: string
+# rule_index: int
+# violation_type: KE_VERSION_VIOLATION
+# violation_reason: string
+# project_id: string
+# cluster_name: string
+# node_pool_name: string
+# RuleViolation = namedtuple('RuleViolation',
+#                            ['resource_type', 'resource_id', 'resource_name',
+#                             'service_account_name', 'full_name', 'rule_name',
+#                             'rule_index', 'violation_type', 'violation_reason',
+#                             'project_id', 'key_id', 'key_created_time',
+#                             'resource_data'])

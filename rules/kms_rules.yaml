@@ -64,3 +64,28 @@
 #        rotation_range: 2019-02-01T08:00:00Z-2019-07-01T00:00:00Z #date range
 #        rotation_period: 60-600 #range in seconds
 #        labels: {key: value} # metadata pairs that allow you to group keys
+
+#  - name: All cryptographic keys should be enabled
+#    mode: blacklist
+#    resource:
+#      - type: organization
+#        resource_ids:
+#          - '*'
+#    key:
+#      - name:
+#          - '*'
+#        state:
+#           valid values - ENABLED, DISABLED, DESTROY_SECHEDULED, DESTROYED and
+#                           PENDING_GENERATION
+#          - DISABLED
+rules:
+  - name: All cryptographic keys should be rotated in 120 days
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+      - name:
+          - '*'
+        rotation_period: 120
