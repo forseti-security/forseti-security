@@ -63,23 +63,23 @@ def get_db_file_copy(filename):
 class ImporterTest(ForsetiTestCase):
     """Test importer based on database dump."""
 
-    def test_inventory_importer_basic(self):
-        """Test the basic importer for the inventory."""
-
+    def setUp(self):
         db_connect = 'sqlite:///{}'.format(
             get_db_file_copy('forseti-test.db'))
 
-        print db_connect
-
         self.service_config = ServiceConfig(db_connect)
-
         self.source = 'INVENTORY'
+        self.importer_cls = importer.by_source(self.source)
         self.model_manager = self.service_config.model_manager
         self.model_name = self.model_manager.create(name=self.source)
+        self.scoped_session, self.data_access = self.model_manager.get(self.model_name)
 
-        scoped_session, data_access = self.model_manager.get(self.model_name)
+    def test_inventory_importer_basic(self):
+        """Test the basic importer for the inventory."""
 
-        with scoped_session as session:
+
+
+        with self.scoped_session as session:
             # Sqlite really doesn't like multiple connections, and sqlalchemy
             # is effectively a connection per session, reusing the same session
             # for read and write.
@@ -90,14 +90,14 @@ class ImporterTest(ForsetiTestCase):
                 self.model_manager.model(self.model_name,
                                          expunge=False,
                                          session=session),
-                data_access,
+                self.data_access,
                 self.service_config,
                 inventory_index_id=FAKE_DATETIME_TIMESTAMP)
             import_runner.run()
 
             # Make sure the 'full_name' for policies has an even number of
             # segments.
-            for policy in data_access.scanner_iter(session, 'iam_policy'):
+            for policy in self.data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
                         len(filter(None, policy.full_name.split('/'))) % 2)
 
@@ -110,7 +110,7 @@ class ImporterTest(ForsetiTestCase):
             ('roles/bigquery.dataViewer', ['dataset/project2:bq_test_ds']),
             ('roles/bigquery.dataViewer', ['dataset/project3:bq_test_ds1']),
         ]
-        abc_user_accesses = data_access.query_access_by_member(
+        abc_user_accesses = self.data_access.query_access_by_member(
             session, 'user/abc_user@forseti.test', [])
         self.assertEqual(expected_abc_user_accesses, sorted(abc_user_accesses))
 
@@ -137,11 +137,22 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        InventoryImporter.model_action_wrapper(session,
-                                               inventory_iter,
-                                               action,
-                                               post,
-                                               flush_count)
+
+        importer_cls = importer.by_source(self.source)
+        import_runner = importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        import_runner.model_action_wrapper(inventory_iter,
+                                           action,
+                                           post,
+                                           flush_count)
         post.assert_called_once()
 
     def test_model_action_wrapper_inventory_iter_tuple(self):
@@ -153,11 +164,22 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
+
 
         action.assert_called_once_with(1, 2)
         self.assertEquals(1, count)
@@ -176,11 +198,21 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
 
         calls = [mock.call(1, 2), mock.call(4, 5)]
         action.assert_has_calls(calls)
@@ -202,11 +234,21 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
 
         action.assert_called_once_with('not_tuple')
         self.assertEquals(1, count)
@@ -225,12 +267,21 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
 
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
         calls = [mock.call('data'), mock.call('data1')]
         action.assert_has_calls(calls)
         self.assertEquals(2, count)
