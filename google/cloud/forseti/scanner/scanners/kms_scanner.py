@@ -14,7 +14,8 @@
 
 """Scanner for the KMS rules engine."""
 
-from google.cloud.forseti.common.gcp_type.kms import KMS
+from google.cloud.forseti.common.gcp_type.crypto_key import CryptoKey
+from google.cloud.forseti.common.gcp_type.key_ring import KeyRing
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import kms_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -62,17 +63,6 @@ class KMSScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {
-                'project_id': violation.project_id,
-                'project': violation.project,
-                'full_name': violation.full_name,
-                'state': violation.state,
-                'protection_level': violation.protection_level,
-                'purpose': violation.purpose,
-                'rotation_range': violation.rotation_range,
-                'rotation_period': violation.rotation_period,
-                'labels': violation.labels
-            }
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -81,7 +71,7 @@ class KMSScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data,
+                'violation_data': violation.violation_data,
                 'resource_data': violation.resource_data
             }
 
@@ -119,18 +109,24 @@ class KMSScanner(base_scanner.BaseScanner):
         Returns:
             list: CryptoKey objects.
         """
+        resources = []
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             crypto_keys = []
             for crypto_key in data_access.scanner_iter(
-                session, 'cryptokeys'):
-                project_id = crypto_keys.parent.name
+                session, 'cryptokey'):
+                project_id = crypto_key.parent.name
                 crypto_keys.append(
-                    KMS.from_json(project_id,
-                                        crypto_key.full_name,
-                                        crypto_key.data,
-                                        None))
+                    CryptoKey.from_json(crypto_key.data))
+
+
+            for key_ring in data_access.scanner_iter(
+                session, 'keyring'):
+                key_rings = []
+                project_id = key_rings.parent.name
+                key_rings.append(
+                    CryptoKey.from_json(key_ring.data))
 
     def run(self):
         """Run, the entry point for this scanner."""
