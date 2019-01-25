@@ -18,6 +18,8 @@
 #  violations.
 
 rules:
+  # Note: Please use organization id, folder number and project id
+  # when specifying resource ids.
   - name: BigQuery rule to search for public datasets
     mode: blacklist
     resource:

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 rules:
+  # Note: Please use organization id, folder number and project id
+  # when specifying resource ids.
   - name: Cloud SQL rule to search for publicly exposed instances
     instance_name: '*'
     authorized_networks: '0.0.0.0/0'

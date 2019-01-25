@@ -22,6 +22,8 @@
 # values: a list of values to blacklist/whitelist according to mode
 
 rules:
+  # Note: Please use organization id, folder number and project id
+  # when specifying resource ids.
   - name: logging should be enabled
     resource:
       - type: project

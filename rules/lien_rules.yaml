@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # rules:
+#   # Note: Please use organization id, folder number and project id
+#   # when specifying resource ids.
 #   # Example rules.
 #   - name: Require project deletion liens for all projects in organization
 #     mode: required

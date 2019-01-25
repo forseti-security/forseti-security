@@ -13,6 +13,8 @@
 # limitations under the License.
 
 # rules:
+#   # Note: Please use organization id, folder number and project id
+#   # when specifying resource ids.
 #   # example rules
 #   - name: 'Require AUDIT_READ on all services, with exemptions.'
 #     resource:

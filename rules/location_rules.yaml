@@ -30,6 +30,8 @@
 # europe*).
 
 # rules:
+#   # Note: Please use organization id, folder number and project id
+#   # when specifying resource ids.
 #   - name: All buckets in organization must be in the US.
 #     mode: whitelist
 #     resource:

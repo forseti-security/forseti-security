@@ -13,6 +13,8 @@
 # limitations under the License.
 
 rules:
+  # Note: Please use organization id, folder number and project id
+  # when specifying resource ids.
   # default rules
   - name: Forbid any IAP bypasses (when IAP is enabled)
     resource:
