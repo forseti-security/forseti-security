@@ -69,18 +69,7 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_violations(keys)
-
-        return set(violations)
-
-    def add_rules(self, rules):
-        """Add rules to the rule book.
-
-        Args:
-            rules (list): The list of rules to add to the book.
-        """
-        if self.rule_book is not None:
-            self.rule_book.add_rules(rules)
+        return self.rule_book.find_violations(keys)
 
 
 class KMSRuleBook(bre.BaseRuleBook):
@@ -332,6 +321,21 @@ class Rule(object):
 
             return violations
 
+    def make_violations(self, key, violation_reason):
+        return RuleViolation(
+            rotation_period=key.rotation_period,
+            resource_name=key.full_name,
+            resource_type=resource_mod.ResourceType.KMS_CRYPTOKEY,
+            resource_id=key.id,
+            full_name=key.full_name,
+            rule_name=self.rule_name,
+            rule_index=self.rule_index,
+            violation_type='KMS_CRYPTOKEY_VIOLATION',
+            violation_reason=violation_reason,
+            project_id=key.parent_id,
+            key_name=key.name,
+            resource_data=key.data)
+
     def __eq__(self, other):
         """Test whether Rule equals other Rule.
 
@@ -384,9 +388,9 @@ class Rule(object):
 # project_id: string
 # cluster_name: string
 # node_pool_name: string
-# RuleViolation = namedtuple('RuleViolation',
-#                            ['resource_type', 'resource_id', 'resource_name',
-#                             'service_account_name', 'full_name', 'rule_name',
-#                             'rule_index', 'violation_type', 'violation_reason',
-#                             'project_id', 'key_id', 'key_created_time',
-#                             'resource_data'])
+RuleViolation = namedtuple('RuleViolation',
+                           ['resource_type', 'resource_id', 'resource_name',
+                            'rotation_period', 'full_name', 'rule_name',
+                            'rule_index', 'violation_type', 'violation_reason',
+                            'project_id', 'key_name',
+                            'resource_data'])

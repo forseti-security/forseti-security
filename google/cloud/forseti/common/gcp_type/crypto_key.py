@@ -15,7 +15,6 @@
 """A CryptoKey object.
 
 See:
-https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings#KeyRing
 https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys#CryptoKey
 """
 
@@ -25,23 +24,20 @@ from google.cloud.forseti.common.gcp_type import resource
 
 
 class CryptoKeyLifecycleState(resource.LifecycleState):
-    """Represents the CryptoKey's LifecycleState."""
+    """Represents the CryptoKey resource."""
     pass
 
 
 class CryptoKey(resource.Resource):
-    """CryptoKey resource."""
+    """Represents the CryptoKey resource."""
+
+    RESOURCE_NAME_FMT = 'kms_cryptokey/%s'
 
     def __init__(
-            self,
-            crypto_key_id,
-            full_name=None,
-            data=None,
-            name=None,
-            display_name=None,
-            parent=None,
-            locations=None,
-            lifecycle_state=CryptoKeyLifecycleState.UNSPECIFIED):
+            self, crypto_key_id=None, display_name=None, parent=None,
+            full_name=None, name=None, primary_version=None, purpose=None,
+            create_time=None, next_rotation_time=None, version_template=None,
+            labels=None, rotation_period=None, data=None):
         """Initialize.
 
         Args:
@@ -51,75 +47,62 @@ class CryptoKey(resource.Resource):
             name (str): The crypto key's unique GCP name, with the
                 format "cryptokeys/{id}".
             display_name (str): The crypto key's display name.
-            locations (List[str]): Locations this crypto key resides in. If set,
-                there should be exactly one element in the list.
             parent (Resource): The parent Resource.
-            lifecycle_state (LifecycleState): The lifecycle state of the
-                crypto key.
         """
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_id,
-            resource_type=resource.ResourceType.CRYPTOKEY,
-            name=name,
+            resource_type=resource.ResourceType.KMS_CRYPTOKEY,
             display_name=display_name,
             parent=parent,
-            locations=locations,
-            lifecycle_state=lifecycle_state)
-        self.full_name = full_name
+            name=full_name)
+        self.name = name
+        self.primary_version = primary_version
+        self.purpose = purpose
+        self.create_time = create_time
+        self.next_rotation_time = next_rotation_time
+        self.version_template = version_template
+        self.labels = labels
+        self.rotation_period = rotation_period
         self.data = data
-
-    # @classmethod
-    # def from_dict(cls, parent, crypto_key_dict):
-    #     """Returns a new CryptoKey object from dict.
-    #
-    #     Args:
-    #         parent (Resource): The parent resource of this key.
-    #         crypto_key_dict (dict): CryptoKey dictionary.
-    #
-    #     Returns:
-    #         CryptoKey: A new CryptoKey object.
-    #     """
-    #     return cls(
-    #         create_time=crypto_key_dict.get('createTime', ''),
-    #         name=crypto_key_dict.get('name', ''),
-    #         next_rotation_time=crypto_key_dict.get('nextRotationTime', ''),
-    #         primary_algorithm=crypto_key_dict.get('primary').get('algorithm'),
-    #         primary_create_time=crypto_key_dict.get('primary').get('createTime'),
-    #         primary_generate_time=crypto_key_dict.get('primary').get('generateTime'),
-    #         primary_name=crypto_key_dict.get('primary').get('name'),
-    #         protection_level=crypto_key_dict.get('primary').get('protectionLevel'),
-    #         state=crypto_key_dict.get('primary').get('state'),
-    #         purpose=crypto_key_dict.get('purpose', ''),
-    #         rotationPeriod=crypto_key_dict.get('rotationPeriod', ''),
-    #         version_algorithm=crypto_key_dict.get('versionTemplate').get('algorithm', ''),
-    #         version_protection_level=crypto_key_dict.get('versionTemplate').get('protectionLevel', '')
-    #     )
+        self._dict = None
 
     @classmethod
-    def from_json(cls, parent, crypto_key_json):
-        """Create a crypto key from a JSON object.
+    def from_json(cls, full_name, parent, json_string):
+        """Returns a new ForwardingRule object from json data.
 
         Args:
             parent (Resource): resource this crypto key belongs to.
             json_string(str): JSON string of a crypto key GCP API response.
 
         Returns:
-            CryptoKey: crypto key resource.
+           cryptoKey: A new cryptoKey object.
         """
-        crypto_key_dict = json.loads(crypto_key_json)
+
+        key_dict = json.loads(json_string)
+
         return cls(
-            create_time=crypto_key_dict.get('createTime', ''),
-            name=crypto_key_dict.get('name', ''),
-            next_rotation_time=crypto_key_dict.get('nextRotationTime', ''),
-            primary_algorithm=crypto_key_dict.get('primary').get('algorithm'),
-            primary_create_time=crypto_key_dict.get('primary').get('createTime'),
-            primary_generate_time=crypto_key_dict.get('primary').get('generateTime'),
-            primary_name=crypto_key_dict.get('primary').get('name'),
-            protection_level=crypto_key_dict.get('primary').get('protectionLevel'),
-            state=crypto_key_dict.get('primary').get('state'),
-            purpose=crypto_key_dict.get('purpose', ''),
-            rotationPeriod=crypto_key_dict.get('rotationPeriod', ''),
-            version_algorithm=crypto_key_dict.get('versionTemplate').get('algorithm', ''),
-            version_protection_level=crypto_key_dict.get('versionTemplate').get('protectionLevel', '')
+            parent=parent,
+            full_name=full_name,
+            crypto_key_name=key_dict.get('name'),
+            primary_version=key_dict.get('primary', {}),
+            purpose=key_dict.get('purpose'),
+            create_time=key_dict.get('createTime'),
+            next_rotation_time=key_dict.get('nextRotationTime'),
+            version_template=key_dict.get('versionTemplate', {}),
+            labels=key_dict.get('labels', {}),
+            rotation_period=key_dict.get('rotationPeriod'),
+            data=json.dumps(key_dict, sort_keys=True),
         )
 
+    @property
+    def as_dict(self):
+        """Return the dictionary representation of the crypto key.
+
+        Returns:
+            dict: deserialized json object
+
+        """
+        if self._dict is None:
+            self._dict = json.loads(self.data)
+
+        return self._dict
