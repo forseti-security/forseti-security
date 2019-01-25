@@ -59,7 +59,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         super(ForsetiServerInstaller, self).preflight_checks()
         self.config.generate_cloudsql_instance()
         self.get_email_settings()
-        gcloud.enable_apis(self.config.dry_run)
+        gcloud.enable_apis()
         self.determine_access_target()
         print('Forseti will be granted write access and required roles to: '
               '{}'.format(self.resource_root_id))
@@ -92,7 +92,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Copy the rule directory to the GCS bucket.
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
-                is_directory=True, dry_run=self.config.dry_run)
+                is_directory=True)
 
             self.has_roles_script = gcloud.grant_server_svc_acct_roles(
                 self.enable_write_access,
@@ -226,9 +226,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         utils.print_banner('Forseti Installation Configuration')
 
-        if not self.config.advanced_mode:
-            self.access_target = constants.RESOURCE_TYPES[0]
-            self.target_id = self.organization_id
+        self.access_target = constants.RESOURCE_TYPES[0]
+        self.target_id = self.organization_id
 
         while not self.target_id:
             if self.setup_explain:
