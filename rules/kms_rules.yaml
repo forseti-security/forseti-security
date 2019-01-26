@@ -86,6 +86,6 @@ rules:
         resource_ids:
           - '*'
     key:
-      - name:
-          - '*'
-        rotation_period: 120
+      - rotation_period: 100
+
+

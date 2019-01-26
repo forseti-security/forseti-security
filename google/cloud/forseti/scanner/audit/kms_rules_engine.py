@@ -26,6 +26,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
+SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
+
 
 class KMSRulesEngine(bre.BaseRulesEngine):
     """Rules engine for KMS scanner."""
@@ -109,19 +111,37 @@ class KMSRuleBook(bre.BaseRuleBook):
                 Assigned automatically when the rule book is built.
         """
         with self._lock:
-            for resource in rule_def.get('resource'):
+            resources = rule_def.get('resource')
+            if not resources:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Missing field "resource" in rule {}'.format(rule_index))
+
+            for resource in resources:
                 resource_ids = resource.get('resource_ids')
-                try:
-                    resource_type = resource_mod.ResourceType.verify(
-                        resource.get('type'))
-                except resource_errors.InvalidResourceTypeError:
-                    raise audit_errors.InvalidRulesSchemaError(
-                        'Missing resource type in rule {}'.format(rule_index))
 
                 if not resource_ids or len(resource_ids) < 1:
                     raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource ids in rule {}'.format(rule_index))
-                key_rotation_period = rule_def.get('key').get('rotation_period')
+
+                resource_type = resource.get('type')
+
+                if resource_type not in SUPPORTED_RULE_RESOURCE_TYPES:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'Invalid resource type "{}" in rule {}'.format(
+                            resource_type, rule_index))
+
+                key_name = rule_def.get('key').get('name')
+                key_rotation_period = rule_def.get('key').get('rotationPeriod')
+                key_next_rotation_period = (
+                    rule_def.get('key').get('nextRotationPeriod'))
+
+
+                try:
+                    key_rotation_period = int(key_rotation_period)
+                except (ValueError, TypeError):
+                    raise audit_errors.InvalidRulesSchemaError(
+                            'Rotation period of crypto key is either missing or'
+                            ' not an integer in rule {}'.format(rule_index))
 
                 # For each resource id associated with the rule, create a
                 # mapping of resource => rules.
@@ -133,6 +153,7 @@ class KMSRuleBook(bre.BaseRuleBook):
                     rule = Rule(
                         rule_def.get('name'),
                         rule_index,
+                        key_name,
                         key_rotation_period)
 
                     resource_rules = self.resource_rules_map.setdefault(
@@ -327,10 +348,9 @@ class Rule(object):
             resource_name=key.full_name,
             resource_type=resource_mod.ResourceType.KMS_CRYPTOKEY,
             resource_id=key.id,
-            full_name=key.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
-            violation_type='KMS_CRYPTOKEY_VIOLATION',
+            violation_type='KMS_VIOLATION',
             violation_reason=violation_reason,
             project_id=key.parent_id,
             key_name=key.name,
@@ -390,7 +410,7 @@ class Rule(object):
 # node_pool_name: string
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'resource_name',
-                            'rotation_period', 'full_name', 'rule_name',
+                            'rotation_period', 'rule_name',
                             'rule_index', 'violation_type', 'violation_reason',
                             'project_id', 'key_name',
                             'resource_data'])

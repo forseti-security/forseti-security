@@ -14,10 +14,8 @@
 
 """Scanner for the KMS rules engine."""
 
-import json
-
 from google.cloud.forseti.common.gcp_type import project
-from google.cloud.forseti.common.gcp_type.crypto_key import CryptoKey
+from google.cloud.forseti.common.gcp_type import crypto_key
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import kms_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -48,11 +46,11 @@ class KMSScanner(base_scanner.BaseScanner):
             snapshot_timestamp,
             rules)
 
-        self.rules_engine = (
-            kms_rules_engine.KMSRulesEngine(
-                rules_file_path=self.rules,
-                snapshot_timestamp=self.snapshot_timestamp))
-        self.rules_engine.build_rule_book(self.global_configs)
+        #self.rules_engine = (
+        #    kms_rules_engine.KMSRulesEngine(
+        #        rules_file_path=self.rules,
+        #        snapshot_timestamp=self.snapshot_timestamp))
+        #self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
     def _flatten_violations(violations):
@@ -111,32 +109,42 @@ class KMSScanner(base_scanner.BaseScanner):
         Returns:
             list: CryptoKey objects.
         """
+        keys = []
+
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            crypto_keys = []
-            for crypto_key in data_access.scanner_iter(
+            for key in data_access.scanner_iter(
                     session, 'kms_cryptokey'):
-                if not crypto_key.parent_type_name.startswith('kms_keyring'):
+
+                if not key.parent_type_name.startswith('kms_keyring'):
                     raise ValueError(
                         'Unexpected type of parent resource type: '
-                        'got %s, want project' % crypto_key.parent_type_name
+                        'got %s, want kms_keyring' % key.parent_type_name
                     )
 
                 proj = project.Project(
-                    project_id=crypto_key.parent.name,
-                    full_name=crypto_key.parent.full_name,
+                    project_id=key.parent.name,
+                    full_name=key.parent.full_name,
                 )
 
-                crypto_keys.append(
-                    CryptoKey.from_json(crypto_key.full_name,
-                                        proj,
-                                        crypto_key.data))
+                xyz123 = '11111'
 
-        return crypto_keys
+                xyz123 = crypto_key.CryptoKey.from_json(proj, key.data)
+
+                keys.append(
+                    crypto_key.CryptoKey.from_json(proj,
+                                                   key.data))
+
+        return keys
 
     def run(self):
         """Run, the entry point for this scanner."""
+        LOGGER.info('kms scanner started')
+
         keys = self._retrieve()
+
         all_violations = self._find_violations(keys)
-        self._output_results(all_violations)
+        # self._output_results(all_violations)
+
+        LOGGER.info('kms scanner done')

@@ -23,11 +23,6 @@ import json
 from google.cloud.forseti.common.gcp_type import resource
 
 
-class CryptoKeyLifecycleState(resource.LifecycleState):
-    """Represents the CryptoKey resource."""
-    pass
-
-
 class CryptoKey(resource.Resource):
     """Represents the CryptoKey resource."""
 
@@ -51,11 +46,14 @@ class CryptoKey(resource.Resource):
         """
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_id,
-            resource_type=resource.ResourceType.KMS_CRYPTOKEY,
+            resource_type=None,
+            # resource_type=resource.ResourceType.KMS_CRYPTOKEY,
             display_name=display_name,
-            parent=parent,
-            name=full_name)
-        self.name = name
+            parent=parent)
+
+            # name=full_name)
+#        self.name = name
+#        test333 = '3333'
         self.primary_version = primary_version
         self.purpose = purpose
         self.create_time = create_time
@@ -67,7 +65,7 @@ class CryptoKey(resource.Resource):
         self._dict = None
 
     @classmethod
-    def from_json(cls, full_name, parent, json_string):
+    def from_json(cls, parent, json_string):
         """Returns a new ForwardingRule object from json data.
 
         Args:
@@ -80,10 +78,10 @@ class CryptoKey(resource.Resource):
 
         key_dict = json.loads(json_string)
 
-        return cls(
+        xyz123 = cls(
             parent=parent,
-            full_name=full_name,
-            crypto_key_name=key_dict.get('name'),
+            # full_name=full_name,
+            # crypto_key_name=key_dict.get('name'),
             primary_version=key_dict.get('primary', {}),
             purpose=key_dict.get('purpose'),
             create_time=key_dict.get('createTime'),
@@ -93,6 +91,8 @@ class CryptoKey(resource.Resource):
             rotation_period=key_dict.get('rotationPeriod'),
             data=json.dumps(key_dict, sort_keys=True),
         )
+
+        return xyz123
 
     @property
     def as_dict(self):
