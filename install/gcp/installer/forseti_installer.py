@@ -383,12 +383,10 @@ class ForsetiInstaller(object):
 
         conf_values = self.get_configuration_values()
 
-        forseti_conf_path = files.generate_forseti_conf(
+        return files.generate_forseti_conf(
             self.config.installation_type,
             conf_values,
             self.config.identifier)
-
-        return forseti_conf_path
 
     def post_install_instructions(self, deploy_success,
                                   forseti_conf_path, bucket_name):

@@ -519,12 +519,10 @@ def create_or_reuse_service_acct(acct_type,
             the installation.
     """
 
-    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
-
     print ('Creating {}... '.format(acct_type), end='')
     sys.stdout.flush()
 
-    return_code, out, err = utils.run_command(
+    return_code, _, err = utils.run_command(
         ['gcloud', 'iam', 'service-accounts', 'create',
          acct_email[:acct_email.index('@')], '--display-name',
          acct_name])
