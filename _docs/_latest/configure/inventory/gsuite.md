@@ -70,3 +70,61 @@ If you are running Forseti on GCP and made any changes to the above values,
 you will need to copy the `conf` file to the Cloud Storage bucket. For more
 information, see
 [Moving configuration to Cloud Storage]({% link _docs/latest/configure/general/index.md %}).
+
+## Troubleshooting
+
+Error:
+```
+('invalid_grant: Invalid email or User ID', u'{"error" : "invalid_grant", "error_description" : "Invalid email or User ID"}')
+```
+
+Solution:
+Double-check the user email you entered in to the `forseti_conf_server.yaml` file. Make sure there is no typo and the user exists.
+
+***
+
+Error:
+```
+GCP API Error: unable to get groups from GCP:
+<HttpError 403 when requesting https://www.googleapis.com/admin/directory/v1/groups?customer=C04h01n68&alt=json returned "Not Authorized to access this resource/api">
+```
+
+Solution:
+Make sure you specified a super admin user in the `forseti_conf_server.yaml` file.
+
+***
+
+Error:
+```
+('unauthorized_client: Client is unauthorized to retrieve access tokens using this method.', u'{\n  "error" : "unauthorized_client",\n  "error_description" : "Client is unauthorized to retrieve access tokens using this method."\n}')
+```
+
+Solution:
+Make sure you entered the correct API scope(s) in the GSuite admin console.
+
+***
+
+Error:
+```
+Null
+```
+
+Solution:
+Make sure DwD is enabled for the server service account.
+
+***
+
+Error:
+```
+Error calling the IAM signBytes API: {
+  "error": {
+    "code": 403,
+    "message": "Permission iam.serviceAccounts.signBlob is required to perform this operation on service account projects/-/serviceAccounts/forseti-server-gcp-xxxxxx@xyz.iam.gserviceaccount.com.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+Solution:
+Make sure `roles/iam.serviceAccountTokenCreator` is granted to the server
+service account.
