@@ -8,6 +8,6 @@ spec:
   ports:
     - port: 50051
       protocol: TCP
-  clusterIP: 10.43.240.3
+  clusterIP: ${FORSETI_SERVER_IP}
   selector:
     app: forseti-server

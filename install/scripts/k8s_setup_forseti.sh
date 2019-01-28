@@ -46,6 +46,8 @@ export FORSETI_IMAGE=#gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
 export BUCKET=#gs://<bucketname>
 export CLOUD_SQL_CONNECTION=#<project>:<region>:<db>
 export CRON_SCHEDULE="*/60 * * * *"
+export CLOUDSQL_IP=10.43.240.2
+export FORSETI_SERVER_IP=10.43.240.3
 ## END VARIABLES
 
 # Create Cluster
@@ -72,11 +74,17 @@ export CRON_SCHEDULE="*/60 * * * *"
     fi
 
 # Create deployment files from the templates
-# We do this because kubectl apply doesnt support environment variable substitution
+# We do this because kubectl apply doesn't support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
+	envsubst < cloussqlproxy.service.template.yaml > cloussqlproxy.service.yaml
+
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
+
 	envsubst < forseti.server.template.yaml > forseti.server.yaml
+	envsubst < forseti.server.service.template.yaml > forseti.server.service.yaml
+
 	envsubst < forseti.client.template.yaml > forseti.client.yaml
+
 
 if ${DEPLOY_CRONJOB}; then
     # Example forseti as k8s CronJob
