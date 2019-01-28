@@ -21,6 +21,10 @@ https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.
 import json
 
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.util import logger
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 class CryptoKey(resource.Resource):
@@ -29,10 +33,11 @@ class CryptoKey(resource.Resource):
     RESOURCE_NAME_FMT = 'kms_cryptokey/%s'
 
     def __init__(
-            self, crypto_key_id=None, display_name=None, parent=None,
-            full_name=None, name=None, primary_version=None, purpose=None,
-            create_time=None, next_rotation_time=None, version_template=None,
-            labels=None, rotation_period=None, data=None):
+            self, crypto_key_id=None, crypto_key_full_name=None,
+            crypto_key_parent_type=None, crypto_key_type=None,
+            primary_version=None, purpose=None, create_time=None,
+            next_rotation_time=None, version_template=None, labels=None,
+            rotation_period=None, data=None):
         """Initialize.
 
         Args:
@@ -46,14 +51,9 @@ class CryptoKey(resource.Resource):
         """
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_id,
-            resource_type=None,
-            # resource_type=resource.ResourceType.KMS_CRYPTOKEY,
-            display_name=display_name,
-            parent=parent)
-
-            # name=full_name)
-#        self.name = name
-#        test333 = '3333'
+            name=crypto_key_full_name,
+            parent=crypto_key_parent_type,
+            resource_type=crypto_key_type),
         self.primary_version = primary_version
         self.purpose = purpose
         self.create_time = create_time
@@ -62,10 +62,10 @@ class CryptoKey(resource.Resource):
         self.labels = labels
         self.rotation_period = rotation_period
         self.data = data
-        self._dict = None
 
     @classmethod
-    def from_json(cls, parent, json_string):
+    def from_json(cls, resource_data, crypto_key_id, crypto_key_full_name,
+                  crypto_key_parent_type, crypto_key_type, json_string):
         """Returns a new ForwardingRule object from json data.
 
         Args:
@@ -77,11 +77,13 @@ class CryptoKey(resource.Resource):
         """
 
         key_dict = json.loads(json_string)
+        LOGGER.info('resource_data:', resource_data)
 
-        xyz123 = cls(
-            parent=parent,
-            # full_name=full_name,
-            # crypto_key_name=key_dict.get('name'),
+        crypto_key_data = cls(
+            crypto_key_id=crypto_key_id,
+            crypto_key_full_name=crypto_key_full_name,
+            crypto_key_parent_type=crypto_key_parent_type,
+            crypto_key_type=crypto_key_type,
             primary_version=key_dict.get('primary', {}),
             purpose=key_dict.get('purpose'),
             create_time=key_dict.get('createTime'),
@@ -92,17 +94,4 @@ class CryptoKey(resource.Resource):
             data=json.dumps(key_dict, sort_keys=True),
         )
 
-        return xyz123
-
-    @property
-    def as_dict(self):
-        """Return the dictionary representation of the crypto key.
-
-        Returns:
-            dict: deserialized json object
-
-        """
-        if self._dict is None:
-            self._dict = json.loads(self.data)
-
-        return self._dict
+        return crypto_key_data

@@ -14,7 +14,7 @@
 
 """Scanner for the KMS rules engine."""
 
-from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import crypto_key
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import kms_rules_engine
@@ -123,18 +123,20 @@ class KMSScanner(base_scanner.BaseScanner):
                         'got %s, want kms_keyring' % key.parent_type_name
                     )
 
-                proj = project.Project(
-                    project_id=key.parent.name,
-                    full_name=key.parent.full_name,
-                )
+                resource_data = resource.Resource(resource_id=key.name,
+                                                  name=key.full_name,
+                                                  parent=key.parent_type_name,
+                                                  resource_type=key.type)
 
-                xyz123 = '11111'
+                crypto_key_data = crypto_key.CryptoKey.from_json(
+                    resource_data,
+                    key.name,
+                    key.full_name,
+                    key.parent_type_name,
+                    key.type,
+                    key.data)
 
-                xyz123 = crypto_key.CryptoKey.from_json(proj, key.data)
-
-                keys.append(
-                    crypto_key.CryptoKey.from_json(proj,
-                                                   key.data))
+                keys.append(crypto_key_data)
 
         return keys
 
@@ -143,7 +145,6 @@ class KMSScanner(base_scanner.BaseScanner):
         LOGGER.info('kms scanner started')
 
         keys = self._retrieve()
-
         all_violations = self._find_violations(keys)
         # self._output_results(all_violations)
 
