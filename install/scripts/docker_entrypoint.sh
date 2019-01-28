@@ -120,11 +120,8 @@ download_server_configuration_files(){
 
 }
 
-# TODO
 client_cli_setup(){
-    echo "client_cli_setup is not implemented yet."
-
-# Store the variables in /etc/profile.d/forseti_environment.sh
+# Store the Client CLI variables in /etc/profile.d/forseti_environment.sh
 # so all ssh sessions will have access to them
 
 FILE="/etc/profile.d/forseti_environment.sh"
