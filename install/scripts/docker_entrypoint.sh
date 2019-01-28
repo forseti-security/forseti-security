@@ -126,9 +126,17 @@ client_cli_setup(){
 
     # Just export vars?
     export FORSETI_HOME=/forseti-security
-    export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
+    export FORSETI_CLIENT_CONFIG=${BUCKET}/config/forseti_conf_client.yaml
 
-    #TODO Do we need to run python setup script?
+    # TODO Do we need to run python setup script?
+    # TODO Or just copy config file?
+    #gsutil cp ${FORSETI_CLIENT_CONFIG} ${FORSETI_HOME}/config/client/forseti_conf_client.yaml
+
+    # Store the variables in /etc/profile.d/forseti_environment.sh
+# so all the users will have access to them
+echo "echo 'export FORSETI_HOME=/forseti-security
+export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
+' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 }
 
 # TODO Should this be started as a background or foreground process?

@@ -43,7 +43,8 @@ DEPLOY_CLIENT=true
 # Environment variables needed to create deployment files from templates
 # TODO is the export keyword needed?
 export FORSETI_IMAGE=#gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
-export BUCKET=#gs://<bucketname>
+export SERVER_BUCKET=#gs://<server bucketname>
+export CLIENT_BUCKET=#gs://<client bucketname>
 export CLOUD_SQL_CONNECTION=#<project>:<region>:<db>
 export CRON_SCHEDULE="*/60 * * * *"
 export CLOUDSQL_IP=10.43.240.2
