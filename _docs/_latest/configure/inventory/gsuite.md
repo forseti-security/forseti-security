@@ -112,9 +112,9 @@ Make sure you entered the correct API scope(s) in the GSuite admin console.
 ***
 
 Error:
-```
-Null
-```
+No GSuite data and no relevant gsuite error reported by
+`forseti inventory list|get` or in `inventory_index_errors` column in the
+`inventory_index` table.
 
 Solution:
 Make sure DwD is enabled for the server service account.
