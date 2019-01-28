@@ -79,6 +79,9 @@ to resolve the errors.
 You can find what errors have happened by running `forseti inventory list|get`,
 or look at the `inventory_index_errors` column in the `inventory_index` table.
 
+If you make any changes to the `forseti_conf_server.yaml` file, be sure
+to update the server by reloading it with `forseti server configuration reload`.
+
 Error:
 ```
 ('invalid_grant: Invalid email or User ID', u'{"error" : "invalid_grant", "error_description" : "Invalid email or User ID"}')
