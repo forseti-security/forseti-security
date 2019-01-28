@@ -236,10 +236,11 @@ main(){
     elif ${RUN_CLIENT}; then
         client_cli_setup
 
-        # Client CLI is essentially a long running container for  users to log into and
-        # run ad hoc commands.
+        # Client CLI is essentially a long running container for users to ssh into and
+        # run ad hoc commands. (This is more for a k8s PoC, not sure on the value of running
+        # the Client CLI in k8s and its not providing a 'service' in the k8s environment.)
         # TODO This is a hack. Is there a better way to keep the container running?
-        sleep infinity
+        sleep infinity &
     fi
 
     if ${RUN_CRONJOB}; then
