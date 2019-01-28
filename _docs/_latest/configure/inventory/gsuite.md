@@ -96,7 +96,7 @@ Make sure you specified a super admin user in the `forseti_conf_server.yaml` fil
 
 Error:
 ```
-('unauthorized_client: Client is unauthorized to retrieve access tokens using this method.', u'{\n  "error" : "unauthorized_client",\n  "error_description" : "Client is unauthorized to retrieve access tokens using this method."\n}')
+('unauthorized_client: Client is unauthorized to retrieve access tokens using this method.', u'{"error" : "unauthorized_client", "error_description" : "Client is unauthorized to retrieve access tokens using this method."}')
 ```
 
 Solution:
