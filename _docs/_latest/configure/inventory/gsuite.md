@@ -88,7 +88,7 @@ Error:
 ```
 
 Solution:
-Double-check th email you entered in the `domain_super_admin_email` field of
+Double-check the email you entered in the `domain_super_admin_email` field of
 the `forseti_conf_server.yaml` file. Make sure there is no typo and the user
 exists.
 
