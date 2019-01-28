@@ -76,7 +76,7 @@ export FORSETI_SERVER_IP=10.43.240.3
 # Create deployment files from the templates
 # We do this because kubectl apply doesn't support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
-	envsubst < cloussqlproxy.service.template.yaml > cloussqlproxy.service.yaml
+	envsubst < cloudsqlproxy.service.template.yaml > cloudsqlproxy.service.yaml
 
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
 
