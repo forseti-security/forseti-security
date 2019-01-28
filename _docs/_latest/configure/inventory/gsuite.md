@@ -73,13 +73,19 @@ information, see
 
 ## Troubleshooting
 
+If have have problem with getting inventory on GSuite data, you can find what
+errors have happened by running `forseti inventory list|get`, or look at the
+`inventory_index_errors` column in the `inventory_index` table.
+
 Error:
 ```
 ('invalid_grant: Invalid email or User ID', u'{"error" : "invalid_grant", "error_description" : "Invalid email or User ID"}')
 ```
 
 Solution:
-Double-check the user email you entered in to the `forseti_conf_server.yaml` file. Make sure there is no typo and the user exists.
+Double-check th email you entered in the `domain_super_admin_email` field of
+the `forseti_conf_server.yaml` file. Make sure there is no typo and the user
+exists.
 
 ***
 
@@ -90,7 +96,8 @@ GCP API Error: unable to get groups from GCP:
 ```
 
 Solution:
-Make sure you specified a super admin user in the `forseti_conf_server.yaml` file.
+Make sure you specified a super admin user in the `domain_super_admin_email`
+field of the `forseti_conf_server.yaml` file.
 
 ***
 
