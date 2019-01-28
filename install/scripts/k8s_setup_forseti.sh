@@ -92,7 +92,7 @@ if ${DEPLOY_CRONJOB}; then
     # Create a Cluster IP Service for Cloud SQL Proxy
     # Deploy forseti as k8s CronJob
 	kubectl apply -f cloudsqlproxy.yaml
-	kubectl apply -f cloudsqlproxyservice.yaml
+	kubectl apply -f cloudsqlproxy.service.yaml
 	kubectl apply -f forseti.cronjob.yaml
 
 elif ${DEPLOY_SERVER}; then
@@ -102,9 +102,9 @@ elif ${DEPLOY_SERVER}; then
     # Deploy forseti server in its own pod
     # Create a Cluster IP Service for forseti server
  	kubectl apply -f cloudsqlproxy.yaml
-	kubectl apply -f cloudsqlproxyservice.yaml
+	kubectl apply -f cloudsqlproxy.service.yaml
 	kubectl apply -f forseti.server.yaml
-	kubectl apply -f forsetiserverservice.yaml
+	kubectl apply -f forseti.server.service.yaml
 fi
 
 if ${DEPLOY_CLIENT}; then
