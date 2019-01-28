@@ -124,11 +124,14 @@ download_server_configuration_files(){
 client_cli_setup(){
     echo "client_cli_setup is not implemented yet."
 
-    # Store the variables in /etc/profile.d/forseti_environment.sh
-    # so all the users will have access to them
-    echo "echo 'export FORSETI_HOME=/forseti-security
-    export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
-    ' >> /etc/profile.d/forseti_environment.sh" | sh
+# Store the variables in /etc/profile.d/forseti_environment.sh
+# so all ssh sessions will have access to them
+
+FILE="/etc/profile.d/forseti_environment.sh"
+/bin/cat <<EOM >$FILE
+export FORSETI_HOME=/forseti-security
+export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
+EOM
 }
 
 # TODO Should this be started as a background or foreground process?
