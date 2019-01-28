@@ -73,9 +73,11 @@ information, see
 
 ## Troubleshooting
 
-If have have problem with getting inventory on GSuite data, you can find what
-errors have happened by running `forseti inventory list|get`, or look at the
-`inventory_index_errors` column in the `inventory_index` table.
+Below are the common errors for GSuite configurations and the steps to be taken
+to resolve the errors.
+
+You can find what errors have happened by running `forseti inventory list|get`,
+or look at the `inventory_index_errors` column in the `inventory_index` table.
 
 Error:
 ```
