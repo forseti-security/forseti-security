@@ -242,7 +242,7 @@ main(){
         # TODO This is a hack. Is there a better way to keep the container running?
         #sleep infinity & doesnt work
         #try
-        tail -f /dev/null
+        tail -f /dev/null &
     fi
 
     if ${RUN_CRONJOB}; then
