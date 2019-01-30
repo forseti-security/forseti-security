@@ -19,6 +19,8 @@ spec:
       containers:
         - name: forseti-server
           image: ${FORSETI_IMAGE}
+          ports:
+            - containerPort: 50051
           command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
                     "--bucket", "${SERVER_BUCKET}",
                     "--log_level", "debug",
