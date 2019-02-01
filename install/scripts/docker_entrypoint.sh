@@ -224,6 +224,10 @@ run_cron_job(){
 
 main(){
 
+    'Temporary code, possibly add it as a cmd line option?'
+    'TODO REMOVE BEFORE MERGE TO UPSTREAM'
+    pip install google-python-cloud-debugger
+
     if [[ ${LOG_LEVEL}='debug' ]]; then
         # Print commands to terminal
         set -x
