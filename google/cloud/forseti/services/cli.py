@@ -1138,6 +1138,18 @@ def main(args=None,
     Returns:
         object: Environment configuration.
     """
+    
+    'Temporary code, possibly add it as a cmd line option?'
+    'TODO REMOVE BEFORE MERGE TO UPSTREAM'
+    try:
+        import googleclouddebugger
+        googleclouddebugger.enable(
+            module='forseti-server',
+            version='temp-debug-version'
+        )
+    except ImportError:
+        pass
+
     config_env = config_env or DefaultConfigParser.load()
     parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
