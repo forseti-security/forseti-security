@@ -145,8 +145,8 @@ def main():
     try:
         import googleclouddebugger
         googleclouddebugger.enable(
-            module='forseti-server',
-            version='temp-debug-version'
+            module='[MODULE]',
+            version='[VERSION]'
         )
     except ImportError:
         pass
