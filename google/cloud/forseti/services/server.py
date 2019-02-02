@@ -139,18 +139,6 @@ def check_args(args):
 
 
 def main():
-
-    'Temporary code, possibly add it as a cmd line option?'
-    'TODO REMOVE BEFORE MERGE TO UPSTREAM'
-    try:
-        import googleclouddebugger
-        googleclouddebugger.enable(
-            module='[MODULE]',
-            version='[VERSION]'
-        )
-    except ImportError:
-        pass
-
     """Run."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -198,6 +186,7 @@ def main():
           args['config_file_path'],
           args['log_level'],
           args['enable_console_log'])
+
 
 if __name__ == '__main__':
     main()
