@@ -388,8 +388,7 @@ class ForsetiInstaller(object):
             conf_values,
             self.config.identifier)
 
-    def post_install_instructions(self, deploy_success,
-                                  forseti_conf_path, bucket_name):
+    def post_install_instructions(self, deploy_success, bucket_name):
         """Show post-install instructions.
 
         For example: link for deployment manager dashboard and
@@ -397,7 +396,6 @@ class ForsetiInstaller(object):
 
         Args:
             deploy_success (bool): Whether deployment was successful
-            forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
 
         Returns:
