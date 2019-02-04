@@ -84,7 +84,7 @@ class KeCluster(resource.Resource):
         self.status = status
         self.status_message = status_message
         self.node_ipv4_cidr_size = node_ipv4_cidr_size
-        self.instance_group_urls = instance_group_urls
+        self.instance_group_urls =  instance_group_urls
         self.current_node_count = current_node_count
         self.expire_time = expire_time
         self.server_config = server_config

@@ -45,12 +45,10 @@ class KMSScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-
-        #self.rules_engine = (
-        #    kms_rules_engine.KMSRulesEngine(
-        #        rules_file_path=self.rules,
-        #        snapshot_timestamp=self.snapshot_timestamp))
-        #self.rules_engine.build_rule_book(self.global_configs)
+        self.rules_engine = kms_rules_engine.KMSRulesEngine(
+            rules_file_path=self.rules,
+            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
     def _flatten_violations(violations):
@@ -97,8 +95,8 @@ class KMSScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding crypto key rotation violations...')
 
         for key in keys:
-            violations = self.rules_engine.find_violations(
-                keys)
+            LOGGER.info('key:', key)
+            violations = self.rules_engine.find_violations(key)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -145,7 +143,9 @@ class KMSScanner(base_scanner.BaseScanner):
         LOGGER.info('kms scanner started')
 
         keys = self._retrieve()
+        LOGGER.info('keys:', keys)
         all_violations = self._find_violations(keys)
+        LOGGER.info('all_violations', all_violations)
         # self._output_results(all_violations)
 
         LOGGER.info('kms scanner done')

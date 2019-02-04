@@ -87,5 +87,13 @@ rules:
           - '*'
     key:
       - rotation_period: 100
+  - name: Check  if all the keys were rotated in the last 120 days
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+        rotation_period: 120
 
 

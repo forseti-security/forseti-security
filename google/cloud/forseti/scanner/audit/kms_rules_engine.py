@@ -15,6 +15,7 @@
 
 from collections import namedtuple
 import json
+import re
 import threading
 
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
@@ -27,6 +28,14 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 LOGGER = logger.get_logger(__name__)
 
 SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
+
+VIOLATION_TYPE = 'LOG_SINK_VIOLATION'
+
+# Rule Modes.
+WHITELIST = 'whitelist'
+BLACKLIST = 'blacklist'
+REQUIRED = 'required'
+RULE_MODES = frozenset([WHITELIST, BLACKLIST, REQUIRED])
 
 
 class KMSRulesEngine(bre.BaseRulesEngine):
@@ -57,10 +66,11 @@ class KMSRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KMSRuleBook(
                 self._load_rule_definitions())
 
-    def find_violations(self, keys, force_rebuild=False):
+    def find_violations(self, key,  force_rebuild=False):
         """Determine whether crypto key configuration violates rules.
 
         Args:
+            resource (gcp_type): The resource that the log sinks belong to.
             keys (CryptoKeys): A crypto key resource to check.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -68,14 +78,49 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         Returns:
              generator: A generator of rule violations.
         """
-        if self.rule_book is None or force_rebuild:
+        res = self.rule_book is None or force_rebuild
+        if res:
             self.build_rule_book()
 
-        return self.rule_book.find_violations(keys)
+        violations = self.rule_book.find_violations(key)
+
+        return set(violations)
+
+    def add_rules(self, rules):
+        """Add rules to the rule book.
+
+        Args:
+            rules (list): The list of rules to add to the book.
+        """
+        if self.rule_book is not None:
+            self.rule_book.add_rules(rules)
+
+    # def parse_key_config(key):
+    #     """Validates and escapes a crypto key from a rule config.
+    #
+    #     Args:
+    #         key (dict): A sink definition from a LogSink rule definition.
+    #
+    #     Returns:
+    #         dict: A sink definition with fields escaped and globified, or None if
+    #         sink_spec is invalid.
+    #     """
+    #
+    #     if not key:
+    #         return None
+    #
+    #     key_rotation_period = key.get('rotation_period')
+    #     All fields are mandatory
+        # if any(item is None for item in [key_rotation_period]):
+        #     return None
 
 
 class KMSRuleBook(bre.BaseRuleBook):
     """The RuleBook for crypto key rules."""
+
+    supported_resource_types = frozenset([
+        'organization'
+    ])
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -91,6 +136,36 @@ class KMSRuleBook(bre.BaseRuleBook):
         else:
             self.rule_defs = rule_defs
             self.add_rules(rule_defs)
+
+    def __eq__(self, other):
+        """Equals.
+
+        Args:
+            other (object): Object to compare.
+        Returns:
+            bool: True or False.
+        """
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.resource_rules_map == other.resource_rules_map
+
+    def __ne__(self, other):
+        """Not Equals.
+
+        Args:
+            other (object): Object to compare.
+        Returns:
+            bool: True or False.
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Object representation.
+
+        Returns:
+            str: The object representation.
+        """
+        return 'LogSinkRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -110,57 +185,53 @@ class KMSRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        with self._lock:
-            resources = rule_def.get('resource')
-            if not resources:
+        resources = rule_def.get('resource')
+        mode = rule_def.get('mode')
+        key = rule_def.get('key')
+
+        if not resources or key is None or mode not in RULE_MODES:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Faulty rule {}'.format(rule_index))
+
+        for resource in resources:
+            resource_type = resource.get('type')
+            resource_ids = resource.get('resource_ids')
+
+            if resource_type not in self.supported_resource_types:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Missing field "resource" in rule {}'.format(rule_index))
+                    'Invalid resource type in rule {}'.format(rule_index))
 
-            for resource in resources:
-                resource_ids = resource.get('resource_ids')
+            if not resource_ids or len(resource_ids) < 1:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Missing resource ids in rule {}'.format(rule_index))
 
-                if not resource_ids or len(resource_ids) < 1:
-                    raise audit_errors.InvalidRulesSchemaError(
-                        'Missing resource ids in rule {}'.format(rule_index))
+            # try:
+            #     key_rotation_period = (int(
+            #         rule_def.get('key').get('rotation_period')))
+            # except (ValueError, TypeError):
+            #     raise audit_errors.InvalidRulesSchemaError(
+            #         'Rotation period of crypto key is either missing or '
+            #         ' not an integer in rule {}'.format(rule_index))
 
-                resource_type = resource.get('type')
+            # For each resource id associated with the rule, create a
+            # mapping of resource => rules.
+            for resource_id in resource_ids:
+                gcp_resource = resource_util.create_resource(
+                    resource_id=resource_id,
+                    resource_type=resource_type)
 
-                if resource_type not in SUPPORTED_RULE_RESOURCE_TYPES:
-                    raise audit_errors.InvalidRulesSchemaError(
-                        'Invalid resource type "{}" in rule {}'.format(
-                            resource_type, rule_index))
+                rule_def_resource = {
+                    'key': key,
+                    'mode': mode,
+                }
+                rule = Rule(rule_name=rule_def.get('name'),
+                            rule_index=rule_index,
+                            rule=rule_def_resource)
 
-                key_name = rule_def.get('key').get('name')
-                key_rotation_period = rule_def.get('key').get('rotationPeriod')
-                key_next_rotation_period = (
-                    rule_def.get('key').get('nextRotationPeriod'))
+                resource_rules = self.resource_rules_map.get(rule_index)
 
-
-                try:
-                    key_rotation_period = int(key_rotation_period)
-                except (ValueError, TypeError):
-                    raise audit_errors.InvalidRulesSchemaError(
-                            'Rotation period of crypto key is either missing or'
-                            ' not an integer in rule {}'.format(rule_index))
-
-                # For each resource id associated with the rule, create a
-                # mapping of resource => rules.
-                for resource_id in resource_ids:
-                    gcp_resource = resource_util.create_resource(
-                        resource_id=resource_id,
-                        resource_type=resource_type)
-
-                    rule = Rule(
-                        rule_def.get('name'),
-                        rule_index,
-                        key_name,
-                        key_rotation_period)
-
-                    resource_rules = self.resource_rules_map.setdefault(
-                        gcp_resource, ResourceRules(resource=gcp_resource))
-
-                    if rule not in resource_rules.rules:
-                        resource_rules.rules.add(rule)
+                if not resource_rules:
+                    self.resource_rules_map[rule_index] = rule
 
     # pylint: enable=invalid-name
 
@@ -175,20 +246,20 @@ class KMSRuleBook(bre.BaseRuleBook):
         """
         return self.resource_rules_map.get(resource)
 
-    def find_violations(self, keys):
-        """Find violations in the rule book.
+    def find_violations(self, key):
+        """Find crypto key violations in the rule book.
 
         Args:
-            keys (CryptoKeys): crypto key resource.
+            key (CryptoKeys): The GCP resource to check locations for.
 
         Returns:
-            list: RuleViolation
+            RuleViolation: resource crypto key rule violations.
         """
         LOGGER.debug('Looking for crypto key violations: %s',
-                     keys.full_name)
+                     key.full_name)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
-            keys.full_name)
+            key.full_name)
 
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
@@ -201,7 +272,7 @@ class KMSRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_violations(keys))
+                    resource_rule.find_violations(key))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -211,150 +282,123 @@ class KMSRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(wildcard_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_violations(keys))
+                    resource_rule.find_violations(key))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
 
+    # def key_matches_rule(rule_def, key):
+    #     """Returns true if the crypto key matches the rule's key definition.
+    #
+    #     Args:
+    #         rule_def (dict): key rule definition.
+    #         key (CryptoKey): key being matched to the rule definition.
+    #
+    #     Returns:
+    #         bool: True if key matches rule definition.
+    #     """
+        # protection_level = key.primary_version.get('protectionLevel')
+        # algorithm = key.primary_version.get('algorithm')
+        # state = key.primary_version.get('state')
+        # purpose = key.purpose
+        #
+        # if (not re.match(rule_def['protection_level'], protection_level) or
+        #         not re.match(rule_def['algorithm'], algorithm) or
+        #         not re.match(rule_def['state'], state) or
+        #         not re.match(rule_def['purpose'], purpose)):
+        #     return False
+        # return True
 
-class ResourceRules(object):
-    """An association of a resource to rules."""
-
-    def __init__(self,
-                 resource=None,
-                 rules=None):
-        """Initialize.
-
-        Args:
-            resource (Resource): The resource to associate with the rule.
-            rules (set): rules to associate with the resource.
-            """
-        if not isinstance(rules, set):
-            rules = set([])
-        self.resource = resource
-        self.rules = rules
-
-    def find_violations(self, keys):
-        """Determine if the policy binding matches this rule's criteria.
-
-        Args:
-            keys (CryptoKeys): crypto keys resource.
-
-        Returns:
-            list: RuleViolation
-        """
-        violations = []
-        for rule in self.rules:
-            rule_violations = rule.find_violations(keys)
-            if rule_violations:
-                violations.extend(rule_violations)
-        return violations
-
-    def __eq__(self, other):
-        """Compare == with another object.
-
-        Args:
-            other (ResourceRules): object to compare with
-
-        Returns:
-            int: comparison result
-        """
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return (self.resource == other.resource and
-                self.rules == other.rules)
-
-    def __ne__(self, other):
-        """Compare != with another object.
-
-        Args:
-            other (object): object to compare with
-
-        Returns:
-            int: comparison result
-        """
-        return not self == other
-
-    def __repr__(self):
-        """String representation of this node.
-
-        Returns:
-            str: debug string
-        """
-        return 'KMSResourceRules<resource={}, rules={}>'.format(
-            self.resource, self.rules)
+    # def find_whitelist_violations(rule_def, keys):
+    #     violating_keys = []
+    #     for key in keys:
+    #         if not KMSRuleBook.key_matches_rule(rule_def, key):
+    #             violating_keys.append(key)
+    #     return violating_keys
+    #
+    # def find_blacklist_violations(rule_def, keys):
+    #     violating_keys = []
+    #     for key in keys:
+    #         if not KMSRuleBook.key_matches_rule(rule_def, key):
+    #             keys.append(key)
+    #     return violating_keys
 
 
 class Rule(object):
     """Rule properties from the rule definition file, also finds violations."""
 
-    def __init__(self, rule_name, rule_index,
-                 key_rotation_period):
+    def __init__(self, rule_name, rule_index, rule):
         """Initialize.
 
         Args:
-            rule_name (str): Name of the loaded rule
-            rule_index (int): The index of the rule from the rule definitions
-            key_rotation_period (string): Rotation Period of the CryptoKey
+            rule_name (str): Name of the loaded rule.
+            rule_index (int): The index of the rule from the rule definitions.
+            rule (dict): The rule definition from the file.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.key_rotation_period = key_rotation_period
+        self.rule = rule
 
-    def is_more_than_max_rotation_period(self,
-                                         gcp_rotation_period):
-        """Check if the rotation period has been disabled. key has been rotated: is the key creation time older
-        than max_age in the policy
+    def is_more_than_max_rotation_period(self, last_rotation_time, scan_time):
+        """Check if the key has been rotated within the time speciifed in the
+         policy.
 
         Args:
-            created_time (str): The time at which the key was created (this
-                is the validAfterTime in the key API response (in
-                string_formats.DEFAULT_FORSETI_TIMESTAMP) format
+            last_rotation_time (str): The time at which the key was last
+             rotated.
             scan_time (datetime): Snapshot timestamp.
 
         Returns:
-            bool: Returns true if un_rotated
+            bool: Returns true if key was not rotated within the time specified
+            in the policy.
         """
+        last_rotation_time = date_time.get_datetime_from_string(
+            last_rotation_time, string_formats.DEFAULT_FORSETI_TIMESTAMP)
 
-        if gcp_rotation_period > self.key_rotation_period:
-            return True
-        return False
+        if (scan_time - last_rotation_time).days <= (
+                self.rule.get('key').get('rotation_period')):
+            return False
+        return True
 
-    def find_violations(self, crypto_keys):
-        """Find service account key age violations based on the max_age.
+    def find_violations(self, resource, keys):
+        """Find crypto key violations based on the max_age.
 
         Args:
-            service_account (ServiceAccount): ServiceAccount object.
+            resource (gcp_type): The resource that the crypto key belongs to.
+            keys (list): list of CryptoKey object for resource.
 
         Returns:
             list: Returns a list of RuleViolation named tuples
         """
 
+        scan_time = date_time.get_utc_now_datetime()
+
         violations = []
-        for key in crypto_keys:
-            key_id = key.get('key_id')
-            full_name = key.get('full_name')
-            LOGGER.debug('Checking key rotation for %s', full_name)
-            key_rotation_period = key.get('rotation_period')
-            if self.is_more_than_max_rotation_period(key_rotation_period, ):
-                violation_reason = ('Key ID %s rotation period is greated than'
-                                    ' %s days.' % (key_id, key_rotation_period))
+        for key in keys:
+            name = key.get('name')
+            next_rotation_time = key.get('nexRotationTime')
+            last_rotation_time = key.get('primary').get('createTime')
+            if self.rule['mode'] == BLACKLIST:
+                if self.is_more_than_max_rotation_period(
+                        last_rotation_time, scan_time):
+                    violation_reason = ('Key %s not rotated since %s.' %
+                                        (name, last_rotation_time))
+            violations.append(RuleViolation(
+                resource_type=resource.crypto_key_type,
+                resource_id=resource.crypto_key_id,
+                resource_name=resource.crypto_key_full_name,
+                primary_version=resource.primary_version,
+                next_rotation_time=resource.next_rotation_time,
+                rule_name=self.rule_name,
+                rule_index=self.rule_index,
+                violation_type='CRYPTO_KEY_VIOLATION',
+                rotation_period=resource.rotation_period,
+                last_rotation_time=last_rotation_time,
+                violation_reason=violation_reason,
+                key_creation_time=resource.create_time,
+                resource_data=resource.data))
 
-            return violations
-
-    def make_violations(self, key, violation_reason):
-        return RuleViolation(
-            rotation_period=key.rotation_period,
-            resource_name=key.full_name,
-            resource_type=resource_mod.ResourceType.KMS_CRYPTOKEY,
-            resource_id=key.id,
-            rule_name=self.rule_name,
-            rule_index=self.rule_index,
-            violation_type='KMS_VIOLATION',
-            violation_reason=violation_reason,
-            project_id=key.parent_id,
-            key_name=key.name,
-            resource_data=key.data)
+        return violations
 
     def __eq__(self, other):
         """Test whether Rule equals other Rule.
@@ -401,16 +445,22 @@ class Rule(object):
 # Rule violation.
 # resource_type: string
 # resource_id: string
+# resource_name: string
+# primary_version: string
+# next_rotation_time: string
 # rule_name: string
 # rule_index: int
-# violation_type: KE_VERSION_VIOLATION
+# violation_type: CRYPTO_KEY_VIOLATION
 # violation_reason: string
-# project_id: string
-# cluster_name: string
-# node_pool_name: string
+# rotation_period: string
+# last_rotation_time: string
+# key_creation_time: string
+# resource_data: string
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'resource_name',
-                            'rotation_period', 'rule_name',
-                            'rule_index', 'violation_type', 'violation_reason',
-                            'project_id', 'key_name',
+                            'primary_version', 'next_rotation_time',
+                            'rule_name', 'rule_index', 'violation_type',
+                            'violation_reason', 'rotation_period',
+                            'last_rotation_time', 'key_creation_time',
                             'resource_data'])
+
