@@ -18,7 +18,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.gcp_type import project
 
 
 LOGGER = logger.get_logger(__name__)
@@ -116,11 +115,13 @@ class RetentionScanner(base_scanner.BaseScanner):
             for resource_type in rre.SUPPORTED_RETENTION_RES_TYPES:
                 for resource in data_access.scanner_iter(
                         session, resource_type):
-                    proj = project.Project(
-                        project_id=resource.parent.name,
-                        full_name=resource.parent.full_name)
+                    parent = resource_util.create_resource(
+                        resource_id=resource.parent.name,
+                        resource_type=resource.parent.type
+                    )
+                    parent.full_name = resource.parent.full_name
                     new_res = resource_util.create_resource_from_json(
-                        resource_type, proj, resource.data)
+                        resource_type, parent, resource.data)
                     retention_res.append(new_res)
 
         return retention_res
