@@ -21,10 +21,10 @@
 
 steps:
 
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['pull', 'gcr.io/$PROJECT_ID/forseti-base:latest']
-  waitFor: ['-']
-  id: pull-base-for-cache
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: ['pull', 'gcr.io/$PROJECT_ID/forseti-base:latest']
+#  waitFor: ['-']
+#  id: pull-base-for-cache
 
 - name: 'gcr.io/cloud-builders/docker'
   args:
@@ -34,7 +34,8 @@ steps:
   - '--cache-from'
   - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
-  waitFor: ['pull-base-for-cache']
+#  waitFor: ['pull-base-for-cache']
+  waitFor: ['-']
   id: base
 
 - name: 'gcr.io/cloud-builders/docker'
