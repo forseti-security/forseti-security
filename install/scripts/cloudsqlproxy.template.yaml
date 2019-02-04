@@ -15,7 +15,7 @@ spec:
       volumes:
         - name: google-cloud-key
           secret:
-            secretName: credentials
+            secretName: server-credentials
       containers:
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:latest

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: forseti-server-service
+  labels:
+    app: forseti-server-service
+spec:
+  ports:
+    - port: 50051
+      protocol: TCP
+  clusterIP: ${FORSETI_SERVER_IP}
+  selector:
+    app: forseti-server

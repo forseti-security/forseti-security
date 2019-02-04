@@ -13,12 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Usage
-# (sudo if needed) docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
-
 # UNDER DEVELOPMENT, FOR PROOF OF CONCEPT PURPOSES ONLY
 # This script serves as the entrypoint for starting Forseti server or client in a Docker container.
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
+
+# Usage
+# <sudo> docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh
+# --bucket <bucket>                             the Forseti GCS bucket containing configuration files etc
+# --log_level <info,debug,etc>                  the Forseti server log level
+# --run_server                                  start the Forseti server
+# --services <list of services>                 over-ride default services "scanner model inventory explain notifier"
+# --run_client                                  just provide a container to run client commands
+# --run_cronjob                                 run the cronjob immediately after starting server, for k8s CronJob
+# --sql_host <host ip>                          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
+# --sql_port <port>                             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
+
+# Use cases
+# k8s CronJob,  specify --bucket, --run_server, --run_cronjob
+# k8s Server,   specify --bucket, --run_server
+# k8s Client,   specify --bucket, --run_client
+# cos Server,   specify --bucket, --run_server
+# cos Client,   specify --bucket, --run_client
+
+# Note for k8s CronJob or k8s Server the k8s Cloud SQL Proxy Service must be named "cloudsqlproxy" else the
+# k8s environment variable names will change from what this script expects
+# CLOUDSQLPROXY_SERVICE_HOST
+# CLOUDSQLPROXY_SERVICE_PORT
+# TODO refactor this; hard coding the k8s variable names is fragile
 
 # TODO Error handling in all functions
 # For now, just stop the script if an error occurs
@@ -28,15 +49,9 @@ set -e
 BUCKET=
 LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
-RUN_SERVER=true
+RUN_SERVER=false
 RUN_CLIENT=false
 RUN_CRONJOB=false
-
-# Note
-# CLOUDSQLPROXY_SERVICE_HOST
-# CLOUDSQLPROXY_SERVICE_PORT
-# are environment variables set by k8s
-# TODO rethink this; Relying on the k8s variable names is fragile as it requires the k8s service name to exactly match "cloudsqlproxy"
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
 SQL_HOST=localhost
@@ -92,7 +107,7 @@ while [[ "$1" != "" ]]; do
     shift # Move remaining args down 1 position
 done
 
-download_configuration_files(){
+download_server_configuration_files(){
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
     if [[ ${LOG_LEVEL} = "debug" ]]; then
@@ -105,7 +120,24 @@ download_configuration_files(){
 
 }
 
+client_cli_setup(){
+# Store the Client CLI variables in /etc/profile.d/forseti_environment.sh
+# so all ssh sessions will have access to them
+
+FILE="/etc/profile.d/forseti_environment.sh"
+/bin/cat <<EOM >$FILE
+export FORSETI_HOME=/forseti-security
+export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
+EOM
+}
+
+# TODO Should this be started as a background or foreground process?
+# For cron job we start as a background process and the container finishes when the cronjob completes
+# For long running server, starting as a background process causes the container to keep re-starting
+# I think we need to start as background for cronjob and foreground for long running server
 start_server(){
+
+if ${RUN_CRONJOB}; then # short lived cronjob, start as background process
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -113,11 +145,17 @@ start_server(){
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} &
     #--enable_console_log
-}
 
-start_client(){
-    #TODO
-    echo "start_client() not implemented yet."
+else # long lived server, start as foreground process
+    forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
+    --services ${SERVICES} \
+    --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
+    --log_level=${LOG_LEVEL}
+    --enable_console_log
+fi
+
 }
 
 run_cron_job(){
@@ -191,16 +229,23 @@ main(){
         set -x
     fi
 
-    download_configuration_files
-
     # Run server or client; not both in same container
-    if [[ ${RUN_SERVER}="true" ]]; then
+    if ${RUN_SERVER}; then
+        download_server_configuration_files
         start_server
-    elif [[ ${RUN_CLIENT}="true" ]]; then
-        start_client
+    elif ${RUN_CLIENT}; then
+        client_cli_setup
+
+        # Client CLI is essentially a long running container for users to ssh into and
+        # run ad hoc commands. (This is more for a k8s PoC, not sure on the value of running
+        # the Client CLI in k8s and its not providing a 'service' in the k8s environment.)
+        # TODO This is a hack. Is there a better way to keep the container running?
+        #sleep infinity & doesnt work
+        #try
+        tail -f /dev/null
     fi
 
-    if [[ ${RUN_CRONJOB}="true" ]]; then
+    if ${RUN_CRONJOB}; then
         run_cron_job
     fi
 }
