@@ -140,7 +140,6 @@ class ForsetiInstaller(object):
 
         # After deployment.
         instructions = self.post_install_instructions(deploy_success,
-                                                      conf_file_path,
                                                       bucket_name)
 
         if previous_instructions is not None:
