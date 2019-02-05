@@ -19,7 +19,7 @@ a pull request.
 Understand how Forseti uses branches, performs releases, and manages development of Forseti on
 GitHub.
 
-**[Start Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
+**[Start Developing on Forseti]({% link _docs/latest/develop/dev/index.md %})**
 
 Get set up and started with development.
 
