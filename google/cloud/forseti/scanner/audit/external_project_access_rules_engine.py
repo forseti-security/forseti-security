@@ -82,6 +82,8 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
 
     # Class variable for matching the ancestor during rule validation
     ancestor_pattern = re.compile(r'^organizations/\d+$|^folders/\d+$')
+    email_pattern = \
+        re.compile(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)')
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -116,11 +118,11 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        ancestors = self.process_rule(rule_def, rule_index)
+        processed_rule = self.process_rule(rule_def, rule_index)
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
-                    rules=ancestors)
-        if ancestors not in self.resource_rules_map.keys():
+                    rules=processed_rule)
+        if processed_rule not in self.resource_rules_map.keys():
             self.resource_rules_map[rule_index] = rule
 
     def process_rule(self, rule_def, rule_index):
@@ -133,18 +135,28 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
                 Assigned automatically when the rule book is built.
 
         Returns:
-            ancestors: The ancestors as resources defined in the rule
+            processed_rule: The dict containing the resources and users to
+                which the rule applies
         """
-        ancestor_resources = []
+        processed_rule = {
+            'ancestor_resources': []
+        }
+
         allowed_ancestors = rule_def.get('allowed_ancestors', None)
         self.validate_ancestors(allowed_ancestors, rule_index)
 
         for allowed_ancestor in allowed_ancestors:
-            ancestor_resources.append(
+            processed_rule['ancestor_resources'].append(
                 resource_util.create_resource(
                     allowed_ancestor.split('/')[1],
                     resource_util.type_from_name(allowed_ancestor)))
-        return ancestor_resources
+
+        users = rule_def.get('users', None)
+        if users:
+            self.validate_users(users, rule_index)
+            processed_rule['users'] = users
+
+        return processed_rule
 
     def validate_ancestors(self, ancestors, rule_index):
         """Validate a list of ancestors in a rule.
@@ -176,8 +188,34 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
 
         if not ancestor_result:
             message = ('Ancestor in rule {} must start with '
-                       '\"organizations/\" or \"folders/\"')
-            message.format(rule_index)
+                       '\"organizations/\" or \"folders/\"').format(rule_index)
+            raise audit_errors.InvalidRulesSchemaError(message)
+
+    def validate_users(self, users, rule_index):
+        """Validate a list of users in a rule.
+
+        Args:
+            users (list): The users defined by the rule.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
+
+        """
+        for user in users:
+            self.validate_user(user, rule_index)
+
+    def validate_user(self, user, rule_index):
+        """Validate a user in a rule.  Must be an e-mail address
+        Args:
+            user (str): A user defined by the rule
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
+        """
+
+        email_result = self.email_pattern.match(user)
+
+        if not email_result:
+            message = ('User {} in rule {} must be a properly'
+                       'formatted e-mail address').format(user, rule_index)
             raise audit_errors.InvalidRulesSchemaError(message)
 
     def find_violations(self, user_email, project_ancestry):
@@ -235,15 +273,25 @@ class Rule(object):
             namedtuple: Returns RuleViolation named tuple or None if
                 not violated.
         """
+        matched_resources = []
+        applies_to_user = True
 
-        if not [resource for resource in self.rules if resource in ancestry]:
+        for resource in self.rules['ancestor_resources']:
+            if resource in ancestry:
+                matched_resources.append(resource)
+
+        if 'users' in self.rules.keys():
+            if user_email not in self.rules['users']:
+                applies_to_user = False
+
+        if not (matched_resources and applies_to_user):
 
             return self.RuleViolation(
                 resource_type=resource_mod.ResourceType.PROJECT,
                 resource_id=ancestry[0].id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
-                rule_ancestors=self.rules,
+                rule_data=self.rules,
                 full_name=ancestry[0].name,
                 violation_type='EXTERNAL_PROJECT_ACCESS_VIOLATION',
                 member=user_email,
@@ -255,13 +303,14 @@ class Rule(object):
     # resource_id: string
     # rule_name: string
     # rule_index: int
+    # rule_data: dict
     # violation_type: EXTERNAL_PROJECT_ACCESS_VIOLATION
     # member: string
     # resource_data: list
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id',
                                 'rule_name', 'rule_index',
-                                'rule_ancestors',
+                                'rule_data',
                                 'full_name',
                                 'violation_type',
                                 'member',
