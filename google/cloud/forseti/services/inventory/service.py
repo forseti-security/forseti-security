@@ -25,6 +25,7 @@ from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
+
 def inventory_pb_from_object(inventory_index):
     """Convert internal inventory data structure to protobuf.
 
