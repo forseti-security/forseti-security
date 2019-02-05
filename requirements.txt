@@ -2,14 +2,14 @@
 # here should also be added to setup.py
 
 # Needed for compiling of Forseti protos during the build & install.
-protobuf
-grpcio
-grpcio-tools
-pyYAML
-googleapis-common-protos[grpc]
-google-cloud-asset
+protobuf==3.6.1
+grpcio==1.18.0
+grpcio-tools==1.18.0
+pyYAML==3.13
+googleapis-common-protos[grpc]==1.5.6
+google-cloud-asset==0.1.2
 
 # Needed for CI/CD and Development.
-codecov
-pylint
-flake8
+codecov==2.0.15
+pylint==1.9.4
+flake8==3.6.0
