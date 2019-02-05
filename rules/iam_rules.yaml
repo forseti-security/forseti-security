@@ -13,8 +13,8 @@
 # limitations under the License.
 
 rules:
-  # Note: Please use organization id, folder number and project id
-  # when specifying resource ids.
+  # Note: please use the id of the resource (such as organization id,
+  # folder id, project id, etc.) when specifying the resource ids.
   # default rules
   - name: Allow only IAM members in my domain to be an OrgAdmin
     mode: whitelist

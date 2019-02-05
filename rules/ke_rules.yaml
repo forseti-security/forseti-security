@@ -35,8 +35,8 @@
 #        major version.
 
 rules:
-  # Note: Please use organization id, folder number and project id
-  # when specifying resource ids.
+  # Note: please use the id of the resource (such as organization id,
+  # folder id, project id, etc.) when specifying the resource ids.
   # The default KE rule alerts if any node pool is running a version of
   # kubernetes that is no longer supported
   - name: Unsupported node pool version
