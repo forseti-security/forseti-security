@@ -182,13 +182,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session))
 
-        if resources and not all('location' in ds for ds in resources):
-            LOGGER.info('Datasets missing location key in CAI, '
-                        'falling back to live API.')
-            resources = list(
-                super(CaiApiClientImpl,
-                      self).iter_bigquery_datasets(project_number))
-
         for dataset in resources:
             yield dataset
 
