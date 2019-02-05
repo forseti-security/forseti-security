@@ -22,8 +22,6 @@ from google.cloud.forseti.services.inventory import inventory
 from google.cloud.forseti.services.utils import autoclose_stream
 
 # pylint: disable=no-member
-from google.cloud.forseti.common.util import logger
-LOGGER = logger.get_logger(__name__)
 
 
 def inventory_pb_from_object(inventory_index):
@@ -123,8 +121,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Each Inventory API object.
         """
-        LOGGER.info("Log that Inventory Service List reached.")
-        print("Print that Inventory Service List reached.")
 
         for inventory_index in self.inventory.list():
             yield inventory_pb_from_object(inventory_index)
