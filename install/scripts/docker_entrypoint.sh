@@ -152,7 +152,7 @@ else # long lived server, start as foreground process
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
-    --log_level=${LOG_LEVEL}
+    --log_level=${LOG_LEVEL} \
     --enable_console_log
 fi
 
