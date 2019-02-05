@@ -33,8 +33,8 @@ class CryptoKey(resource.Resource):
     RESOURCE_NAME_FMT = 'kms_cryptokey/%s'
 
     def __init__(
-            self, crypto_key_id=None, crypto_key_full_name=None,
-            crypto_key_parent_type=None, crypto_key_type=None,
+            self, crypto_key_name=None, crypto_key_full_name=None,
+            crypto_key_parent_type_name=None, crypto_key_type=None,
             primary_version=None, purpose=None, create_time=None,
             next_rotation_time=None, version_template=None, labels=None,
             rotation_period=None, data=None):
@@ -50,10 +50,11 @@ class CryptoKey(resource.Resource):
             parent (Resource): The parent Resource.
         """
         super(CryptoKey, self).__init__(
-            resource_id=crypto_key_id,
+            resource_id=crypto_key_name,
             name=crypto_key_full_name,
-            parent=crypto_key_parent_type,
-            resource_type=crypto_key_type),
+            parent=crypto_key_parent_type_name,
+            resource_type=resource.ResourceType.CRYPTO_KEY),
+        self.crypto_key_type = crypto_key_type,
         self.primary_version = primary_version
         self.purpose = purpose
         self.create_time = create_time
@@ -64,8 +65,8 @@ class CryptoKey(resource.Resource):
         self.data = data
 
     @classmethod
-    def from_json(cls, resource_data, crypto_key_id, crypto_key_full_name,
-                  crypto_key_parent_type, crypto_key_type, json_string):
+    def from_json(cls, crypto_key_name, crypto_key_full_name,
+                  crypto_key_parent_type_name, crypto_key_type, json_string):
         """Returns a new ForwardingRule object from json data.
 
         Args:
@@ -77,12 +78,11 @@ class CryptoKey(resource.Resource):
         """
 
         key_dict = json.loads(json_string)
-        LOGGER.info('resource_data:', resource_data)
 
         crypto_key_data = cls(
-            crypto_key_id=crypto_key_id,
+            crypto_key_name=crypto_key_name,
             crypto_key_full_name=crypto_key_full_name,
-            crypto_key_parent_type=crypto_key_parent_type,
+            crypto_key_parent_type_name=crypto_key_parent_type_name,
             crypto_key_type=crypto_key_type,
             primary_version=key_dict.get('primary', {}),
             purpose=key_dict.get('purpose'),

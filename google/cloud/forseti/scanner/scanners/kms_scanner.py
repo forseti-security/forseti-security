@@ -69,7 +69,7 @@ class KMSScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation.violation_data,
+                'violation_data': violation.violation_reason,
                 'resource_data': violation.resource_data
             }
 
@@ -121,13 +121,7 @@ class KMSScanner(base_scanner.BaseScanner):
                         'got %s, want kms_keyring' % key.parent_type_name
                     )
 
-                resource_data = resource.Resource(resource_id=key.name,
-                                                  name=key.full_name,
-                                                  parent=key.parent_type_name,
-                                                  resource_type=key.type)
-
                 crypto_key_data = crypto_key.CryptoKey.from_json(
-                    resource_data,
                     key.name,
                     key.full_name,
                     key.parent_type_name,
@@ -146,6 +140,6 @@ class KMSScanner(base_scanner.BaseScanner):
         LOGGER.info('keys:', keys)
         all_violations = self._find_violations(keys)
         LOGGER.info('all_violations', all_violations)
-        # self._output_results(all_violations)
+        self._output_results(all_violations)
 
         LOGGER.info('kms scanner done')
