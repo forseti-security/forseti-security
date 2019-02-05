@@ -17,14 +17,20 @@
 # Example invocation:
 #   gcloud container builds submit --config scripts/docker/cloudbuild.yaml ./
 
-# Cache, ref. https://cloud.google.com/cloud-build/docs/speeding-up-builds
+
 
 steps:
-
-#- name: 'gcr.io/cloud-builders/docker'
-#  args: ['pull', 'gcr.io/$PROJECT_ID/forseti-base:latest']
-#  waitFor: ['-']
-#  id: pull-base-for-cache
+  # Cache base image, ref. https://cloud.google.com/cloud-build/docs/speeding-up-builds
+  # This step will fail first time a user builds as the base image doesn't exist
+  # There is a hack workaround for first time use case
+  # ref. https://github.com/GoogleCloudPlatform/cloud-builders/issues/253
+  # but for now let user comment this out if needed.
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['pull', 'gcr.io/$PROJECT_ID/forseti-base:latest']
+  # Hack to work even when no base exists. Todo verify and test it works.
+  #args: [ '-c', '|', 'docker pull gcr.io/$PROJECT_ID/forseti-base:latest', '||', 'exit 0']
+  waitFor: ['-']
+  id: pull-base-for-cache
 
 - name: 'gcr.io/cloud-builders/docker'
   args:
@@ -34,8 +40,8 @@ steps:
   - '--cache-from'
   - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
-#  waitFor: ['pull-base-for-cache']
-  waitFor: ['-']
+  waitFor: ['pull-base-for-cache']  # Comment this out if commented out cache step
+  # waitFor: ['-']                  # Uncomment this if commented out cache step
   id: base
 
 - name: 'gcr.io/cloud-builders/docker'
