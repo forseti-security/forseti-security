@@ -30,25 +30,13 @@ LOGGER = logger.get_logger(__name__)
 class CryptoKey(resource.Resource):
     """Represents the CryptoKey resource."""
 
-    RESOURCE_NAME_FMT = 'kms_cryptokey/%s'
-
     def __init__(
             self, crypto_key_name=None, crypto_key_full_name=None,
             crypto_key_parent_type_name=None, crypto_key_type=None,
             primary_version=None, purpose=None, create_time=None,
             next_rotation_time=None, version_template=None, labels=None,
             rotation_period=None, data=None):
-        """Initialize.
-
-        Args:
-            cryptokey_id (int): The crypto key id.
-            full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the crypto key.
-            name (str): The crypto key's unique GCP name, with the
-                format "cryptokeys/{id}".
-            display_name (str): The crypto key's display name.
-            parent (Resource): The parent Resource.
-        """
+        """Initialize."""
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_name,
             name=crypto_key_full_name,
@@ -70,16 +58,19 @@ class CryptoKey(resource.Resource):
         """Returns a new ForwardingRule object from json data.
 
         Args:
-            parent (Resource): resource this crypto key belongs to.
+            crypto_key_name (str): The unique cryptokey name.
+            crypto_key_full_name (str): The cryptokey full name.
+            crypto_key_parent_type_name (str): The cryptokey parent type name.
+            crypto_key_type (str): The cryptokey type name.
             json_string(str): JSON string of a crypto key GCP API response.
 
         Returns:
-           cryptoKey: A new cryptoKey object.
+           CryptoKey: A new CryptoKey object.
         """
 
         key_dict = json.loads(json_string)
 
-        crypto_key_data = cls(
+        new_crypto_key = cls(
             crypto_key_name=crypto_key_name,
             crypto_key_full_name=crypto_key_full_name,
             crypto_key_parent_type_name=crypto_key_parent_type_name,
@@ -94,4 +85,4 @@ class CryptoKey(resource.Resource):
             data=json.dumps(key_dict, sort_keys=True),
         )
 
-        return crypto_key_data
+        return new_crypto_key

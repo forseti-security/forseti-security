@@ -28,9 +28,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
-
-VIOLATION_TYPE = 'LOG_SINK_VIOLATION'
+VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 
 # Rule Modes.
 WHITELIST = 'whitelist'
@@ -67,12 +65,11 @@ class KMSRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KMSRuleBook(
                 self._load_rule_definitions())
 
-    def find_violations(self, key,  force_rebuild=False):
+    def find_violations(self, key, force_rebuild=False):
         """Determine whether crypto key configuration violates rules.
 
         Args:
-            resource (gcp_type): The resource that the log sinks belong to.
-            keys (CryptoKeys): A crypto key resource to check.
+            key (CryptoKey): A crypto key resource to check.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -166,7 +163,7 @@ class KMSRuleBook(bre.BaseRuleBook):
         Returns:
             str: The object representation.
         """
-        return 'LogSinkRuleBook <{}>'.format(self.resource_rules_map)
+        return 'KMSRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -231,7 +228,7 @@ class KMSRuleBook(bre.BaseRuleBook):
                             rule_index=rule_index,
                             rule=rule_def_resource)
 
-                resource_rules = self.resource_rules_map.get(rule_index)
+                # resource_rules = self.resource_rules_map.get(rule_index)
 
                 resource_rules = self.resource_rules_map.setdefault(
                     gcp_resource, ResourceRules(resource=gcp_resource))
@@ -269,7 +266,7 @@ class KMSRuleBook(bre.BaseRuleBook):
             RuleViolation: resource crypto key rule violations.
         """
 
-        violations = itertools.chain()
+        # violations = itertools.chain()
 
         # Check for rules that apply to this resource directly.
         # resource_rules = self.resource_rules_map['self']
@@ -308,8 +305,7 @@ class KMSRuleBook(bre.BaseRuleBook):
                     resource_rule.find_violations(key))
 
         LOGGER.debug('Returning violations: %r', violations)
-        v = violations
-        return v
+        return violations
 
     # def key_matches_rule(rule_def, key):
     #     """Returns true if the crypto key matches the rule's key definition.
@@ -412,7 +408,7 @@ class ResourceRules(object):
         Returns:
             str: debug string
         """
-        return 'ServiceAccountKeyResourceRules<resource={}, rules={}>'.format(
+        return 'KMSResourceRules<resource={}, rules={}>'.format(
             self.resource, self.rules)
 
 
@@ -446,7 +442,6 @@ class Rule(object):
         """
 
         scan_time = date_time.get_utc_now_datetime()
-        last_rotation_time = last_rotation_time
 
         # last_rotation_time = date_time.get_datetime_from_string(
         #     last_rotation_time, string_formats.DEFAULT_FORSETI_TIMESTAMP)
@@ -475,14 +470,12 @@ class Rule(object):
         Returns:
             list: Returns a list of RuleViolation named tuples
         """
-
-        scan_time = date_time.get_utc_now_datetime()
-
         violations = []
-
         name = key.name
         next_rotation_time = key.next_rotation_time
         last_rotation_time = key.primary_version.get('createTime')
+        scan_time = date_time.get_utc_now_datetime()
+
         # last_rotation_time = datetime.datetime.strptime(last_rotation_time, "%Y-%m-%d")
         if self.rule['mode'] == BLACKLIST:
             # res = self.is_more_than_max_rotation_period(

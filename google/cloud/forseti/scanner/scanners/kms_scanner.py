@@ -99,6 +99,7 @@ class KMSScanner(base_scanner.BaseScanner):
             violations = self.rules_engine.find_violations(key)
             LOGGER.debug(violations)
             all_violations.extend(violations)
+
         return all_violations
 
     def _retrieve(self):
@@ -121,25 +122,18 @@ class KMSScanner(base_scanner.BaseScanner):
                         'got %s, want kms_keyring' % key.parent_type_name
                     )
 
-                crypto_key_data = crypto_key.CryptoKey.from_json(
+                keys.append(crypto_key.CryptoKey.from_json(
                     key.name,
                     key.full_name,
                     key.parent_type_name,
                     key.type,
-                    key.data)
-
-                keys.append(crypto_key_data)
+                    key.data))
 
         return keys
 
     def run(self):
         """Run, the entry point for this scanner."""
-        LOGGER.info('kms scanner started')
-
         keys = self._retrieve()
-        LOGGER.info('keys:', keys)
         all_violations = self._find_violations(keys)
-        LOGGER.info('all_violations', all_violations)
         self._output_results(all_violations)
 
-        LOGGER.info('kms scanner done')
