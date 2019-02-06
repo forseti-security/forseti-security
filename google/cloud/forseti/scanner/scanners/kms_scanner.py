@@ -81,7 +81,6 @@ class KMSScanner(base_scanner.BaseScanner):
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    # False positive - pylint: disable=logging-too-many-args
     def _find_violations(self, keys):
         """Find violations in the policies.
 
@@ -114,9 +113,7 @@ class KMSScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            for key in data_access.scanner_iter(
-                    session, 'kms_cryptokey'):
-
+            for key in data_access.scanner_iter(session, 'kms_cryptokey'):
                 if not key.parent_type_name.startswith('kms_keyring'):
                     raise ValueError(
                         'Unexpected type of parent resource type: '

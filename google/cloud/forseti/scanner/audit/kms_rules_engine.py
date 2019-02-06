@@ -161,8 +161,6 @@ class KMSRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        rule_def = rule_def
-        LOGGER.info(rule_def)
         resources = rule_def.get('resource')
         mode = rule_def.get('mode')
         key = rule_def.get('key')
@@ -224,8 +222,7 @@ class KMSRuleBook(bre.BaseRuleBook):
         Returns:
             ResourceRules: A ResourceRules object.
         """
-        results = self.resource_rules_map.get(resource)
-        return results
+        return self.resource_rules_map.get(resource)
 
     def find_violations(self, key):
         """Find crypto key violations in the rule book.
@@ -352,26 +349,29 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def exceeds_rotation_schedule(self, last_rotation_time, scan_time,
+    def exceeds_rotation_schedule(self, creation_time, scan_time,
                                   key_rotation_period):
         """Check if the key has been rotated within the time speciifed in the
          policy.
 
         Args:
-            last_rotation_time (str): The time at which the key was last
-             rotated.
+            creation_time (datetime): The time at which the primary version of
+            the key was created.
             scan_time (datetime): Snapshot timestamp.
+            key_rotation_period (int): The CryptoKey rotation period in days
+            specified in the policy.
 
         Returns:
             bool: Returns true if key was not rotated within the time specified
             in the policy.
         """
-        last_rotation_time = last_rotation_time[:-5]
+        LOGGER.debug('Formatting rotation time...')
+        creation_time = creation_time[:-5]
         formatted_last_rotation_time = datetime.datetime.strptime(
-            last_rotation_time, string_formats.TIMESTAMP_MICROS)
-        diff_in_days = (scan_time - formatted_last_rotation_time).days
+            creation_time, string_formats.TIMESTAMP_MICROS)
+        last_rotation_time = (scan_time - formatted_last_rotation_time).days
 
-        if diff_in_days <= key_rotation_period:
+        if last_rotation_time <= key_rotation_period:
             return False
 
         return True
@@ -386,18 +386,18 @@ class Rule(object):
             list: Returns a list of RuleViolation named tuples
         """
         violations = []
-        last_rotation_time = key.primary_version.get('createTime')
+        creation_time = key.primary_version.get('createTime')
         scan_time = date_time.get_utc_now_datetime()
         crypto_key = self.rule['key']
-        for k in crypto_key:
-            key_rotation_period = k.get('rotation_period')
+        for key_data in crypto_key:
+            key_rotation_period = key_data.get('rotation_period')
 
         if self.rule['mode'] == BLACKLIST:
-            if self.exceeds_rotation_schedule(last_rotation_time,
+            if self.exceeds_rotation_schedule(creation_time,
                                               scan_time,
                                               key_rotation_period):
-                violation_reason = ('Key %s not rotated since %s.' %
-                                    (key.name, last_rotation_time))
+                violation_reason = ('Key %s was not rotated since %s.' %
+                                    (key.name, creation_time))
                 violations.append(RuleViolation(
                     resource_id=key.id,
                     resource_type=key.type,
@@ -405,11 +405,10 @@ class Rule(object):
                     full_name=key.crypto_key_type,
                     rule_index=self.rule_index,
                     rule_name=self.rule_name,
-                    violation_type='CRYPTO_KEY_VIOLATION',
+                    violation_type=VIOLATION_TYPE,
                     primary_version=key.primary_version,
                     next_rotation_time=key.next_rotation_time,
                     rotation_period=key.rotation_period,
-                    last_rotation_time=last_rotation_time,
                     violation_reason=violation_reason,
                     key_creation_time=key.create_time,
                     version_creation_time=key.primary_version.get('createTime'),
@@ -445,11 +444,6 @@ class Rule(object):
     def __hash__(self):
         """Make a hash of the rule index.
 
-        For now, this will suffice since the rule index is assigned
-        automatically when the rules map is built, and the scanner
-        only handles one rule file at a time. Later on, we'll need to
-        revisit this hash method when we process multiple rule files.
-
         Returns:
             int: The hash of the rule index.
         """
@@ -477,6 +471,5 @@ RuleViolation = namedtuple('RuleViolation',
                             'full_name', 'rule_index', 'rule_name',
                             'violation_type', 'violation_reason',
                             'primary_version', 'next_rotation_time',
-                            'rotation_period', 'last_rotation_time',
-                            'key_creation_time', 'version_creation_time',
-                            'resource_data'])
+                            'rotation_period', 'key_creation_time',
+                            'version_creation_time', 'resource_data'])

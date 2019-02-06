@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A CryptoKey object.
+"""A KeyRing object.
 
 See:
 https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings#KeyRing
@@ -33,9 +33,10 @@ class KeyRing(resource.Resource):
         """Initialize.
 
         Args:
-            key_ring_name (int): The unique KeyRing id.
+            key_ring_name (str): The unique KeyRing id.
             key_ring_full_name (str): The KeyRing full name.
-            key_ring_parent_type_name (str): The KeyRing parent type name.
+            key_ring_parent_type_name (Resource): Resource this KeyRing belongs
+            to.
             key_ring_type (str): The KeyRing type name.
             create_time (str): The key ring's display name.
             name (str): The unique KeyRing name.
@@ -47,8 +48,8 @@ class KeyRing(resource.Resource):
             parent=key_ring_parent_type_name,
             resource_type=resource.ResourceType.KEY_RING),
         self.key_ring_type = key_ring_type,
-        create_time = create_time,
-        name = name,
+        self.create_time = create_time,
+        self.name = name,
         self.data = data
 
     @classmethod
@@ -68,7 +69,7 @@ class KeyRing(resource.Resource):
         """
         key_ring_dict = json.loads(json_string)
 
-        new_key_ring = cls(
+        return cls(
             key_ring_name=key_ring_name,
             key_ring_full_name=key_ring_full_name,
             key_ring_parent_type_name=key_ring_parent_type_name,
@@ -77,5 +78,3 @@ class KeyRing(resource.Resource):
             name=key_ring_dict.get('name'),
             data=json.dumps(key_ring_dict, sort_keys=True)
         )
-
-        return new_key_ring

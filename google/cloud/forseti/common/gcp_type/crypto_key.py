@@ -42,12 +42,13 @@ class CryptoKey(resource.Resource):
         Args:
             crypto_key_name (str): The unique Cryptokey id.
             crypto_key_full_name (str): The Cryptokey full name.
-            crypto_key_parent_type_name (str): The Cryptokey parent type name.
+            crypto_key_parent_type_name (Resource): Resource this Cryptokey
+            belongs to.
             crypto_key_type (str): The Cryptokey type name.
             primary_version (dict): Primary Cryptokey version.
             purpose (enum): Immutable purpose of this Cryptokey.
             create_time (str): The time at which this Cryptokey was created.
-            next_rotation_time (str): Time when the Cryptokey rotates automatically.
+            next_rotation_time (str): Time when the Cryptokey rotates.
             version_template (dict): Cryptokey version setting details.
             labels (dict): User-defined metadata.
             rotation_period (str): Scheduled rotation period of CryptoKey.
@@ -71,7 +72,7 @@ class CryptoKey(resource.Resource):
     @classmethod
     def from_json(cls, crypto_key_name, crypto_key_full_name,
                   crypto_key_parent_type_name, crypto_key_type, json_string):
-        """Returns a new CryptoKey object from json data.
+        """Returns a new CryptoKey object from a JSON object.
 
         Args:
             crypto_key_name (str): The unique Cryptokey id.
@@ -85,7 +86,7 @@ class CryptoKey(resource.Resource):
         """
         key_dict = json.loads(json_string)
 
-        new_crypto_key = cls(
+        return cls(
             crypto_key_name=crypto_key_name,
             crypto_key_full_name=crypto_key_full_name,
             crypto_key_parent_type_name=crypto_key_parent_type_name,
@@ -99,5 +100,3 @@ class CryptoKey(resource.Resource):
             rotation_period=key_dict.get('rotationPeriod'),
             data=json.dumps(key_dict, sort_keys=True),
         )
-
-        return new_crypto_key
