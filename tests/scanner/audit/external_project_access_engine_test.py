@@ -156,8 +156,9 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
 
     def test_validate_good_ancestor(self):
         """Test proper rule validation"""
-        self.rule_book.validate_ancestors(
-            self.TEST_GOOD_RULE['allowed_ancestors'], 0)
+        self.assertIsNone(
+            self.rule_book.validate_ancestors(
+                self.TEST_GOOD_RULE['allowed_ancestors'], 0))
 
     def test_validate_bad_ancestor(self):
         """Test proper rule validation against bad ancestor"""
@@ -167,8 +168,9 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
 
     def test_validate_good_user(self):
         """Test proper rule validation"""
-        self.rule_book.validate_users(
-            self.TEST_GOOD_RULE['users'], 0)
+        self.assertIsNone(
+            self.rule_book.validate_users(
+                self.TEST_GOOD_RULE['users'], 0))
     
     def test_validate_bad_user(self):
         """Test proper rule validation against bad user"""
@@ -239,7 +241,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
         self.assertIsNone(violation)
 
     def test_single_item_in_rule_match_with_user(self):
-        """Test no violations are found with single item in rule"""
+        """Test no violations are found with single item in rule with a user"""
         processed_rule = {
             'ancestor_resources': [Organization('7890')],
             'users': ['user1@example.com']
@@ -253,7 +255,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
         self.assertIsNone(violation)
 
     def test_single_item_in_rule_match_with_wrong_user(self):
-        """Test no violations are found with single item in rule"""
+        """Test no violations are found with single item in rule with a user that doesn't match the rule"""
         processed_rule = {
             'ancestor_resources': [Organization('7890')],
             'users': ['user1@example.com']
@@ -280,7 +282,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
         self.assertIsNone(violation)
 
     def test_multi_items_in_rule_match_with_user(self):
-        """Test no violations are found with multiple items in rule"""
+        """Test no violations are found with multiple items in rule with a user"""
         processed_rule = {
             'ancestor_resources': [Folder('456'), Organization('7890')],
             'users': ['user1@example.com']
@@ -294,7 +296,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
         self.assertIsNone(violation)
 
     def test_multi_items_in_rule_match_with_wrong_user(self):
-        """Test no violations are found with multiple items in rule"""
+        """Test no violations are found with multiple items in rule with user that doesn't match the rule"""
         processed_rule = {
             'ancestor_resources': [Folder('456'), Organization('7890')],
             'users': ['user2@example.com']
@@ -327,7 +329,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
                          violation.resource_data)
 
     def test_single_item_no_match_with_user(self):
-        """Test violations are found with single item in rule"""
+        """Test violations are found with single item in rule with a user"""
         processed_rule = {
             'ancestor_resources': [Organization('789')],
             'users': ['user1@example.com']
@@ -347,7 +349,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
                          violation.resource_data)
 
     def test_single_item_no_match_with_wrong_user(self):
-        """Test violations are found with single item in rule"""
+        """Test violations are found with single item in rule with user that doesn't match the rule"""
         processed_rule = {
             'ancestor_resources': [Organization('789')],
             'users': ['user2@example.com']
@@ -386,7 +388,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
                          violation.resource_data)
 
     def test_multi_items_no_match_with_user(self):
-        """Test violations are found with multiple items in rule"""
+        """Test violations are found with multiple items in rule with a user"""
         processed_rule = {
             'ancestor_resources': [Folder('45'), Organization('789')],
             'users': ['user1@example.com']
@@ -406,7 +408,7 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
                          violation.resource_data)
 
     def test_multi_items_no_match_with_wrong_user(self):
-        """Test violations are found with multiple items in rule"""
+        """Test violations are found with multiple items in rule with user that doesn't match the rule"""
         processed_rule = {
             'ancestor_resources': [Folder('45'), Organization('789')],
             'users': ['user2@example.com']

@@ -82,8 +82,8 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
 
     # Class variable for matching the ancestor during rule validation
     ancestor_pattern = re.compile(r'^organizations/\d+$|^folders/\d+$')
-    email_pattern = \
-        re.compile(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)')
+    email_pattern = re.compile(
+        r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)')
 
     def __init__(self, rule_defs=None):
         """Initialization.
