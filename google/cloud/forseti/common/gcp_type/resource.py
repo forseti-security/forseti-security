@@ -54,6 +54,7 @@ class ResourceType(object):
     BUCKET = resources.StorageBucket.type()
     CLOUD_SQL_INSTANCE = resources.CloudSqlInstance.type()
     DATASET = resources.BigqueryDataSet.type()
+    TABLE = resources.BigqueryTable.type()
 
     # AppEngine
     APPENGINE_APP = resources.AppEngineApp.type()
