@@ -14,7 +14,6 @@
 
 """Scanner for the KMS rules engine."""
 
-from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import crypto_key
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import kms_rules_engine
@@ -82,6 +81,7 @@ class KMSScanner(base_scanner.BaseScanner):
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
+    # False positive - pylint: disable=logging-too-many-args
     def _find_violations(self, keys):
         """Find violations in the policies.
 
@@ -95,7 +95,6 @@ class KMSScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding crypto key rotation violations...')
 
         for key in keys:
-            LOGGER.info('key:', key)
             violations = self.rules_engine.find_violations(key)
             LOGGER.debug(violations)
             all_violations.extend(violations)
@@ -107,6 +106,8 @@ class KMSScanner(base_scanner.BaseScanner):
 
         Returns:
             list: CryptoKey objects.
+        Raises:
+            ValueError: if resources have an unexpected type.
         """
         keys = []
 
@@ -136,4 +137,3 @@ class KMSScanner(base_scanner.BaseScanner):
         keys = self._retrieve()
         all_violations = self._find_violations(keys)
         self._output_results(all_violations)
-

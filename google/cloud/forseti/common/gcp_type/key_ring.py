@@ -23,66 +23,59 @@ import json
 from google.cloud.forseti.common.gcp_type import resource
 
 
-class KeyRingLifecycleState(resource.LifecycleState):
-    """Represents the KeyRing's LifecycleState."""
-    pass
-
-
 class KeyRing(resource.Resource):
-    """CryptoKey resource."""
+    """KeyRing resource."""
 
-    RESOURCE_NAME_FMT = 'datasets/%s'
-
-    def __init__(
-            self,
-            key_ring_id,
-            full_name=None,
-            data=None,
-            name=None,
-            display_name=None,
-            parent=None,
-            locations=None,
-            lifecycle_state=KeyRingLifecycleState.UNSPECIFIED):
+    #pylint: disable=expression-not-assigned
+    def __init__(self, key_ring_name=None, key_ring_full_name=None,
+                 key_ring_parent_type_name=None, key_ring_type=None,
+                 create_time=None, name=None, data=None):
         """Initialize.
 
         Args:
-            key_ring_id (int): The key ring id.
-            full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the key ring.
-            name (str): The crypto key's unique GCP name, with the
-                format "keyring/{id}".
-            display_name (str): The key ring's display name.
-            locations (List[str]): Locations this key ring resides in. If set,
-                there should be exactly one element in the list.
-            parent (Resource): The parent Resource.
-            lifecycle_state (LifecycleState): The lifecycle state of the
-                key ring.
+            key_ring_name (int): The unique KeyRing id.
+            key_ring_full_name (str): The KeyRing full name.
+            key_ring_parent_type_name (str): The KeyRing parent type name.
+            key_ring_type (str): The KeyRing type name.
+            create_time (str): The key ring's display name.
+            name (str): The unique KeyRing name.
+            data (Resource): KeyRing resource data.
         """
         super(KeyRing, self).__init__(
-            resource_id=key_ring_id,
-            resource_type=resource.ResourceType.KEYRING,
-            name=name,
-            display_name=display_name,
-            parent=parent,
-            locations=locations,
-            lifecycle_state=lifecycle_state)
-        self.full_name = full_name
+            resource_id=key_ring_name,
+            name=key_ring_full_name,
+            parent=key_ring_parent_type_name,
+            resource_type=resource.ResourceType.KEY_RING),
+        self.key_ring_type = key_ring_type,
+        create_time = create_time,
+        name = name,
         self.data = data
 
     @classmethod
-    def from_json(cls, parent, key_ring_json):
-        """Create a crypto key from a JSON object.
+    def from_json(cls, key_ring_name, key_ring_full_name,
+                  key_ring_parent_type_name, key_ring_type, json_string):
+        """Create a KeyRing from a JSON object.
 
         Args:
-            parent (Resource): resource this crypto key belongs to.
-            json_string(str): JSON string of a crypto key GCP API response.
+            key_ring_name (str): The unique KeyRing id.
+            key_ring_full_name (str): The KeyRing full name.
+            key_ring_parent_type_name (str): The KeyRing parent type name.
+            key_ring_type (str): The KeyRing type name.
+            json_string(str): JSON string of a KeyRing GCP API response.
 
         Returns:
-            CryptoKey: crypto key resource.
+            KeyRing: A new KeyRing object.
         """
-        key_ring_dict = json.loads(key_ring_json)
-        return cls(
-            create_time=key_ring_json.get('createTime', ''),
-            name=key_ring_json.get('name', ''),
+        key_ring_dict = json.loads(json_string)
+
+        new_key_ring = cls(
+            key_ring_name=key_ring_name,
+            key_ring_full_name=key_ring_full_name,
+            key_ring_parent_type_name=key_ring_parent_type_name,
+            key_ring_type=key_ring_type,
+            create_time=key_ring_dict.get('createTime'),
+            name=key_ring_dict.get('name'),
+            data=json.dumps(key_ring_dict, sort_keys=True)
         )
 
+        return new_key_ring

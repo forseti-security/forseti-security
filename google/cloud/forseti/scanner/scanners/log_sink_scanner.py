@@ -127,7 +127,7 @@ class LogSinkScanner(base_scanner.BaseScanner):
                     sink.parent, sink.data))
 
             # Create a list (possibly empty) of sinks for each parent resource.
-            for parent_type in ['organization', 'billing_account', 'folder',
+            for parent_type in ['organizationq', 'billing_account', 'folder',
                                 'project']:
                 for parent in data_access.scanner_iter(session, parent_type):
                     parent_resource = resource_util.create_resource(

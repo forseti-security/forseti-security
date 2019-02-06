@@ -30,13 +30,29 @@ LOGGER = logger.get_logger(__name__)
 class CryptoKey(resource.Resource):
     """Represents the CryptoKey resource."""
 
+    #pylint: disable=too-many-instance-attributes, too-many-arguments, expression-not-assigned
     def __init__(
             self, crypto_key_name=None, crypto_key_full_name=None,
             crypto_key_parent_type_name=None, crypto_key_type=None,
             primary_version=None, purpose=None, create_time=None,
             next_rotation_time=None, version_template=None, labels=None,
             rotation_period=None, data=None):
-        """Initialize."""
+        """Initialize.
+
+        Args:
+            crypto_key_name (str): The unique Cryptokey id.
+            crypto_key_full_name (str): The Cryptokey full name.
+            crypto_key_parent_type_name (str): The Cryptokey parent type name.
+            crypto_key_type (str): The Cryptokey type name.
+            primary_version (dict): Primary Cryptokey version.
+            purpose (enum): Immutable purpose of this Cryptokey.
+            create_time (str): The time at which this Cryptokey was created.
+            next_rotation_time (str): Time when the Cryptokey rotates automatically.
+            version_template (dict): Cryptokey version setting details.
+            labels (dict): User-defined metadata.
+            rotation_period (str): Scheduled rotation period of CryptoKey.
+            data (Resource): Cryptokey resource data.
+        """
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_name,
             name=crypto_key_full_name,
@@ -55,19 +71,18 @@ class CryptoKey(resource.Resource):
     @classmethod
     def from_json(cls, crypto_key_name, crypto_key_full_name,
                   crypto_key_parent_type_name, crypto_key_type, json_string):
-        """Returns a new ForwardingRule object from json data.
+        """Returns a new CryptoKey object from json data.
 
         Args:
-            crypto_key_name (str): The unique cryptokey name.
-            crypto_key_full_name (str): The cryptokey full name.
-            crypto_key_parent_type_name (str): The cryptokey parent type name.
-            crypto_key_type (str): The cryptokey type name.
-            json_string(str): JSON string of a crypto key GCP API response.
+            crypto_key_name (str): The unique Cryptokey id.
+            crypto_key_full_name (str): The Cryptokey full name.
+            crypto_key_parent_type_name (str): The Cryptokey parent type name.
+            crypto_key_type (str): The Cryptokey type name.
+            json_string(str): JSON string of a Cryptokey GCP API response.
 
         Returns:
            CryptoKey: A new CryptoKey object.
         """
-
         key_dict = json.loads(json_string)
 
         new_crypto_key = cls(
