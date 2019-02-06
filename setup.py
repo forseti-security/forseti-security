@@ -43,7 +43,7 @@ REQUIRED_PACKAGES = [
     'jmespath==0.9.3',
     'MySQL-python==1.2.5',
     'netaddr==0.7.19',
-    'pyyaml>=4.2b1',
+    'pyyaml==4.2b1',
     'pygraph==0.2.1',
     'python-dateutil==2.7.5',
     'ratelimiter==1.2.0.post0',
