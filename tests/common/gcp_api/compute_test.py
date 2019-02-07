@@ -34,10 +34,11 @@ ERROR_TEST_CASES = [
      api_errors.ApiExecutionError),
 ]
 
-# Test create, update and delete operations.
+# Test create, patch, update and delete operations.
 CUD_TEST_CASES = [
     ('delete', 'delete'),
     ('insert', 'insert'),
+    ('patch', 'patch'),
     ('update', 'update'),
 ]
 
@@ -136,7 +137,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule(self, name, verb):
-        """Test create/update/delete firewall rule."""
+        """Test create/patch/update/delete firewall rule."""
         mock_response = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -150,7 +151,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_read_only(self, name, verb):
-        """Test create/update/delete firewall rule."""
+        """Test create/patch/update/delete firewall rule."""
         with mock.patch.object(self.gce_api_client.repository.firewalls,
                                'read_only', return_value=True):
             method = getattr(self.gce_api_client,
@@ -170,7 +171,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_blocking(self, name, verb):
-        """Test create/update/delete firewall rule blocking until complete."""
+        """Test create/patch/update/delete firewall blocks until complete."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -196,7 +197,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_timeout(self, name, verb):
-        """Test create/update/delete firewall rule times out."""
+        """Test create/patch/update/delete firewall rule times out."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -226,7 +227,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
     def test_cud_firewall_rule_retry(self, name, verb, mock_logger):
-        """Test create/update/delete firewall rule times out."""
+        """Test create/patch/update/delete firewall rule times out."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
