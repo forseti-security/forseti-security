@@ -555,7 +555,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         ]
 
         with mock.patch.object(self.gce_api_client,
-                               'update_firewall_rule') as mock_updater:
+                               'patch_firewall_rule') as mock_updater:
             mock_updater.return_value = {
                 'status': 'DONE',
                 'name': 'test-net-allow-corp-internal-0',

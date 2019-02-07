@@ -837,7 +837,7 @@ class InventoryImporter(object):
             type_name=type_name,
             name=cloudsqlinstance.get_resource_id(),
             type=cloudsqlinstance.get_resource_type(),
-            display_name=data.get('displayName', ''),
+            display_name=data.get('name', ''),
             email=data.get('email', ''),
             data=cloudsqlinstance.get_resource_data_raw(),
             parent=parent)

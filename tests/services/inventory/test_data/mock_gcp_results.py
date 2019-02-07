@@ -664,6 +664,7 @@ SQL_INSTANCE_TEMPLATE = """
  "backendType": "SECOND_GEN",
  "databaseVersion": "MYSQL_5_7",
  "region": "us-west1",
+ "selfLink": "https://www.googleapis.com/sql/v1beta4/projects/{project}/instances/{name}",
  "settings": {{
   "kind": "sql#settings",
   "settingsVersion": "13",
