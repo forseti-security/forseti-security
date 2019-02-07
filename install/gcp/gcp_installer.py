@@ -65,14 +65,6 @@ def run():
     parser.add_argument('--service-account-key-file',
                         help=('Absolute path and filename for service account '
                               'key file'))
-    parser.add_argument('--advanced',
-                        action='store_true',
-                        help='Advanced setup mode (more options)')
-    parser.add_argument('--dry-run',
-                        action='store_true',
-                        help=('Generate config files but do not modify '
-                              'GCP infrastructure (i.e. do not actually '
-                              'set up Forseti)'))
     parser.add_argument('--type',
                         choices=['client', 'server'],
                         help='Type of the installation, '

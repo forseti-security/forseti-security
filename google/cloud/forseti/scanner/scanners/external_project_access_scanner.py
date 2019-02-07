@@ -228,7 +228,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         for violation in violations:
             rule_ancestors_names = []
 
-            for ancestor in violation.rule_ancestors:
+            for ancestor in violation.rule_data['ancestor_resources']:
                 rule_ancestors_names.append(ancestor.name)
 
             violation_data = {

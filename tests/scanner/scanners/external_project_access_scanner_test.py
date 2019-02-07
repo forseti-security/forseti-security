@@ -168,8 +168,8 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             resource_id='12345',
             rule_name='Only my org',
             rule_index=0,
-            rule_ancestors=[resource_util.create_resource(
-                '45678', 'organization')],
+            rule_data=dict(ancestor_resources=[resource_util.create_resource(
+                '45678', 'organization')]),
             full_name='projects/12345',
             violation_type='EXTERNAL_PROJECT_ACCESS_VIOLATION',
             member='user1@example.com',
@@ -202,7 +202,6 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 class GetUserEmailsTest(ForsetiTestCase):
     """Test the storage_helpers module."""
     def setUp(self):
-        print("##AA#")
         self.engine = create_test_engine()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)
