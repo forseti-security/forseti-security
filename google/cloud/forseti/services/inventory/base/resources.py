@@ -948,7 +948,8 @@ class BillingAccount(resource_class_factory('billing_account', None)):
 
 
 # CloudSQL resource classes
-class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'name')):
+class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
+                                              hash_key=True)):
     """The Resource implementation for CloudSQL Instance."""
 
 
@@ -1687,7 +1688,8 @@ class BillingAccountIterator(resource_iter_class_factory(
 class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
-        api_method_arg_key='projectNumber',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
         resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
