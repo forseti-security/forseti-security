@@ -982,7 +982,7 @@ class FirewallEnforcer(object):
         return change_count
 
     def _update_rules(self, network):
-        """Update existing rules in the project firewall.
+        """Update existing rules in the project firewall using patch.
 
         Args:
             network (str): The network name to restrict rules to. If no network
@@ -1002,9 +1002,9 @@ class FirewallEnforcer(object):
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_update
             ], network)
-            update_function = self.compute_client.update_firewall_rule
+            patch_function = self.compute_client.patch_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
-                update_function, rules)
+                patch_function, rules)
             self._updated_rules.extend(successes)
             change_count += len(successes)
             if failures:

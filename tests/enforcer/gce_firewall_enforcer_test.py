@@ -961,7 +961,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         """Validate apply_change works with no errors."""
         delete_function = self.gce_api_client.delete_firewall_rule
         insert_function = self.gce_api_client.insert_firewall_rule
-        update_function = self.gce_api_client.update_firewall_rule
+        update_function = self.gce_api_client.patch_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
