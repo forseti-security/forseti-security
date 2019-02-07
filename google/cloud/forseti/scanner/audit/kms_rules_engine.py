@@ -349,8 +349,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def exceeds_rotation_schedule(self, creation_time, scan_time,
-                                  key_rotation_period):
+    def exceeds_rotation_schedule(self, creation_time, scan_time):
         """Check if the key has been rotated within the time speciifed in the
          policy.
 
@@ -358,13 +357,14 @@ class Rule(object):
             creation_time (datetime): The time at which the primary version of
             the key was created.
             scan_time (datetime): Snapshot timestamp.
-            key_rotation_period (int): The CryptoKey rotation period in days
-            specified in the policy.
 
         Returns:
             bool: Returns true if key was not rotated within the time specified
             in the policy.
         """
+        crypto_key = self.rule['key']
+        for key_data in crypto_key:
+            key_rotation_period = key_data.get('rotation_period')
         LOGGER.debug('Formatting rotation time...')
         creation_time = creation_time[:-5]
         formatted_last_rotation_time = datetime.datetime.strptime(
@@ -388,14 +388,10 @@ class Rule(object):
         violations = []
         creation_time = key.primary_version.get('createTime')
         scan_time = date_time.get_utc_now_datetime()
-        crypto_key = self.rule['key']
-        for key_data in crypto_key:
-            key_rotation_period = key_data.get('rotation_period')
 
         if self.rule['mode'] == BLACKLIST:
             if self.exceeds_rotation_schedule(creation_time,
-                                              scan_time,
-                                              key_rotation_period):
+                                              scan_time):
                 violation_reason = ('Key %s was not rotated since %s.' %
                                     (key.name, creation_time))
                 violations.append(RuleViolation(

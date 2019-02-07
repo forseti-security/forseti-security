@@ -1,24 +1,9 @@
 rules:
-  - name: All cryptographic keys should be rotated by July 2019
+  - name: All cryptographic keys should be rotated in 100 days
     mode: blacklist
     resource:
-      - type: project
+      - type: organization
         resource_ids:
           - '*'
     key:
-      - name:
-          - '*'
-        state:
-            #valid values - ENABLED, DISABLED, DESTROY_SECHEDULED, DESTROYED and
-            #               PENDING_GENERATION
-          - ENABLED
-        protection_level:
-            #valid values - PROTECTION_LEVEL_UNSPECIFIED, SOFTWARE and HSM
-          - SOFTWARE
-        algorithm:
-          - GOOGLE_SYMMETRIC_ENCRYPTION
-        purpose:
-          - ENCRYPT_DECRYPT
-        rotation_range: 2019-02-01T08:00:00Z-2019-07-01T00:00:00Z #date range
-        rotation_period: 60-600 #range in seconds
-        labels: {key: value} # metadata pairs that allow you to group keys
+      - rotation_period: 100
