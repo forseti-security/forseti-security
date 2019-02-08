@@ -308,9 +308,9 @@ class GCPRepository(object):
         self.read_only = read_only
 
         self._credentials = credentials
-        components = component.split('.')
+        components = component.split('.') #components = groups
         self._component = getattr(
-            self.gcp_service, components.pop(0))()
+            self.gcp_service, components.pop(0))() #googleapiclient.discovery.resources
         for nested_component in components:
             self._component = getattr(
                 self._component, nested_component)()

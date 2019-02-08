@@ -27,7 +27,7 @@ LOGGER = logger.get_logger(__name__)
 
 API_NAME = 'admin'
 
-GROUP_SETTINGS_API_NAME = "groups"
+GROUP_SETTINGS_API_NAME = "groupssettings"
 
 REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.group.readonly',
@@ -305,7 +305,8 @@ class GroupSettingsClient(object):
             RefreshError: If the authentication fails.
         """
         try:
-            paged_results = self.repository.groups.list(customer=customer_id)
+            self.repository.group_settings._get_key_field="groupUniqueId"
+            paged_results = self.repository.group_settings.get(customer_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'groups') #TODO update to be whatever json returns in paged results
             LOGGER.debug('Getting all the groups for customer_id = %s,'
@@ -343,10 +344,10 @@ class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
-        self._groups_settings = None
+        self._group_settings = None
 
         super(GroupSettingsRepositoryClient, self).__init__(
-            "groups", versions=['v1'], #TODO figure out if this should be admin since its admin SDK, or groups to match api url
+            GROUP_SETTINGS_API_NAME, versions=['v1'], #TODO figure out if this should be admin since its admin SDK, or groups to match api url
             credentials=credentials,
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -365,7 +366,7 @@ class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
 
 
 class _GroupSettingsRepository(
-        repository_mixins.ListQueryMixin,
+        repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Group Settings repository."""
 
@@ -376,4 +377,4 @@ class _GroupSettingsRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_GroupSettingsRepository, self).__init__(
-            key_field='groupKey', component='groups', **kwargs)
+            key_field='', component='groups', **kwargs)
