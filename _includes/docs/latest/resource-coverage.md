@@ -2,15 +2,18 @@
 | Resource                                |
 | --------------------------------------- |
 | [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) |
+| [App Engine Instances](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions.instances) |
 | [App Engine Services](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services) |
 | [App Engine Version](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions) 
 | [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) |
+| [BigQuery Datasets](https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets) |
+| [BigQuery Tables](https://cloud.google.com/bigquery/docs/reference/rest/v2/tables) |
 | [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
 | [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) |
 | [Cloud APIs Configuration](https://cloud.google.com/apis/) |
 | [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
-| [Cloud Dataproc Clusters](https://cloud.google.com/dataproc/docs/guides/create-cluster) |
+| [Cloud Dataproc Clusters](https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters) |
 | [Cloud IAM Grantable Roles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
 | [Cloud IAM Organization Roles](https://cloud.google.com/iam/reference/rest/v1/organizations.roles) |
 | [Cloud IAM Project Roles](https://cloud.google.com/iam/reference/rest/v1/projects.roles) |
@@ -18,9 +21,9 @@
 | [Cloud KMS CryptoKeys](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys) |
 | [Cloud KMS CryptoKey Versions](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions) |
 | [Cloud KMS KeyRings](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings) |
+| [Cloud Organizations Policies](https://cloud.google.com/resource-manager/reference/rest/v1/Policy) |
 | [Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/access-control) |
-| [Cloud Pub/Sub Subscriptions](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) |
-| [Cloud SQL Instances](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances) |
+| [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
 | [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Compute Engine AutoScalers](https://cloud.google.com/compute/docs/reference/rest/v1/autoscalers) |
 | [Compute Engine Backend Buckets](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets) |
@@ -58,10 +61,13 @@
 | [G Suite Users](https://developers.google.com/admin-sdk/directory/v1/reference/users) |
 | [Kubernetes Engine Clusters](https://cloud.google.com/kubernetes-engine/docs/reference/rest/) |
 | [Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) |
+| [Liens](https://cloud.google.com/resource-manager/reference/rest/v1/liens) |
 | [Load Balancer Forwarding Rules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules#resource) |
-| [Logging Organization Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/organizations.sinks) |
 | [Logging Folder Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/folders.sinks) |
+| [Logging Organization Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/organizations.sinks) |
+| [Logging Project Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.sinks) |
 | [Networks](https://cloud.google.com/compute/docs/reference/rest/v1/networks) |
+| [Objects](https://cloud.google.com/storage/docs/json_api/v1/objects) |
 | [Organizations](https://cloud.google.com/resource-manager/reference/rest/v1/organizations) |
 | [Organizations Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) |
 | [Projects](https://cloud.google.com/resource-manager/reference/rest/v1/projects) |
