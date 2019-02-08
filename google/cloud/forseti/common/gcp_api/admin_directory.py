@@ -305,7 +305,7 @@ class GroupSettingsClient(object):
             RefreshError: If the authentication fails.
         """
         try:
-            self.repository.group_settings._get_key_field="groupUniqueId"
+            # self.repository.group_settings._get_key_field="groupUniqueId"
             paged_results = self.repository.group_settings.get(customer_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'groups') #TODO update to be whatever json returns in paged results
@@ -377,4 +377,4 @@ class _GroupSettingsRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_GroupSettingsRepository, self).__init__(
-            key_field='', component='groups', **kwargs)
+            key_field='groupUniqueId', component='groups', **kwargs)
