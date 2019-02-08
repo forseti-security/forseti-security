@@ -1,0 +1,7 @@
+google.cloud.forseti.services.scanner.dao module
+================================================
+
+.. automodule:: google.cloud.forseti.services.scanner.dao
+    :members:
+    :undoc-members:
+    :show-inheritance:

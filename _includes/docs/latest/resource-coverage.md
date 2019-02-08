@@ -19,7 +19,8 @@
 | [Cloud KMS CryptoKey Versions](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions) |
 | [Cloud KMS KeyRings](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings) |
 | [Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/access-control) |
-| [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
+| [Cloud Pub/Sub Subscriptions](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) |
+| [Cloud SQL Instances](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances) |
 | [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Compute Engine AutoScalers](https://cloud.google.com/compute/docs/reference/rest/v1/autoscalers) |
 | [Compute Engine Backend Buckets](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets) |
@@ -46,7 +47,7 @@
 | [Compute Engine Target TCP Proxies](https://cloud.google.com/compute/docs/reference/rest/v1/targetTcpProxies) |
 | [Compute Engine Target VPN Gateways](https://cloud.google.com/compute/docs/reference/rest/v1/targetVpnGateways) |
 | [Compute Engine URLMap](https://cloud.google.com/compute/docs/reference/rest/v1/urlMaps) |
-| [Compute Engine VPNTunnel](https://cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels) |
+| [Compute Engine VPN Tunnels](https://cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels) |
 | [DNS Managed Zones](https://cloud.google.com/dns/docs/reference/v1/managedZones) |
 | [DNS Policies](https://cloud.google.com/dns/docs/reference/v1/) |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |

@@ -900,9 +900,10 @@ rules:
 
 ```yaml
 rules:
-  - name: All buckets in the organization should have a retention policy for 100 to 200 days.
+  - name: All buckets and bigquery tables in the organization should have a retention policy for 100 to 200 days.
     applies_to:
       - bucket
+      - bigquery_table
     resource:
       - type: organization
         resource_ids:
@@ -918,13 +919,13 @@ rules:
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
-    * **Valid values**: String, Currently only supports `bucket`.
+    * **Valid values**: String, Currently only supports `bucket` and `bigquery_table`.
     
 * `resource`
   * `type`
     * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder`, `project`
-      or `bucket`.
+    * **Valid values**: One of `organization`, `folder`, `project`, `bucket`,
+      or `bigquery_table`.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.

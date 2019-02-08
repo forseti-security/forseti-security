@@ -866,6 +866,115 @@ to the Client ID of your service account.
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.8.0 to 2.9.0" content=upgrading_2_8_0_to_2_9_0 uid=10 %}
 
+{% capture upgrading_2_9_0_to_2_10_0 %}
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.10.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.10.0` to checkout version `v2.10.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
+`gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
+deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml` for edit.
+    1. Update the `forseti-version` inside the deployment template to `tags/v2.10.0`.
+    
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml` back to the GCS bucket 
+(`forseti-server-xxxxxx/deployment_templates`) by running command  
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-10-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+deployment_templates/deploy-forseti-server-xxxxx-2-10-0.yaml`.
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-10-0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-8` for Forseti client.
+1. Configuration file `forseti_conf_server.yaml` updates: 
+
+    **Inventory**
+    - Update the cai section to include the new `api_timeout` field and the
+    newly fetched asset:
+        ```
+        inventory:
+            ...
+            cai:
+                # Timeout in seconds to wait for the exportAssets API to
+                # return success.
+                # Defaults to 3600 if not set.
+                api_timeout: 3600
+                
+                # If commented out then all currently supported asset types 
+                # are exported from Cloud Asset API. The list of default 
+                # asset types is in
+                # google/cloud/forseti/services/inventory/base/cloudasset.py
+                
+                #asset_types:
+                #   - google.cloud.dataproc.Cluster
+                #   - google.cloud.sql.Instance
+                #   - google.compute.Project
+                #   - google.compute.TargetVpnGateway
+                #   - google.compute.VpnTunnel
+                #   - google.pubsub.Subscription
+        ``` 
+        
+    **Notifier** 
+    - Update the `notifier` section to add the `email_connector` section. 
+    Functionality will not change if `email_connector` section isn't added as 
+    the code is backward compatible at the moment.
+    Example below shows the configuration for SendGrid.
+        ```
+        notifier:
+            email_connector:
+                name: sendgrid
+                auth:
+                  api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+                data_format: csv
+        ```
+    - Update the `resources` section for all the resources to remove the 
+    `configuration` for `Email violations`:
+        ```
+        notifier:
+            resources:
+                ...
+                - resource: iam_policy_violations
+                  should_notify: true
+                  notifiers:
+                    # Email violations
+                    - name: email_violations
+                    # Upload violations to GCS.
+                    - name: gcs_violations
+                        configuration:
+                        data_format: csv
+                        # gcs_path should begin with "gs://"
+                        gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
+        ```
+    - If you are making this change, please remove the email configuration 
+    from `global` section.
+    ```
+    global:
+        email_recipient: {EMAIL_RECIPIENT}
+        email_sender: {EMAIL_SENDER}
+        sendgrid_api_key: {SENDGRID_API_KEY}
+   ```
+   - Please add the placeholder value in the `global` section as shown below:
+   ```
+   global:
+       dummy_key: this_is_just_a_placeholder_see_issue_2486
+   ```
+1. Update the server service account role at organization level from
+ `roles/bigquery.dataViewer` to `roles/bigquery.metadataviewer`.
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.9.0 to 2.10.0" content=upgrading_2_9_0_to_2_10_0 uid=11 %}
+
 {% capture deployment_manager_error %}
 
 If you get the following error while running the deployment manager:
@@ -912,6 +1021,6 @@ This will recreate the VM with updated fields.
 * Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
 [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti to send
-[email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+[email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
 * Enable [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
 for processing by Forseti.

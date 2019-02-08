@@ -1,0 +1,361 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api._base_repository module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api._base_repository">
+<span id="google-cloud-forseti-common-gcp-api-base-repository-module"></span><h1>google.cloud.forseti.common.gcp_api._base_repository module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api._base_repository" title="Permalink to this headline">¶</a></h1>
+<p>Base GCP client which uses the discovery API.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient">
+<em class="property">class </em><code class="descname">BaseRepositoryClient</code><span class="sig-paren">(</span><em>api_name</em>, <em>versions=None</em>, <em>credentials=None</em>, <em>quota_max_calls=None</em>, <em>quota_period=None</em>, <em>use_rate_limiter=False</em>, <em>read_only=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#BaseRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for API repository for a specified Cloud API.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#BaseRepositoryClient.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The object representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The object representation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient._init_repository">
+<code class="descname">_init_repository</code><span class="sig-paren">(</span><em>repository_class</em>, <em>version=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#BaseRepositoryClient._init_repository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient._init_repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safely initialize a repository class to a property.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>repository_class</strong> (<em>class</em>) – The class to initialize.</li>
+<li><strong>version</strong> (<em>str</em>) – The gcp service version for the repository.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An instance of repository_class.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository">
+<em class="property">class </em><code class="descname">GCPRepository</code><span class="sig-paren">(</span><em>gcp_service</em>, <em>credentials</em>, <em>component</em>, <em>num_retries=5</em>, <em>key_field='project'</em>, <em>entity_field=None</em>, <em>list_key_field=None</em>, <em>get_key_field=None</em>, <em>max_results_field='maxResults'</em>, <em>search_query_field='query'</em>, <em>resource_path_template=None</em>, <em>rate_limiter=None</em>, <em>use_cached_http=True</em>, <em>read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for GCP APIs.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_next_request">
+<code class="descname">_build_next_request</code><span class="sig-paren">(</span><em>verb</em>, <em>prior_request</em>, <em>prior_response</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository._build_next_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_next_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds pagination-aware request object.</p>
+<dl class="docutils">
+<dt>More details:</dt>
+<dd><a class="reference external" href="https://developers.google.com/api-client-library/python/guide/pagination">https://developers.google.com/api-client-library/python/guide/pagination</a></dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Request verb (ex. insert, update, delete).</li>
+<li><strong>prior_request</strong> (<em>httplib2.HttpRequest</em>) – Request that may trigger
+paging.</li>
+<li><strong>prior_response</strong> (<em>dict</em>) – Potentially partial response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>HttpRequest or None. None is returned when</dt>
+<dd><p class="first last">there is nothing more to fetch - request completed.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">httplib2.HttpRequest</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_request">
+<code class="descname">_build_request</code><span class="sig-paren">(</span><em>verb</em>, <em>verb_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository._build_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds HttpRequest object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Request verb (ex. insert, update, delete).</li>
+<li><strong>verb_arguments</strong> (<em>dict</em>) – Arguments to be passed with the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">HttpRequest to be sent to the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">httplib2.HttpRequest</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_resource_link">
+<code class="descname">_build_resource_link</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository._build_resource_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._build_resource_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a full URI for a specific resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – The args to expand in the URI template.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The Resource URI</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Raised if the resource_path_template parameter was
+undefined when the repository was created.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._execute">
+<code class="descname">_execute</code><span class="sig-paren">(</span><em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository._execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run execute with retries and rate limiting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> (<em>object</em>) – The HttpRequest object to execute.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The response from the API.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._request_supports_pagination">
+<code class="descname">_request_supports_pagination</code><span class="sig-paren">(</span><em>verb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository._request_supports_pagination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository._request_supports_pagination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines if the API action supports pagination.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verb</strong> (<em>str</em>) – Request verb (ex. insert, update, delete).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True when API supports pagination, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_command">
+<code class="descname">execute_command</code><span class="sig-paren">(</span><em>verb</em>, <em>verb_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository.execute_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes command (ex. add) via a dedicated http object.</p>
+<p>Async APIs may take minutes to complete. Therefore, callers are
+encouraged to leverage concurrent.futures (or similar) to place long
+running commands on a separate threads.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Method to execute on the component (ex. get, list).</li>
+<li><strong>verb_arguments</strong> (<em>dict</em>) – key-value pairs to be passed to
+_build_request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An async operation Service Response.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_paged_query">
+<code class="descname">execute_paged_query</code><span class="sig-paren">(</span><em>verb</em>, <em>verb_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository.execute_paged_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_paged_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes query (ex. list) via a dedicated http object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Method to execute on the component (ex. get, list).</li>
+<li><strong>verb_arguments</strong> (<em>dict</em>) – key-value pairs to be passed to
+_BuildRequest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first"><em>dict</em> – Service Response.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">PaginationNotSupportedError</span></code> – When an API does not support paging.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_query">
+<code class="descname">execute_query</code><span class="sig-paren">(</span><em>verb</em>, <em>verb_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository.execute_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes query (ex. get) via a dedicated http object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Method to execute on the component (ex. get, list).</li>
+<li><strong>verb_arguments</strong> (<em>dict</em>) – key-value pairs to be passed to
+_BuildRequest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Service Response.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_search_query">
+<code class="descname">execute_search_query</code><span class="sig-paren">(</span><em>verb</em>, <em>verb_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#GCPRepository.execute_search_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.execute_search_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes query (ex. search) via a dedicated http object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>verb</strong> (<em>str</em>) – Method to execute on the component (ex. search).</li>
+<li><strong>verb_arguments</strong> (<em>dict</em>) – key-value pairs to be passed to
+_BuildRequest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first last"><em>dict</em> – Service Response.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.http">
+<code class="descname">http</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository.http" title="Permalink to this definition">¶</a></dt>
+<dd><p>A thread local instance of httplib2.Http.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>An Http instance authorized by</dt>
+<dd>the credentials.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">google_auth_httplib2.AuthorizedHttp</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository._build_service_from_document">
+<code class="descname">_build_service_from_document</code><span class="sig-paren">(</span><em>credentials</em>, <em>document_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#_build_service_from_document"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository._build_service_from_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an API client from a local discovery document</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>credentials</strong> (<em>OAuth2Credentials</em>) – Credentials that will be used to
+authenticate the API calls.</li>
+<li><strong>document_path</strong> (<em>str</em>) – The local path of the discovery document</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Resource object with methods for interacting with the service.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api._base_repository._create_service_api">
+<code class="descname">_create_service_api</code><span class="sig-paren">(</span><em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/_base_repository.html#_create_service_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api._base_repository._create_service_api" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds and returns a cloud API service object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>credentials</strong> (<em>OAuth2Credentials</em>) – Credentials that will be used to
+authenticate the API calls.</li>
+<li><strong>service_name</strong> (<em>str</em>) – The name of the API.</li>
+<li><strong>version</strong> (<em>str</em>) – The version of the API to use.</li>
+<li><strong>is_private_api</strong> (<em>bool</em>) – Whether the API is a private API.</li>
+<li><strong>developer_key</strong> (<em>str</em>) – The api key to use to determine the project
+associated with the API call, most API services do not require
+this to be set.</li>
+<li><strong>cache_discovery</strong> (<em>bool</em>) – Whether or not to cache the discovery doc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Resource object with methods for interacting with the service.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
