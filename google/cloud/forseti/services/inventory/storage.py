@@ -1410,7 +1410,8 @@ class Storage(BaseStorage):
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.parent_id == None,
                 Inventory.category == Categories.resource,
-                Inventory.resource_type.in_(['organization',
+                Inventory.resource_type.in_(['composite_root',
+                                             'organization',
                                              'folder',
                                              'project'])
             )).first()

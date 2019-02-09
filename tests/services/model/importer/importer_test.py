@@ -76,15 +76,11 @@ class ImporterTest(ForsetiTestCase):
 
     def test_inventory_importer_basic(self):
         """Test the basic importer for the inventory."""
-
-
-
         with self.scoped_session as session:
             # Sqlite really doesn't like multiple connections, and sqlalchemy
             # is effectively a connection per session, reusing the same session
             # for read and write.
-            importer_cls = importer.by_source(self.source)
-            import_runner = importer_cls(
+            import_runner = self.importer_cls(
                 session,
                 session,
                 self.model_manager.model(self.model_name,
@@ -130,6 +126,58 @@ class ImporterTest(ForsetiTestCase):
              },
             model_description)
 
+    def test_inventory_importer_composite_root(self):
+        """Test the importer for the inventory with a composite root."""
+        db_connect = 'sqlite:///{}'.format(
+            get_db_file_copy('forseti-composite-test.db'))
+
+        print(db_connect)
+        service_config = ServiceConfig(db_connect)
+        model_manager = service_config.model_manager
+        model_name = model_manager.create(name=self.source)
+        scoped_session, data_access = model_manager.get(model_name)
+
+        with scoped_session as session:
+            # Sqlite really doesn't like multiple connections, and sqlalchemy
+            # is effectively a connection per session, reusing the same session
+            # for read and write.
+            import_runner = self.importer_cls(
+                session,
+                session,
+                model_manager.model(model_name,
+                                    expunge=False,
+                                    session=session),
+                data_access,
+                service_config,
+                inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+            import_runner.run()
+
+            # Make sure the 'full_name' for policies has an even number of
+            # segments.
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                self.assertFalse(
+                        len(filter(None, policy.full_name.split('/'))) % 2)
+
+            # Verify that two projects are in the inventory after import.
+            projects = list(data_access.scanner_iter(session, 'project'))
+            self.assertEqual(2, len(projects))
+
+        model = model_manager.model(model_name)
+        model_description = model_manager.get_description(model_name)
+
+        self.assertIn(model.state,
+                      ['SUCCESS', 'PARTIAL_SUCCESS'],
+                      'Model state should be success or partial success: %s' %
+                      model.message)
+        self.assertEquals(
+            {'pristine': True,
+             'source': 'inventory',
+             'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
+             'source_root': 'composite_root/root',
+             'gsuite_enabled': False
+             },
+            model_description)
+
     def test_model_action_wrapper_post_action_called(self):
         session = mock.Mock()
         session.flush = mock.Mock()
@@ -138,8 +186,7 @@ class ImporterTest(ForsetiTestCase):
         post = mock.Mock()
         flush_count = 1
 
-        importer_cls = importer.by_source(self.source)
-        import_runner = importer_cls(
+        import_runner = self.importer_cls(
             session,
             session,
             self.model_manager.model(self.model_name,

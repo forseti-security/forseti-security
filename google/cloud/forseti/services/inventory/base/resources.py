@@ -43,12 +43,13 @@ def size_t_hash(key):
     return '%u' % ctypes.c_size_t(hash(key)).value
 
 
-def from_root_id(client, root_id):
+def from_root_id(client, root_id, root=True):
     """Start the crawling from root if the root type is supported.
 
     Args:
         client (object): GCP API client.
         root_id (str): id of the root.
+        root (bool): Set this as the root resource in the hierarchy.
 
     Returns:
         Resource: the root resource instance.
@@ -64,7 +65,7 @@ def from_root_id(client, root_id):
 
     for prefix, func in root_map.iteritems():
         if root_id.startswith(prefix):
-            return func(client, root_id)
+            return func(client, root_id, root=root)
     raise Exception(
         'Unsupported root id, must be one of {}'.format(
             ','.join(root_map.keys())))
@@ -496,12 +497,42 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
     return ResourceSubclass
 
 
+# Fake composite resource class
+class CompositeRootResource(resource_class_factory('composite_root', None)):
+    """The Composite Root fake resource."""
+
+    @classmethod
+    def create(cls, composite_root_resources):
+        """Creates a new composite root.
+
+        Args:
+            composite_root_resources (list): The list of resources to use crawl
+                using a composite root.
+
+        Returns:
+            CompositeRootResource: A new instance of the CompositeRootResource
+                class.
+        """
+        data = {'name': 'Composite Root',
+                'composite_children': composite_root_resources}
+        resource = FACTORIES['composite_root'].create_new(data, root=True)
+        return resource
+
+    def key(self):
+        """Get key of this resource.
+
+        Returns:
+            str: key of this resource.
+        """
+        return 'root'
+
+
 # Resource Manager resource classes
 class ResourceManagerOrganization(resource_class_factory('organization', None)):
     """The Resource implementation for Organization."""
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Organization.
 
         Saves ApiExecutionErrors as warnings.
@@ -509,17 +540,18 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Organization: Organization resource.
         """
         try:
             data = client.fetch_crm_organization(resource_key)
-            return FACTORIES['organization'].create_new(data, root=True)
+            return FACTORIES['organization'].create_new(data, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Unable to fetch Organization %s: %s', resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['organization'].create_new(data, root=True)
+            resource = FACTORIES['organization'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -577,23 +609,24 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
     """The Resource implementation for Folder."""
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Folder.
 
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Folder: Folder resource.
         """
         try:
             data = client.fetch_crm_folder(resource_key)
-            return FACTORIES['folder'].create_new(data, root=True)
+            return FACTORIES['folder'].create_new(data, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Unable to fetch Folder %s: %s', resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['folder'].create_new(data, root=True)
+            resource = FACTORIES['folder'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -648,12 +681,13 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         self._enabled_service_names = None
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Project.
 
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Project: created project.
@@ -661,11 +695,11 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         try:
             project_number = resource_key.split('/', 1)[-1]
             data = client.fetch_crm_project(project_number)
-            return FACTORIES['project'].create_new(data, root=True)
+            return FACTORIES['project'].create_new(data, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Unable to fetch Project %s: %s', resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['project'].create_new(data, root=True)
+            resource = FACTORIES['project'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -1467,6 +1501,21 @@ class ResourceIterator(object):
         raise NotImplementedError()
 
 
+class CompositeRootIterator(ResourceIterator):
+    """The resource iterator for the fake composite root resource."""
+
+    def iter(self):
+        """Creates a new resource child resource for each configured resource.
+
+        Yields:
+            Resource: resource returned from client.
+        """
+        gcp = self.client
+        for composite_child in self.resource['composite_children']:
+            resource = from_root_id(gcp, composite_child, root=False)
+            yield resource
+
+
 def resource_iter_class_factory(api_method_name,
                                 resource_name,
                                 api_method_arg_key=None,
@@ -2159,6 +2208,13 @@ class StorageObjectIterator(resource_iter_class_factory(
 
 
 FACTORIES = {
+    'composite_root': ResourceFactory({
+        'dependsOn': [],
+        'cls': CompositeRootResource,
+        'contains': [
+            CompositeRootIterator,
+        ]}),
+
     'organization': ResourceFactory({
         'dependsOn': [],
         'cls': ResourceManagerOrganization,

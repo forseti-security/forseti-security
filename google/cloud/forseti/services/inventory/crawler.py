@@ -286,6 +286,77 @@ class ParallelCrawler(Crawler):
             raise
 
 
+def _api_client_factory(storage, config, parallel):
+    """Creates the proper initialized API client based on the configuration.
+
+    Args:
+        storage (object): Storage implementation to use.
+        config (object): Inventory configuration on server
+        parallel (bool): If true, use the parallel crawler implementation.
+
+    Returns:
+        Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
+            The initialized api client implementation class.
+    """
+    client_config = config.get_api_quota_configs()
+    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    asset_count = 0
+    if config.get_cai_enabled():
+        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
+        LOGGER.info('%s total assets loaded from Cloud Asset data.',
+                    asset_count)
+
+    if asset_count:
+        engine = config.get_service_config().get_engine()
+        return cai_gcp_client.CaiApiClientImpl(client_config,
+                                               engine,
+                                               parallel,
+                                               storage.session)
+
+    # Default to the non-CAI implementation
+    return gcp.ApiClientImpl(client_config)
+
+
+def _crawler_factory(storage, progresser, client, parallel):
+    """Creates the proper initialized crawler based on the configuration.
+
+    Args:
+        storage (object): Storage implementation to use.
+        progresser (object): Progresser to notify status updates.
+        client (object): The API client instance.
+        parallel (bool): If true, use the parallel crawler implementation.
+
+    Returns:
+        Union[Crawler, ParallelCrawler]:
+            The initialized crawler implementation class.
+    """
+    if parallel:
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
+        return ParallelCrawler(parallel_config)
+
+    # Default to the non-parallel crawler
+    crawler_config = CrawlerConfig(storage, progresser, client)
+    return Crawler(crawler_config)
+
+
+def _root_resource_factory(config, client):
+    """Creates the proper initialized crawler based on the configuration.
+
+    Args:
+        config (object): Inventory configuration on server.
+        client (object): The API client instance.
+
+    Returns:
+        Resource: The initialized root resource.
+    """
+    if config.use_composite_root():
+        composite_root_resources = config.get_composite_root_resources()
+        return resources.CompositeRootResource.create(composite_root_resources)
+
+    # Default is a single resource as root.
+    return resources.from_root_id(client, config.get_root_resource_id())
+
+
 def run_crawler(storage,
                 progresser,
                 config,
@@ -301,34 +372,14 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    engine = config.get_service_config().get_engine()
-    if parallel and 'sqlite' in str(engine):
+    if parallel and 'sqlite' in str(config.get_service_config().get_engine()):
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
-    client_config = config.get_api_quota_configs()
-    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
-    asset_count = 0
-    if config.get_cai_enabled():
-        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
-        LOGGER.info('%s total assets loaded from Cloud Asset data.',
-                    asset_count)
 
-    if config.get_cai_enabled() and asset_count:
-        client = cai_gcp_client.CaiApiClientImpl(client_config,
-                                                 engine,
-                                                 parallel,
-                                                 storage.session)
-    else:
-        client = gcp.ApiClientImpl(client_config)
+    client = _api_client_factory(storage, config, parallel)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel)
+    resource = _root_resource_factory(config, client)
 
-    root_id = config.get_root_resource_id()
-    resource = resources.from_root_id(client, root_id)
-    if parallel:
-        crawler_config = ParallelCrawlerConfig(storage, progresser, client)
-        crawler_impl = ParallelCrawler(crawler_config)
-    else:
-        crawler_config = CrawlerConfig(storage, progresser, client)
-        crawler_impl = Crawler(crawler_config)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
