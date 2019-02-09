@@ -306,7 +306,8 @@ class GroupSettingsClient(object):
         """
         try:
             # self.repository.group_settings._get_key_field="groupUniqueId"
-            paged_results = self.repository.group_settings.get(customer_id)
+            group_id = 'cscc-admins@henrychang.mygbiz.com'
+            paged_results = self.repository.group_settings.get(group_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'groups') #TODO update to be whatever json returns in paged results
             LOGGER.debug('Getting all the groups for customer_id = %s,'
