@@ -943,3 +943,43 @@ rules:
 
     *Tip*: The rule must include a minimum_retention, maximum_retention or both.
   
+## KMS rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: All crypto keys should be rotated in 120 days
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+      - rotation_period: 120 #days
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `mode`
+  * **Description**: Choose whether or not the list of values will be
+    interpreted as a blacklist or not.
+  * **Valid values**: String.  Only `blacklist` mode is supported.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `key`
+  * **Description**: A list of crypto key configuration details to check for.
+    * `rotation_period`
+      * **Description**: The maximum number of days in which the key should
+      be rotated.
+      * **Valid values**: String, number of days.
