@@ -971,7 +971,7 @@ rules:
 * `resource`
   * `type`
     * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
+    * **Valid values**: String, `organization`.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
