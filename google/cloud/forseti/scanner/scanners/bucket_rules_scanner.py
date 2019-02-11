@@ -122,14 +122,15 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         with scoped_session as session:
             bucket_acls = []
 
-            for bucket in data_access.scanner_iter(session, 'bucket'):
+            for gcs_policy in data_access.scanner_iter(session, 'gcs_policy'):
+                bucket = gcs_policy.parent
                 project_id = bucket.parent.name
-                bucket_data = json.loads(bucket.data)
+                acls = json.loads(gcs_policy.data)
                 bucket_acls.extend(
                     BucketAccessControls.from_list(
                         project_id=project_id,
                         full_name=bucket.full_name,
-                        acls=bucket_data.get('acl', [])))
+                        acls=acls))
 
         return bucket_acls
 
