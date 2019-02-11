@@ -129,7 +129,10 @@ class InventoryIndex(BASE):
             status (str): Final inventory_status.
         """
         self.completed_at_datetime = date_time.get_utc_now_datetime()
-        self.inventory_status = status
+        if self.inventory_index_warnings:
+            self.inventory_status = IndexState.PARTIAL_SUCCESS
+        else:
+            self.inventory_status = status
 
     def add_warning(self, session, warning):
         """Add a warning to the inventory.
