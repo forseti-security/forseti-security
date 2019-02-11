@@ -280,7 +280,6 @@ class InventoryImporter(object):
                     self._convert_gcs_policy
                 )
 
-
                 item_counter += self.model_action_wrapper(
                     inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
