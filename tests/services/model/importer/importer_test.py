@@ -97,18 +97,25 @@ class ImporterTest(ForsetiTestCase):
                 self.assertFalse(
                         len(filter(None, policy.full_name.split('/'))) % 2)
 
-        # Make sure binding_members table is populated properly when there are users with multiple
-        # roles in different projects.
-        expected_abc_user_accesses = [
-            ('roles/appengine.appViewer', ['project/project3']),
-            ('roles/appengine.codeViewer', ['project/project3']),
-            # Matched to AllAuthenticatedUsers on IAM policy
-            ('roles/bigquery.dataViewer', ['dataset/project2:bq_test_ds']),
-            ('roles/bigquery.dataViewer', ['dataset/project3:bq_test_ds1']),
-        ]
-        abc_user_accesses = self.data_access.query_access_by_member(
-            session, 'user/abc_user@forseti.test', [])
-        self.assertEqual(expected_abc_user_accesses, sorted(abc_user_accesses))
+            gcs_policies = list(
+                self.data_access.scanner_iter(session, 'gcs_policy'))
+            # From tests/services/inventory/crawling_test.py
+            expected_gcs_policies = 2
+            self.assertEqual(expected_gcs_policies, len(gcs_policies))
+
+            # Make sure binding_members table is populated properly when there
+            # are users with multiple roles in different projects.
+            expected_abc_user_accesses = [
+                ('roles/appengine.appViewer', ['project/project3']),
+                ('roles/appengine.codeViewer', ['project/project3']),
+                # Matched to AllAuthenticatedUsers on IAM policy
+                ('roles/bigquery.dataViewer', ['dataset/project2:bq_test_ds']),
+                ('roles/bigquery.dataViewer', ['dataset/project3:bq_test_ds1']),
+            ]
+            abc_user_accesses = self.data_access.query_access_by_member(
+                session, 'user/abc_user@forseti.test', [])
+            self.assertEqual(expected_abc_user_accesses,
+                             sorted(abc_user_accesses))
 
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
