@@ -30,7 +30,7 @@ VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 WHITELIST = 'whitelist'
 BLACKLIST = 'blacklist'
 REQUIRED = 'required'
-RULE_MODES = frozenset([WHITELIST, BLACKLIST, REQUIRED])
+RULE_MODES = frozenset([BLACKLIST])
 
 
 class KMSRulesEngine(bre.BaseRulesEngine):
@@ -198,8 +198,7 @@ class KMSRuleBook(bre.BaseRuleBook):
 
                 rule_def_resource = {
                     'key': key,
-                    'mode': mode,
-                    'key_rotation_period': key_rotation_period
+                    'mode': mode
                 }
                 rule = Rule(rule_name=rule_def.get('name'),
                             rule_index=rule_index,
@@ -228,7 +227,7 @@ class KMSRuleBook(bre.BaseRuleBook):
         """Find crypto key violations in the rule book.
 
         Args:
-            key (CryptoKey): The GCP resource to check locations for.
+            key (CryptoKey): The GCP resource to check for violations.
 
         Returns:
             RuleViolation: resource crypto key rule violations.
@@ -349,7 +348,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def exceeds_rotation_schedule(self, creation_time, scan_time):
+    def is_key_rotated(self, creation_time, scan_time):
         """Check if the key has been rotated within the time speciifed in the
          policy.
 
@@ -369,29 +368,28 @@ class Rule(object):
         creation_time = creation_time[:-5]
         formatted_last_rotation_time = datetime.datetime.strptime(
             creation_time, string_formats.TIMESTAMP_MICROS)
-        last_rotation_time = (scan_time - formatted_last_rotation_time).days
+        days_since_rotated = (scan_time - formatted_last_rotation_time).days
 
-        if last_rotation_time <= key_rotation_period:
+        if days_since_rotated <= key_rotation_period:
             return False
 
         return True
 
     def find_violations(self, key):
-        """Find crypto key violations based on the max_age.
+        """Find crypto key violations based on the rotation period.
 
         Args:
             key (Resource): The resource to check for violations.
 
         Returns:
-            list: Returns a list of RuleViolation named tuples
+            list: Returns a list of RuleViolation named tuples.
         """
         violations = []
         creation_time = key.primary_version.get('createTime')
         scan_time = date_time.get_utc_now_datetime()
 
         if self.rule['mode'] == BLACKLIST:
-            if self.exceeds_rotation_schedule(creation_time,
-                                              scan_time):
+            if self.is_key_rotated(creation_time, scan_time):
                 violation_reason = ('Key %s was not rotated since %s.' %
                                     (key.name, creation_time))
                 violations.append(RuleViolation(
@@ -407,7 +405,7 @@ class Rule(object):
                     rotation_period=key.rotation_period,
                     violation_reason=violation_reason,
                     key_creation_time=key.create_time,
-                    version_creation_time=key.primary_version.get('createTime'),
+                    version_creation_time=creation_time,
                     resource_data=key.data))
 
         return violations

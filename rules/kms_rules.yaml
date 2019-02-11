@@ -48,6 +48,6 @@ rules:
         resource_ids:
           - '*'
     key:
-      - rotation_period: 100
+      - rotation_period: 100 #days
 
 
