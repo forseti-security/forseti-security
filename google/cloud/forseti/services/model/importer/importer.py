@@ -276,6 +276,13 @@ class InventoryImporter(object):
 
                 item_counter += self.model_action_wrapper(
                     inventory.iter(gcp_type_list,
+                                   fetch_gcs_policy=True),
+                    self._convert_gcs_policy
+                )
+
+
+                item_counter += self.model_action_wrapper(
+                    inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
                     self._convert_service_config
                 )
@@ -886,6 +893,27 @@ class InventoryImporter(object):
             name=enabled_apis.get_resource_id(),
             type=enabled_apis.get_category(),
             data=enabled_apis.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+
+    def _convert_gcs_policy(self, gcs_policy):
+        """Convert a gcs policy to a database object.
+
+        Args:
+            gcs_policy (object): Cloud Storage Bucket ACL policy to store.
+        """
+        parent, full_res_name = self._get_parent(gcs_policy)
+        policy_type_name = to_type_name(
+            gcs_policy.get_category(),
+            gcs_policy.get_resource_id())
+        policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=policy_res_name,
+            type_name=policy_type_name,
+            name=gcs_policy.get_resource_id(),
+            type=gcs_policy.get_category(),
+            data=gcs_policy.get_resource_data_raw(),
             parent=parent)
 
         self.session.add(resource)
