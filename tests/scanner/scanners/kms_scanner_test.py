@@ -41,6 +41,7 @@ violation but not the other one.
 
 KEY_RING_ID = '4063867491605246570'
 CRYPTO_KEY_ID = '12873861500163377322'
+VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 
 TIME_NOW = datetime.utcnow()
 
@@ -93,11 +94,13 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         kms_scanner.KMSScanner,
         '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
-        violations = self.scanner.run()
-        print('violations:', violations)
-        expected_violations = [json.loads(fake_kms_scanner_data.MATCHED_VIOLATION)]
-        mock_output_results.assert_called_once_with(mock.ANY,
-                                                    expected_violations)
+        self.scanner.run()
+        crypto_key = self.scanner._retrieve()
+        violations = self.scanner._find_violations(crypto_key)
+        for violation in violations:
+            self.assertEquals(violation.resource_type, 'kms_cryptokey')
+            self.assertEquals(violation.violation_type, VIOLATION_TYPE)
+        self.assertEquals(1, mock_output_results.call_count)
 
 
 if __name__ == '__main__':
