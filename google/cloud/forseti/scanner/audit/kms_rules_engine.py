@@ -183,7 +183,7 @@ class KMSRuleBook(bre.BaseRuleBook):
 
             try:
                 for k in key:
-                    key_rotation_period = k.get('rotation_period')
+                    k.get('rotation_period')
             except (ValueError, TypeError):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Rotation period of crypto key is either missing or '
