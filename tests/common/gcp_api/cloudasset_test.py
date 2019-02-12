@@ -101,12 +101,13 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
              fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_DONE)]
         http_mocks.mock_http_response_sequence(mock_responses)
 
-        self.asset_api_client.OPERATION_DELAY_IN_SEC = 0.1
-        result = self.asset_api_client.export_assets(
-            fake_cloudasset.FOLDER, fake_cloudasset.DESTINATION,
-            content_type='RESOURCE',
-            asset_types=fake_cloudasset.ASSET_TYPES,
-            blocking=True)
+        with mock.patch.object(self.asset_api_client,
+                               'OPERATION_DELAY_IN_SEC', 0.1):
+            result = self.asset_api_client.export_assets(
+                fake_cloudasset.FOLDER, fake_cloudasset.DESTINATION,
+                content_type='RESOURCE',
+                asset_types=fake_cloudasset.ASSET_TYPES,
+                blocking=True)
 
         self.assertEquals(json.loads(
             fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_DONE), result)
@@ -122,12 +123,13 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
              fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_DONE)]
         http_mocks.mock_http_response_sequence(mock_responses)
 
-        self.asset_api_client.OPERATION_DELAY_IN_SEC = 0.1
-        result = self.asset_api_client.export_assets(
-            fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
-            content_type='RESOURCE',
-            asset_types=['google.cloud.resourcemanager.Project'],
-            blocking=True)
+        with mock.patch.object(self.asset_api_client,
+                               'OPERATION_DELAY_IN_SEC', 0.1):
+            result = self.asset_api_client.export_assets(
+                fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+                content_type='RESOURCE',
+                asset_types=['google.cloud.resourcemanager.Project'],
+                blocking=True)
 
         self.assertEquals(json.loads(
             fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_DONE), result)
@@ -143,10 +145,11 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
              fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_DONE)]
         http_mocks.mock_http_response_sequence(mock_responses)
 
-        self.asset_api_client.OPERATION_DELAY_IN_SEC = 0.1
-        result = self.asset_api_client.export_assets(
-            fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
-            content_type='RESOURCE', blocking=True)
+        with mock.patch.object(self.asset_api_client,
+                               'OPERATION_DELAY_IN_SEC', 0.1):
+            result = self.asset_api_client.export_assets(
+                fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
+                content_type='RESOURCE', blocking=True)
 
         self.assertEquals(json.loads(
             fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_DONE), result)
@@ -162,11 +165,12 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
              fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_DONE)]
         http_mocks.mock_http_response_sequence(mock_responses)
 
-        self.asset_api_client.OPERATION_DELAY_IN_SEC = 1.0
-        with self.assertRaises(api_errors.OperationTimeoutError):
-            result = self.asset_api_client.export_assets(
-                fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
-                content_type='RESOURCE', blocking=True, timeout=1.0)
+        with mock.patch.object(self.asset_api_client,
+                               'OPERATION_DELAY_IN_SEC', 0.1):
+            with self.assertRaises(api_errors.OperationTimeoutError):
+                result = self.asset_api_client.export_assets(
+                    fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+                    content_type='RESOURCE', blocking=True, timeout=0.1)
 
     def test_export_assets_http_error(self):
         """Test export_assets with a permission denied error."""

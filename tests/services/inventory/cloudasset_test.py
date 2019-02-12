@@ -224,7 +224,6 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                                                   inventory_config)
         expected_results = 12  # Total of resources and IAM policies in dumps.
         self.assertEqual(expected_results, results)
-        # Validate resource with short name is in database.
 
         # Validate data from both projects in database.
         for root_id in composite_root_resources:
