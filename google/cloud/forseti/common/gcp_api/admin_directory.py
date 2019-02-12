@@ -286,7 +286,7 @@ class GroupSettingsClient(object):
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def get_group_settings(self, customer_id='my_customer'):
+    def get_group_settings(self, group_id):
         """Get all the group settings for a given customer_id.
 
         A note on customer_id='my_customer'. This is a magic string instead
@@ -306,13 +306,11 @@ class GroupSettingsClient(object):
         """
         try:
             # self.repository.group_settings._get_key_field="groupUniqueId"
-            paged_results = self.repository.group_settings.get(customer_id)
-            flattened_results = api_helpers.flatten_list_results(
-                paged_results, 'groups') #TODO update to be whatever json returns in paged results
-            LOGGER.debug('Getting all the groups for customer_id = %s,'
-                         ' flattened_results = %s',
-                         customer_id, flattened_results)
-            return flattened_results
+            result = self.repository.group_settings.get(group_id)
+            LOGGER.debug('Getting group settings information for group id = %s,'
+                         ' result = %s',
+                         group_id, result)
+            return result
         except RefreshError as e:
             # Authentication failed, log before raise.
             LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)

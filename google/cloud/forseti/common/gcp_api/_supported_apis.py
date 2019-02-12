@@ -51,6 +51,10 @@ SUPPORTED_APIS = {
         'default_version': 'v1',
         'supported_versions': ['v1', 'v1beta1']
     },
+    'groupssettings': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
+    },
     'iam': {
         'default_version': 'v1',
         'supported_versions': ['v1']

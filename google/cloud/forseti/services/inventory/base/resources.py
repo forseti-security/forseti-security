@@ -1314,7 +1314,7 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
         return True
 
 
-class GsuiteGroupSettings(resource_class_factory('gsuite_group_settings', 'id')):
+class GsuiteGroupSettings(resource_class_factory('gsuite_group_settings', 'email')):
     """The Resource implementation for GSuite Settings."""
 
 
@@ -2016,14 +2016,12 @@ class GsuiteGroupSettingsIterator(ResourceIterator):
             Resource: GsuiteGroupSettings created
         """
         gsuite = self.client
-        if self.resource.has_directory_resource_id():
-            try:
-                for data in gsuite.iter_gsuite_group_settings(
-                        self.resource['owner']['directoryCustomerId']):
-                    yield FACTORIES['gsuite_group_settings'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
+        try:
+            data = gsuite.iter_gsuite_group_settings(self.resource['email'])
+            yield FACTORIES['gsuite_group_settings'].create_new(data)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
 
 
 class IamOrganizationCuratedRoleIterator(resource_iter_class_factory(
@@ -2185,8 +2183,7 @@ FACTORIES = {
         'cls': ResourceManagerOrganization,
         'contains': [
             BillingAccountIterator,
-            GsuiteGroupIterator,
-            GsuiteGroupSettingsIterator,
+            GsuiteGroupIterator,            
             GsuiteUserIterator,
             IamOrganizationCuratedRoleIterator,
             IamOrganizationRoleIterator,
@@ -2485,14 +2482,15 @@ FACTORIES = {
         'contains': []}),
 
     'gsuite_group': ResourceFactory({
-        'dependsOn': ['organization'],
+        'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,
+            GsuiteGroupSettingsIterator,
         ]}),
 
     'gsuite_group_settings': ResourceFactory({
-        'dependsOn': ['organization'],
+        'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroupSettings,
         'contains': []}),
 
