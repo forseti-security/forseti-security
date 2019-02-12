@@ -151,7 +151,6 @@ class KMSRuleBook(bre.BaseRuleBook):
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
-    # pylint: disable=too-many-locals
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
 
