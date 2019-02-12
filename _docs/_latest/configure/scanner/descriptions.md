@@ -240,5 +240,5 @@ This scanner checks if the crypto keys in the organization are rotated within
 the time specified, and notifies if they are not. 
 
 For examples of how to define scanner rules for your crypto keys, see the
-[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/kms_rules.yaml)
+[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
 rule file.
