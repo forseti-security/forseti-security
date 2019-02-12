@@ -193,6 +193,7 @@ class FirewallRules(object):
 
     DEFAULT_PRIORITY = 1000
     DEFAULT_DIRECTION = 'INGRESS'
+    DEFAULT_DISABLED = False
     DEFAULT_LOGCONFIG = {'enable': False}
 
     def __init__(self, project, rules=None, add_rule_callback=None):
@@ -353,6 +354,9 @@ class FirewallRules(object):
         if 'logConfig' not in new_rule:
             new_rule['logConfig'] = self.DEFAULT_LOGCONFIG
 
+        if 'disabled' not in new_rule:
+            new_rule['disabled'] = self.DEFAULT_DISABLED
+
         if self._check_rule_before_adding(new_rule):
             self.rules[new_rule['name']] = new_rule
 
@@ -492,11 +496,6 @@ class FirewallRules(object):
                     'Rule missing required field "%s": "%s".' % (key, rule))
 
         if 'direction' not in rule or rule['direction'] == 'INGRESS':
-            if 'sourceRanges' not in rule and 'sourceTags' not in rule:
-                raise InvalidFirewallRuleError(
-                    'Ingress rule missing required field oneof '
-                    '"sourceRanges" or "sourceTags": "%s".' % rule)
-
             if 'destinationRanges' in rule:
                 raise InvalidFirewallRuleError(
                     'Ingress rules cannot include "destinationRanges": "%s".'
@@ -506,11 +505,6 @@ class FirewallRules(object):
             if 'sourceRanges' in rule or 'sourceTags' in rule:
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags":'
-                    '"%s".' % rule)
-
-            if 'destinationRanges' not in rule:
-                raise InvalidFirewallRuleError(
-                    'Egress rule missing required field "destinationRanges":'
                     '"%s".' % rule)
 
         else:
@@ -988,7 +982,7 @@ class FirewallEnforcer(object):
         return change_count
 
     def _update_rules(self, network):
-        """Update existing rules in the project firewall.
+        """Update existing rules in the project firewall using patch.
 
         Args:
             network (str): The network name to restrict rules to. If no network
@@ -1008,9 +1002,9 @@ class FirewallEnforcer(object):
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_update
             ], network)
-            update_function = self.compute_client.update_firewall_rule
+            patch_function = self.compute_client.patch_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
-                update_function, rules)
+                patch_function, rules)
             self._updated_rules.extend(successes)
             change_count += len(successes)
             if failures:

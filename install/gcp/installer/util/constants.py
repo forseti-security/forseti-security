@@ -114,10 +114,6 @@ PROJECT_IAM_ROLES_CLIENT = [
     'roles/logging.logWriter'
 ]
 
-FORSETI_CAI_BUCKET_ROLES = [
-    'objectAdmin'
-]
-
 SVC_ACCT_ROLES = [
     'roles/iam.serviceAccountTokenCreator'
 ]

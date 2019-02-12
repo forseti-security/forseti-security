@@ -41,8 +41,6 @@ class Config(object):
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))
-        self.advanced_mode = bool(kwargs.get('advanced'))
-        self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location')
         self.installation_type = None
 

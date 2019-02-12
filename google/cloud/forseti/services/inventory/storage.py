@@ -520,6 +520,12 @@ class CaiTemporaryStore(object):
     asset_type = None
     asset_data = None
 
+    # Assets with no parent resource.
+    UNPARENTED_ASSETS = frozenset([
+        'google.cloud.resourcemanager.Organization',
+        'google.cloud.billing.BillingAccount',
+    ])
+
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
         """Initialize database column.
 
@@ -681,12 +687,16 @@ class CaiTemporaryStore(object):
 
         elif (asset_pb.asset_type.startswith('google.appengine') or
               asset_pb.asset_type.startswith('google.cloud.bigquery') or
+              asset_pb.asset_type.startswith('google.cloud.sql') or
               asset_pb.asset_type.startswith('google.cloud.kms') or
               asset_pb.asset_type.startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 
-        LOGGER.debug('Could not determine parent name for %s', asset_pb)
+        # Known unparented asset types.
+        if asset_pb.asset_type not in CaiTemporaryStore.UNPARENTED_ASSETS:
+            LOGGER.debug('Could not determine parent name for %s', asset_pb)
+
         return ''
 
 
@@ -758,6 +768,7 @@ class CaiDataAccess(object):
         except SQLAlchemyError as e:
             LOGGER.exception('Attempt to delete data from CAI temporary store '
                              'failed, disabling the use of CAI: %s', e)
+            session.rollback()
 
         return num_rows
 

@@ -140,7 +140,6 @@ class ForsetiInstaller(object):
 
         # After deployment.
         instructions = self.post_install_instructions(deploy_success,
-                                                      conf_file_path,
                                                       bucket_name)
 
         if previous_instructions is not None:
@@ -192,8 +191,7 @@ class ForsetiInstaller(object):
     def preflight_checks(self):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
-        self.check_run_properties()
-        self.version = utils.infer_version(self.config.advanced_mode)
+        self.version = utils.infer_version()
         service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
@@ -219,9 +217,7 @@ class ForsetiInstaller(object):
         self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
             'GCP Service Account',
             gcp_service_acct_name,
-            gcp_service_acct_email,
-            self.config.advanced_mode,
-            self.config.dry_run)
+            gcp_service_acct_email)
 
     def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template
@@ -240,8 +236,7 @@ class ForsetiInstaller(object):
             self.organization_id,
             deployment_tpl_path,
             self.config.installation_type,
-            self.config.identifier,
-            self.config.dry_run)
+            self.config.identifier)
 
         status_checker = (lambda: gcloud.check_deployment_status(
             deployment_name, constants.DeploymentStatus.DONE))
@@ -262,9 +257,6 @@ class ForsetiInstaller(object):
             # copy configuration file, deployment template file and
             # rule files to the GCS bucket
 
-            if self.config.dry_run:
-                print('This is a dry run, will not copy any files.')
-
             utils.print_banner('Backing Up Important Files To GCS')
 
             conf_output_path = constants.FORSETI_CONF_PATH.format(
@@ -276,7 +268,7 @@ class ForsetiInstaller(object):
 
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
-                is_directory=False, dry_run=self.config.dry_run)
+                is_directory=False)
 
             deployment_tpl_output_path = (
                 constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
@@ -287,7 +279,7 @@ class ForsetiInstaller(object):
 
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
-                is_directory=False, dry_run=self.config.dry_run)
+                is_directory=False)
 
         return deployment_completed, deployment_name
 
@@ -318,11 +310,6 @@ class ForsetiInstaller(object):
             # firewall rule setting that is blocking the SSH from the
             # cloud shell. We will skip waiting for the VM to be initialized.
             pass
-
-    def check_run_properties(self):
-        """Check script run properties."""
-        print('Dry run: %s' % self.config.dry_run)
-        print('Advanced mode: %s' % self.config.advanced_mode)
 
     def format_gcp_service_acct_id(self):
         """Format the service account ids.
@@ -395,15 +382,12 @@ class ForsetiInstaller(object):
 
         conf_values = self.get_configuration_values()
 
-        forseti_conf_path = files.generate_forseti_conf(
+        return files.generate_forseti_conf(
             self.config.installation_type,
             conf_values,
             self.config.identifier)
 
-        return forseti_conf_path
-
-    def post_install_instructions(self, deploy_success,
-                                  forseti_conf_path, bucket_name):
+    def post_install_instructions(self, deploy_success, bucket_name):
         """Show post-install instructions.
 
         For example: link for deployment manager dashboard and
@@ -411,7 +395,6 @@ class ForsetiInstaller(object):
 
         Args:
             deploy_success (bool): Whether deployment was successful
-            forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
 
         Returns:
@@ -419,12 +402,7 @@ class ForsetiInstaller(object):
         """
 
         instructions = ForsetiInstructions()
-        if self.config.dry_run:
-            message = (
-                'This was a dry run, so a deployment was not attempted. '
-                'You can still create the deployment manually.\n')
-            instructions.deployed_branch = message
-        elif deploy_success:
+        if deploy_success:
             instructions.deployed_branch = (
                 constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(self.version))
         else:
@@ -436,18 +414,13 @@ class ForsetiInstaller(object):
 
         instructions.deployment_templates.append(deploy_tpl_gcs_path)
 
-        if self.config.dry_run:
-            instructions.configurations.append(
-                constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN
-                .format(forseti_conf_path, bucket_name))
-        else:
-            forseti_gcs_path = (
-                '{gcs_bucket}/configs/'
-                'forseti_conf_{installation_type}.yaml').format(
-                    gcs_bucket=bucket_name,
-                    installation_type=self.config.installation_type
-                )
-            instructions.configurations.append(forseti_gcs_path)
+        forseti_gcs_path = (
+            '{gcs_bucket}/configs/'
+            'forseti_conf_{installation_type}.yaml').format(
+                gcs_bucket=bucket_name,
+                installation_type=self.config.installation_type
+            )
+        instructions.configurations.append(forseti_gcs_path)
         return instructions
 
     def populate_installer_environment(self, other_installer):

@@ -17,6 +17,8 @@
 # AND a wildcard, the exact match node is given preference.
 
 # rules:
+#   # Note: please use the id of the resource (such as organization id,
+#   # folder id, project id, etc.) when specifying the resource ids.
 #   resource_types:
 #   - 'project'
 #   - 'bucket'

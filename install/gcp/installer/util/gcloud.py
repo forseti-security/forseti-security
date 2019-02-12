@@ -145,22 +145,14 @@ def check_proper_gcloud():
         sys.exit(1)
 
 
-def enable_apis(dry_run=False):
+def enable_apis():
     """Enable necessary APIs for Forseti Security.
 
     Technically, this could be done in Deployment Manager, but if you
     delete the deployment, you'll disable the APIs. This could cause errors
     if there are resources still in use (e.g. Compute Engine), and then
-    your deployment won't be cleanly deleted.
-
-    Args:
-        dry_run (bool): Whether this is a dry run. If True, don't actually
-            enable the APIs.
-    """
+    your deployment won't be cleanly deleted."""
     utils.print_banner('Enabling Required APIs')
-    if dry_run:
-        print('This is a dry run, so skipping this step.')
-        return
 
     for api in constants.REQUIRED_APIS:
         print('Enabling the {} API... '.format(api['name']),
@@ -214,7 +206,6 @@ def grant_server_svc_acct_roles(enable_write,
                                 target_id,
                                 project_id,
                                 gcp_service_account,
-                                cai_bucket_name,
                                 user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
 
@@ -232,7 +223,6 @@ def grant_server_svc_acct_roles(enable_write,
         target_id (str): Id of the access_target.
         project_id (str): GCP Project Id.
         gcp_service_account (str): GCP service account email.
-        cai_bucket_name (str): The name of the CAI bucket.
         user_can_grant_roles (bool): Whether or not user has
             access to grant roles.
 
@@ -252,17 +242,11 @@ def grant_server_svc_acct_roles(enable_write,
         'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
-    has_role_script_bucket = _grant_bucket_roles(
-        gcp_service_account,
-        cai_bucket_name,
-        constants.FORSETI_CAI_BUCKET_ROLES,
-        user_can_grant_roles)
-
     has_role_script_rest = _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
 
-    return has_role_script_bucket or has_role_script_rest
+    return has_role_script_rest
 
 
 def _grant_bucket_roles(gcp_service_account,
@@ -522,74 +506,32 @@ def choose_project():
 
 def create_or_reuse_service_acct(acct_type,
                                  acct_name,
-                                 acct_email,
-                                 advanced_mode,
-                                 dry_run):
+                                 acct_email):
     """Create or reuse service account.
 
     Args:
         acct_type (str): The account type.
         acct_name (str): The account name.
         acct_email (str): Account id.
-        advanced_mode (bool): Whether or not the installer is in advanced mode.
-        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
         str: The final account email that we will be using throughout
             the installation.
     """
 
-    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
+    print ('Creating {}... '.format(acct_type), end='')
+    sys.stdout.flush()
 
-    if not advanced_mode:
-        print ('Creating {}... '.format(acct_type), end='')
-        sys.stdout.flush()
-        choice_index = 1
-    else:
-        print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
-        choice_index = utils.get_choice_id(choices, print_fun)
-
-    # If the choice is "Create service account", create the service
-    # account. The default is to create the service account with a
-    # generated name.
-    # Otherwise, present the user with options to choose from
-    # available service accounts in this project.
-    if choice_index == 1 and dry_run:
-        print('This is a dry run, so don\'t actually create '
-              'the service account.')
-    elif choice_index == 1:
-        return_code, out, err = utils.run_command(
-            ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_email[:acct_email.index('@')], '--display-name',
-             acct_name])
-        if return_code:
-            print(err)
-            print('Could not create the service account. Terminating '
-                  'because this is an unexpected error.')
-            sys.exit(1)
-        print ('created')
-    else:
-        return_code, out, err = utils.run_command(
-            ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
-        if return_code:
-            print(err)
-            print('Could not determine the service accounts, will just '
-                  'create a new service account.')
-            return acct_email
-        else:
-            try:
-                svc_accts = json.loads(out)
-            except ValueError:
-                print('Could not determine the service accounts, will just '
-                      'create a new service account.')
-                return acct_email
-
-        print_fun = lambda ind, val: print('[{}] {} ({})'
-                                           .format(ind+1,
-                                                   val.get('displayName', ''),
-                                                   val['email']))
-        acct_idx = utils.get_choice_id(svc_accts, print_fun)
-        acct_email = svc_accts[acct_idx - 1]['email']
+    return_code, _, err = utils.run_command(
+        ['gcloud', 'iam', 'service-accounts', 'create',
+         acct_email[:acct_email.index('@')], '--display-name',
+         acct_name])
+    if return_code:
+        print(err)
+        print('Could not create the service account. Terminating '
+              'because this is an unexpected error.')
+        sys.exit(1)
+    print ('created')
     print ('\t{}'.format(acct_email))
     return acct_email
 
@@ -838,8 +780,7 @@ def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
                       installation_type,
-                      timestamp,
-                      dry_run):
+                      timestamp):
     """Create the GCP deployment.
 
     Args:
@@ -848,15 +789,10 @@ def create_deployment(project_id,
         deploy_tpl_path (str): Path of deployment template.
         installation_type (str): Type of the installation (client/server).
         timestamp (str): Timestamp.
-        dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
         str: Name of the deployment.
     """
-
-    if dry_run:
-        print('This is a dry run, so skipping this step.')
-        return 0
 
     utils.print_banner('Creating Forseti {} Deployment'.format(
         installation_type.capitalize()))
