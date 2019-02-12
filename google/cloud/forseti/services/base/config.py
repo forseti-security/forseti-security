@@ -33,11 +33,10 @@ from google.cloud.forseti.services.inventory.storage import Storage
 LOGGER = logger.get_logger(__name__)
 
 
-def _validate_cai_enabled(root_resource_id, cai_configs):
+def _validate_cai_enabled(cai_configs):
     """Verifies if CloudAsset Inventory can be used for this inventory config.
 
     Args:
-        root_resource_id (str): Root resource to start crawling from
         cai_configs (dict): Settings for the Cloud AssetInventory API
 
     Returns:
@@ -50,13 +49,6 @@ def _validate_cai_enabled(root_resource_id, cai_configs):
     if not cai_configs.get('gcs_path', '').startswith('gs://'):
         LOGGER.debug('CloudAsset Inventory not configured with a valid GCS '
                      'bucket.')
-        return False
-
-    if (not root_resource_id or
-            not root_resource_id.startswith('organizations/')):
-        LOGGER.debug('CloudAsset Inventory only supported when with an '
-                     'organization root resource. Disabling CloudAsset '
-                     'Inventory.')
         return False
 
     return True
@@ -270,7 +262,7 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             bool: Whether CAI should be integrated with the inventory or not.
         """
-        return _validate_cai_enabled(self.root_resource_id, self.cai_configs)
+        return _validate_cai_enabled(self.cai_configs)
 
     def get_cai_gcs_path(self):
         """Returns the GCS bucket path to store the CAI data dumps in.
