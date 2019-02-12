@@ -363,9 +363,9 @@ class Rule(object):
         for key_data in crypto_key:
             key_rotation_period = key_data.get('rotation_period')
         LOGGER.debug('Formatting rotation time...')
-        creation_time = creation_time[:-5]
+        last_rotation_time = creation_time[:-5]
         formatted_last_rotation_time = datetime.datetime.strptime(
-            creation_time, string_formats.TIMESTAMP_MICROS)
+            last_rotation_time, string_formats.TIMESTAMP_MICROS)
         days_since_rotated = (scan_time - formatted_last_rotation_time).days
 
         if days_since_rotated > key_rotation_period:
