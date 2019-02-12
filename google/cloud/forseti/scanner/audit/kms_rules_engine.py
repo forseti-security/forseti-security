@@ -236,7 +236,7 @@ class KMSRuleBook(bre.BaseRuleBook):
                      key.name)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
-            key.name)
+            key.crypto_key_full_name)
 
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
@@ -358,8 +358,7 @@ class Rule(object):
             scan_time (datetime): Snapshot timestamp.
 
         Returns:
-            bool: Returns true if key was not rotated within the time specified
-            in the policy.
+            bool: Returns true if key was rotated within the time specified.
         """
         crypto_key = self.rule['key']
         for key_data in crypto_key:
@@ -370,7 +369,7 @@ class Rule(object):
             creation_time, string_formats.TIMESTAMP_MICROS)
         days_since_rotated = (scan_time - formatted_last_rotation_time).days
 
-        if days_since_rotated <= key_rotation_period:
+        if days_since_rotated > key_rotation_period:
             return False
 
         return True
@@ -389,14 +388,14 @@ class Rule(object):
         scan_time = date_time.get_utc_now_datetime()
 
         if self.rule['mode'] == BLACKLIST:
-            if self.is_key_rotated(creation_time, scan_time):
+            if not self.is_key_rotated(creation_time, scan_time):
                 violation_reason = ('Key %s was not rotated since %s.' %
                                     (key.name, creation_time))
                 violations.append(RuleViolation(
                     resource_id=key.id,
                     resource_type=key.type,
-                    resource_name=key.name,
-                    full_name=key.crypto_key_type,
+                    resource_name=key.id,
+                    full_name=key.crypto_key_full_name,
                     rule_index=self.rule_index,
                     rule_name=self.rule_name,
                     violation_type=VIOLATION_TYPE,

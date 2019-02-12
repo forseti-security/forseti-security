@@ -56,10 +56,11 @@ class CryptoKey(resource.Resource):
         """
         super(CryptoKey, self).__init__(
             resource_id=crypto_key_name,
-            name=crypto_key_full_name,
+            name=crypto_key_name,
             parent=crypto_key_parent_type_name,
             resource_type=resource.ResourceType.CRYPTO_KEY),
-        self.crypto_key_type = crypto_key_type,
+        self.crypto_key_full_name = crypto_key_full_name
+        self.crypto_key_type = crypto_key_type
         self.primary_version = primary_version
         self.purpose = purpose
         self.create_time = create_time
