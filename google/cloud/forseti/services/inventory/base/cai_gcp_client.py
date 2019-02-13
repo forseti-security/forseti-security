@@ -422,6 +422,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'namedPort': 'namedPorts',
             'targetPool': 'targetPools',
+            'version': 'versions',
         }
         resources = self._iter_compute_resources('InstanceGroupManager',
                                                  project_number)
