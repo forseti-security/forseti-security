@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import container
+from google.cloud.forseti.common.gcp_api import group_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
@@ -932,10 +933,10 @@ class ApiClientImpl(ApiClient):
             ResourceNotSupported: Raised if polling is disabled for this API in
                 the GCP API client configuration.
         """
-        if is_api_disabled(self.config, admin_directory.API_NAME):
+        if is_api_disabled(self.config, group_settings.API_NAME):
             raise ResourceNotSupported('Group Settings API disabled by server '
                                        'configuration.')
-        return admin_directory.GroupSettingsClient(self.config)
+        return group_settings.GroupSettingsClient(self.config)
 
     def _create_appengine(self):
         """Create AppEngine API client.
