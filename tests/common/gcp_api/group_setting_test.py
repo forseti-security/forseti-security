@@ -35,7 +35,7 @@ class GroupsettingTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'pubsub': {'max_calls': 95, 'period': 1.0}}
+            'groupssettings': {'max_calls': 14, 'period': 1.0}}
         cls.group_settings_api_client = group_settings.GroupSettingsClient(
             global_configs=fake_global_configs)
 
