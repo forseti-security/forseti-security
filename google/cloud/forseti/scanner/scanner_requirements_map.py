@@ -78,6 +78,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',
          'rules_filename': 'ke_rules.yaml'},
+    'kms_scanner':
+        {'module_name': 'kms_scanner',
+         'class_name': 'KMSScanner',
+         'rules_filename': 'kms_rules.yaml'},
     'lien':
         {'module_name': 'lien_scanner',
          'class_name': 'LienScanner',
