@@ -38,9 +38,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import mapper
 
-from google.cloud.asset_v1beta1.proto import assets_pb2
-from google.protobuf import json_format
-
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
@@ -584,16 +581,13 @@ class CaiTemporaryStore(object):
         Returns:
             dict: The dict representation of the asset data.
         """
-        # The no-member is a false positive for the dynamic protobuf class.
-        # pylint: disable=no-member
-        asset_pb = assets_pb2.Asset.FromString(self.asset_data)
-        # pylint: enable=no-member
+        asset = json.loads(self.asset_data)
         if content_type == ContentTypes.resource:
-            return json_format.MessageToDict(asset_pb.resource.data)
+            return asset['resource']['data']
         elif content_type == ContentTypes.iam_policy:
-            return json_format.MessageToDict(asset_pb.iam_policy)
+            return asset['iam_policy']
 
-        return json_format.MessageToDict(asset_pb)
+        return asset
 
     @classmethod
     def from_json(cls, asset_json):
@@ -605,27 +599,27 @@ class CaiTemporaryStore(object):
         Returns:
             object: database row object or None if there is no data.
         """
-        asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
-        if len(asset_pb.name) > 512:
+        asset = json.loads(asset_json)
+        if len(asset['name']) > 512:
             LOGGER.warn('Skipping insert of asset %s, name too long.',
-                        asset_pb.name)
+                        asset['name'])
             return None
 
-        if asset_pb.HasField('resource'):
+        if 'resource' in asset:
             content_type = ContentTypes.resource
-            parent_name = cls._get_parent_name(asset_pb)
-        elif asset_pb.HasField('iam_policy'):
+            parent_name = cls._get_parent_name(asset)
+        elif 'iam_policy' in asset:
             content_type = ContentTypes.iam_policy
-            parent_name = asset_pb.name
+            parent_name = asset['name']
         else:
             return None
 
         return cls(
-            name=asset_pb.name,
+            name=asset['name'],
             parent_name=parent_name,
             content_type=content_type,
-            asset_type=asset_pb.asset_type,
-            asset_data=asset_pb.SerializeToString()
+            asset_type=asset['asset_type'],
+            asset_data=asset_json
         )
 
     @classmethod
@@ -651,19 +645,19 @@ class CaiTemporaryStore(object):
             raise
 
     @staticmethod
-    def _get_parent_name(asset_pb):
+    def _get_parent_name(asset):
         """Determines the parent name from the resource data.
 
         Args:
-            asset_pb (assets_pb2.Asset): An Asset protobuf object.
+            asset (dict): An Asset object.
 
         Returns:
             str: The parent name for the resource.
         """
-        if asset_pb.resource.parent:
-            return asset_pb.resource.parent
+        if 'parent' in asset['resource']:
+            return asset['resource']['parent']
 
-        if asset_pb.asset_type == 'google.cloud.kms.KeyRing':
+        if asset['asset_type'] == 'google.cloud.kms.KeyRing':
             # KMS KeyRings are parented by a location under a project, but
             # the location is not directly discoverable without iterating all
             # locations, so instead this creates an artificial parent at the
@@ -672,9 +666,9 @@ class CaiTemporaryStore(object):
             #
             # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
             # parent project.
-            return '/'.join(asset_pb.name.split('/')[:-4])
+            return '/'.join(asset['name'].split('/')[:-4])
 
-        elif asset_pb.asset_type == 'google.cloud.dataproc.Cluster':
+        elif asset['asset_type'] == 'google.cloud.dataproc.Cluster':
             # Dataproc Clusters are parented by a region under a project, but
             # the region is not directly discoverable without iterating all
             # regions, so instead this creates an artificial parent at the
@@ -683,19 +677,19 @@ class CaiTemporaryStore(object):
             #
             # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
             # parent project.
-            return '/'.join(asset_pb.name.split('/')[:-4])
+            return '/'.join(asset['name'].split('/')[:-4])
 
-        elif (asset_pb.asset_type.startswith('google.appengine') or
-              asset_pb.asset_type.startswith('google.cloud.bigquery') or
-              asset_pb.asset_type.startswith('google.cloud.sql') or
-              asset_pb.asset_type.startswith('google.cloud.kms') or
-              asset_pb.asset_type.startswith('google.spanner')):
+        elif (asset['asset_type'].startswith('google.appengine') or
+              asset['asset_type'].startswith('google.cloud.bigquery') or
+              asset['asset_type'].startswith('google.cloud.sql') or
+              asset['asset_type'].startswith('google.cloud.kms') or
+              asset['asset_type'].startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
-            return '/'.join(asset_pb.name.split('/')[:-2])
+            return '/'.join(asset['name'].split('/')[:-2])
 
         # Known unparented asset types.
-        if asset_pb.asset_type not in CaiTemporaryStore.UNPARENTED_ASSETS:
-            LOGGER.debug('Could not determine parent name for %s', asset_pb)
+        if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
+            LOGGER.debug('Could not determine parent name for %s', asset)
 
         return ''
 
@@ -796,26 +790,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                try:
-                    row = CaiTemporaryStore.from_json(line.strip())
-                except json_format.ParseError as e:
-                    # If the public protobuf definition differs from the
-                    # internal representation of the resource content in CAI
-                    # then the json_format module will throw a ParseError. The
-                    # crawler automatically falls back to using the live API
-                    # when this happens, so no content is lost.
-                    resource = json.loads(line)
-                    if 'iam_policy' in resource:
-                        content_type = 'iam_policy'
-                    elif 'resource' in resource:
-                        content_type = 'resource'
-                    else:
-                        content_type = 'none'
-                    LOGGER.info('Protobuf parsing error %s, falling back to '
-                                'live API for resource %s, asset type %s, '
-                                'content type %s', e, resource.get('name', ''),
-                                resource.get('asset_type', ''), content_type)
-                    continue
+                row = CaiTemporaryStore.from_json(line.strip())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.
