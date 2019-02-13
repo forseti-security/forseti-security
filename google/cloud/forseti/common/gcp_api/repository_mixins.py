@@ -358,27 +358,6 @@ class CreateQueryMixin(object):
         return self.execute_query(verb=verb, verb_arguments=arguments)
 
 
-class PatchQueryMixin(object):
-    """Mixin that implements a Patch query."""
-
-    def patch(self, verb='patch', **kwargs):
-        """Patch a resource.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            verb (str): The method to call on the API.
-            **kwargs (dict): Optional additional arguments to pass to create.
-
-        Returns:
-            dict: An API response containing one page of results.
-        """
-        arguments = {}
-        if kwargs.get('arguments'):
-            arguments.update(kwargs.get('arguments'))
-
-        return self.execute_query(verb=verb, verb_arguments=arguments)
-
-
 class InsertResourceMixin(object):
     """Mixin that implements the Insert API command for resources."""
 
