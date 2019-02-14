@@ -1063,7 +1063,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
   - External Project Access rule syntax has been [updated to include whitelisting users]({% link _docs/v2.11/configure/scanner/rules.md %}#external-project-access-rules).
   
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.10.0 to 2.11.0" content=upgrading_2_10_0_to_2_11_0 uid=10 %}
+{% include site/zippy/item.html title="Upgrading 2.10.0 to 2.11.0" content=upgrading_2_10_0_to_2_11_0 uid=12 %}
 
 {% capture deployment_manager_error %}
 
