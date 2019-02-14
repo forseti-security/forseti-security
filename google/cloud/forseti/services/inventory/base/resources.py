@@ -2183,7 +2183,7 @@ FACTORIES = {
         'cls': ResourceManagerOrganization,
         'contains': [
             BillingAccountIterator,
-            GsuiteGroupIterator,            
+            GsuiteGroupIterator,
             GsuiteUserIterator,
             IamOrganizationCuratedRoleIterator,
             IamOrganizationRoleIterator,
@@ -2482,7 +2482,7 @@ FACTORIES = {
         'contains': []}),
 
     'gsuite_group': ResourceFactory({
-        'dependsOn': ['gsuite_group'],
+        'dependsOn': ['organization'],
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,

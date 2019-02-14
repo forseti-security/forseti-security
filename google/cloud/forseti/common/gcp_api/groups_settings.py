@@ -140,7 +140,6 @@ class GroupsSettingsClient(object):
             RefreshError: If the authentication fails.
         """
         try:
-            # self.repository.groups_settings._get_key_field="groupUniqueId"
             result = self.repository.groups_settings.get(group_id)
             LOGGER.debug('Getting group settings information for group id = %s,'
                          ' result = %s',

@@ -714,6 +714,11 @@ class InventoryImporter(object):
         self._convert_resource(resource, cached=True)
 
     def _convert_groups_settings_resource(self, resource):
+        """Convert a Groups Settings resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
         self._convert_resource(resource, cached=True)
 
     def _convert_kms_ckv_resource(self, resource):

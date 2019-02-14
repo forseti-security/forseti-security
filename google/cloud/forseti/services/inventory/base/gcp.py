@@ -577,7 +577,7 @@ class ApiClient(object):
 
     @abc.abstractmethod
     def iter_gsuite_groups_settings(self, group_id):
-        """Iterate Gsuite group settings from GCP API.
+        """Iterate Gsuite groups settings from GCP API.
 
         Args:
             group_id (str): Gsuite group id.
@@ -934,7 +934,7 @@ class ApiClientImpl(ApiClient):
                 the GCP API client configuration.
         """
         if is_api_disabled(self.config, groups_settings.API_NAME):
-            raise ResourceNotSupported('Group Settings API disabled by server '
+            raise ResourceNotSupported('Groups Settings API disabled by server '
                                        'configuration.')
         return groups_settings.GroupsSettingsClient(self.config)
 
@@ -1956,7 +1956,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('settings', _create_settings)
     def iter_gsuite_groups_settings(self, group_id):
-        """Iterate Gsuite group settings from GCP API.
+        """Iterate Gsuite groups settings from GCP API.
 
         Args:
             group_id (str): Gsuite group id.
