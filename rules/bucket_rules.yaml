@@ -13,7 +13,7 @@
 # limitations under the License.
 
 rules:
-  - name: sample bucket acls rule to search for public buckets
+  - name: Bucket acls rule to search for public buckets
     bucket: '*'
     entity: allUsers
     email: '*'
@@ -21,8 +21,8 @@ rules:
     role: '*'
     resource:
         - resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
-  - name: sample bucket acls rule to search for exposed buckets
+          - {ORGANIZATION_ID}
+  - name: Bucket acls rule to search for exposed buckets
     bucket: '*'
     entity: allAuthenticatedUsers
     email: '*'
@@ -30,4 +30,4 @@ rules:
     role: '*' 
     resource:
         - resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
+          - {ORGANIZATION_ID}
