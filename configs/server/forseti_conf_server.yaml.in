@@ -465,10 +465,6 @@ notifier:
           notifiers:
             # Email violations
             - name: email_violations
-              configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
