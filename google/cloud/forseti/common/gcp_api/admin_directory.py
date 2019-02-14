@@ -27,7 +27,6 @@ LOGGER = logger.get_logger(__name__)
 
 API_NAME = 'admin'
 
-
 REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.group.readonly',
     'https://www.googleapis.com/auth/admin.directory.user.readonly'

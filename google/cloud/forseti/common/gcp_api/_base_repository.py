@@ -308,9 +308,9 @@ class GCPRepository(object):
         self.read_only = read_only
 
         self._credentials = credentials
-        components = component.split('.') #components = groups
+        components = component.split('.')
         self._component = getattr(
-            self.gcp_service, components.pop(0))() #googleapiclient.discovery.resources
+            self.gcp_service, components.pop(0))()
         for nested_component in components:
             self._component = getattr(
                 self._component, nested_component)()
@@ -528,7 +528,6 @@ class GCPRepository(object):
             with self._rate_limiter:
                 return request.execute(http=self.http,
                                        num_retries=self._num_retries)
-
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
 # pylint: enable=too-many-instance-attributes, too-many-arguments

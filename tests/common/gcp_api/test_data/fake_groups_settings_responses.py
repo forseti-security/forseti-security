@@ -14,10 +14,10 @@
 
 """Test data for Group Settings GCP api responses."""
 
-FAKE_EMAIL = 'group_settings@foo.testing'
+FAKE_EMAIL = 'groups_settings@foo.testing'
 FAKE_DESCRIPTION = "value used in test case"
 
-GET_GROUP_SETTINGS_RESPONSE = """
+GET_GROUPS_SETTINGS_RESPONSE = """
 {
   "allowExternalMembers": "True", 
   "whoCanEnterFreeFormTags": "NONE", 
@@ -38,7 +38,7 @@ GET_GROUP_SETTINGS_RESPONSE = """
   "isArchived": "True",
   "membersCanPostAsTheGroup": "false",
   "allowWebPosting": "True",
-  "email": "group_settings@foo.testing",
+  "email": "groups_settings@foo.testing",
   "whoCanAssignTopics": "NONE",
   "sendMessageDenyNotification": "false",
   "description": "value used in test case",

@@ -121,7 +121,7 @@ AD_GET_GROUPS = {
     ]
 }
 
-AD_GET_GROUP_SETTINGS = {
+AD_GET_GROUPS_SETTINGS = {
   "allowExternalMembers": "True", 
   "whoCanEnterFreeFormTags": "NONE", 
   "whoCanMarkDuplicate": "NONE", 

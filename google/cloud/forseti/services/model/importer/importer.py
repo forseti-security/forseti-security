@@ -175,7 +175,7 @@ class InventoryImporter(object):
             'dns_policy',
             'firewall',
             'forwardingrule',
-            'gsuite_group_settings'
+            'gsuite_groups_settings'
             'image',
             'instance',
             'instancegroup',
@@ -563,7 +563,7 @@ class InventoryImporter(object):
             'firewall': self._convert_computeengine_resource,
             'folder': self._convert_folder,
             'forwardingrule': self._convert_computeengine_resource,
-            'gsuite_group_settings': self._convert_groupsettings_resource,
+            'gsuite_groups_settings': self._convert_groups_settings_resource,
             'image': self._convert_computeengine_resource,
             'instance': self._convert_computeengine_resource,
             'instancegroup': self._convert_computeengine_resource,
@@ -713,7 +713,7 @@ class InventoryImporter(object):
         """
         self._convert_resource(resource, cached=True)
 
-    def _convert_groupsettings_resource(self, resource):
+    def _convert_groups_settings_resource(self, resource):
         self._convert_resource(resource, cached=True)
 
     def _convert_kms_ckv_resource(self, resource):

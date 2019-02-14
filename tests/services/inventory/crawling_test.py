@@ -197,8 +197,6 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = GCP_API_RESOURCES
-        import pdb
-        pdb.set_trace()
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_folder(self):
@@ -284,7 +282,7 @@ class CrawlerTest(CrawlerBase):
         expected_counts['organization'].pop('iam_policy')
         expected_counts['crm_org_policy']['resource'] -= 2
         expected_counts.pop('gsuite_group')
-        expected_counts.pop('gsuite_user_settings')
+        expected_counts.pop('gsuite_groups_settings')
         expected_counts.pop('gsuite_group_member')
         expected_counts.pop('gsuite_user')
         expected_counts.pop('gsuite_user_member')

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for Admin Directory  API client."""
+"""Wrapper for Groups Settings  API client."""
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 from google.auth.exceptions import RefreshError
@@ -40,8 +40,8 @@ GSUITE_AUTH_FAILURE_MESSAGE = (
     'configure/inventory/gsuite.html')
 
 
-class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
-    """Group Settings API Respository Client."""
+class GroupsSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
+    """Groups Settings API Respository Client."""
 
     def __init__(self,
                  credentials,
@@ -63,10 +63,10 @@ class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
-        self._group_settings = None
+        self._groups_settings = None
 
-        super(GroupSettingsRepositoryClient, self).__init__(
-            API_NAME, versions=['v1'], #TODO figure out if this should be admin since its admin SDK, or groups to match api url
+        super(GroupsSettingsRepositoryClient, self).__init__(
+            API_NAME, versions=['v1'],
             credentials=credentials,
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -75,21 +75,21 @@ class GroupSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
-    def group_settings(self):
-        """Returns an _AdminDirectoryGroupSettingsRepository instance."""
-        if not self._group_settings:
-            self._group_settings = self._init_repository(
-                _GroupSettingsRepository)
-        return self._group_settings
+    def groups_settings(self):
+        """Returns an _AdminDirectoryGroupsSettingsRepository instance."""
+        if not self._groups_settings:
+            self._groups_settings = self._init_repository(
+                _GroupsSettingsRepository)
+        return self._groups_settings
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 
 
-class _GroupSettingsRepository(
+class _GroupsSettingsRepository(
         repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Group Settings repository."""
+    """Implementation of Groups Settings repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -97,11 +97,11 @@ class _GroupSettingsRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_GroupSettingsRepository, self).__init__(
+        super(_GroupsSettingsRepository, self).__init__(
             key_field='groupUniqueId', component='groups', **kwargs)
 
-class GroupSettingsClient(object):
-    """GSuite Admin Directory API Client."""
+class GroupsSettingsClient(object):
+    """GSuite Groups Settings API Client."""
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -117,22 +117,20 @@ class GroupSettingsClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             global_configs, API_NAME)
 
-        self.repository = GroupSettingsRepositoryClient(
+        self.repository = GroupsSettingsRepositoryClient(
             credentials=credentials,
             quota_max_calls=max_calls,
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def get_group_settings(self, group_id):
-        """Get all the group settings for a given customer_id.
+    def get_groups_settings(self, group_id):
+        """Get the group settings for a given group.
 
-        A note on customer_id='my_customer'. This is a magic string instead
-        of using the real customer id. See:
 
-        https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
+        https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups/get
 
         Args:
-            customer_id (str): The customer id to scope the request to.
+            group_id (str): The gsuite group id to scope the request to.
 
         Returns:
             list: A list of group settings objects returned from the API.
@@ -142,8 +140,8 @@ class GroupSettingsClient(object):
             RefreshError: If the authentication fails.
         """
         try:
-            # self.repository.group_settings._get_key_field="groupUniqueId"
-            result = self.repository.group_settings.get(group_id)
+            # self.repository.groups_settings._get_key_field="groupUniqueId"
+            result = self.repository.groups_settings.get(group_id)
             LOGGER.debug('Getting group settings information for group id = %s,'
                          ' result = %s',
                          group_id, result)

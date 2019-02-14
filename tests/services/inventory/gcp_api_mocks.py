@@ -40,7 +40,7 @@ class GcpMocks(object):
         self.mock_compute = None
         self.mock_container = None
         self.mock_crm = None
-        self.mock_groupssettings = None
+        self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
@@ -62,7 +62,7 @@ class GcpMocks(object):
         crm_patcher, self.mock_crm = _mock_crm(has_org_access)
         gce_patcher, self.mock_compute = _mock_gce()
         gcs_patcher, self.mock_storage = _mock_gcs()
-        group_settings_patcher, self.mock_groupssettings = _mock_groups_settings()
+        groups_settings_patcher, self.mock_groups_settings = _mock_groups_settings()
         iam_patcher, self.mock_iam = _mock_iam()
         sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
         logging_patcher, self.mock_logging = _mock_stackdriver_logging()
@@ -77,7 +77,7 @@ class GcpMocks(object):
             crm_patcher,
             gce_patcher,
             gcs_patcher,
-            group_settings_patcher,
+            groups_settings_patcher,
             iam_patcher,
             sm_patcher,
             logging_patcher
@@ -96,7 +96,7 @@ class GcpMocks(object):
         self.mock_compute = None
         self.mock_container = None
         self.mock_crm = None
-        self.mock_groupssettings = None
+        self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
@@ -483,17 +483,15 @@ def _mock_gcs():
 def _mock_groups_settings():
     """Groups Settings client."""
 
-    def _mock_groupssettings_get_group_settings(group_id):
-        return results.AD_GET_GROUP_SETTINGS[group_id]
+    def _mock_groups_settings_get_groups_settings(group_id):
+        return results.AD_GET_GROUPS_SETTINGS[group_id]
 
-    group_settings_patcher = mock.patch(
-        MODULE_PATH + 'group_settings.GroupSettingsClient', spec=True)
-    mock_groupssettings = group_settings_patcher.start().return_value
-    mock_groupssettings.get_group_settings.side_effect = _mock_groupssettings_get_group_settings
+    groups_settings_patcher = mock.patch(
+        MODULE_PATH + 'groups_settings.GroupSettingsClient', spec=True)
+    mock_groups_settings = groups_settings_patcher.start().return_value
+    mock_groups_settings.get_groups_settings.side_effect = _mock_groups_settings_get_groups_settings
 
-    import pdb
-    pdb.set_trace()
-    return group_settings_patcher, mock_groupssettings
+    return groups_settings_patcher, mock_groups_settings
 
 
 def _mock_iam():

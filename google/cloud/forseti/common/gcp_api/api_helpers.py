@@ -52,7 +52,8 @@ def get_delegated_credential(delegated_account, scopes):
     # this account, notably the email, is populated.
     bootstrap_credentials.refresh(request)
 
-    # Create an IAM signer using the bootstrap credentials.
+    # Create an IAM signer using the bootstrap credentials.c
+    
     signer = iam.Signer(request,
                         bootstrap_credentials,
                         bootstrap_credentials.service_account_email)

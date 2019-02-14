@@ -26,7 +26,7 @@ from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import container
-from google.cloud.forseti.common.gcp_api import group_settings
+from google.cloud.forseti.common.gcp_api import groups_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
@@ -576,7 +576,7 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_gsuite_group_settings(self, group_id):
+    def iter_gsuite_groups_settings(self, group_id):
         """Iterate Gsuite group settings from GCP API.
 
         Args:
@@ -924,7 +924,7 @@ class ApiClientImpl(ApiClient):
         return admin_directory.AdminDirectoryClient(self.config)
 
     def _create_settings(self):
-        """Create admin gsuite settings API client.
+        """Create gsuite groups settings API client.
 
         Returns:
             object: Client.
@@ -933,10 +933,10 @@ class ApiClientImpl(ApiClient):
             ResourceNotSupported: Raised if polling is disabled for this API in
                 the GCP API client configuration.
         """
-        if is_api_disabled(self.config, group_settings.API_NAME):
+        if is_api_disabled(self.config, groups_settings.API_NAME):
             raise ResourceNotSupported('Group Settings API disabled by server '
                                        'configuration.')
-        return group_settings.GroupSettingsClient(self.config)
+        return groups_settings.GroupsSettingsClient(self.config)
 
     def _create_appengine(self):
         """Create AppEngine API client.
@@ -1955,7 +1955,7 @@ class ApiClientImpl(ApiClient):
             yield group
 
     @create_lazy('settings', _create_settings)
-    def iter_gsuite_group_settings(self, group_id):
+    def iter_gsuite_groups_settings(self, group_id):
         """Iterate Gsuite group settings from GCP API.
 
         Args:
@@ -1964,7 +1964,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of groups settings.
         """
-        return self.settings.get_group_settings(group_id)
+        return self.settings.get_groups_settings(group_id)
 
     def iter_gsuite_users(self, gsuite_id):
         """Iterate Gsuite users from GCP API.
