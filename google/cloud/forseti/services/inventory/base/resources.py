@@ -948,7 +948,8 @@ class BillingAccount(resource_class_factory('billing_account', None)):
 
 
 # CloudSQL resource classes
-class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'name')):
+class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
+                                              hash_key=True)):
     """The Resource implementation for CloudSQL Instance."""
 
 
@@ -1411,7 +1412,8 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
         """
         try:
             # Full projection returns GCS policy with the resource.
-            return self['acl']
+            if self['acl']:
+                return self['acl']
         except KeyError:
             pass
 
@@ -1419,7 +1421,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             return client.fetch_storage_bucket_acls(
                 self.key(),
                 self.parent()['projectId'],
-                self['projectNumber'])
+                self.parent()['projectNumber'])
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Could not get bucket Access Control policy: %s', e)
             self.add_warning(e)
@@ -1687,7 +1689,8 @@ class BillingAccountIterator(resource_iter_class_factory(
 class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
-        api_method_arg_key='projectNumber',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
         resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 

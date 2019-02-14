@@ -12,22 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Bucket acls rules engine."""
+"""Scanner for the KMS rules engine."""
 
-import json
-
-from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
-    BucketAccessControls)
+from google.cloud.forseti.common.gcp_type import crypto_key
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import buckets_rules_engine
+from google.cloud.forseti.scanner.audit import kms_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
-
 
 LOGGER = logger.get_logger(__name__)
 
 
-class BucketsAclScanner(base_scanner.BaseScanner):
-    """Pipeline to Bucket acls data from DAO."""
+class KMSScanner(base_scanner.BaseScanner):
+    """Scanner for CryptoKeys data."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -41,14 +37,14 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(BucketsAclScanner, self).__init__(
+        super(KMSScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = buckets_rules_engine.BucketsRulesEngine(
+        self.rules_engine = kms_rules_engine.KMSRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
@@ -64,22 +60,15 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {'role': violation.role,
-                              'entity': violation.entity,
-                              'email': violation.email,
-                              'domain': violation.domain,
-                              'bucket': violation.bucket,
-                              'full_name': violation.full_name,
-                              'project_id': violation.project_id}
             yield {
-                'full_name': violation.full_name,
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
-                'resource_name': violation.resource_name,
+                'resource_name': violation.resource_id,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data,
+                'violation_data': violation.violation_reason,
                 'resource_data': violation.resource_data
             }
 
@@ -87,55 +76,61 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (list): All violations
+            all_violations (list): All violations.
         """
-        all_violations = self._flatten_violations(all_violations)
+        all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, bucket_acls):
+    def _find_violations(self, keys):
         """Find violations in the policies.
 
         Args:
-            bucket_acls (list): Bucket ACLs to search for violations in.
+            keys (list): CryptoKeys to find violations in.
 
         Returns:
             list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding bucket acl violations...')
+        LOGGER.info('Finding crypto key rotation violations...')
 
-        for bucket_acl in bucket_acls:
-            violations = self.rules_engine.find_violations(
-                bucket_acl)
+        for key in keys:
+            violations = self.rules_engine.find_violations(key)
             LOGGER.debug(violations)
             all_violations.extend(violations)
+
         return all_violations
 
     def _retrieve(self):
-        """Retrieves the data for scanner.
+        """Runs the data collection.
 
         Returns:
-            list: BigQuery ACL data
+            list: CryptoKey objects.
+        Raises:
+            ValueError: if resources have an unexpected type.
         """
+        keys = []
+
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            bucket_acls = []
+            for key in data_access.scanner_iter(session, 'kms_cryptokey'):
+                if not key.parent_type_name.startswith('kms_keyring'):
+                    raise ValueError(
+                        'Unexpected type of parent resource type: '
+                        'got %s, want kms_keyring' % key.parent_type_name
+                    )
 
-            for gcs_policy in data_access.scanner_iter(session, 'gcs_policy'):
-                bucket = gcs_policy.parent
-                project_id = bucket.parent.name
-                acls = json.loads(gcs_policy.data)
-                bucket_acls.extend(
-                    BucketAccessControls.from_list(
-                        project_id=project_id,
-                        full_name=bucket.full_name,
-                        acls=acls))
+                keys.append(crypto_key.CryptoKey.from_json(
+                    key.name,
+                    key.full_name,
+                    key.parent_type_name,
+                    key.type,
+                    key.data))
 
-        return bucket_acls
+        return keys
 
     def run(self):
-        """Run, he entry point for this scanner."""
-        buckets_acls = self._retrieve()
-        all_violations = self._find_violations(buckets_acls)
+        """Run, the entry point for this scanner."""
+        keys = self._retrieve()
+        all_violations = self._find_violations(keys)
         self._output_results(all_violations)
