@@ -13,8 +13,8 @@
 # limitations under the License.
 
 # rules:
-#   - role_name: "forsetiBigqueryViewer"
-#     name: "forsetiBigqueryViewer rule"
+#   - role_name: "BigqueryViewer"
+#     name: "The role BigqueryViewer contains exactly the following 3 permissions"
 #     permissions:
 #     - "bigquery.datasets.get"
 #     - "bigquery.tables.get"
@@ -22,16 +22,16 @@
 #     resource:
 #     - type: project
 #       resource_ids: ['*']
-#   - role_name: "forsetiCloudsqlViewer"
-#     name: "forsetiCloudsqlViewer rule backupRuns"
+#   - role_name: "CloudsqlViewer"
+#     name: "CloudsqlViewer on def-project-1 contains the following 2 backupruns permissions"
 #     permissions:
 #     - "cloudsql.backupRuns.get"
 #     - "cloudsql.backupRuns.list"
 #     resource:
 #     - type: project
 #       resource_ids: ['def-project-1']
-#   - role_name: "forsetiCloudsqlViewer"
-#     name: "forsetiCloudsqlViewer rule databases"
+#   - role_name: "CloudsqlViewer"
+#     name: "CloudsqlViewer on def-project-2 contains the following 2 databases permissions"
 #     permissions:
 #     - "cloudsql.databases.get"
 #     - "cloudsql.databases.list"

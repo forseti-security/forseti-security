@@ -87,7 +87,7 @@ class RoleTest(ForsetiTestCase):
                           'bigquery.tables.list'],
                          role.get_permissions())
 
-    def test_role_without_parents(self):
+    def test_get_res_id_with_invalid_input(self):
         """Tests function _get_res_id_from_role_id with invalid input."""
         self.assertIsNone(rl._get_res_id_from_role_id('organization/234/project/proj-1/role/forsetiBigqueryViewer/'))
 

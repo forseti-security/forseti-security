@@ -57,22 +57,6 @@ PROJECT3 = project.Project(
     data='fake_project_data_12344321',
 )
 
-def build_bucket_violations(bucket, rule_name):
-    data_lifecycle = bucket.get_lifecycle_rule()
-    data_lifecycle_str = json.dumps(data_lifecycle)
-
-    return [rre.RuleViolation(
-        resource_name='buckets/'+bucket.id,
-        resource_id=bucket.id,
-        resource_type=bucket.type,
-        full_name=bucket.full_name,
-        rule_index=0,
-        rule_name=rule_name,
-        violation_type='RETENTION_VIOLATION',
-        violation_data=data_lifecycle_str,
-        resource_data=bucket.data,
-    )]
-
 def build_table_violations(table, rule_name):
     data_str = table.data
 
@@ -107,17 +91,17 @@ class FakeRoleDataCreater():
 
 
 FakeRoleDataInput = collections.namedtuple(
-    'FakeBucketDataInput', ['name', 'permission', 'parent'])
+    'FakeRoleDataInput', ['name', 'permission', 'parent'])
 
 
 def get_fake_role_resource(fake_role_data_input):
-    """Create a fake Bucket object for test cases
+    """Create a fake Role object for test cases
 
     Args:
         fake_role_data_input (FakeRoleDataInput): arguments of the role.
 
     Returns:
-        Bucket: A new Bucket.
+        Role: A new Role.
     """
     data_creater = FakeRoleDataCreater(
         fake_role_data_input.name, fake_role_data_input.permission, fake_role_data_input.parent)
