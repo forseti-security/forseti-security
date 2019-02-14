@@ -1,0 +1,114 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.cloudasset module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.inventory.base.cloudasset">
+<span id="google-cloud-forseti-services-inventory-base-cloudasset-module"></span><h1>google.cloud.forseti.services.inventory.base.cloudasset module<a class="headerlink" href="#module-google.cloud.forseti.services.inventory.base.cloudasset" title="Permalink to this headline">¶</a></h1>
+<p>Forseti Inventory Cloud Asset API integration.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.cloudasset._clear_cai_data">
+<code class="descname">_clear_cai_data</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/cloudasset.html#_clear_cai_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.cloudasset._clear_cai_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear CAI data from storage.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session</strong> (<em>object</em>) – Database session.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.cloudasset._export_assets">
+<code class="descname">_export_assets</code><span class="sig-paren">(</span><em>cloudasset_client</em>, <em>config</em>, <em>content_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/cloudasset.html#_export_assets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.cloudasset._export_assets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Worker function for exporting assets and downloading dump from GCS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cloudasset_client</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient" title="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient"><em>CloudAssetClient</em></a>) – CloudAsset API client interface.</li>
+<li><strong>config</strong> (<em>object</em>) – Inventory configuration on server.</li>
+<li><strong>content_type</strong> (<a class="reference internal" href="google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.ContentTypes" title="google.cloud.forseti.services.inventory.storage.ContentTypes"><em>ContentTypes</em></a>) – The content type to export.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The path to the temporary file downloaded from GCS or None on</dt>
+<dd><p class="first last">error.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.cloudasset._get_gcs_path">
+<code class="descname">_get_gcs_path</code><span class="sig-paren">(</span><em>base_path</em>, <em>content_type</em>, <em>root_id</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/cloudasset.html#_get_gcs_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.cloudasset._get_gcs_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a GCS object path for CAI dump.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>base_path</strong> (<em>str</em>) – The GCS bucket, starting with ‘gs://’.</li>
+<li><strong>content_type</strong> (<em>str</em>) – The Cloud Asset content type for this export.</li>
+<li><strong>root_id</strong> (<em>str</em>) – The root resource ID for this export.</li>
+<li><strong>timestamp</strong> (<em>int</em>) – The timestamp for this export.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The full path to a GCS object to store export the data to.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.cloudasset.load_cloudasset_data">
+<code class="descname">load_cloudasset_data</code><span class="sig-paren">(</span><em>session</em>, <em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/cloudasset.html#load_cloudasset_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.cloudasset.load_cloudasset_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export asset data from Cloud Asset API and load into storage.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (<em>object</em>) – Database session.</li>
+<li><strong>config</strong> (<em>object</em>) – Inventory configuration on server.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The count of assets imported into the database, or None if there</dt>
+<dd><p class="first last">is an error.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

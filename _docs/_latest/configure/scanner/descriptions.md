@@ -234,3 +234,11 @@ Allow customers to ensure the retention policies on their resources are set as i
 
 For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
 
+## KMS scanner
+
+This scanner checks if the crypto keys in the organization are rotated within 
+the time specified, and notifies if they are not. 
+
+For examples of how to define scanner rules for your crypto keys, see the
+[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
+rule file.
