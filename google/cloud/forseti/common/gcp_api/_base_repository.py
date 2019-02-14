@@ -528,6 +528,7 @@ class GCPRepository(object):
             with self._rate_limiter:
                 return request.execute(http=self.http,
                                        num_retries=self._num_retries)
+
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
 # pylint: enable=too-many-instance-attributes, too-many-arguments

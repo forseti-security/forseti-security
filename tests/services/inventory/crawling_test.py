@@ -52,6 +52,7 @@ GCP_API_RESOURCES = {
     'folder': {'iam_policy': 3, 'resource': 3},
     'forwardingrule': {'resource': 1},
     'gsuite_group': {'resource': 4},
+    'gsuite_group_settings': {'resource': 1},
     'gsuite_group_member': {'resource': 1},
     'gsuite_user': {'resource': 4},
     'gsuite_user_member': {'resource': 3},
@@ -196,7 +197,8 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = GCP_API_RESOURCES
-
+        import pdb
+        pdb.set_trace()
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_folder(self):
@@ -282,6 +284,7 @@ class CrawlerTest(CrawlerBase):
         expected_counts['organization'].pop('iam_policy')
         expected_counts['crm_org_policy']['resource'] -= 2
         expected_counts.pop('gsuite_group')
+        expected_counts.pop('gsuite_user_settings')
         expected_counts.pop('gsuite_group_member')
         expected_counts.pop('gsuite_user')
         expected_counts.pop('gsuite_user_member')
@@ -562,6 +565,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
+            'gsuite_group_settings': {'resource': 1},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
             'lien': {'resource': 1},

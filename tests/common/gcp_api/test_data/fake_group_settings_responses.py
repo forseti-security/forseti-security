@@ -14,51 +14,70 @@
 
 """Test data for Group Settings GCP api responses."""
 
-FAKE_EMAIL = "test_email@gmail.com"
+FAKE_EMAIL = 'group_settings@foo.testing'
+FAKE_DESCRIPTION = "value used in test case"
 
 GET_GROUP_SETTINGS_RESPONSE = """
 {
-  u'allowExternalMembers': u'true', 
-  u'whoCanEnterFreeFormTags': u'NONE', 
-  u'whoCanMarkDuplicate': u'NONE', 
-  u'whoCanJoin': u'ALL_IN_DOMAIN_CAN_JOIN', 
-  u'whoCanModifyTagsAndCategories': u'OWNERS_AND_MANAGERS', 
-  u'whoCanMarkNoResponseNeeded': u'NONE', 
-  u'whoCanUnmarkFavoriteReplyOnAnyTopic': u'NONE', 
-  u'primaryLanguage': u'en', 
-  u'whoCanMarkFavoriteReplyOnOwnTopic': u'NONE', 
-  u'whoCanViewMembership': u'ALL_IN_DOMAIN_CAN_VIEW', 
-  u'favoriteRepliesOnTop': u'false',
-  u'whoCanMarkFavoriteReplyOnAnyTopic': u'NONE', 
-  u'includeCustomFooter': u'false',
-  u'defaultMessageDenyNotificationText': u'',
-  u'includeInGlobalAddressList': u'true',
-  u'archiveOnly': u'false',
-  u'isArchived': u'true',
-  u'membersCanPostAsTheGroup': u'false',
-  u'allowWebPosting': u'true',
-  u'email': u'my_account@gmail.com',
-  u'whoCanAssignTopics': u'NONE',
-  u'sendMessageDenyNotification': u'false',
-  u'description': u'',
-  u'whoCanUnassignTopic': u'NONE',
-  u'replyTo': u'REPLY_TO_IGNORE',
-  u'customReplyTo': u'',
-  u'messageModerationLevel': u'MODERATE_NONE',
-  u'whoCanContactOwner': u'ALL_IN_DOMAIN_CAN_CONTACT',
-  u'messageDisplayFont': u'DEFAULT_FONT',
-  u'whoCanLeaveGroup': u'ALL_MEMBERS_CAN_LEAVE',
-  u'whoCanAdd': u'ALL_MANAGERS_CAN_ADD',
-  u'whoCanPostMessage': u'ALL_IN_DOMAIN_CAN_POST',
-  u'whoCanTakeTopics': u'NONE',
-  u'name': u'Data Scientists',
-  u'kind': u'groupsSettings#groups',
-  u'whoCanInvite': u'ALL_MANAGERS_CAN_INVITE',
-  u'spamModerationLevel': u'MODERATE',
-  u'whoCanAddReferences': u'ALL_MEMBERS',
-  u'whoCanViewGroup': u'ALL_IN_DOMAIN_CAN_VIEW',
-  u'showInGroupDirectory': u'true',
-  u'maxMessageBytes': 26214400,
-  u'customFooterText': u'',
-  u'allowGoogleCommunication': u'true'}
+  "allowExternalMembers": "True", 
+  "whoCanEnterFreeFormTags": "NONE", 
+  "whoCanMarkDuplicate": "NONE", 
+  "whoCanJoin": "ALL_IN_DOMAIN_CAN_JOIN", 
+  "whoCanModifyTagsAndCategories": "OWNERS_AND_MANAGERS", 
+  "whoCanMarkNoResponseNeeded": "NONE", 
+  "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE", 
+  "primaryLanguage": "en", 
+  "whoCanMarkFavoriteReplyOnOwnTopic": "NONE", 
+  "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW", 
+  "favoriteRepliesOnTop": "false",
+  "whoCanMarkFavoriteReplyOnAnyTopic": "NONE", 
+  "includeCustomFooter": "false",
+  "defaultMessageDenyNotificationText": "",
+  "includeInGlobalAddressList": "True",
+  "archiveOnly": "false",
+  "isArchived": "True",
+  "membersCanPostAsTheGroup": "false",
+  "allowWebPosting": "True",
+  "email": "group_settings@foo.testing",
+  "whoCanAssignTopics": "NONE",
+  "sendMessageDenyNotification": "false",
+  "description": "value used in test case",
+  "whoCanUnassignTopic": "NONE",
+  "replyTo": "REPLY_TO_IGNORE",
+  "customReplyTo": "",
+  "messageModerationLevel": "MODERATE_NONE",
+  "whoCanContactOwner": "ALL_IN_DOMAIN_CAN_CONTACT",
+  "messageDisplayFont": "DEFAULT_FONT",
+  "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",
+  "whoCanAdd": "ALL_MANAGERS_CAN_ADD",
+  "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",
+  "whoCanTakeTopics": "NONE",
+  "name": "Test Name",
+  "kind": "groupsSettings",
+  "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+  "spamModerationLevel": "MODERATE",
+  "whoCanAddReferences": "ALL_MEMBERS",
+  "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",
+  "showInGroupDirectory": "True",
+  "maxMessageBytes": 26214400,
+  "customFooterText": "",
+  "allowGoogleCommunication": "True"
+}
+"""
+
+
+UNAUTHORIZED = """
+{
+ "error": {
+  "errors": [
+   {
+    "domain": "global",
+    "reason": "forbidden",
+    "message": "Not Authorized to access this resource/api"
+   }
+  ],
+  "code": 403,
+  "message": "Not Authorized to access this resource/api"
+ }
+}
 """
