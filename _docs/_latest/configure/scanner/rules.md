@@ -497,7 +497,11 @@ rules:
 * `allowed_ancestors`
   * **Description**: The folder or organization that is allowed as an ancestor of a project.
   * **Valid values**: String, organizations/111 or folder/111.
-  
+
+* `users`
+  * **Description**: * Optional. The users that are allowed access. Omitting this section would mean that the rule 
+  applies to all users in the organization.
+  * **Valid values**: String, user1@example.com.
 
 ## Forwarding rules
 
