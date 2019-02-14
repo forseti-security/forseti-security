@@ -897,7 +897,6 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates: 
-
     **Inventory**
     - Update the cai section to include the new `api_timeout` field and the
     newly fetched asset:
@@ -922,6 +921,18 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                 #   - google.compute.TargetVpnGateway
                 #   - google.compute.VpnTunnel
                 #   - google.pubsub.Subscription
+                # Timeout in seconds to wait for the exportAssets API to return success.
+                # Defaults to 3600 if not set.
+                api_timeout: 3600
+                
+                # If commented out then all currently supported asset types are
+                # exported from Cloud Asset API. The list of default asset types is
+                # in google/cloud/forseti/services/inventory/base/cloudasset.py
+                
+                #asset_types:
+                #   - google.cloud.sql.Instance
+                #   - google.compute.VpnTunnel
+                #   - google.pubsub.Subscriptions
         ``` 
         
     **Notifier** 

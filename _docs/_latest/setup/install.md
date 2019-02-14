@@ -52,7 +52,6 @@ steps below:
       ```
 
   1. Check out the specific version of Forseti you want to install by using a tag like `v2.11.0.`:
-
       ```bash
       # Make sure you are in the forseti-security folder.
       cd forseti-security
