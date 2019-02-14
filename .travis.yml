@@ -21,6 +21,7 @@ script:
 - 'if [[ "$TRAVIS_SECURE_ENV_VARS" = "true" ]]; then bash ./travis/jekyll_build.sh; fi'
 - 'if [[ "$TRAVIS_SECURE_ENV_VARS" != "true" ]]; then bundle exec jekyll build; fi'
 before_deploy:
+- travis_wait 30
 - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv -in client-secrets.json.enc -out client-secrets.json -d
 - mv _www/www/app.yaml _www/
 - cd _www/
