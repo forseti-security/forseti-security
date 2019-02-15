@@ -15,7 +15,7 @@
 """Test data for Group Settings GCP api responses."""
 
 FAKE_EMAIL = 'groups_settings@foo.testing'
-FAKE_DESCRIPTION = "value used in test case"
+FAKE_DESCRIPTION = 'value used in test case'
 
 GET_GROUPS_SETTINGS_RESPONSE = """
 {

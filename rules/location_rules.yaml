@@ -29,16 +29,28 @@
 # naming, we recommend writing rules that can cover both (e.g. eu* instead of
 # europe*).
 
-rules:
- - name: All buckets in organization must not be in EU.
-   mode: blacklist
-   resource:
-     - type: organization
-       resource_ids:
-         - 660570133860
-   applies_to:
-     - type: 'bucket'
-       resource_ids:
-        - '*'
-   locations:
-     - '*eu*'
+# rules:
+#   - name: All buckets in organization must be in the US.
+#     mode: whitelist
+#     resource:
+#       - type: organization
+#         resource_ids:
+#           - {ORGANIZATION_ID}
+#     applies_to:
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
+#     locations:
+#       - 'us*'
+#  - name: All buckets in organization must not be in EU.
+#     mode: blacklist
+#     resource:
+#       - type: organization
+#         resource_ids:
+#           - {ORGANIZATION_ID}
+#     applies_to:
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
+#     locations:
+#       - 'eu*'

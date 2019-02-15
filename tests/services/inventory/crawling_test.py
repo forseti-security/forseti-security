@@ -197,6 +197,7 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = GCP_API_RESOURCES
+        
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_folder(self):

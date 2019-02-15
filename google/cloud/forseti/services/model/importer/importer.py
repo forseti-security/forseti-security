@@ -175,7 +175,7 @@ class InventoryImporter(object):
             'dns_policy',
             'firewall',
             'forwardingrule',
-            'gsuite_groups_settings'
+            'gsuite_groups_settings',
             'image',
             'instance',
             'instancegroup',
