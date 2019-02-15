@@ -19,7 +19,7 @@ trap 'return_code=$?' ERR
 # TODO(drmorris): change branch from "stable" to "master" when after release
 ./scripts/generate_sphinx_docs.sh "stable"
 
-JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
+JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build -V
 
 bundle exec htmlproofer --check-img-http --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
