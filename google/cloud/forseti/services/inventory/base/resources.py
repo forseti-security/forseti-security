@@ -2017,7 +2017,7 @@ class GsuiteGroupsSettingsIterator(ResourceIterator):
         """
         gsuite = self.client
         try:
-            data = gsuite.iter_gsuite_groups_settings(self.resource['email'])
+            data = gsuite.fetch_gsuite_groups_settings(self.resource['email'])
             yield FACTORIES['gsuite_groups_settings'].create_new(data)
         except ResourceNotSupported as e:
             # API client doesn't support this resource, ignore.

@@ -576,7 +576,7 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_gsuite_groups_settings(self, group_id):
+    def fetch_gsuite_groups_settings(self, group_id):
         """Iterate Gsuite groups settings from GCP API.
 
         Args:
@@ -1955,7 +1955,7 @@ class ApiClientImpl(ApiClient):
             yield group
 
     @create_lazy('settings', _create_settings)
-    def iter_gsuite_groups_settings(self, group_id):
+    def fetch_gsuite_groups_settings(self, group_id):
         """Iterate Gsuite groups settings from GCP API.
 
         Args:
