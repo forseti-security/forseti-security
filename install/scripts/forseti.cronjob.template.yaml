@@ -11,7 +11,7 @@ spec:
           volumes:
             - name: google-cloud-key
               secret:
-                secretName: credentials
+                secretName: server-credentials
           containers:
             - name: forseti
               image: ${FORSETI_IMAGE}
