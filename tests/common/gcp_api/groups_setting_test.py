@@ -24,7 +24,7 @@ from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import group_settings
 
-class GroupsettingTest(unittest_utils.ForsetiTestCase):
+class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
     """Test the Pub/Sub API Client."""
 
     @classmethod
@@ -36,7 +36,7 @@ class GroupsettingTest(unittest_utils.ForsetiTestCase):
         fake_global_configs = {
         	'domain_super_admin_email': 'group_settings@foo.testing',
             'groupssettings': {'max_calls': 14, 'period': 1.0}}
-        cls.group_settings_api_client = group_settings.GroupSettingsClient(fake_global_configs)
+        cls.group_settings_api_client = group_settings.GroupsSettingsClient(fake_global_configs)
         cls.group_settings_api_client.repository._use_cached_http = True
 
     @mock.patch.object(
@@ -44,7 +44,7 @@ class GroupsettingTest(unittest_utils.ForsetiTestCase):
         return_value=mock.Mock(spec_set=credentials.Credentials))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
-        group_settings_api_client = group_settings.GroupSettingsClient(global_configs={})
+        group_settings_api_client = group_settings.GroupsSettingsClient(global_configs={})
         self.assertEqual(None, group_settings_api_client.repository._rate_limiter)
 
     def test_get_group_settings(self):

@@ -487,7 +487,7 @@ def _mock_groups_settings():
         return results.AD_GET_GROUPS_SETTINGS[group_id]
 
     groups_settings_patcher = mock.patch(
-        MODULE_PATH + 'groups_settings.GroupSettingsClient', spec=True)
+        MODULE_PATH + 'groups_settings.GroupsSettingsClient', spec=True)
     mock_groups_settings = groups_settings_patcher.start().return_value
     mock_groups_settings.get_groups_settings.side_effect = _mock_groups_settings_get_groups_settings
 
