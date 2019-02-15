@@ -14,6 +14,8 @@
 
 """Scanner for the KMS rules engine."""
 
+import json
+
 from google.cloud.forseti.common.gcp_type import crypto_key
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import kms_rules_engine
@@ -114,18 +116,21 @@ class KMSScanner(base_scanner.BaseScanner):
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             for key in data_access.scanner_iter(session, 'kms_cryptokey'):
+                key_data_json = json.loads(key.data)
+                state = key_data_json.get('primary').get('state')
                 if not key.parent_type_name.startswith('kms_keyring'):
                     raise ValueError(
                         'Unexpected type of parent resource type: '
                         'got %s, want kms_keyring' % key.parent_type_name
                     )
 
-                keys.append(crypto_key.CryptoKey.from_json(
-                    key.name,
-                    key.full_name,
-                    key.parent_type_name,
-                    key.type,
-                    key.data))
+                if state == 'ENABLED':
+                    keys.append(crypto_key.CryptoKey.from_json(
+                        key.name,
+                        key.full_name,
+                        key.parent_type_name,
+                        key.type,
+                        key.data))
 
         return keys
 
