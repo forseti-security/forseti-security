@@ -28,6 +28,9 @@ organization Cloud IAM policy.
 The installer automatically determines setup information, generates a deployment
 template, and creates a Forseti deployment.
 
+Starting from Forseti v2.11.0, users will be able to install Forseti using Terraform.
+Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google).
+
 ### Activate Google Cloud Shell
 
 It's best to use
