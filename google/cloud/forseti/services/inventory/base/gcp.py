@@ -1966,6 +1966,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.settings.get_groups_settings(group_id)
 
+    @create_lazy('ad', _create_ad)
     def iter_gsuite_users(self, gsuite_id):
         """Iterate Gsuite users from GCP API.
 
