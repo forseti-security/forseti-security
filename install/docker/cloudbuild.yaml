@@ -41,8 +41,6 @@ steps:
   - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
   waitFor: ['-']
-  #  waitFor: ['pull-base-for-cache']
-
   id: base
 
 - name: 'gcr.io/cloud-builders/docker'
