@@ -75,7 +75,6 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         res = self.rule_book is None or force_rebuild
         if res:
             self.build_rule_book()
-
         violations = self.rule_book.find_violations(key)
 
         return violations
@@ -384,8 +383,10 @@ class Rule(object):
         """
         violations = []
         creation_time = key.primary_version.get('createTime')
+        state = key.primary_version.get('state')
+        if not state == 'ENABLED':
+            return violations
         scan_time = date_time.get_utc_now_datetime()
-
         if self.rule['mode'] == BLACKLIST:
             if not self.is_key_rotated(creation_time, scan_time):
                 violation_reason = ('Key %s was not rotated since %s.' %
