@@ -82,6 +82,9 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
 
             crypto_key.data = fake_kms_scanner_data.NON_ROTATED_CRYPTO_KEY_DATA
 
+            crypto_key.data = (
+                fake_kms_scanner_data.NON_ROTATED_CRYPTO_KEY_STATE_DATA)
+
             session.commit()
 
     def setUp(self):

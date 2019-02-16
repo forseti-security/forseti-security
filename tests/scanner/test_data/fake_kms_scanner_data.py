@@ -51,6 +51,24 @@ NON_ROTATED_CRYPTO_KEY_DATA = ('{"createTime":"2019-01-22T23:30:18.939244464Z",'
                  '"algorithm":"GOOGLE_SYMMETRIC_ENCRYPTION",'
                  '"protectionLevel":"SOFTWARE"}}')
 
+NON_ROTATED_CRYPTO_KEY_STATE_DATA = ('{"createTime":"2019-01-22T23:30:18.939244464Z",'
+                 '"name":"projects/red2k18-224817/locations/global/keyRings/'
+                 'red_key_ring/cryptoKeys/red_key1",'
+                 '"nextRotationTime":"2018-07-21T07:00:00Z",'
+                 '"primary":{ '
+                 '"algorithm":"GOOGLE_SYMMETRIC_ENCRYPTION",'
+                 '"createTime":"2018-01-22T23:30:18.939244464Z",'
+                 '"generateTie":"2019-01-22T23:30:18.939244464Z",'
+                 '"name":"projects/red2k18-224817/locations/global/keyRings/'
+                 'red_key_ring/cryptoKeys/red_key1/cryptoKeyVersions/1",'
+                 '"protectionLevel":"SOFTWARE",'
+                 '"state":"DESTROYED"},'
+                 '"purpose":"ENCRYPT_DECRYPT",'
+                 '"rotationPeriod":"15552000s",'
+                 '"versionTemplate":{'
+                 '"algorithm":"GOOGLE_SYMMETRIC_ENCRYPTION",'
+                 '"protectionLevel":"SOFTWARE"}}')
+
 KEY_RING_DATA = ('{"createTime":"2019-01-22T23:29:46.507107968Z",'
                  '"name":"projects/red2k18-224817/locations/global/keyRings/'
                  'red_key_ring",}')
