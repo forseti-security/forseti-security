@@ -98,6 +98,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
+            state = violation.primary_version.get('state')
+            self.assertEquals(state, 'ENABLED')
             self.assertEquals(violation.resource_type, 'kms_cryptokey')
             self.assertEquals(violation.violation_type, VIOLATION_TYPE)
         self.assertEquals(1, mock_output_results.call_count)
