@@ -134,6 +134,7 @@ class ResourceFactory(object):
             Resource: Resource instance.
         """
         attrs = self.attributes
+
         cls = attrs['cls']
         return cls(data, root, **attrs)
 
@@ -300,7 +301,6 @@ class Resource(object):
                 for resource in yielder.iter():
                     res = resource
                     new_stack = stack + [self]
-
                     # Parallelization for resource subtrees.
                     if res.should_dispatch():
                         callback = partial(res.try_accept, visitor, new_stack)
@@ -492,7 +492,6 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
                 return size_t_hash(self[key_field])
 
             return self[key_field]
-
     return ResourceSubclass
 
 
@@ -1304,6 +1303,7 @@ class GsuiteUser(resource_class_factory('gsuite_user', 'id')):
 
 class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
     """The Resource implementation for GSuite User."""
+
 
     def should_dispatch(self):
         """GSuite Groups should always dispatch to another thread.

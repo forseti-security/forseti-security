@@ -1964,7 +1964,9 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of groups settings.
         """
-        return self.settings.get_groups_settings(group_id)
+        result = self.settings.get_groups_settings(group_id)
+        result['type'] = "SETTINGS" # needed for importer.py
+        return result
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_users(self, gsuite_id):

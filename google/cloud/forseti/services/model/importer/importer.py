@@ -175,7 +175,6 @@ class InventoryImporter(object):
             'dns_policy',
             'firewall',
             'forwardingrule',
-            'gsuite_groups_settings',
             'image',
             'instance',
             'instancegroup',
@@ -206,6 +205,7 @@ class InventoryImporter(object):
         member_type_list = [
             'gsuite_user_member',
             'gsuite_group_member',
+            'gsuite_groups_settings',
         ]
 
         autocommit = self.session.autocommit
@@ -287,7 +287,7 @@ class InventoryImporter(object):
                     self.session,
                     inventory.iter(member_type_list, with_parent=True),
                     self._store_gsuite_membership,
-                    post_action=self._store_gsuite_membership_post
+                    post_action=self._store_gsuite_membership_post,
                 )
 
                 self.dao.denorm_group_in_group(self.session)
@@ -563,7 +563,6 @@ class InventoryImporter(object):
             'firewall': self._convert_computeengine_resource,
             'folder': self._convert_folder,
             'forwardingrule': self._convert_computeengine_resource,
-            'gsuite_groups_settings': self._convert_groups_settings_resource,
             'image': self._convert_computeengine_resource,
             'instance': self._convert_computeengine_resource,
             'instancegroup': self._convert_computeengine_resource,
@@ -707,14 +706,6 @@ class InventoryImporter(object):
 
     def _convert_gae_resource(self, resource):
         """Convert an AppEngine resource to a database object.
-
-        Args:
-            resource (dict): A resource to store.
-        """
-        self._convert_resource(resource, cached=True)
-
-    def _convert_groups_settings_resource(self, resource):
-        """Convert a Groups Settings resource to a database object.
 
         Args:
             resource (dict): A resource to store.

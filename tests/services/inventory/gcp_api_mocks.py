@@ -483,8 +483,8 @@ def _mock_gcs():
 def _mock_groups_settings():
     """Groups Settings client."""
 
-    def _mock_groups_settings_get_groups_settings(group_id):
-        return results.AD_GET_GROUPS_SETTINGS[group_id]
+    def _mock_groups_settings_get_groups_settings(testing_param=None):
+        return results.AD_GET_GROUPS_SETTINGS
 
     groups_settings_patcher = mock.patch(
         MODULE_PATH + 'groups_settings.GroupsSettingsClient', spec=True)

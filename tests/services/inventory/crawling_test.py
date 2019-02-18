@@ -52,7 +52,7 @@ GCP_API_RESOURCES = {
     'folder': {'iam_policy': 3, 'resource': 3},
     'forwardingrule': {'resource': 1},
     'gsuite_group': {'resource': 4},
-    'gsuite_group_settings': {'resource': 1},
+    'gsuite_groups_settings': {'resource': 1},
     'gsuite_group_member': {'resource': 1},
     'gsuite_user': {'resource': 4},
     'gsuite_user_member': {'resource': 3},
@@ -128,6 +128,9 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
         for item in storage.mem.values():
+            # print("printing class")
+            # print(item.type())
+
             item_type = item.type()
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
@@ -150,7 +153,6 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
             if item.get_kubernetes_service_config():
                 item_counts.setdefault('service_config', 0)
                 item_counts['service_config'] += 1
-
         return result_counts
 
     def _run_crawler(self, config, has_org_access=True, session=None):
@@ -224,7 +226,6 @@ class CrawlerTest(CrawlerBase):
             'role': {'resource': 1},
             'sink': {'resource': 1},
         }
-
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_project(self):
@@ -555,16 +556,16 @@ class CloudAssetCrawlerTest(CrawlerBase):
                     self.assertEqual(0,
                                      progresser.errors,
                                      'No errors should have occurred')
-
                     result_counts = self._get_resource_counts_from_storage(
                         storage)
+
 
         expected_counts = {
             'crm_org_policy': {'resource': 5},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
-            'gsuite_group_settings': {'resource': 1},
+            'gsuite_groups_settings': {'resource': 1},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
             'lien': {'resource': 1},
