@@ -36,6 +36,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     resource_root_id = None
     access_target = None
     target_id = None
+    target_project_id = None
     user_can_grant_roles = True
 
     firewall_rules_to_be_deleted = ['default-allow-icmp',
@@ -217,8 +218,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        organization_id = self.resource_root_id.split('/')[-1]
-        domain = gcloud.get_domain_from_organization_id(organization_id)
+        if self.target_project_id:
+            organization_id = gcloud.get_organization_id_from_project_id(self.target_project_id)
+            domain = gcloud.get_domain_from_organization_id(organization_id)
+        else:
+            organization_id = self.resource_root_id.split('/')[-1]
+            domain = gcloud.get_domain_from_organization_id(organization_id)
+
         return {
             'ORGANIZATION_ID': organization_id,
             'DOMAIN': domain
@@ -232,8 +238,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         utils.print_banner('Forseti Installation Configuration')
 
-        self.access_target = constants.RESOURCE_TYPES[0]
-        self.target_id = self.organization_id
+        if self.target_project_id:
+            self.access_target = constants.RESOURCE_TYPES[2]
+            self.target_id = self.target_project_id
+        else:
+            self.access_target = constants.RESOURCE_TYPES[0]
+            self.target_id = self.organization_id
 
         while not self.target_id:
             if self.setup_explain:

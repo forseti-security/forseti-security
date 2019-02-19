@@ -33,6 +33,7 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
+        self.target_project_id = kwargs.get('target_project_id')
         self.service_account_key_file = kwargs.get('service_account_key_file')
         self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
         self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'

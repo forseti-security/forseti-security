@@ -848,6 +848,30 @@ def check_vm_init_status(vm_name, zone):
     return False
 
 
+def get_organization_id_from_project_id(project_id):
+    """Get organization id from project id.
+
+    Args:
+        project_id (str): Id of the project.
+
+    Returns:
+        str: Organization id of the project.
+    """
+
+    # ejg@ For now this assumes no folder nesting
+    return_code, out, err = utils.run_command(
+        ['gcloud', 'projects', 'describe', project_id,
+         '--format=json'])
+
+    if return_code:
+        print(err)
+        print('Unable to retrieve organization id from the project id.')
+        return ''
+
+    org_info = json.loads(out)
+
+    return org_info.get('parent', {'x': None}).get('id')
+
 def get_domain_from_organization_id(organization_id):
     """Get domain from organization id.
 
