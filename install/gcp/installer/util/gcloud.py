@@ -848,7 +848,7 @@ def check_vm_init_status(vm_name, zone):
     return False
 
 
-def get_organization_id_from_project_id(project_id):
+def get_org_id_from_project_id(project_id):
     """Get organization id from project id.
 
     Args:

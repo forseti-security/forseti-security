@@ -219,7 +219,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of default values.
         """
         if self.target_project_id:
-            organization_id = gcloud.get_organization_id_from_project_id(self.target_project_id)
+            organization_id = gcloud.get_org_id_from_project_id(
+                self.target_project_id)
             domain = gcloud.get_domain_from_organization_id(organization_id)
         else:
             organization_id = self.resource_root_id.split('/')[-1]

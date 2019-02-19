@@ -70,7 +70,8 @@ def run():
                         help='Type of the installation, '
                              'either client or server')
     parser.add_argument('--target-project-id',
-                         help='The target project id instead of the organization id.')
+                        help='The target project id, '
+                             'instead of the organization id.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
