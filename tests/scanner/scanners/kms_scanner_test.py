@@ -41,6 +41,8 @@ violation but not the other one.
 
 KEY_RING_ID = '4063867491605246570'
 CRYPTO_KEY_ID = '12873861500163377322'
+CRYPTO_KEY_ID_1 = '12873861500163377324'
+CRYPTO_KEY_ID_2 = '12873861500163377326'
 VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 
 TIME_NOW = datetime.utcnow()
@@ -82,6 +84,17 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
 
             crypto_key.data = fake_kms_scanner_data.NON_ROTATED_CRYPTO_KEY_DATA
 
+            crypto_key_1 = data_access.add_resource(
+                session, 'kms_cryptokey/%s' % CRYPTO_KEY_ID_1, key_ring)
+
+            crypto_key_1.data = fake_kms_scanner_data.ROTATED_CRYPTO_KEY_DATA
+
+            crypto_key_2 = data_access.add_resource(
+                session, 'kms_cryptokey/%s' % CRYPTO_KEY_ID_2, key_ring)
+
+            crypto_key_2.data = (fake_kms_scanner_data.
+                                 NON_ROTATED_CRYPTO_KEY_DESTROYED_STATE_DATA)
+
             session.commit()
 
     def setUp(self):
@@ -98,6 +111,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
+            state = violation.primary_version.get('state')
+            self.assertEquals(state, 'ENABLED')
             self.assertEquals(violation.resource_type, 'kms_cryptokey')
             self.assertEquals(violation.violation_type, VIOLATION_TYPE)
         self.assertEquals(1, mock_output_results.call_count)
