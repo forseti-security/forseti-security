@@ -76,7 +76,7 @@ class GroupsSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def groups_settings(self):
-        """Returns an _AdminDirectoryGroupsSettingsRepository instance."""
+        """Returns a _GroupsSettingsRepository instance."""
         if not self._groups_settings:
             self._groups_settings = self._init_repository(
                 _GroupsSettingsRepository)

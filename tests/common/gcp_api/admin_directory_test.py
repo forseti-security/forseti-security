@@ -26,6 +26,7 @@ from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import admin_directory as admin
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 
+
 class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
     """Test the GSuite Admin Directory client."""
 

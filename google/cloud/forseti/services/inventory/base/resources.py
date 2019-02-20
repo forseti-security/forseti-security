@@ -134,7 +134,6 @@ class ResourceFactory(object):
             Resource: Resource instance.
         """
         attrs = self.attributes
-
         cls = attrs['cls']
         return cls(data, root, **attrs)
 
@@ -1303,7 +1302,6 @@ class GsuiteUser(resource_class_factory('gsuite_user', 'id')):
 
 class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
     """The Resource implementation for GSuite User."""
-
 
     def should_dispatch(self):
         """GSuite Groups should always dispatch to another thread.

@@ -128,8 +128,6 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
         for item in storage.mem.values():
-            # print("printing class")
-            # print(item.type())
 
             item_type = item.type()
             item_counts = result_counts.setdefault(
@@ -199,7 +197,6 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = GCP_API_RESOURCES
-        
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_folder(self):
@@ -558,7 +555,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                      'No errors should have occurred')
                     result_counts = self._get_resource_counts_from_storage(
                         storage)
-
 
         expected_counts = {
             'crm_org_policy': {'resource': 5},

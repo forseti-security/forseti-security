@@ -25,7 +25,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import groups_settings
 
 class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
-    """Test the Pub/Sub API Client."""
+    """Test the GroupsSettings API Client."""
 
     @classmethod
     @mock.patch.object(
@@ -48,7 +48,7 @@ class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
         self.assertEqual(None, groups_settings_api_client.repository._rate_limiter)
 
     def test_get_groups_settings(self):
-	    """Test get Pub/Sub topics."""    
+	    """Test get groups settings."""    
 	    mock_response = fake_groups_settings.GET_GROUPS_SETTINGS_RESPONSE
 	    http_mocks.mock_http_response(mock_response)
 
@@ -57,7 +57,7 @@ class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
 	    self.assertEquals(results['description'] , fake_groups_settings.FAKE_DESCRIPTION)
 
     def test_get_groups_settings_raises(self):
-        """Test get Pub/Sub topics error if project does not exist."""
+        """Test get groups settings error if group does not exist."""
         http_mocks.mock_http_response(fake_groups_settings.UNAUTHORIZED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):

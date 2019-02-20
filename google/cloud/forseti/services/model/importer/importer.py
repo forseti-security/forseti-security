@@ -290,14 +290,13 @@ class InventoryImporter(object):
                     self.session,
                     inventory.iter(member_type_list, with_parent=True),
                     self._store_gsuite_membership,
-                    post_action=self._store_gsuite_membership_post,
+                    post_action=self._store_gsuite_membership_post
                 )
 
                 self.model_action_wrapper(
                     self.session,
                     inventory.iter(groups_settings_list, with_parent=True),
-                    self._store_groups_settings,
-                    post_action=dummy_method,
+                    self._store_groups_settings
                 )
 
                 self.dao.denorm_group_in_group(self.session)
@@ -352,11 +351,8 @@ class InventoryImporter(object):
             int: Number of item iterated.
         """
         LOGGER.debug('Performing model action: %s', action)
-        if post_action == dummy_method:
-            print('attempting store group settings')
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
-            print("inventory data is {}".format(inventory_data))
             if isinstance(inventory_data, tuple):
                 action(*inventory_data)
             else:
@@ -1110,6 +1106,3 @@ def by_source(source):
         'INVENTORY': InventoryImporter,
         'EMPTY': EmptyImporter,
     }[source.upper()]
-
-def dummy_method():
-    print('delete')

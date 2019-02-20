@@ -95,7 +95,6 @@ class Crawler(crawler.Crawler):
             QueueProgresser: The filled progresser described in inventory
         """
 
-        print(resource)
         resource.accept(self)
         return self.config.progresser
 
@@ -223,7 +222,6 @@ class ParallelCrawler(Crawler):
 
         Returns:
             QueueProgresser: The filled progresser described in inventory
-
         """
         try:
             self._start_workers()
