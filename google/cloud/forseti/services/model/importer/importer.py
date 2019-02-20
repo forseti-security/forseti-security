@@ -204,7 +204,10 @@ class InventoryImporter(object):
 
         member_type_list = [
             'gsuite_user_member',
-            'gsuite_group_member',
+            'gsuite_group_member', 
+        ]
+
+        groups_settings_list = [
             'gsuite_groups_settings',
         ]
 
@@ -290,6 +293,13 @@ class InventoryImporter(object):
                     post_action=self._store_gsuite_membership_post,
                 )
 
+                self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(groups_settings_list, with_parent=True),
+                    self._store_groups_settings,
+                    post_action=dummy_method,
+                )
+
                 self.dao.denorm_group_in_group(self.session)
 
                 self.model_action_wrapper(
@@ -342,9 +352,11 @@ class InventoryImporter(object):
             int: Number of item iterated.
         """
         LOGGER.debug('Performing model action: %s', action)
-
+        if post_action == dummy_method:
+            print('attempting store group settings')
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
+            print("inventory data is {}".format(inventory_data))
             if isinstance(inventory_data, tuple):
                 action(*inventory_data)
             else:
@@ -433,19 +445,6 @@ class InventoryImporter(object):
             return '{}/{}'.format(data['type'].lower(),
                                   data['email'].lower())
 
-        def group_name(parent):
-            """Create the type:name representation for a group.
-
-            Args:
-                parent (object): group to create representation from.
-
-            Returns:
-                str: group:name representation of the group.
-            """
-
-            data = parent.get_resource_data()
-            return 'group/{}'.format(data['email'].lower())
-
         # Gsuite group members don't have to be part
         # of this domain, so we might see them for
         # the first time here.
@@ -458,7 +457,7 @@ class InventoryImporter(object):
                 member_name=name)
             self.session.add(self.member_cache[member])
 
-        parent_group = group_name(parent)
+        parent_group = self.group_name(parent)
 
         if parent_group not in self.membership_map:
             self.membership_map[parent_group] = set()
@@ -466,7 +465,29 @@ class InventoryImporter(object):
         if member not in self.membership_map[parent_group]:
             self.membership_map[parent_group].add(member)
             self.membership_items.append(
-                dict(group_name=group_name(parent), members_name=member))
+                dict(group_name=self.group_name(parent), members_name=member))
+
+
+    def group_name(self, group):
+        """Create the type:name representation for a group.
+
+        Args:
+            group (object): group to create representation from.
+
+        Returns:
+            str: group:name representation of the group.
+        """
+
+        data = group.get_resource_data()
+        return 'group/{}'.format(data['email'].lower())
+
+    def _store_groups_settings(self, settings, group):
+        settings_dict = settings.get_resource_data()
+        group_name = self.group_name(group)
+        settings_row = dict(group_name=group_name, settings=json.dumps(settings_dict))
+        self.session.flush()
+        stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
+        self.session.execute(stmt)
 
     def _store_iam_policy(self, policy):
         """Store the iam policy of the resource.
@@ -1089,3 +1110,6 @@ def by_source(source):
         'INVENTORY': InventoryImporter,
         'EMPTY': EmptyImporter,
     }[source.upper()]
+
+def dummy_method():
+    print('delete')
