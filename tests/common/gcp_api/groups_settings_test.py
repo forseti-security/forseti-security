@@ -19,49 +19,49 @@ import google.auth
 from google.oauth2 import credentials
 
 from tests import unittest_utils
-from tests.common.gcp_api.test_data import fake_group_settings_responses as fake_group_settings
+from tests.common.gcp_api.test_data import fake_groups_settings_responses as fake_groups_settings
 from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.gcp_api import group_settings
+from google.cloud.forseti.common.gcp_api import groups_settings
 
 class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
     """Test the Pub/Sub API Client."""
 
     @classmethod
     @mock.patch.object(
-        group_settings.api_helpers, 'get_delegated_credential',
+        groups_settings.api_helpers, 'get_delegated_credential',
         return_value=(mock.Mock(spec_set=credentials.Credentials)))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-        	'domain_super_admin_email': 'group_settings@foo.testing',
+        	'domain_super_admin_email': 'groups_settings@foo.testing',
             'groupssettings': {'max_calls': 14, 'period': 1.0}}
-        cls.group_settings_api_client = group_settings.GroupsSettingsClient(fake_global_configs)
-        cls.group_settings_api_client.repository._use_cached_http = True
+        cls.groups_settings_api_client = groups_settings.GroupsSettingsClient(fake_global_configs)
+        cls.groups_settings_api_client.repository._use_cached_http = True
 
     @mock.patch.object(
-        group_settings.api_helpers, 'get_delegated_credential',
+        groups_settings.api_helpers, 'get_delegated_credential',
         return_value=mock.Mock(spec_set=credentials.Credentials))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
-        group_settings_api_client = group_settings.GroupsSettingsClient(global_configs={})
-        self.assertEqual(None, group_settings_api_client.repository._rate_limiter)
+        groups_settings_api_client = groups_settings.GroupsSettingsClient(global_configs={})
+        self.assertEqual(None, groups_settings_api_client.repository._rate_limiter)
 
-    def test_get_group_settings(self):
+    def test_get_groups_settings(self):
 	    """Test get Pub/Sub topics."""    
-	    mock_response = fake_group_settings.GET_GROUP_SETTINGS_RESPONSE
+	    mock_response = fake_groups_settings.GET_GROUPS_SETTINGS_RESPONSE
 	    http_mocks.mock_http_response(mock_response)
 
-	    results = self.group_settings_api_client.get_group_settings(
-	        fake_group_settings.FAKE_EMAIL)
-	    self.assertEquals(results['description'] , fake_group_settings.FAKE_DESCRIPTION)
+	    results = self.groups_settings_api_client.get_groups_settings(
+	        fake_groups_settings.FAKE_EMAIL)
+	    self.assertEquals(results['description'] , fake_groups_settings.FAKE_DESCRIPTION)
 
-    def test_get_group_settings_raises(self):
+    def test_get_groups_settings_raises(self):
         """Test get Pub/Sub topics error if project does not exist."""
-        http_mocks.mock_http_response(fake_group_settings.UNAUTHORIZED, '403')
+        http_mocks.mock_http_response(fake_groups_settings.UNAUTHORIZED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.group_settings_api_client.get_group_settings(fake_group_settings.FAKE_EMAIL)
+            self.groups_settings_api_client.get_groups_settings(fake_groups_settings.FAKE_EMAIL)
 
 if __name__ == '__main__':
     unittest.main()
