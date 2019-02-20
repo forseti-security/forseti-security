@@ -68,7 +68,7 @@ class KMSScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation.violation_reason,
+                'violation_data': violation.violation_data,
                 'resource_data': violation.resource_data
             }
 

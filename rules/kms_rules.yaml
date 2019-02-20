@@ -48,6 +48,11 @@ rules:
         resource_ids:
           - '*'
     key:
-      - rotation_period: 100 #days
-
-
+       - rotation_period: 100 #days
+       - algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION
+         - XYZ
+         protection_level: HSM
+         purpose: symmetric
+         state:
+         - ENABLED
