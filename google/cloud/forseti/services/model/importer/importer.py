@@ -478,6 +478,13 @@ class InventoryImporter(object):
         return 'group/{}'.format(data['email'].lower())
 
     def _store_groups_settings(self, settings, group):
+        """Store gsuite settings.
+
+        Args:
+            settings (object): settings resource object.
+            group (object): group resource object.
+        """
+
         settings_dict = settings.get_resource_data()
         group_name = self.group_name(group)
         settings_row = dict(group_name=group_name, settings=json.dumps(settings_dict))
