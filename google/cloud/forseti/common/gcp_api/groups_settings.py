@@ -36,7 +36,7 @@ GSUITE_AUTH_FAILURE_MESSAGE = (
     'failure. Please make sure your forseti_server_config.yaml '
     'file contains the most updated information and enable G '
     'Suite Groups Collection if you haven\'t done so. Instructions'
-    ' on how to enable: https://forsetisecurity.org/docs/latest/'
+    'on how to enable: https://forsetisecurity.org/docs/latest/'
     'configure/inventory/gsuite.html')
 
 
@@ -84,8 +84,6 @@ class GroupsSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
-
-
 class _GroupsSettingsRepository(
         repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
@@ -99,6 +97,7 @@ class _GroupsSettingsRepository(
         """
         super(_GroupsSettingsRepository, self).__init__(
             key_field='groupUniqueId', component='groups', **kwargs)
+
 
 class GroupsSettingsClient(object):
     """GSuite Groups Settings API Client."""
@@ -123,14 +122,14 @@ class GroupsSettingsClient(object):
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def get_groups_settings(self, group_id):
+    def get_groups_settings(self, group_email):
         """Get the group settings for a given group.
 
 
         https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups/get
 
         Args:
-            group_id (str): The gsuite group id to scope the request to.
+            group_email (str): The gsuite group email to scope the request to.
 
         Returns:
             list: A list of group settings objects returned from the API.
@@ -140,10 +139,10 @@ class GroupsSettingsClient(object):
             RefreshError: If the authentication fails.
         """
         try:
-            result = self.repository.groups_settings.get(group_id)
+            result = self.repository.groups_settings.get(group_email)
             LOGGER.debug('Getting group settings information for group id = %s,'
                          ' result = %s',
-                         group_id, result)
+                         group_email, result)
             return result
         except RefreshError as e:
             # Authentication failed, log before raise.
@@ -151,4 +150,4 @@ class GroupsSettingsClient(object):
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
-                                 
+        
