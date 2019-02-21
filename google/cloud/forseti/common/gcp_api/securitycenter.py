@@ -76,6 +76,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
 
 class _SecurityCenterOrganizationsFindingsRepository(
         repository_mixins.CreateQueryMixin,
+        repository_mixins.PatchResourceMixin,
         _base_repository.GCPRepository):
     """Implementation of CSCC Organizations Findings repository."""
 
@@ -98,7 +99,7 @@ class _SecurityCenterOrganizationsFindingsRepository(
         # pylint: enable=protected-access
 
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-            component=component, **kwargs)
+            key_field='name', component=component, **kwargs)
 
 
 class SecurityCenterClient(object):
@@ -139,12 +140,9 @@ class SecurityCenterClient(object):
             # beta api
             try:
                 LOGGER.debug('Creating finding with beta api.')
-                response = self.repository.findings.create(
-                    arguments={
-                        'body': finding,
-                        'parent': source_id,
-                        'findingId': finding_id
-                    }
+                response = self.repository.findings.patch(
+                    '{}/findings/{}'.format(source_id, finding_id),
+                    finding
                 )
                 LOGGER.debug('Created finding response with CSCC beta api: %s',
                              response)

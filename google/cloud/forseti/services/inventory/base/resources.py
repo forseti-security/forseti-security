@@ -1446,7 +1446,8 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
         """
         try:
             # Full projection returns GCS policy with the resource.
-            return self['acl']
+            if self['acl']:
+                return self['acl']
         except KeyError:
             pass
 
@@ -1454,7 +1455,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             return client.fetch_storage_bucket_acls(
                 self.key(),
                 self.parent()['projectId'],
-                self['projectNumber'])
+                self.parent()['projectNumber'])
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Could not get bucket Access Control policy: %s', e)
             self.add_warning(e)
