@@ -15,5 +15,3 @@ Lunch: Give your feedback to the Forseti team over an extended lunch.
 Afternoon: Explore new and exciting features, and hear from customers about how they use Forseti in their organization
 
 Forseti Community Day is free to attend - [sign up now](https://docs.google.com/forms/d/e/1FAIpQLSc2QVryJI9HQ2K0nzrbt-dDMCi83UmYYAnVNl9Y_ZUDzZ5EAQ/viewform). We can’t wait to see you there! 
-
-Check out a more detailed agenda below. More details to follow.
