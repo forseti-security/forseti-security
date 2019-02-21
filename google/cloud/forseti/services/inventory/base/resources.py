@@ -300,6 +300,7 @@ class Resource(object):
                 for resource in yielder.iter():
                     res = resource
                     new_stack = stack + [self]
+                    
                     # Parallelization for resource subtrees.
                     if res.should_dispatch():
                         callback = partial(res.try_accept, visitor, new_stack)
@@ -491,6 +492,7 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
                 return size_t_hash(self[key_field])
 
             return self[key_field]
+
     return ResourceSubclass
 
 

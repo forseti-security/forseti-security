@@ -351,7 +351,6 @@ class InventoryImporter(object):
             int: Number of item iterated.
         """
         LOGGER.debug('Performing model action: %s', action)
-        
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
             if isinstance(inventory_data, tuple):

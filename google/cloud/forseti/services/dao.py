@@ -465,6 +465,7 @@ def define_model(model_name, dbengine, model_seed):
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
         """Data model facade, implement main API against database."""
+        
         TBL_GROUP_IN_GROUP = GroupInGroup
         TBL_GROUPS_SETTINGS = groups_settings
         TBL_BINDING = Binding
