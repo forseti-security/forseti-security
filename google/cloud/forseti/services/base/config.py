@@ -201,7 +201,7 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             bool: True if using a composite root, else False.
         """
-        return bool(not self.root_resource_id)
+        return not self.root_resource_id
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -386,7 +386,7 @@ class ServiceConfig(AbstractServiceConfig):
             forseti_inventory_config = forseti_config.get('inventory', {})
             try:
                 inventory_config = InventoryConfig(
-                    forseti_inventory_config.get('root_resource_id', ''),
+                    forseti_inventory_config.get('root_resource_id'),
                     forseti_inventory_config.get('domain_super_admin_email',
                                                  ''),
                     forseti_inventory_config.get('api_quota', {}),

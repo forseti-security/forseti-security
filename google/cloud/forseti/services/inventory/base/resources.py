@@ -506,7 +506,7 @@ class CompositeRootResource(resource_class_factory('composite_root', None)):
         """Creates a new composite root.
 
         Args:
-            composite_root_resources (list): The list of resources to use crawl
+            composite_root_resources (list): The list of resources to crawl
                 using a composite root.
 
         Returns:

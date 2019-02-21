@@ -291,7 +291,7 @@ def _api_client_factory(storage, config, parallel):
 
     Args:
         storage (object): Storage implementation to use.
-        config (object): Inventory configuration on server
+        config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
 
     Returns:
@@ -366,7 +366,7 @@ def run_crawler(storage,
     Args:
         storage (object): Storage implementation to use.
         progresser (object): Progresser to notify status updates.
-        config (object): Inventory configuration on server
+        config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
 
     Returns:
