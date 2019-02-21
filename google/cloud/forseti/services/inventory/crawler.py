@@ -118,6 +118,7 @@ class Crawler(crawler.Crawler):
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
             resource.get_kubernetes_service_config(self.get_client())
+
             self.write(resource)
         except Exception as e:
             LOGGER.exception(e)
@@ -173,6 +174,7 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
+
         try:
             self.config.storage.update(resource)
         except Exception as e:
@@ -274,6 +276,7 @@ class ParallelCrawler(Crawler):
         Raises:
             Exception: Reraises any exception.
         """
+        
         try:
             with self._write_lock:
                 self.config.storage.update(resource)

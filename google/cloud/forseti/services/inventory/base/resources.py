@@ -2004,6 +2004,7 @@ class GsuiteUserIterator(ResourceIterator):
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
 
+
 class GsuiteGroupsSettingsIterator(ResourceIterator):
     """The Resource iterator implementation for Gsuite Group Settings"""
 

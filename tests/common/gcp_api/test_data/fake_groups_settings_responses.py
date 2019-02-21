@@ -65,7 +65,6 @@ GET_GROUPS_SETTINGS_RESPONSE = """
 }
 """
 
-
 UNAUTHORIZED = """
 {
  "error": {
