@@ -209,6 +209,8 @@ scanner:
           enabled: true
         - name: kms_scanner
           enabled: true
+        - name: groups_settings_scanner
+          enabled: true
         - name: lien
           enabled: true
         - name: location
@@ -352,6 +354,30 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
+        - resource: groups_settings
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: groups_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
         - resource: ke_version_violations
           should_notify: true
           notifiers:
@@ -377,18 +403,6 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: kms_violations
-          should_notify: true
-          notifiers:
-            # Email violations
-            - name: email_violations
-            # Upload violations to GCS.
-            - name: gcs_violations
-              configuration:
-                data_format: csv
-                # gcs_path should begin with "gs://"
-                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
-
-        - resource: groups_violations
           should_notify: true
           notifiers:
             # Email violations
