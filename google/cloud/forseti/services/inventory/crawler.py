@@ -276,7 +276,6 @@ class ParallelCrawler(Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-        
         try:
             with self._write_lock:
                 self.config.storage.update(resource)
