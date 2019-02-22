@@ -128,7 +128,6 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
         for item in storage.mem.values():
-
             item_type = item.type()
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
