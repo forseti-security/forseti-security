@@ -338,13 +338,15 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def find_match_rotation_period(self, key, rotation_period):
+    def find_match_rotation_period(self, key, rotation_period, mode):
         """Check if there is a match for this rule rotation period against the
         given resource.
 
         Args:
             key (Resource): The resource to check for a match.
-            rotation_period (string):
+            mode (string): The mode specified in the rule.
+            rotation_period (string): The cut off rotation schedule of crypto
+            key specified in rule file.
 
         Returns:
             bool: Returns true if a match is found.
@@ -356,12 +358,15 @@ class Rule(object):
         formatted_last_rotation_time = datetime.datetime.strptime(
             last_rotation_time, string_formats.TIMESTAMP_MICROS)
         days_since_rotated = (scan_time - formatted_last_rotation_time).days
+        print('days:', days_since_rotated)
+        if mode == BLACKLIST and days_since_rotated > rotation_period:
+            return True
+        elif mode == WHITELIST and days_since_rotated <= rotation_period:
+            return True
+        return False
 
-        if days_since_rotated > rotation_period:
-            return False
-        return True
-
-    def find_match_algorithms(self, key,  rule_algorithms):
+    @classmethod
+    def find_match_algorithms(cls, key, rule_algorithms):
         """Check if there is a match for this rule algorithm against the given
         resource.
 
@@ -411,9 +416,8 @@ class Rule(object):
         if rule_purpose == 'symmetric':
             if key_purpose == symmetric_algorithm:
                 return True
-        else:
-            if not key_purpose == symmetric_algorithm:
-                return True
+        elif not key_purpose == symmetric_algorithm:
+            return True
         return False
 
     def find_match_state(self, key, rule_state):
@@ -444,8 +448,6 @@ class Rule(object):
         """
         violations = []
         state = key.primary_version.get('state')
-        if not state == 'ENABLED':
-            return violations
 
         mode = self.rule['mode']
         has_violation = False
@@ -460,7 +462,7 @@ class Rule(object):
             all_matched = True
             if rotation_period:
                 all_matched = all_matched and self.find_match_rotation_period(
-                    key, rotation_period)
+                    key, rotation_period, mode)
             if rule_algorithms:
                 all_matched = all_matched and self.find_match_algorithms(
                     key, rule_algorithms)
@@ -479,6 +481,9 @@ class Rule(object):
             elif mode == WHITELIST and not all_matched:
                 has_violation = True
 
+            if not state == 'ENABLED':
+                has_violation = False
+
         if has_violation:
             violations.append(RuleViolation(
                 resource_id=key.id,
@@ -491,7 +496,10 @@ class Rule(object):
                 primary_version=key.primary_version,
                 next_rotation_time=key.next_rotation_time,
                 rotation_period=key.rotation_period,
-                violation_data=key,
+                state=key.primary_version.get('state'),
+                algorithm=key.primary_version.get('algorithm'),
+                protection_level=key.primary_version.get('protectionLevel'),
+                purpose=key.purpose,
                 key_creation_time=key.create_time,
                 resource_data=key.data))
 
@@ -543,16 +551,18 @@ class Rule(object):
 # rule_index: int
 # full_name: string
 # violation_type: CRYPTO_KEY_VIOLATION
-# violation_data: Resource
+# state: string
+# purpose: string
+# algorithm: string
+# protection_level: string
 # rotation_period: string
 # key_creation_time: string
 # resource_data: string
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_id', 'resource_type', 'resource_name',
                             'full_name', 'rule_index', 'rule_name',
-                            'violation_type', 'violation_data',
+                            'violation_type', 'state',
                             'primary_version', 'next_rotation_time',
                             'rotation_period', 'key_creation_time',
-                            'resource_data'])
-
-
+                            'algorithm', 'protection_level',
+                            'purpose', 'resource_data'])
