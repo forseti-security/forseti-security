@@ -41,19 +41,22 @@
 # not compared.
 
 rules:
-  - name: No members outside organization allowed
+  - name: rule abc
     mode: whitelist
-    resource:
-      - type: organization
-        resource_ids:
-          - '*'
-    allowExternalMembers: true
-  - name: Viewing is not available to everyone in domain
+    resource_ids:
+      - '*'
+    settings:
+      - allowExternalMembers: True
+      - whoCanAdd: "ALL_MANAGERS_CAN_ADD"
+  - name: rule xyz
     mode: blacklist
-    resource:
-      - type: organization
-        resource_ids:
-          - '*'
-    whoCanViewGroup: ALL_IN_DOMAIN_CAN_VIEW
+    resource_ids:
+      - 'my_group@gmail.com'
+    settings:
+      - whoCanJoin: "INVITED_CAN_JOIN"
+      - whoCanViewMembership: "ALL_IN_DOMAIN_CAN_VIEW"
+      - whoCanViewGroup: "ALL_IN_DOMAIN_CAN_VIEW"
+      - whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+      - whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE"
 
 
