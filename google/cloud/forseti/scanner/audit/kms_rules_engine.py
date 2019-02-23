@@ -338,7 +338,8 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def find_match_rotation_period(self, key, rotation_period, mode):
+    @classmethod
+    def find_match_rotation_period(cls, key, rotation_period, mode):
         """Check if there is a match for this rule rotation period against the
         given resource.
 
@@ -358,7 +359,6 @@ class Rule(object):
         formatted_last_rotation_time = datetime.datetime.strptime(
             last_rotation_time, string_formats.TIMESTAMP_MICROS)
         days_since_rotated = (scan_time - formatted_last_rotation_time).days
-        print('days:', days_since_rotated)
         if mode == BLACKLIST and days_since_rotated > rotation_period:
             return True
         elif mode == WHITELIST and days_since_rotated <= rotation_period:
@@ -377,14 +377,16 @@ class Rule(object):
         Returns:
             bool: Returns true if a match is found.
         """
-        LOGGER.debug('Finding rule algorithm in key algorithm')
+        LOGGER.debug('Checking if the algorithm specified matches with that of'
+                     ' crypto key')
         key_algorithm = key.primary_version.get('algorithm')
         for algorithm in rule_algorithms:
             if key_algorithm == algorithm:
                 return True
         return False
 
-    def find_match_protection_level(self, key, rule_protection_level):
+    @classmethod
+    def find_match_protection_level(cls, key, rule_protection_level):
         """Check if there is a match for this rule protection level against the
          given resource.
 
@@ -400,7 +402,8 @@ class Rule(object):
             return True
         return False
 
-    def find_match_purpose(self, key, rule_purpose):
+    @classmethod
+    def find_match_purpose(cls, key, rule_purpose):
         """Check if there is a match for this rule purpose against the given
         resource.
 
@@ -413,20 +416,20 @@ class Rule(object):
         """
         key_purpose = key.purpose
         symmetric_algorithm = 'ENCRYPT_DECRYPT'
-        if rule_purpose == 'symmetric':
-            if key_purpose == symmetric_algorithm:
-                return True
+        if rule_purpose == 'symmetric' and key_purpose == symmetric_algorithm:
+            return True
         elif not key_purpose == symmetric_algorithm:
             return True
         return False
 
-    def find_match_state(self, key, rule_state):
+    @classmethod
+    def find_match_state(cls, key, rule_state):
         """Check if there is a match for this rule state against the given
         resource.
 
         Args:
             key (Resource): The resource to check for a match.
-            rule_state (string): The state of this rule.
+            rule_state (list): The state of this rule.
 
         Returns:
             bool: Returns true if a match is found.
@@ -452,8 +455,8 @@ class Rule(object):
         mode = self.rule['mode']
         has_violation = False
 
-        crypto_key = self.rule['key']
-        for key_data in crypto_key:
+        crypto_key_rule = self.rule['key']
+        for key_data in crypto_key_rule:
             rule_algorithms = key_data.get('algorithms')
             rule_protection_level = key_data.get('protection_level')
             rule_purpose = key_data.get('purpose')

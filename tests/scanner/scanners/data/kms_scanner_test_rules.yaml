@@ -1,9 +1,15 @@
 rules:
-  - name: All cryptographic keys should be rotated in 100 days
+  - name: Allow my cryptographic keys to match this configuration
     mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-      - rotation_period: 100
+#       - rotation_period: 100 #days
+         algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION
+#         protection_level: SOFTWARE
+#         purpose: symmetric
+#         state:
+#         - ENABLED

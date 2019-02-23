@@ -43,6 +43,8 @@ KEY_RING_ID = '4063867491605246570'
 CRYPTO_KEY_ID = '12873861500163377322'
 CRYPTO_KEY_ID_1 = '12873861500163377324'
 CRYPTO_KEY_ID_2 = '12873861500163377326'
+CRYPTO_KEY_ID_3 = '12873861500163377328'
+CRYPTO_KEY_ID_4 = '12873861500163377330'
 VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 
 TIME_NOW = datetime.utcnow()
@@ -95,18 +97,29 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
             crypto_key_2.data = (fake_kms_scanner_data.
                                  NON_ROTATED_CRYPTO_KEY_DESTROYED_STATE_DATA)
 
-            session.commit()
+            crypto_key_3 = data_access.add_resource(
+                session, 'kms_cryptokey/%s' % CRYPTO_KEY_ID_3, key_ring)
 
-    def setUp(self):
-        self.scanner = kms_scanner.KMSScanner(
-            {}, {}, self.service_config, self.model_name,
-            '', unittest_utils.get_datafile_path(
-                __file__, 'kms_scanner_test_rules.yaml'))
+            crypto_key_3.data = (fake_kms_scanner_data.
+                                 HSM_PROTECTION_LEVEL_TEST_KEY_DATA)
+
+            crypto_key_4 = data_access.add_resource(
+                session, 'kms_cryptokey/%s' % CRYPTO_KEY_ID_4, key_ring)
+
+            crypto_key_4.data = (fake_kms_scanner_data.
+                                 KEY_STATE_TEST_DATA)
+
+            session.commit()
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
         '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
+        self.scanner = kms_scanner.KMSScanner(
+            {}, {}, self.service_config, self.model_name,
+            '', unittest_utils.get_datafile_path(
+                __file__, 'kms_scanner_test_rules.yaml'))
+
         self.scanner.run()
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
@@ -115,6 +128,41 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
             self.assertEquals(state, 'ENABLED')
             self.assertEquals(violation.resource_type, 'kms_cryptokey')
             self.assertEquals(violation.violation_type, VIOLATION_TYPE)
+        self.assertEquals(1, mock_output_results.call_count)
+
+    @mock.patch.object(
+        kms_scanner.KMSScanner,
+        '_output_results_to_db', autospec=True)
+    def test_run_scanner_algo_purpose_protection_level_match(self, mock_output_results):
+        self.scanner = kms_scanner.KMSScanner(
+            {}, {}, self.service_config, self.model_name,
+            '', unittest_utils.get_datafile_path(
+                __file__,
+                'kms_scanner_test_algo_purpose_protection_level_rule.yaml'))
+
+        self.scanner.run()
+        crypto_key = self.scanner._retrieve()
+        violations = self.scanner._find_violations(crypto_key)
+        for violation in violations:
+            self.assertEquals(violation.purpose, 'ENCRYPT_DECRYPT')
+            self.assertEquals(violation.protection_level, 'SOFTWARE')
+            self.assertEquals(violation.algorithm, 'GOOGLE_SYMMETRIC_ENCRYPTION')
+        self.assertEquals(1, mock_output_results.call_count)
+
+    @mock.patch.object(
+        kms_scanner.KMSScanner,
+        '_output_results_to_db', autospec=True)
+    def test_run_scanner_state_match(self, mock_output_results):
+        self.scanner = kms_scanner.KMSScanner(
+            {}, {}, self.service_config, self.model_name,
+            '', unittest_utils.get_datafile_path(
+                __file__, 'kms_scanner_test_state_rule.yaml'))
+
+        self.scanner.run()
+        crypto_key = self.scanner._retrieve()
+        violations = self.scanner._find_violations(crypto_key)
+        for violation in violations:
+            self.assertEquals(violation.state, 'ENABLED')
         self.assertEquals(1, mock_output_results.call_count)
 
 
