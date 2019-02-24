@@ -6,7 +6,7 @@
 #  active project is where the k8s cluster will spin up
 #  GKE API is enabled on the project
 #  user authorised to administer GKE
-#  user has uploaded the forseti service account credentials json file to the cloud shell VM
+#  user has uploaded the forseti service account credentials json file(s) to the cloud shell VM
 
 # WARNINGS
 # User is responsible for secure handling of the forseti service account credentials file
@@ -33,19 +33,19 @@ CLIENT_CREDENTIALS="" #TODO <path>/<keyfilename>.json
 
 # Control which architecture to deploy
 # CronJob just runs forseti server as k8s CronJob on the cron schedule and shuts it down after each run
+    # If deploying CronJob set deploy cronjob to true, deploy server and client to false
 # Server runs forseti server as k8s Cluster IP Service and keeps it running indefinitely
-# Client, for now use this in conjunction with server to spin up client cli container on same cluster
-# as server and connect to it via Cluster IP service
+    # If deploying server, set deploy server (and optionally client) to true, set deploy cronjob to false.
 DEPLOY_CRONJOB=false
 DEPLOY_SERVER=true
 DEPLOY_CLIENT=true
 
 # Environment variables needed to create deployment files from templates
-# TODO is the export keyword needed?
-export FORSETI_IMAGE=#gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
-export SERVER_BUCKET=#gs://<server bucketname>
-export CLIENT_BUCKET=#gs://<client bucketname>
-export CLOUD_SQL_CONNECTION=#<project>:<region>:<db>
+# Note, GOOGLE_CLOUD_PROJECT will be initialised already if running from Cloud Shell VM
+export FORSETI_IMAGE=gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
+export SERVER_BUCKET=''#gs://<server bucketname>
+export CLIENT_BUCKET=''#gs://<client bucketname>
+export CLOUD_SQL_CONNECTION=''#<project>:<region>:<db>
 export CRON_SCHEDULE="*/60 * * * *"
 export CLOUDSQL_IP=10.43.240.2
 export FORSETI_SERVER_IP=10.43.240.3
@@ -78,12 +78,9 @@ export FORSETI_SERVER_IP=10.43.240.3
 # We do this because kubectl apply doesn't support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
 	envsubst < cloudsqlproxy.service.template.yaml > cloudsqlproxy.service.yaml
-
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
-
 	envsubst < forseti.server.template.yaml > forseti.server.yaml
 	envsubst < forseti.server.service.template.yaml > forseti.server.service.yaml
-
 	envsubst < forseti.client.template.yaml > forseti.client.yaml
 
 
