@@ -108,7 +108,8 @@ while [[ "$1" != "" ]]; do
         --cron_schedule )
             shift
             CRON_SCHEDULE=$1
-            ;;    esac
+            ;;
+    esac
     shift # Move remaining args down 1 position
 done
 
