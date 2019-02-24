@@ -46,7 +46,7 @@
 set -e
 
 # Declare variables and set default values
-BUCKET=
+BUCKET=''
 LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=false
@@ -112,6 +112,8 @@ while [[ "$1" != "" ]]; do
     shift # Move remaining args down 1 position
 done
 
+# Note, run_forseti.sh also does this at start of each cron run.
+# Nevertheless, I think we still need to do this once before starting the server.
 download_server_configuration_files(){
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
@@ -136,11 +138,31 @@ export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
 EOM
 }
 
+# Create env script used by run_forseti.sh
+create_server_env_script(){
+
+# run_forseti.sh has hard coded /home/ubuntu
+# For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
+export USER_HOME=/home/ubuntu
+
+FILE="${USER_HOME}/forseti_env.sh"
+/bin/cat <<EOM >$FILE
+#!/bin/bash
+
+export PATH=${PATH}:/usr/local/bin
+
+# Forseti environment variables
+export FORSETI_HOME=/forseti-security
+export FORSETI_SERVER_CONF=${FORSETI_HOME}/configs/forseti_conf_server.yaml
+export SCANNER_BUCKET=${BUCKET}
+EOM
+
+}
+
 # Set up cronjob if running cron within docker container
-set_cron_schedule(){
-    if [[ ${CRON_SCHEDULE}!='' ]]; then
-        # TODO Set cron schedule
-    fi
+# For now setup crontab under user ubuntu as existing codebase expects that
+set_container_cron_schedule(){
+echo "TODO set_container_cron_schedule()"
 }
 
 
@@ -167,6 +189,9 @@ fi
 
 }
 
+# Deprecated
+# Instead call create_server_env_script()
+# then call run_forseti.sh
 run_k8s_cron_job(){
     # Below cut and paste from run_forseti.sh
     # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
@@ -242,6 +267,9 @@ main(){
     if ${RUN_SERVER}; then
         download_server_configuration_files
         start_server
+        if [[ ${CRON_SCHEDULE}!='' ]]; then
+            set_container_cron_schedule
+        fi
     elif ${RUN_CLIENT}; then
         client_cli_setup
 
@@ -255,7 +283,11 @@ main(){
     fi
 
     if ${RUN_K8S_CRONJOB}; then
-        run_k8s_cron_job
+        # run_k8s_cron_job deprecated and commented out for now
+
+        # Run the cron script in pre-existing codebase, after creating needed env script
+        create_server_env_script
+        /forseti-security/install/gcp/scripts/run_forseti.sh
     fi
 }
 
