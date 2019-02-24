@@ -145,6 +145,8 @@ create_server_env_script(){
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
 export USER_HOME=/home/ubuntu
 
+mkdir ${USER_HOME}
+
 FILE="${USER_HOME}/forseti_env.sh"
 /bin/cat <<EOM >$FILE
 #!/bin/bash
@@ -157,6 +159,7 @@ export FORSETI_SERVER_CONF=${FORSETI_HOME}/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET=${BUCKET}
 EOM
 
+chmod +x ${FILE}
 }
 
 # Set up cronjob if running cron within docker container
