@@ -145,6 +145,9 @@ create_server_env_script(){
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
 export USER_HOME=/home/ubuntu
 
+# Strip the 'gs://' portion of the bucket string
+SCANNER_BUCKET=${BUCKET} | cut -c 5-
+
 mkdir ${USER_HOME}
 
 FILE="${USER_HOME}/forseti_env.sh"
@@ -156,7 +159,7 @@ export PATH=${PATH}:/usr/local/bin
 # Forseti environment variables
 export FORSETI_HOME=/forseti-security
 export FORSETI_SERVER_CONF=${FORSETI_HOME}/configs/forseti_conf_server.yaml
-export SCANNER_BUCKET=${BUCKET}
+export SCANNER_BUCKET=${SCANNER_BUCKET}
 EOM
 
 chmod +x ${FILE}
