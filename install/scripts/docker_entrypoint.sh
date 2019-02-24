@@ -143,7 +143,7 @@ create_server_env_script(){
 
 # run_forseti.sh has hard coded /home/ubuntu
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
-export USER_HOME=/home/ubuntu
+USER_HOME=/home/ubuntu
 
 # Strip the 'gs://' portion of the bucket string
 SCANNER_BUCKET=${BUCKET} | cut -c 5-
@@ -162,7 +162,6 @@ export FORSETI_SERVER_CONF=${FORSETI_HOME}/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET=${SCANNER_BUCKET}
 EOM
 
-chmod +x ${FILE}
 }
 
 # Set up cronjob if running cron within docker container
@@ -274,6 +273,7 @@ main(){
         download_server_configuration_files
         start_server
         if [[ ${CRON_SCHEDULE}!='' ]]; then
+            create_server_env_script
             set_container_cron_schedule
         fi
     elif ${RUN_CLIENT}; then
