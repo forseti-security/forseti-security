@@ -124,7 +124,6 @@ download_server_configuration_files(){
         gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
         gsutil cp -r ${BUCKET}/rules /forseti-security/
     fi
-
 }
 
 client_cli_setup(){
@@ -180,8 +179,8 @@ if ${RUN_K8S_CRONJOB}; then # short lived cronjob, start as background process
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
-    --log_level=${LOG_LEVEL} &
-    #--enable_console_log
+    --log_level=${LOG_LEVEL} \
+    --enable_console_log &
 
 else # long lived server, start as foreground process
     forseti_server \
