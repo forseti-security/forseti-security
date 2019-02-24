@@ -24,12 +24,12 @@
 # --run_server                                  start the Forseti server
 # --services <list of services>                 over-ride default services "scanner model inventory explain notifier"
 # --run_client                                  just provide a container to run client commands
-# --run_cronjob                                 run the cronjob immediately after starting server, for k8s CronJob
+# --run_k8s_cronjob                             run the cronjob immediately after starting server, for k8s CronJob
 # --sql_host <host ip>                          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
 # --sql_port <port>                             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
 
 # Use cases
-# k8s CronJob,  specify --bucket, --run_server, --run_cronjob
+# k8s CronJob,  specify --bucket, --run_server, --run_k8s_cronjob
 # k8s Server,   specify --bucket, --run_server
 # k8s Client,   specify --bucket, --run_client
 # cos Server,   specify --bucket, --run_server
@@ -51,7 +51,9 @@ LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=false
 RUN_CLIENT=false
-RUN_CRONJOB=false
+RUN_K8S_CRONJOB=false # Tells container to run the k8s cronjob one time, then stop
+CRON_SCHEDULE='' # Used if running cron in docker container (long running server approach)
+                 # Not used if scheduling externally via k8s CronJob)
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
 SQL_HOST=localhost
@@ -85,8 +87,8 @@ while [[ "$1" != "" ]]; do
         --run_server )
             RUN_SERVER=true
             ;;
-        --run_cronjob )
-            RUN_CRONJOB=true
+        --run_k8s_cronjob )
+            RUN_K8S_CRONJOB=true
             ;;
         --run_client )
             RUN_CLIENT=true
@@ -103,7 +105,10 @@ while [[ "$1" != "" ]]; do
             shift
             SQL_PORT=$1
             ;;
-    esac
+        --cron_schedule )
+            shift
+            CRON_SCHEDULE=$1
+            ;;    esac
     shift # Move remaining args down 1 position
 done
 
@@ -131,13 +136,17 @@ export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
 EOM
 }
 
-# TODO Should this be started as a background or foreground process?
-# For cron job we start as a background process and the container finishes when the cronjob completes
-# For long running server, starting as a background process causes the container to keep re-starting
-# I think we need to start as background for cronjob and foreground for long running server
+# Set up cronjob if running cron within docker container
+set_cron_schedule(){
+    if [[ ${CRON_SCHEDULE}!='' ]]; then
+        # TODO Set cron schedule
+    fi
+}
+
+
 start_server(){
 
-if ${RUN_CRONJOB}; then # short lived cronjob, start as background process
+if ${RUN_K8S_CRONJOB}; then # short lived cronjob, start as background process
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -158,7 +167,7 @@ fi
 
 }
 
-run_cron_job(){
+run_k8s_cron_job(){
     # Below cut and paste from run_forseti.sh
     # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
     # due to the way it sources environment variables
@@ -245,8 +254,8 @@ main(){
         tail -f /dev/null
     fi
 
-    if ${RUN_CRONJOB}; then
-        run_cron_job
+    if ${RUN_K8S_CRONJOB}; then
+        run_k8s_cron_job
     fi
 }
 

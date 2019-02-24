@@ -25,7 +25,8 @@ spec:
                     "--bucket", "${SERVER_BUCKET}",
                     "--log_level", "debug",
                     "--run_server",
-                    "--services", "scanner model inventory explain notifier"]
+                    "--services", "scanner model inventory explain notifier"
+                    "--cron_schedule", "${CRON_SCHEDULE}"]
           securityContext:
             runAsUser: 0  # root user. TODO use 1, non-root as soon as practical
             allowPrivilegeEscalation: false
