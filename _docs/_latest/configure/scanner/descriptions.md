@@ -150,7 +150,7 @@ rule file.
 
 ## KMS scanner
 
-Alert or notify if the crypto keys in the organization are rotated within the 
+Alert or notify if the crypto keys in the organization are not rotated within the 
 time specified. This scanner can ensure that all the cryptographic keys are 
 properly configured. 
 
