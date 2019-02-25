@@ -138,6 +138,7 @@ EOM
 }
 
 # Create env script used by run_forseti.sh
+# Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L251
 create_server_env_script(){
 
 # run_forseti.sh has hard coded /home/ubuntu/forseti_env.sh
@@ -150,6 +151,7 @@ SCANNER_BUCKET=${BUCKET} | cut -c 5-
 mkdir -p /home/ubuntu
 
 FILE="/home/ubuntu/forseti_env.sh"
+touch ${FILE}
 
 /bin/cat <<EOM >$FILE
 #!/bin/bash
@@ -162,12 +164,11 @@ export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET=${SCANNER_BUCKET}
 EOM
 
-echo "${FILE} contents"
-/bin/cat ${FILE}
 }
 
 # Set up cronjob if running cron within docker container
 # For now setup crontab under user ubuntu as existing codebase expects that
+# Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
 set_container_cron_schedule(){
 echo "TODO set_container_cron_schedule()"
 }
