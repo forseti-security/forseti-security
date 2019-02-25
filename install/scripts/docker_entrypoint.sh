@@ -180,7 +180,7 @@ USER=ubuntu
 # queue up the jobs.
 # If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
 
-(echo "${CRON_SCHEDULE} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+(echo "${CRON_SCHEDULE} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock /forseti-security/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 }
