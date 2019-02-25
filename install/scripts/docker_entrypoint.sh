@@ -140,14 +140,16 @@ EOM
 # Create env script used by run_forseti.sh
 create_server_env_script(){
 
-# run_forseti.sh has hard coded /home/ubuntu
+# run_forseti.sh has hard coded /home/ubuntu/forseti_env.sh
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
-USER_HOME=/home/ubuntu
 
 # Strip the 'gs://' portion of the bucket string
 SCANNER_BUCKET=${BUCKET} | cut -c 5-
 
-FILE="${USER_HOME}/forseti_env.sh"
+# Create /home/ubuntu if it doesnt exist
+mkdir -p /home/ubuntu
+
+FILE="/home/ubuntu/forseti_env.sh"
 
 /bin/cat <<EOM >$FILE
 #!/bin/bash
