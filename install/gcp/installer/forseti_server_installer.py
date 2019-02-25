@@ -219,7 +219,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of default values.
         """
         if self.target_project_id:
-            organization_id = gcloud.lookup_organiztion(
+            organization_id = gcloud.lookup_organization(
                 self.target_project_id)
             domain = gcloud.get_domain_from_organization_id(organization_id)
         else:
