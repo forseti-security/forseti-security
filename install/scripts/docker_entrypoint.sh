@@ -51,9 +51,8 @@ LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=false
 RUN_CLIENT=false
-RUN_K8S_CRONJOB=false # Tells container to run the k8s cronjob one time, then stop
-CRON_SCHEDULE='' # Used if running cron in docker container (long running server approach)
-                 # Not used if scheduling externally via k8s CronJob)
+RUN_K8S_CRONJOB=false # run the k8s cronjob one time, then stop
+CRON_SCHEDULE='' # Used if running cron in docker container
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
 SQL_HOST=localhost
@@ -151,6 +150,7 @@ SCANNER_BUCKET=${BUCKET} | cut -c 5-
 mkdir ${USER_HOME}
 
 FILE="${USER_HOME}/forseti_env.sh"
+
 /bin/cat <<EOM >$FILE
 #!/bin/bash
 
@@ -158,7 +158,7 @@ export PATH=${PATH}:/usr/local/bin
 
 # Forseti environment variables
 export FORSETI_HOME=/forseti-security
-export FORSETI_SERVER_CONF=${FORSETI_HOME}/configs/forseti_conf_server.yaml
+export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET=${SCANNER_BUCKET}
 EOM
 
