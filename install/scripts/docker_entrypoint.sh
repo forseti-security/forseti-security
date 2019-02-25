@@ -147,10 +147,6 @@ USER_HOME=/home/ubuntu
 # Strip the 'gs://' portion of the bucket string
 SCANNER_BUCKET=${BUCKET} | cut -c 5-
 
-if [! -d ${USER_HOME} ] then
-    mkdir ${USER_HOME}
-fi
-
 FILE="${USER_HOME}/forseti_env.sh"
 
 /bin/cat <<EOM >$FILE
