@@ -19,20 +19,21 @@
 
 # Usage
 # <sudo> docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh
-# --bucket <bucket>                             the Forseti GCS bucket containing configuration files etc
-# --log_level <info,debug,etc>                  the Forseti server log level
-# --run_server                                  start the Forseti server
-# --services <list of services>                 over-ride default services "scanner model inventory explain notifier"
-# --run_client                                  just provide a container to run client commands
-# --run_k8s_cronjob                             run the cronjob immediately after starting server, for k8s CronJob
-# --sql_host <host ip>                          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
-# --sql_port <port>                             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
+# --bucket <bucket>             the Forseti GCS bucket containing configuration files etc
+# --log_level <info,debug,etc>  the Forseti server log level
+# --run_server                  start the Forseti server
+# --cron_schedule <schedule>    specify schedule to run the cron scheduler within docker (use in conjunction with --run_server)
+# --services <list of services> over-ride default services "scanner model inventory explain notifier"
+# --run_client                  just provide a container to run client commands
+# --run_k8s_cronjob             flag to run as k8s CronJob. Start server, run the cronjob immediately and exit
+# --sql_host <host ip>          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
+# --sql_port <port>             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
 
 # Use cases
-# k8s CronJob,  specify --bucket, --run_server, --run_k8s_cronjob
-# k8s Server,   specify --bucket, --run_server
+# k8s CronJob,  specify --bucket, --run_k8s_cronjob
+# k8s Server,   specify --bucket, --run_server --cron_schedule
 # k8s Client,   specify --bucket, --run_client
-# cos Server,   specify --bucket, --run_server
+# cos Server,   specify --bucket, --run_server --cron_schedule
 # cos Client,   specify --bucket, --run_client
 
 # Note for k8s CronJob or k8s Server the k8s Cloud SQL Proxy Service must be named "cloudsqlproxy" else the
