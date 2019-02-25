@@ -287,10 +287,13 @@ main(){
     if ${RUN_SERVER}; then
         download_server_configuration_files
         start_server
-        if [[ ${CRON_SCHEDULE}!='' ]]; then
+
+        # If cron schedule specified, spin up the cron job after created needed env file
+        if [[ !(-z ${CRON_SCHEDULE}) ]]; then
             create_server_env_script
             set_container_cron_schedule
         fi
+
     elif ${RUN_CLIENT}; then
         client_cli_setup
 
@@ -306,7 +309,7 @@ main(){
     if ${RUN_K8S_CRONJOB}; then
         # run_k8s_cron_job deprecated and commented out for now
 
-        # Run the cron script in pre-existing codebase, after creating needed env script
+        # Run the cron script, after creating needed env script
         create_server_env_script
         /forseti-security/install/gcp/scripts/run_forseti.sh
     fi
