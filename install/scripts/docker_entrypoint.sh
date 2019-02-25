@@ -283,7 +283,6 @@ main(){
         set -x
     fi
 
-    # Run server or client; not both in same container
     if ${RUN_SERVER}; then
         download_server_configuration_files
         start_server
@@ -304,11 +303,12 @@ main(){
         #sleep infinity & doesnt work
         #try
         tail -f /dev/null
-    fi
 
-    if ${RUN_K8S_CRONJOB}; then
+    elif ${RUN_K8S_CRONJOB}; then
+        download_server_configuration_files
+        start_server
+
         # run_k8s_cron_job deprecated and commented out for now
-
         # Run the cron script, after creating needed env script
         create_server_env_script
         /forseti-security/install/gcp/scripts/run_forseti.sh

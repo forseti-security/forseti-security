@@ -24,7 +24,7 @@ spec:
                     "--run_client"]
           securityContext:
             runAsUser: 0  # root user. TODO use 1, non-root as soon as practical
-            allowPrivilegeEscalation: false
+            allowPrivilegeEscalation: true # TODO use false as soon as practical
           volumeMounts:
             - name: google-cloud-key
               mountPath: /var/secrets/google
