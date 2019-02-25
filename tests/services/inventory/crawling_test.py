@@ -263,6 +263,52 @@ class CrawlerTest(CrawlerBase):
 
         self.assertEqual(expected_counts, result_counts)
 
+    def test_crawling_from_composite_root(self):
+        """Crawl from composite_root with folder and project."""
+        config = InventoryConfig(
+            None,
+            '',
+            {},
+            '',
+            {},
+            ['folders/1032', 'projects/1041'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'appengine_app': {'resource': 1},
+            'appengine_instance': {'resource': 3},
+            'appengine_service': {'resource': 1},
+            'appengine_version': {'resource': 1},
+            'backendservice': {'resource': 1},
+            'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
+            'composite_root': {'resource': 1},
+            'compute_project': {'resource': 1},
+            'crm_org_policy': {'resource': 1},
+            'disk': {'resource': 3},
+            'firewall': {'resource': 3},
+            'folder': {'iam_policy': 2, 'resource': 2},
+            'forwardingrule': {'resource': 1},
+            'instance': {'resource': 3},
+            'instancegroup': {'resource': 2},
+            'instancegroupmanager': {'resource': 2},
+            'instancetemplate': {'resource': 2},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
+            'network': {'resource': 1},
+            'project': {'billing_info': 2, 'enabled_apis': 2, 'iam_policy': 2,
+                        'resource': 2},
+            'role': {'resource': 1},
+            'serviceaccount': {'iam_policy': 1, 'resource': 1},
+            'serviceaccount_key': {'resource': 1},
+            'sink': {'resource': 3},
+            'snapshot': {'resource': 2},
+            'subnetwork': {'resource': 12},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
     def test_crawling_no_org_access(self):
         """Crawl with no access to organization, only child projects."""
         config = InventoryConfig(
