@@ -162,6 +162,8 @@ export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET=${SCANNER_BUCKET}
 EOM
 
+echo "${FILE} contents"
+/bin/cat ${FILE}
 }
 
 # Set up cronjob if running cron within docker container
