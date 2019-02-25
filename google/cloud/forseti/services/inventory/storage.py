@@ -1186,7 +1186,7 @@ class Storage(BaseStorage):
 
     def commit(self):
         """Commit the stored inventory."""
-        if self.inventory_index_warnings:
+        if InventoryIndex.inventory_index_warnings:
             status = IndexState.PARTIAL_SUCCESS
         else:
             status = IndexState.SUCCESS
