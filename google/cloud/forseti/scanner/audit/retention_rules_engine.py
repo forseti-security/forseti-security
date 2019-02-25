@@ -18,6 +18,7 @@ import itertools
 import threading
 import json
 
+from google.cloud.forseti.common.gcp_type import resource as type_resource
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import date_time as dt
 from google.cloud.forseti.common.util import logger
@@ -28,8 +29,11 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket'])
+SUPPORTED_RETENTION_RES_TYPES = frozenset([type_resource.ResourceType.BUCKET,
+                                           type_resource.ResourceType.TABLE])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
+
+_MS_PER_DAY = 24 * 60 * 60 * 1000
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
@@ -63,11 +67,11 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         self.rule_book = RetentionRuleBook(self._load_rule_definitions())
 
     def find_violations(self, resource, force_rebuild=False):
-        """Determine whether bucket lifecycle violates rules.
+        """Determine whether supported resources violates rules.
 
         Args:
             resource (Resource): Object
-                containing lifecycle data
+                containing retention data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -287,33 +291,53 @@ class Rule(object):
             resource_data=bucket.data,
         )
 
+    def generate_table_violation(self, table):
+        """Generate a violation.
+
+        Args:
+            table (Table): The bucket that triggers the violation.
+        Returns:
+            RuleViolation: The violation.
+        """
+
+        return RuleViolation(
+            resource_name=table.name,
+            resource_id=table.id,
+            resource_type=table.type,
+            full_name=table.full_name,
+            rule_name=self.rule_name,
+            rule_index=self.rule_index,
+            violation_type=VIOLATION_TYPE,
+            violation_data=table.data,
+            resource_data=table.data,
+        )
+
     def find_violations(self, res):
         """Get a generator for violations.
 
         Args:
             res (Resource): A class derived from Resource.
         Returns:
-            Generator: All violations of the resource breaking the rule.
+            Generator: Retention violation of supported resources.
 
         Raises:
-            ValueError: Raised if the resource type is bucket.
+            ValueError: Raised if the resource type is not supported.
         """
 
-        if res.type == 'bucket':
+        if res.type == type_resource.ResourceType.BUCKET:
             return self.find_violations_in_bucket(res)
-        raise ValueError(
-            'only bucket is currently supported'
-        )
+        elif res.type == type_resource.ResourceType.TABLE:
+            return self.find_violations_in_table(res)
+        raise ValueError('only %s are currently supported.' % ', '.join(
+            SUPPORTED_RETENTION_RES_TYPES))
 
     def bucket_max_retention_violation(self, bucket):
-        """Get a generator for violations especially for maximum retention
-           It only supports bucket for now, and will work on generalizing
-           in future PRs.
+        """Generate violations for bucket that exceeded the maximum retention.
 
         Args:
-            bucket (bucket): Find violation from the bucket.
+            bucket (bucket): Bucket to find violation from.
         Yields:
-            RuleViolation: All max violations of the bucket breaking the rule.
+            RuleViolation: Retention violation of buckets.
         """
         if self.max_retention is None:
             return
@@ -332,12 +356,12 @@ class Rule(object):
         yield self.generate_bucket_violation(bucket)
 
     def bucket_min_retention_violation(self, bucket):
-        """Get a generator for violations especially for minimum retention.
+        """Generate violations for bucket that under the minimum retention.
 
         Args:
-            bucket (bucket): Find violation from the bucket.
+            bucket (bucket): Bucket to find violation from.
         Yields:
-            RuleViolation: All min violations of the bucket breaking the rule.
+            RuleViolation: Retention violation of buckets.
         """
         if self.min_retention is None:
             return
@@ -353,13 +377,68 @@ class Rule(object):
         """Get a generator for violations.
 
         Args:
-            bucket (bucket): Find violation from the buckets.
+            bucket (Bucket): Bucket to find violation from.
         Returns:
-            Generator: All violations of the buckets breaking rules.
+            Generator: Retention violation of buckets.
         """
-
         violation_max = self.bucket_max_retention_violation(bucket)
         violation_min = self.bucket_min_retention_violation(bucket)
+        return itertools.chain(violation_max, violation_min)
+
+    def table_max_retention_violation(self, table):
+        """Generate violations for bigquery table that exceeded the maximum
+        retention.
+
+        Args:
+            table (Table): Table to find violation from.
+        Yields:
+            RuleViolation: Retention violation of bigquery tables.
+        """
+        if self.max_retention is None:
+            return
+
+        table_dict = json.loads(table.data)
+        table_expiration = table_dict.get('expirationTime')
+        if not table_expiration:
+            yield self.generate_table_violation(table)
+        else:
+            table_creation = table_dict['creationTime']
+            diff = long(table_expiration) - long(table_creation)
+            if diff > self.max_retention * _MS_PER_DAY:
+                yield self.generate_table_violation(table)
+
+    def table_min_retention_violation(self, table):
+        """Generate violations for bigquery table that under the minimum
+        retention.
+
+        Args:
+            table (Table): Table to find violation from.
+        Yields:
+            RuleViolation: Retention violation of bigquery tables.
+        """
+        if self.min_retention is None:
+            return
+
+        table_dict = json.loads(table.data)
+        table_expiration = table_dict.get('expirationTime')
+        if not table_expiration:
+            return
+
+        table_creation = table_dict.get('creationTime')
+        diff = long(table_expiration) - long(table_creation)
+        if diff < self.min_retention * _MS_PER_DAY:
+            yield self.generate_table_violation(table)
+
+    def find_violations_in_table(self, table):
+        """Get a generator for violations.
+
+        Args:
+            table (Table): Table to find violation from.
+        Returns:
+            Generator: Retention violation of bigquery tables.
+        """
+        violation_max = self.table_max_retention_violation(table)
+        violation_min = self.table_min_retention_violation(table)
         return itertools.chain(violation_max, violation_min)
 
 

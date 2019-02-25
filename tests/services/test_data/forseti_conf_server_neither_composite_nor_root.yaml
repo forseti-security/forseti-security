@@ -1,0 +1,24 @@
+# Bad configuration missing both root_resource_id and composite_root_resources.
+
+##############################################################################
+
+inventory:
+
+    # gsuite access
+    gsuite_service_account_key_file:
+    domain_super_admin_email:
+
+    api_quota:
+        # The pre-populated values are the defaults from GCP.
+        max_admin_api_calls_per_100_seconds: 1500
+        max_appengine_api_calls_per_second: 20
+        max_bigquery_api_calls_per_100_seconds: 17000
+        max_cloudbilling_api_calls_per_60_seconds: 300
+        max_compute_api_calls_per_second: 20
+        max_container_api_calls_per_100_seconds: 1000
+        max_crm_api_calls_per_100_seconds: 400
+        max_iam_api_calls_per_second: 20
+        max_servicemanagement_api_calls_per_100_seconds: 200
+        max_sqladmin_api_calls_per_100_seconds: 100
+
+##############################################################################
