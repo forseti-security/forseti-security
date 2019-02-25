@@ -1,15 +1,12 @@
 rules:
-  - name: Allow my cryptographic keys to match this configuration
+  - name: Block crypto keys that match this config.
     mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-#       - rotation_period: 100 #days
-         algorithms:
+       - algorithms:
          - GOOGLE_SYMMETRIC_ENCRYPTION
-#         protection_level: SOFTWARE
-#         purpose: symmetric
-#         state:
-#         - ENABLED
+         protection_level: SOFTWARE
+         purpose: symmetric

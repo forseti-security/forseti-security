@@ -1,10 +1,9 @@
 rules:
-  - name: Block keys with state enabled.
+  - name: Block software protection level on all crypto keys.
     mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-       - state:
-         - ENABLED
+      - protection_level: SOFTWARE

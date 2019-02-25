@@ -1,10 +1,9 @@
 rules:
-  - name: Block keys with state enabled.
+  - name: Allow only asymmetric encryption.
     mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-       - state:
-         - ENABLED
+       - purpose: symmetric
