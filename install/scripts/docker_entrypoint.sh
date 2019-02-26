@@ -135,7 +135,7 @@ client_cli_setup(){
 # Store the Client CLI variables in /etc/profile.d/forseti_environment.sh
 # so all ssh sessions will have access to them
 
-FILE="/etc/profile.d/forseti_environment.sh"
+local FILE="/etc/profile.d/forseti_environment.sh"
 /bin/cat <<EOM >$FILE
 export FORSETI_HOME=/forseti-security
 export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
@@ -155,7 +155,7 @@ SCANNER_BUCKET=${BUCKET} | cut -c 5-
 # Create /home/ubuntu if it doesnt exist
 mkdir -p /home/ubuntu
 
-FILE="/home/ubuntu/forseti_env.sh"
+local FILE="/home/ubuntu/forseti_env.sh"
 touch ${FILE}
 
 /bin/cat <<EOM >$FILE
