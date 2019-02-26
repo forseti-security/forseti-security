@@ -198,7 +198,7 @@ MESSAGE_HAS_ROLE_SCRIPT = (
 
 MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
     'IMPORTANT NOTE\n'
-    'Your Forseti Security Installation will not work until '
+    'Your Forseti Security will not inventory/scan GSuite data until '
     'you enable GSuite data collection:\n'
     'https://forsetisecurity.org/docs/latest/configure/'
     'inventory/gsuite.html\n')
