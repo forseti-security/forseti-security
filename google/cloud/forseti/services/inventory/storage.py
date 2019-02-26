@@ -1172,11 +1172,14 @@ class Storage(BaseStorage):
 
     def commit(self):
         """Commit the stored inventory."""
-
+        if self.inventory_index.inventory_index_warnings:
+            status = IndexState.PARTIAL_SUCCESS
+        else:
+            status = IndexState.SUCCESS
         try:
             self.buffer.flush()
             self.session.commit()
-            self.inventory_index.complete()
+            self.inventory_index.complete(status=status)
             self.session.commit()
         finally:
             self.session_completed = True
