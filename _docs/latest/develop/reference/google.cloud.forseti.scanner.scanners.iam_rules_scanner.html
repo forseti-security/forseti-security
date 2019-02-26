@@ -1,0 +1,146 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.iam_rules_scanner module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.scanners.iam_rules_scanner">
+<span id="google-cloud-forseti-scanner-scanners-iam-rules-scanner-module"></span><h1>google.cloud.forseti.scanner.scanners.iam_rules_scanner module<a class="headerlink" href="#module-google.cloud.forseti.scanner.scanners.iam_rules_scanner" title="Permalink to this headline">¶</a></h1>
+<p>Scanner for the IAM rules engine.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner">
+<em class="property">class </em><code class="descname">IamPolicyScanner</code><span class="sig-paren">(</span><em>global_configs</em>, <em>scanner_configs</em>, <em>service_config</em>, <em>model_name</em>, <em>snapshot_timestamp</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner" title="google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner</span></code></a></p>
+<p>Scanner for IAM data.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner.SCANNER_OUTPUT_CSV_FMT">
+<code class="descname">SCANNER_OUTPUT_CSV_FMT</code><em class="property"> = 'scanner_output_iam.{}.csv'</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner.SCANNER_OUTPUT_CSV_FMT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 186</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._find_violations">
+<code class="descname">_find_violations</code><span class="sig-paren">(</span><em>policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner._find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find violations in the policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>policies</strong> (<em>list</em>) – list of (parent resource, iam_policy resource,
+policy bindings) tuples to find violations in.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of all violations</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._flatten_violations">
+<em class="property">static </em><code class="descname">_flatten_violations</code><span class="sig-paren">(</span><em>violations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner._flatten_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._flatten_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten RuleViolations into a dict for each RuleViolation member.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>violations</strong> (<em>list</em>) – The RuleViolations to flatten.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>dict</em> – Iterator of RuleViolations as a dict per member.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._output_results">
+<code class="descname">_output_results</code><span class="sig-paren">(</span><em>all_violations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner._output_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._output_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>all_violations</strong> (<em>list</em>) – A list of violations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._retrieve">
+<code class="descname">_retrieve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner._retrieve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner._retrieve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the data for scanner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of (gcp_type, forseti_data_model_resource) tuples.
+dict: A dict of resource counts.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#IamPolicyScanner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the data collection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.scanners.iam_rules_scanner._add_bucket_ancestor_bindings">
+<code class="descname">_add_bucket_ancestor_bindings</code><span class="sig-paren">(</span><em>policy_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iam_rules_scanner.html#_add_bucket_ancestor_bindings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iam_rules_scanner._add_bucket_ancestor_bindings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add bucket relevant IAM policy bindings from ancestors.</p>
+<p>Resources can inherit policy bindings from ancestors in the resource
+manager tree. For example: a GCS bucket inherits a ‘objectViewer’ role
+from a project or folder (up in the tree).</p>
+<p>So far the IAM rules engine only checks the set of bindings directly
+attached to a resource (direct bindings set (DBS)). We need to add
+relevant bindings inherited from ancestors to DBS so that these are
+also checked for violations.</p>
+<p>If we find one more than one binding with the same role name, we need to
+merge the members.</p>
+<p>NOTA BENE: this function only handles buckets and bindings relevant to
+these at present (but can and should be expanded to handle projects and
+folders going forward).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>policy_data</strong> (<em>list</em>) – list of (parent resource, iam_policy resource,
+policy bindings) tuples to find violations in.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

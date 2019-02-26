@@ -82,7 +82,7 @@ The Explain add-on module provides visibility into your Cloud Identity and Acces
 it
 * What roles grant a permission and which roles aren’t in sync with recent changes
 
-### [Email Notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid)
+### [Email Notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications)
 
 When configured, Forseti Security can send email notifications for Inventory and Scanner using the
 SendGrid API. SendGrid is currently the only supported email provider.

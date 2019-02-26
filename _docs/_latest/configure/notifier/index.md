@@ -29,6 +29,64 @@ and varying formats to you to events in your Google Cloud Platform
 
 ## Configuring Notifier
 
+### Email Connector Config
+
+Forseti security provides an interface to add the email connector of your
+choice. The `email_connector` information will be used when sending out
+all email notifications.
+
+To configure `email_connector`, follow the steps below:
+
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
+2. Navigate to the `notifier` > `email_connector` section.
+
+If you want the notifier to send violations and/or inventory summary via email, 
+provide the corresponding values for all the fields mentioned below.
+
+* `name`
+  * **Description**: The connector you want to use to receive emails.
+  SendGrid is the only email connector supported at the moment.
+  * **Valid values**: sendgrid
+  
+* `auth`
+  * **Description**: The authentication/authorization key used to authorize requests to SendGrid.
+  * **Valid values**: String
+  
+* `api_key`
+  * **Description**: The key used to authorize requests to SendGrid.
+  * **Valid values**: String
+
+* `sender`
+  * **Description**: The email address of the sender.
+  * **Valid values**: String
+
+* `recipient`
+  * **Description**: The email addresses of the recipients.
+  * **Valid values**: String
+  * **Note**: Multiple email recipients as delimited by comma, for example
+  `john@mycompany.com,jane@mycompany.com`.
+  
+* `data_format`
+  * **Description**: The format of the data generated for a given violation, and
+  inventory summary.
+  * **Valid values**: one of valid `csv` or `json`.
+  
+YAML below shows the email connector config for SendGrid.
+
+To configure other email connector, `name` and `auth` fields should be modified
+accordingly.
+
+  ```yaml
+  notifier:
+    email_connector:
+      name: sendgrid
+      auth:
+        api_key: {SENDGRID_API_KEY}
+      sender: {SENDER EMAIL}
+      recipient: {RECIPIENT EMAIL}
+      data_format: csv
+  ```
+
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
@@ -48,10 +106,6 @@ bucket, edit `gcs_summary`:
   * **Description**: Whether to send the inventory summary.
   * **Valid values**: one of valid `true` or `false`.
 
-* `data_format`
-  * **Description**: The format of the data for the inventory summary.
-  * **Valid values**: one of valid `csv` or `json`.
-
 * `gcs_path`
   * **Description**: The path to a Cloud Storage bucket.
   * **Valid values**: String
@@ -66,34 +120,18 @@ bucket, edit `gcs_summary`:
         gcs_path: gs://path_to_foo_bucket
   ```
 
-If you want the notifier to send the inventory summary via email, edit `email_summary`:
+If you want the notifier to send the inventory summary via email, edit 
+`email_summary`:
 
 * `enabled`
   * **Description**: Whether to send the inventory summary.
   * **Valid values**: one of valid `true` or `false`
-
-* `sendgrid_api_key`
-  * **Description**: The key used to authorize requests to SendGrid.
-  * **Valid values**: String
-
-* `sender`
-  * **Description**: The email address of the sender of the email.
-  * **Valid values**: String
-
-* `recipient`
-  * **Description**: The email addresses of the recipients of the email.
-  * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, like
-  `john@mycompany.com,jane@mycompany.com`.
 
   ```yaml
   notifier:
     inventory:
       email_summary:
         enabled: true
-        sendgrid_api_key: <SENDGRID_API_KEY>
-        sender: <SENDER EMAIL>
-        recipient: <RECIPIENT EMAIL>
   ```
 
 ### Violation Notifications
@@ -119,7 +157,7 @@ any combination of notifiers for each resource.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`
-  * **Description**: The format of the data generated for a given violation.
+  * **Description**: The format of the data for a given violation.
   * **Valid values**: one of valid `csv` or `json`.
   * **Note**: Slack only supports the `json` type.
 
@@ -128,23 +166,14 @@ any combination of notifiers for each resource.
   * **Valid values**: String
   * **Note**: Must start with `gs://`.
 
-* `sendgrid_api_key`
-  * **Description**: The key used to authorize requests to SendGrid.
-  * **Valid values**: String
-
-* `sender`
-  * **Description**: The email address of the sender of the email.
-  * **Valid values**: String
-
-* `recipient`
-  * **Description**: The email addresses of the recipients of the email.
-  * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
-
 * `webhook_url`
   * **Description**: The url of the Slack channel to receive the notification.
   * **Valid values**: String
   * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
+
+Note: To send violation notifications via email, you need to use `name`
+field only. Connector details needs to be provided in the `email_connector` 
+section.
 
 The following example shows how to update a `.yaml` file to add email, Slack,
 and Cloud Storage notifier for Cloud SQL violations:
@@ -160,11 +189,6 @@ notifier:
             data_format: csv
             gcs_path: gs://path_to_foo_bucket
         - name: email_violations
-          configuration:
-            data_format: csv
-            sendgrid_api_key: foobar_key
-            sender: forseti-notify@mycompany.org
-            recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
         - name: slack_webhook
           configuration:
             data_format: json
@@ -176,43 +200,76 @@ notifier:
 Forseti Security can configured to send violations to
 [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
-As Cloud SCC is in alpha, you must meet the following additional requirements:
-* Your organization is enrolled in the [Cloud SCC alpha program](https://services.google.com/fb/forms/commandcenteralpha/).
-* Your Forseti project has been whitelisted to Cloud SCC access. You should
-send the Forseti `project name, id and number` to your Cloud SCC contact.
-* Enable the `Cloud Security Command Center API` for the Forseti project via
-the Cloud Console.
-* Add the `securityCenter.editor` role to the Forseti server's service account. 
+Cloud SCC API is now in public beta. Please see the steps below to setup
+and configure. The previous alpha API will no longer be supported for setup.
 
-1. Open `forseti-security/configs/forseti_conf_server.yaml`.
-1. Navigate to the `notifier` > `violation` > `cscc` section.
+#### Prerequisites
+1. [Install]({% link _docs/latest/setup/install.md %})
+or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.8+. 
+1. The person performing the onboarding needs the following org-level IAM roles:
+- `Organization Admin`
+- `Security Center Admin`
+- `Security Center Sources Admin`
+- `Service Account Admin`
 
-The options below are available for you to configure:
+#### Setup
+1. Select `Add Security Sources` on the Cloud SCC Beta Dashboard.
 
-* `enabled:`
-  * **Description**: Whether to send notification to Cloud SCC.
-  * **Valid values**: one of valid `true` or `false`
+1. Find the [Forseti Cloud SCC Connector](https://console.cloud.google.com/marketplace/details/forseti/forseti-security-cloud-scc-connector)
+in Cloud Marketplace.
 
-* `mode:`
-  * **Description**: How to send the violations to Cloud SCC.
-  * **Valid values**: one of valid `api` or `bucket`
-  * **Note**: `api` mode will only work if Forseti is [using a service account from the Cloud Security Center project](https://cloud.google.com/security-command-center/docs/how-to-programmatic-access).
+1. Follow the step-by-step on-boarding flow triggered from the Forseti card.
+- Choose the project that is hosting Forseti
+- Use the existing Forseti server service account (which will be assigned the
+`Security Center Findings Editor` role)
+- Note: The on-boarding flow will generate a source_id and assign the `Security
+  Center Findings Editor` role, which is required to write to the Cloud SCC Beta API
+  to surface the findings in the Cloud SCC.
 
-* `organization_id:`
-  * **Description**: The organization id.
-  * **Valid values**: String
-  * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
+1. Enable the Cloud SCC Beta API in the Forseti project either via either
+the UI or API: 
+- via the UI (`API & Services ->  Library`)
+- via the command line in Cloud Shell `gcloud services enable securitycenter.googleapis.com`
+- Note: You will need to have either owner, editor or service management roles
+  in the Project in order to enable the API
 
-* `gcs_path`
-  * **Description**: The path to a Cloud Storage bucket.
-  * **Valid values**: String
-  * **Note**: Must start with `gs://`. Used only in `bucket` mode.
+1. Enable the  API connector config to Cloud SCC.  Specifically, this means
+in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
+ as follows:
 
-### Email notifications with SendGrid
+- Open `forseti-security/configs/forseti_conf_server.yaml` from the GCS bucket.
+- Navigate to the `notifier` > `violation` > `cscc` section.
 
-Forseti Security can send email notifications using the SendGrid API. SendGrid
-is the suggested free email service provider for GCP. For information about
-how to get 12,000 free emails every month, see
+  The options below are available for you to configure:
+
+  * `enabled:`
+    * **Description**: Whether to send notification to Cloud SCC.
+    * **Valid values**: one of valid `true` or `false`
+  
+  * `mode:`
+    * **Description**: How to send the violations to Cloud SCC.
+    * **Valid values**: `api`
+  
+  * `organization_id:`
+    * **Description**: The organization id.
+    * **Valid values**: String
+    * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
+  
+  * `source_id`
+    * **Description**: ID from the Cloud SCC beta on-boarding. **This must be added**
+    to use the Beta API integration.
+    * **Valid values**: String
+    * **Note**: It is in the form: source_id: <organizations/ORG_ID/sources/SOURCE_ID>
+
+To verify violations appear in the Cloud SCC Beta Dashboard, [run the notifier]({% link _docs/latest/use/cli/notifier.md %})
+after you have [built an inventory]({% link _docs/latest/use/cli/inventory.md %})
+and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
+
+### Email notifications
+
+Forseti Security can send email notifications using the SendGrid API. 
+SendGrid is the suggested free email service provider for GCP. For information
+about how to get 12,000 free emails every month, see
 [Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
 To use SendGrid to send email notifications for Forseti Security, follow the
@@ -221,18 +278,26 @@ process below:
 1. [Sign up for a SendGrid account](https://sendgrid.com/).
 1. Create a general
     [API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
-1. Edit the following in `forseti_conf_server.yaml`:
-    1. `email_recipient`
-       * **Description**: The Email address of notification recipient.
-    1. `email_sender`
-       * **Description**: The Sender email address for notifications
-    1. `sendgrid_api_key`
-       * **Description**: The API key for SendGrid email service.
+1. Edit the `email_connector` section in `forseti_conf_server.yaml` to provide
+SendGrid specific details.
 
 Note that SendGrid automatically includes an invisible tracking pixel in your
 emails. This may cause email warnings about opening images. To disable this,
 disable SendGrid
 [Open Tracking](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
+
+### Adding a new email connector
+
+1. To add a new email connector of your choice, create the connector specific 
+class similar to `sendgrid_connector.py` under 
+`google.cloud.forseti.common.util.email`. 
+1. This class should inherits the base email connector class, 
+base_email_connector.py, and implements the methods to send out emails using 
+the new connector that's being added.
+1. Update the `EMAIL_CONNECTOR_FACTORY` in `email_factory.py` with the 
+new connector and connector specific class that was created.
+1. Update the `email_connector` section under `notifier` in 
+`forseti_conf_server.yaml` with configuration details of the new connector.
 
 ## What's next
 

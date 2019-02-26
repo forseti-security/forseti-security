@@ -31,8 +31,15 @@ forseti model use <YOUR_MODEL_NAME>
 
 ### Running the scanner
 
+To run scanners (excluding external project access scanner):
 ```bash
 forseti scanner run
+```
+
+The external project access scanner is not part of the regular running scanners, as it may take hours to run. 
+Therefore, we now make this scanner accessible manually through the CLI:
+```bash
+forseti scanner run --scanner external_project_access_scanner
 ```
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.

@@ -28,6 +28,9 @@ organization Cloud IAM policy.
 The installer automatically determines setup information, generates a deployment
 template, and creates a Forseti deployment.
 
+Starting from Forseti v2.11.0, users will be able to install Forseti using Terraform.
+Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google).
+
 ### Activate Google Cloud Shell
 
 It's best to use
@@ -51,8 +54,7 @@ steps below:
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.8.0.`:
-
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.11.0.`:
       ```bash
       # Make sure you are in the forseti-security folder.
       cd forseti-security
@@ -60,7 +62,7 @@ steps below:
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v2.8.0
+      git checkout tags/v2.11.0
       ```
 
   1. Install both client and server by running the installer:
@@ -88,7 +90,7 @@ steps below:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
        more information, see how to
-       [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+       [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
      * G Suite super admin email \[Optional\]: This is part of the
@@ -105,11 +107,11 @@ steps below:
      your Cloud Storage bucket:
 
      ```bash
-       MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
-       forseti inventory create --import_as ${MODEL_ID}
-       forseti model use ${MODEL_ID}
-       forseti scanner run
-       forseti notifier run
+     MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+     forseti inventory create --import_as ${MODEL_ID}
+     forseti model use ${MODEL_ID}
+     forseti scanner run
+     forseti notifier run
      ```
 
 ## What's next
@@ -118,7 +120,7 @@ steps below:
   [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti Notifier to send
-  [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+  [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications).
 * Enable
   [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
   for processing by Forseti.

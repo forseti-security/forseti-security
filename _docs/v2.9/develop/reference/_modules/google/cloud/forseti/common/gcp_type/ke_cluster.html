@@ -1,0 +1,174 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.ke_cluster"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.ke_cluster</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Kubernetes Engine Cluster object.</span>
+
+<span class="sd">See: https://cloud.google.com/kubernetes-engine/docs/</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base.resources</span> <span class="k">import</span> <span class="n">size_t_hash</span>
+
+
+<span class="c1"># pylint: disable=too-many-arguments,too-many-instance-attributes</span>
+<span class="c1"># pylint: disable=too-many-locals,missing-param-doc,missing-type-doc</span>
+<span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="KeCluster"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.ke_cluster.html#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster">[docs]</a><span class="k">class</span> <span class="nc">KeCluster</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents KE Cluster resource.&quot;&quot;&quot;</span>
+
+    <span class="n">RESOURCE_NAME_FMT</span> <span class="o">=</span> <span class="s1">&#39;kubernetes_cluster/</span><span class="si">%s</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">full_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial_node_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">logging_service</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">monitoring_service</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">cluster_ipv4_cidr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">addons_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">subnetwork</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_pools</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">enable_kubernetes_alpha</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resource_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">label_fingerprint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legacy_abac</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">network_policy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ip_allocation_policy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">master_authorized_networks_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">maintenance_policy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">initial_cluster_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">current_master_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">current_node_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">create_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">status_message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">node_ipv4_cidr_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">instance_group_urls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">current_node_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">expire_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">server_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KeCluster</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">cluster_id</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">KE_CLUSTER</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">cluster_name</span><span class="p">,</span>
+            <span class="n">display_name</span><span class="o">=</span><span class="n">cluster_name</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span>
+            <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="n">full_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_node_count</span> <span class="o">=</span> <span class="n">initial_node_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_config</span> <span class="o">=</span> <span class="n">node_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging_service</span> <span class="o">=</span> <span class="n">logging_service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitoring_service</span> <span class="o">=</span> <span class="n">monitoring_service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_ipv4_cidr</span> <span class="o">=</span> <span class="n">cluster_ipv4_cidr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addons_config</span> <span class="o">=</span> <span class="n">addons_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subnetwork</span> <span class="o">=</span> <span class="n">subnetwork</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_pools</span> <span class="o">=</span> <span class="n">node_pools</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_kubernetes_alpha</span> <span class="o">=</span> <span class="n">enable_kubernetes_alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_labels</span> <span class="o">=</span> <span class="n">resource_labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_fingerprint</span> <span class="o">=</span> <span class="n">label_fingerprint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legacy_abac</span> <span class="o">=</span> <span class="n">legacy_abac</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_policy</span> <span class="o">=</span> <span class="n">network_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_allocation_policy</span> <span class="o">=</span> <span class="n">ip_allocation_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master_authorized_networks_config</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">master_authorized_networks_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maintenance_policy</span> <span class="o">=</span> <span class="n">maintenance_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_cluster_version</span> <span class="o">=</span> <span class="n">initial_cluster_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_master_version</span> <span class="o">=</span> <span class="n">current_master_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_node_version</span> <span class="o">=</span> <span class="n">current_node_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_time</span> <span class="o">=</span> <span class="n">create_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_message</span> <span class="o">=</span> <span class="n">status_message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_ipv4_cidr_size</span> <span class="o">=</span> <span class="n">node_ipv4_cidr_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_group_urls</span> <span class="o">=</span> <span class="n">instance_group_urls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_node_count</span> <span class="o">=</span> <span class="n">current_node_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expire_time</span> <span class="o">=</span> <span class="n">expire_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_config</span> <span class="o">=</span> <span class="n">server_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="KeCluster.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.ke_cluster.html#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.from_json">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">json_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new ForwardingRule object from json data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (Resource): resource this cluster belongs to.</span>
+<span class="sd">            json_string(str): JSON string of a cluster GCP API response.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           KeCluster: A new KeCluster object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cluster_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+        <span class="n">cluster_name</span> <span class="o">=</span> <span class="n">cluster_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">cluster_id</span> <span class="o">=</span> <span class="n">size_t_hash</span><span class="p">(</span><span class="n">cluster_dict</span><span class="p">[</span><span class="s1">&#39;selfLink&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">cluster_id</span><span class="o">=</span><span class="n">cluster_id</span><span class="p">,</span>
+            <span class="n">cluster_name</span><span class="o">=</span><span class="n">cluster_name</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">kubernetes_cluster/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                                                        <span class="n">cluster_id</span><span class="p">),</span>
+            <span class="n">locations</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;locations&#39;</span><span class="p">),</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">),</span>
+            <span class="n">initial_node_count</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initialNodeCount&#39;</span><span class="p">),</span>
+            <span class="n">node_config</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nodeConfig&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">logging_service</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loggingService&#39;</span><span class="p">),</span>
+            <span class="n">monitoring_service</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;monitoringService&#39;</span><span class="p">),</span>
+            <span class="n">network</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">),</span>
+            <span class="n">cluster_ipv4_cidr</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;clusterIpv4Cidr&#39;</span><span class="p">),</span>
+            <span class="n">addons_config</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;addonsConfig&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">subnetwork</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subnetwork&#39;</span><span class="p">),</span>
+            <span class="n">node_pools</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nodePools&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+            <span class="n">enable_kubernetes_alpha</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enableKubernetesAlpha&#39;</span><span class="p">,</span>
+                                                     <span class="kc">False</span><span class="p">),</span>
+            <span class="n">resource_labels</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resourceLabels&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">label_fingerprint</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;labelFingerprint&#39;</span><span class="p">),</span>
+            <span class="n">legacy_abac</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;legacyAbac&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">network_policy</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;networkPolicy&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">ip_allocation_policy</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ipAllocationPolicy&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">master_authorized_networks_config</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;masterAuthorizedNetworksConfig&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">maintenance_policy</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maintenancePolicy&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endpoint&#39;</span><span class="p">),</span>
+            <span class="n">initial_cluster_version</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initialClusterVersion&#39;</span><span class="p">),</span>
+            <span class="n">current_master_version</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;currentMasterVersion&#39;</span><span class="p">),</span>
+            <span class="n">current_node_version</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;currentNodeVersion&#39;</span><span class="p">),</span>
+            <span class="n">create_time</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;createTime&#39;</span><span class="p">),</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">),</span>
+            <span class="n">status_message</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statusMessage&#39;</span><span class="p">),</span>
+            <span class="n">node_ipv4_cidr_size</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nodeIpv4CidrSize&#39;</span><span class="p">),</span>
+            <span class="n">instance_group_urls</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instanceGroupUrls&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+            <span class="n">current_node_count</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;currentNodeCount&#39;</span><span class="p">),</span>
+            <span class="n">expire_time</span><span class="o">=</span><span class="n">cluster_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;expireTime&#39;</span><span class="p">),</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cluster_dict</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the dictionary representation of the cluster.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: deserialized json object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span></div>
+</pre></div>
