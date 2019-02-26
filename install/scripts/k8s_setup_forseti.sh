@@ -71,7 +71,7 @@ export FORSETI_SERVER_IP=10.43.240.3
 
 
 	if ${DEPLOY_CLIENT}; then
-	    kubectl create secret generic client-credentials --from-file=key.json=${CLIENT_CREDENTIALS}
+	    kubectl create secret generic client-credentials --from-file=client_key.json=${CLIENT_CREDENTIALS}
     fi
 
 # Create deployment files from the templates
