@@ -47,7 +47,11 @@ resources.
   groups.
   
 ## KMS
-  * Crypto keys should be rotated in the specified time period.
+  * Crypto keys with the following config should be rotated in 100 days.
+    algorithm: GOOGLE_SYMMETRIC_ENCRYPTION
+    protection_level: SOFTWARE
+    purpose: ENCRYPT_DECRYPT
+    state: ENABLED
     
 ## Kubernetes Engine Version
   * Only allow the following supported versions:

@@ -642,7 +642,7 @@ rules:
       * **Valid values**: One of `SOFTWARE` or `HSM`.
       
     * `purpose`
-      * **Description**: Optional, a list of algorithms to whitelist/blacklist. 
+      * **Description**: Optional, a list of purpose to whitelist/blacklist. 
       * **Valid values**: String
       * **Example values**: `ENCRYPT_DECRYPT`, `ASYMMETRIC_SIGN` and 
       `ASYMMETRIC_DECRYPT`.
