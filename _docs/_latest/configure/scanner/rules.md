@@ -17,325 +17,6 @@ directory. When you make changes to the rule files, upload them to your
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
 listed in `forseti_server_conf.yaml`.
 
-## Cloud IAM policy rules
-
-This section describes rules for Cloud Identity and Access Management (Cloud IAM).
-
-### Rule definition
-
-Forseti Scanner recognizes the following rule grammar in YAML or JSON:
-
-```yaml
-rules:
-  - name: $rule_name
-    mode: $rule_mode
-    resource:
-      - type: $resource_type
-        applies_to: $applies_to
-        resource_ids:
-          - $resource_id1
-          - $resource_id2
-          - ...
-    inherit_from_parents: $inherit_from
-    bindings:
-      - role: $role_name
-        members:
-          - $member1
-          - $member2
-          ...
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `mode`
-  * **Description**: The mode of the rule.
-  * **Valid values**: One of `whitelist`, `blacklist` or `required`.
-  * **Note**:
-    * `whitelist`: Allow the members defined.
-    * `blacklist`: Block the members defined.
-    * `required`: Defined members with the specified roles must be found in policy.
-
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
-
-  * `applies_to`
-    * **Description**: What resources to apply the rule to.
-    * **Valid values**: One of `self`, `children` or `self_and_children`.
-    * **Note**:
-      * `self`: Allow the members defined.
-      * `children`: Block the members defined.
-      * `self_and_children`: The rule applies to the specified resource and its child resources.
-
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `inherit_from_parents`
-  * **Description**: A boolean that defines whether a specified resource inherits ancestor rules.
-  * **Valid values**: One of `true` or `false`.
-
-* `bindings`
-  * **Description**: The
-  [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit.
-    * `role`
-      * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
-      * **Valid values**: String.
-      * **Example values**: `roles/editor`, `roles/viewer`
-    * `members`
-      * **Description**: A list of Cloud IAM members. You can also use wildcards.
-      * **Valid values**: String.
-      * **Example values**: `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
-        `user:*@company.com` (anyone with an identity at company.com).
-
-
-## Kubernetes Engine version rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: Nodepool version not patched for critical security vulnerabilities
-    resource:
-      - type: organization
-        resource_ids:
-          - '*'
-    check_serverconfig_valid_node_versions: false
-    check_serverconfig_valid_master_versions: false
-    allowed_nodepool_versions:
-      - major: '1.6'
-        minor: '13-gke.1'
-        operator: '>='
-      - major: '1.7'
-        minor: '11-gke.1'
-        operator: '>='
-      - major: '1.8'
-        minor: '4-gke.1'
-        operator: '>='
-      - major: '1.9'
-        operator: '>='
- ```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
-
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `check_serverconfig_valid_node_versions`
-  * **Description**: If true, will raise a violation for any node pool running a version
-  that is not listed as supported for the zone the cluster is running in.
-  * **Valid values**: One of `true` or `false`.
-
-* `check_serverconfig_valid_master_versions`
-  * **Description**: If true, will raise a violation for any cluster running an out of
-  date master version. New clusters can only be created with a supported master version.
-  * **Valid values**: One of `true` or `false`.
-
-* `allowed_nodepool_versions`
-  * **Description**: Optional, if not included all versions are allowed.
-  The list of rules for what versions are allowed on nodes.
-    * `major`
-      * **Description**: The major version that is allowed.
-      * **Valid values**: String.
-      * **Example values**: `1.6`, `1.7`, `1.8`
-
-    * `minor`
-      * **Description**: Optional, the minor version that is allowed. If not included, all minor
-      versions are allowed.
-      * **Valid values**: String.
-      * **Example values**: `11-gke.1`, `12-gke.1`
-
-    * `operator`
-      * **Description**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator
-      determines how the current version compares with the allowed version. If a minor version is
-      not included, the operator applies to major version. Otherwise it applies to minor versions
-      within a single major version.
-      * **Valid values**: String.
-      * **Example values**: `>=`
-
-## Blacklist rules
-
-### Rule definition
-
-```yaml
-rules:
-  - blacklist: Emerging Threat blacklist
-    url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
-```
-
-* **blacklist**: The name of your blacklist.
-* **url**: URL that contains a list of IPs to check against.
-
-## Google Group rules
-
-### Rule definition
-
-```yaml
-- name: Allow my company users and gmail users to be in my company groups.
-  group_email: my_customer
-  mode: whitelist
-  conditions:
-    - member_email: '@MYDOMAIN.com'
-    - member_email: '@gmail.com'
-    # GCP Service Accounts
-    # https://cloud.google.com/compute/docs/access/service-accounts
-    #- member_email: "gserviceaccount.com"
-    # Big Query Transfer Service
-    #- member_email: "@bqdts.google.baggins"
-```
-
-## Cloud Storage bucket ACL rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: sample bucket acls rule to search for public buckets
-    bucket: '*'
-    entity: AllUsers
-    email: '*'
-    domain: '*'
-    role: '*'
-    resource:
-        - resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `resource`
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `bucket`
-  * **Description**: The bucket name you want to audit.
-  * **Valid values**: String, you can use `*` to match for all.
-
-* `entity`
-  * **Description**: The [ACL entity](https://cloud.google.com/storage/docs/access-control/lists) that holds the bucket permissions.
-  * **Valid values**: String.
-  * **Example values**: `AllUsers`
-
-* `email`
-  * **Description**: The email of the entity.
-  * **Valid values**: String, you can use `*` to match for all.
-
-* `domain`
-  * **Description**: The domain of the entity.
-  * **Valid values**: String, you can use `*` to match for all.
-
-* `role`
-  * **Description**: The access permission of the entity.
-  * **Valid values**: String, you can use `*` to match for all.
-
-For more information, refer to the
-[BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls#resource)
-documentation.
-
-## Cloud Audit Logging rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: sample audit logging rule for data access logging
-    resource:
-      - type: project
-        resource_ids:
-          - '*'
-    service: 'storage.googleapis.com'
-    log_types:
-      - 'DATA_READ'
-      - 'DATA_WRITE'
-    allowed_exemptions:
-      - 'user:user1@MYDOMAIN.com'
-      - 'user:user2@MYDOMAIN.com'
- ```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
-
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `service`
-  * **Description**: The service on which logs must be enabled. The special value of `allServices` denotes audit logs for all services.
-  * **Valid values**: String.
-  * **Example values**: `allServices`, `storage.googleapis.com`
-
-* `log_types`
-  * **Description**: The required log types.
-  * **Valid values**: One of `ADMIN_READ`, `DATA_READ` or `DATA_WRITE`.
-
-* `allowed_exemptions`
-  * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
-  * **Valid values**: String.
-  * **Example values**: `user:user1@MYDOMAIN.com`
-
-
-## Cloud SQL rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: sample Cloud SQL rule to search for publicly exposed instances
-    instance_name: '*'
-    authorized_networks: '0.0.0.0/0'
-    ssl_enabled: 'False'
-    resource:
-      - type: organization
-        resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
- ```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
-
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `instance_name`
-  * **Description**: The Cloud SQL instance to which you want to apply the rule.
-  * **Valid values**: String, you can use `*` to match for all.
-
-* `authorized_networks`
-  * **Description**: The allowed network.
-  * **Valid values**: String.
-  * **Example values**: `0.0.0.0/0`
-
-* `ssl_enabled`
-  * **Description**: Whether SSL should be enabled.
-  * **Valid values**: One of `true` or `false`.
-
 ## BigQuery rules
 
 ### Rule definition
@@ -423,27 +104,93 @@ Scanner only checks to make sure that the entity you specified doesn't have acce
 For whitelists, the specified entity specifies who has access to your datasets.
 Any entity that does not match a whitelist binding will be marked as a violation.
 
-## Enabled APIs rules
+## Blacklist rules
 
 ### Rule definition
 
 ```yaml
 rules:
-  - name: sample enabled APIs whitelist rule
-    mode: whitelist
+  - blacklist: Emerging Threat blacklist
+    url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+```
+
+* **blacklist**: The name of your blacklist.
+* **url**: URL that contains a list of IPs to check against.
+
+## Cloud Audit Logging rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: sample audit logging rule for data access logging
     resource:
       - type: project
         resource_ids:
           - '*'
-    services:
-      - 'bigquery-json.googleapis.com'
-      - 'compute.googleapis.com'
-      - 'logging.googleapis.com'
-      - 'monitoring.googleapis.com'
-      - 'pubsub.googleapis.com'
-      - 'storage-api.googleapis.com'
-      - 'storage-component.googleapis.com'
+    service: 'storage.googleapis.com'
+    log_types:
+      - 'DATA_READ'
+      - 'DATA_WRITE'
+    allowed_exemptions:
+      - 'user:user1@MYDOMAIN.com'
+      - 'user:user2@MYDOMAIN.com'
  ```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `service`
+  * **Description**: The service on which logs must be enabled. The special value of `allServices` denotes audit logs for all services.
+  * **Valid values**: String.
+  * **Example values**: `allServices`, `storage.googleapis.com`
+
+* `log_types`
+  * **Description**: The required log types.
+  * **Valid values**: One of `ADMIN_READ`, `DATA_READ` or `DATA_WRITE`.
+
+* `allowed_exemptions`
+  * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
+  * **Valid values**: String.
+  * **Example values**: `user:user1@MYDOMAIN.com`
+  
+## Cloud IAM policy rules
+
+This section describes rules for Cloud Identity and Access Management (Cloud IAM).
+
+### Rule definition
+
+Forseti Scanner recognizes the following rule grammar in YAML or JSON:
+
+```yaml
+rules:
+  - name: $rule_name
+    mode: $rule_mode
+    resource:
+      - type: $resource_type
+        applies_to: $applies_to
+        resource_ids:
+          - $resource_id1
+          - $resource_id2
+          - ...
+    inherit_from_parents: $inherit_from
+    bindings:
+      - role: $role_name
+        members:
+          - $member1
+          - $member2
+          ...
+```
 
 * `name`
   * **Description**: The name of the rule.
@@ -453,9 +200,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:
-    * `whitelist`: Allow only the APIs listed in `services`.
-    * `blacklist`: Block the APIs listed in `services`.
-    * `required`: All APIs listed in `services` must be enabled.
+    * `whitelist`: Allow the members defined.
+    * `blacklist`: Block the members defined.
+    * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
@@ -474,80 +221,23 @@ rules:
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
 
-* `services`
-  * **Description**: The list of services to whitelist/blacklist/require.
-  * **Valid values**: String.
-  * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
+* `inherit_from_parents`
+  * **Description**: A boolean that defines whether a specified resource inherits ancestor rules.
+  * **Valid values**: One of `true` or `false`.
 
-
-## External Project Access rules
-
-### Rule definitions
-```yaml
-rules:
-- name: Only allow access to projects in my organization.
-  allowed_ancestors:
-  - organizations/{ORGANIZATION_ID}
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-  
-* `allowed_ancestors`
-  * **Description**: The folder or organization that is allowed as an ancestor of a project.
-  * **Valid values**: String, organizations/111 or folder/111.
-
-* `users`
-  * **Description**: * Optional. The users that are allowed access. Omitting this section would mean that the rule 
-  applies to all users in the organization.
-  * **Valid values**: String, user1@example.com.
-
-## Forwarding rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: Rule Name Example
-    target: Forwarding Rule Target Example
-    mode: whitelist
-    load_balancing_scheme: EXTERNAL
-    ip_protocol: ESP
-    ip_address: "198.51.100.46"
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `target`
-  * **Description**: The URL of the target resource to receive the matched traffic.
-  * **Valid values**: String.
-
-* `mode`
-  * **Description**: The mode of the rule.
-  * **Valid values**: Current only support `whitelist` mode.
-  * **Note**:
-     * `whitelist`: Ensure each forwarding rule only directs to the intended target instance.
-
-* `load_balancing_scheme`
-  * **Description**: What the ForwardingRule will be used for.
-  * **Valid values**: One of `INTERNAL` or `EXTERNAL`.
-
-* `ip_protocol`
-  * **Description**: The IP protocol to which this rule applies.
-  * **Valid values**: One of `TCP`, `UDP`, `ESP`, `AH`, `SCTP`, or `ICMP`.
-
-* `ip_address`
-  * **Description**: The IP address for which this forwarding rule serves.
-  * **Valid values**: String.
-  * **Example values**: `198.51.100.46`
-
-To learn more, see the
-[ForwardingRules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules)
-documentation.
-
+* `bindings`
+  * **Description**: The
+  [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit.
+    * `role`
+      * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
+      * **Valid values**: String.
+      * **Example values**: `roles/editor`, `roles/viewer`
+    * `members`
+      * **Description**: A list of Cloud IAM members. You can also use wildcards.
+      * **Valid values**: String.
+      * **Example values**: `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
+        `user:*@company.com` (anyone with an identity at company.com).
+ 
 ## Cloud IAP rules
 
 This section describes rules for Cloud Identity-Aware Proxy (Cloud IAP).
@@ -606,6 +296,241 @@ rules:
   * **Valid values**: String.
   * **Example values**: `10.*,monitoring-instance-tag`
 
+## Cloud SQL rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: sample Cloud SQL rule to search for publicly exposed instances
+    instance_name: '*'
+    authorized_networks: '0.0.0.0/0'
+    ssl_enabled: 'False'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+ ```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `instance_name`
+  * **Description**: The Cloud SQL instance to which you want to apply the rule.
+  * **Valid values**: String, you can use `*` to match for all.
+
+* `authorized_networks`
+  * **Description**: The allowed network.
+  * **Valid values**: String.
+  * **Example values**: `0.0.0.0/0`
+
+* `ssl_enabled`
+  * **Description**: Whether SSL should be enabled.
+  * **Valid values**: One of `true` or `false`.
+  
+## Cloud Storage bucket ACL rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: sample bucket acls rule to search for public buckets
+    bucket: '*'
+    entity: AllUsers
+    email: '*'
+    domain: '*'
+    role: '*'
+    resource:
+        - resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `bucket`
+  * **Description**: The bucket name you want to audit.
+  * **Valid values**: String, you can use `*` to match for all.
+
+* `entity`
+  * **Description**: The [ACL entity](https://cloud.google.com/storage/docs/access-control/lists) that holds the bucket permissions.
+  * **Valid values**: String.
+  * **Example values**: `AllUsers`
+
+* `email`
+  * **Description**: The email of the entity.
+  * **Valid values**: String, you can use `*` to match for all.
+
+* `domain`
+  * **Description**: The domain of the entity.
+  * **Valid values**: String, you can use `*` to match for all.
+
+* `role`
+  * **Description**: The access permission of the entity.
+  * **Valid values**: String, you can use `*` to match for all.
+
+For more information, refer to the
+[BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls#resource)
+documentation.
+  
+## Enabled APIs rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: sample enabled APIs whitelist rule
+    mode: whitelist
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    services:
+      - 'bigquery-json.googleapis.com'
+      - 'compute.googleapis.com'
+      - 'logging.googleapis.com'
+      - 'monitoring.googleapis.com'
+      - 'pubsub.googleapis.com'
+      - 'storage-api.googleapis.com'
+      - 'storage-component.googleapis.com'
+ ```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: One of `whitelist`, `blacklist` or `required`.
+  * **Note**:
+    * `whitelist`: Allow only the APIs listed in `services`.
+    * `blacklist`: Block the APIs listed in `services`.
+    * `required`: All APIs listed in `services` must be enabled.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `applies_to`
+    * **Description**: What resources to apply the rule to.
+    * **Valid values**: One of `self`, `children` or `self_and_children`.
+    * **Note**:
+      * `self`: Allow the members defined.
+      * `children`: Block the members defined.
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `services`
+  * **Description**: The list of services to whitelist/blacklist/require.
+  * **Valid values**: String.
+  * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
+  
+## External Project Access rules
+
+### Rule definitions
+```yaml
+rules:
+- name: Only allow access to projects in my organization.
+  allowed_ancestors:
+  - organizations/{ORGANIZATION_ID}
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `allowed_ancestors`
+  * **Description**: The folder or organization that is allowed as an ancestor of a project.
+  * **Valid values**: String, organizations/111 or folder/111.
+
+* `users`
+  * **Description**: * Optional. The users that are allowed access. Omitting this section would mean that the rule 
+  applies to all users in the organization.
+  * **Valid values**: String, user1@example.com.
+  
+## Forwarding rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: Rule Name Example
+    target: Forwarding Rule Target Example
+    mode: whitelist
+    load_balancing_scheme: EXTERNAL
+    ip_protocol: ESP
+    ip_address: "198.51.100.46"
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `target`
+  * **Description**: The URL of the target resource to receive the matched traffic.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: Current only support `whitelist` mode.
+  * **Note**:
+     * `whitelist`: Ensure each forwarding rule only directs to the intended target instance.
+
+* `load_balancing_scheme`
+  * **Description**: What the ForwardingRule will be used for.
+  * **Valid values**: One of `INTERNAL` or `EXTERNAL`.
+
+* `ip_protocol`
+  * **Description**: The IP protocol to which this rule applies.
+  * **Valid values**: One of `TCP`, `UDP`, `ESP`, `AH`, `SCTP`, or `ICMP`.
+
+* `ip_address`
+  * **Description**: The IP address for which this forwarding rule serves.
+  * **Valid values**: String.
+  * **Example values**: `198.51.100.46`
+
+To learn more, see the
+[ForwardingRules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules)
+documentation.
+
+## Google Group rules
+
+### Rule definition
+
+```yaml
+- name: Allow my company users and gmail users to be in my company groups.
+  group_email: my_customer
+  mode: whitelist
+  conditions:
+    - member_email: '@MYDOMAIN.com'
+    - member_email: '@gmail.com'
+    # GCP Service Accounts
+    # https://cloud.google.com/compute/docs/access/service-accounts
+    #- member_email: "gserviceaccount.com"
+    # Big Query Transfer Service
+    #- member_email: "@bqdts.google.baggins"
+```
+
 ## Instance Network Interface rules
 
 ### Rule definition
@@ -656,6 +581,208 @@ rules:
     - network_01
     ```
 
+## KMS rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: sample rule to allow symmetric keys with this configuration
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+      - rotation_period: 100 #days
+        algorithm: 
+        - GOOGLE_SYMMETRIC_ENCRYPTION
+        protection_level: SOFTWARE
+        purpose: 
+        - ENCRYPT_DECRYPT
+        state:
+        - ENABLED
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: String.  One of `blacklist` or `whitelist`.
+  * **Note**:
+    * `whitelist`: Allow the crypto key configuration defined.
+    * `blacklist`: Block the crypto key configuration defined.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: String. Only `organization` is supported.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `key`
+  * **Description**: A list of crypto key configuration details to check for.
+    * `rotation_period`
+      * **Description**: Optional, the maximum number of days in which the key 
+      should be rotated.
+      * **Valid values**: String, number of days.
+      
+    * `algorithms`
+      * **Description**: Optional, a list of algorithms to whitelist/blacklist.
+      * **Valid values**: String.
+      * **Example values**: `GOOGLE_SYMMETRIC_ENCRYPTION`, `EC_SIGN_P256_SHA256`
+      
+    * `protection_level`
+      * **Description**: Optional, the protection level to which you want to
+      apply the rule.
+      * **Valid values**: One of `SOFTWARE` or `HSM`.
+      
+    * `purpose`
+      * **Description**: Optional, a list of purpose to whitelist/blacklist. 
+      * **Valid values**: String
+      * **Example values**: `ENCRYPT_DECRYPT`, `ASYMMETRIC_SIGN` and 
+      `ASYMMETRIC_DECRYPT`.
+
+      
+    * `state`
+      * **Description**: Optional, a list of states to whitelist/blacklist.
+      * **Valid values**: String.
+      * **Example values**: `PENDING_GENERATION`, `ENABLED`, `DISABLED`, 
+      `DESTROY_SCHEDULED` and `DESTROYED`.
+
+## Kubernetes Engine rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: logging should be enabled
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: loggingService
+    mode: whitelist
+    values:
+      - logging.googleapis.com
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `key`
+  * **Description**: A JMESPath expression that extracts values from
+    the JSON representation of a GKE cluster.
+
+    *Tip*: to find the JSON representation of your cluster use
+    `gcloud --format=json container clusters describe <name>`
+  * **Valid values**: String, must be a well-formed
+    [JMESPath](http://jmespath.org/) expression.
+
+* `mode`
+  * **Description**: Choose whether or not the list of values will be
+    interpreted as a whitelist or a blacklist.
+  * **Valid values**: String.  Must be `whitelist` or `blacklist`.
+
+` `values`
+  * **Description**: The list of values that the rule looks for.
+    * If `mode` is set to `whitelist`, the rule generates a violation
+      if the value extracted from a cluster is NOT on this list.
+	* If `mode` is set to `blacklist`, the rule generates a violation
+      if the value extracted from a cluster IS on the list.
+  * **Valid values**: A list of any valid YAML values.
+
+    *Tip*: Pay attention to the data types that you enter here.  If
+    the JMESPath expression in `key` extracts an integer, you probably
+    want integers in this list.  Similarly, if the expression extracts
+    a list of values, you need to provide lists.
+    
+## Kubernetes Engine version rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: Nodepool version not patched for critical security vulnerabilities
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    check_serverconfig_valid_node_versions: false
+    check_serverconfig_valid_master_versions: false
+    allowed_nodepool_versions:
+      - major: '1.6'
+        minor: '13-gke.1'
+        operator: '>='
+      - major: '1.7'
+        minor: '11-gke.1'
+        operator: '>='
+      - major: '1.8'
+        minor: '4-gke.1'
+        operator: '>='
+      - major: '1.9'
+        operator: '>='
+ ```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `check_serverconfig_valid_node_versions`
+  * **Description**: If true, will raise a violation for any node pool running a version
+  that is not listed as supported for the zone the cluster is running in.
+  * **Valid values**: One of `true` or `false`.
+
+* `check_serverconfig_valid_master_versions`
+  * **Description**: If true, will raise a violation for any cluster running an out of
+  date master version. New clusters can only be created with a supported master version.
+  * **Valid values**: One of `true` or `false`.
+
+* `allowed_nodepool_versions`
+  * **Description**: Optional, if not included all versions are allowed.
+  The list of rules for what versions are allowed on nodes.
+    * `major`
+      * **Description**: The major version that is allowed.
+      * **Valid values**: String.
+      * **Example values**: `1.6`, `1.7`, `1.8`
+
+    * `minor`
+      * **Description**: Optional, the minor version that is allowed. If not included, all minor
+      versions are allowed.
+      * **Valid values**: String.
+      * **Example values**: `11-gke.1`, `12-gke.1`
+
+    * `operator`
+      * **Description**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator
+      determines how the current version compares with the allowed version. If a minor version is
+      not included, the operator applies to major version. Otherwise it applies to minor versions
+      within a single major version.
+      * **Valid values**: String.
+      * **Example values**: `>=`
+
 ## Lien rules
 
 ### Rule definition
@@ -692,7 +819,6 @@ rules:
 * `restrictions`
   * **Description**: A list of restrictions to check for.
   * **Valid values**: Currently only supports `resourcemanager.projects.delete`.
-
 
 ## Location rules
 
@@ -810,94 +936,6 @@ rules:
     * **Description**: Whether to include children. It is only relevant to sinks created for organizations or folders.
     * **Valid values**: String. One of `true`, `false` or `*`. `*` means the rule will match sinks with either true or false.
 
-## Service Account Key rules
-
-### Rule definitions
-
-```yaml
-rules:
-  # The max allowed age of user managed service account keys (in days)
-  - name: Service account keys not rotated
-    resource:
-      - type: organization
-        resource_ids:
-          - '*'
-    max_age: 100 # days
- ```
-
-* `name`
-  * **Description**: The name of the rule
-  * **Valid values**: String.
-
-* `type`
-  * **Description**: The type of the resource this rule applies to.
-  * **Valid values**: String, one of `organization`, `folder` or `project`.
-
-* `resource_ids`
-  * **Description**: The id of the resource this rule applies to.
-  * **Valid values**: String, you can use `*` to match for all.
-
-* `max_age`
-  * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
-  * **Valid values**: String, number of days.
-
-## Kubernetes Engine rules
-
-### Rule definition
-
-```yaml
-rules:
-  - name: logging should be enabled
-    resource:
-      - type: project
-        resource_ids:
-          - '*'
-    key: loggingService
-    mode: whitelist
-    values:
-      - logging.googleapis.com
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
-
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
-
-* `key`
-  * **Description**: A JMESPath expression that extracts values from
-    the JSON representation of a GKE cluster.
-
-    *Tip*: to find the JSON representation of your cluster use
-    `gcloud --format=json container clusters describe <name>`
-  * **Valid values**: String, must be a well-formed
-    [JMESPath](http://jmespath.org/) expression.
-
-* `mode`
-  * **Description**: Choose whether or not the list of values will be
-    interpreted as a whitelist or a blacklist.
-  * **Valid values**: String.  Must be `whitelist` or `blacklist`.
-
-` `values`
-  * **Description**: The list of values that the rule looks for.
-    * If `mode` is set to `whitelist`, the rule generates a violation
-      if the value extracted from a cluster is NOT on this list.
-	* If `mode` is set to `blacklist`, the rule generates a violation
-      if the value extracted from a cluster IS on the list.
-  * **Valid values**: A list of any valid YAML values.
-
-    *Tip*: Pay attention to the data types that you enter here.  If
-    the JMESPath expression in `key` extracts an integer, you probably
-    want integers in this list.  Similarly, if the expression extracts
-    a list of values, you need to provide lists.
-
 ## Retention rules
 
 ### Rule definition
@@ -946,44 +984,36 @@ rules:
   * **Valid values**: Integer, number of days.
 
     *Tip*: The rule must include a minimum_retention, maximum_retention or both.
-  
-## KMS rules
+    
+## Service Account Key rules
 
-### Rule definition
+### Rule definitions
 
 ```yaml
 rules:
-  - name: All crypto keys should be rotated in 120 days
-    mode: blacklist
+  # The max allowed age of user managed service account keys (in days)
+  - name: Service account keys not rotated
     resource:
       - type: organization
         resource_ids:
           - '*'
-    key:
-      - rotation_period: 120 #days
-```
+    max_age: 100 # days
+ ```
 
 * `name`
-  * **Description**: The name of the rule.
+  * **Description**: The name of the rule
   * **Valid values**: String.
-  
-* `mode`
-  * **Description**: Choose whether or not the list of values will be
-    interpreted as a blacklist or not.
-  * **Valid values**: String.  Only `blacklist` mode is supported.
 
-* `resource`
-  * `type`
-    * **Description**: The type of the resource.
-    * **Valid values**: String. Only `organization` is supported.
+* `type`
+  * **Description**: The type of the resource this rule applies to.
+  * **Valid values**: String, one of `organization`, `folder` or `project`.
 
-  * `resource_ids`
-    * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String, you can use `*` to match for all.
+* `resource_ids`
+  * **Description**: The id of the resource this rule applies to.
+  * **Valid values**: String, you can use `*` to match for all.
 
-* `key`
-  * **Description**: A list of crypto key configuration details to check for.
-    * `rotation_period`
-      * **Description**: The maximum number of days in which the key should
-      be rotated.
-      * **Valid values**: String, number of days.
+* `max_age`
+  * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
+  * **Valid values**: String, number of days.
+
+

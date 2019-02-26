@@ -100,17 +100,6 @@ For examples of how to define scanner rules for your firewall rules scanner, see
 [`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/firewall_rules.yaml)
 rule file.
 
-## Load balancer forwarding rules scanner
-
-You can configure load balancer forwarding rules to direct unauthorized external
-traffic to your target instances. The forwarding rule scanner supports a
-whitelist mode, to ensure each forwarding rule only directs to the intended
-target instances.
-
-For examples of how to define scanner rules for your forwarding rules, see the
-[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/forwarding_rules.yaml)
-rule file.
-
 ## Groups scanner
 
 Because groups can be added to Cloud Identity and Access Management (Cloud IAM)
@@ -159,6 +148,16 @@ For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/instance_network_interface_rules.yaml)
 rule file.
 
+## KMS scanner
+
+Alert or notify if the crypto keys in the organization are not rotated within the 
+time specified. This scanner can ensure that all the cryptographic keys are 
+properly configured. 
+
+For examples of how to define scanner rules for your crypto keys, see the
+[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
+rule file.
+
 ## Kubernetes Engine scanner
 
 Kubernetes Engine clusters have a wide-variety of options.  You might
@@ -200,6 +199,17 @@ For examples of how to define scanner rules for lien, see the
 [`lien_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml)
 rule file.
 
+## Load balancer forwarding rules scanner
+
+You can configure load balancer forwarding rules to direct unauthorized external
+traffic to your target instances. The forwarding rule scanner supports a
+whitelist mode, to ensure each forwarding rule only directs to the intended
+target instances.
+
+For examples of how to define scanner rules for your forwarding rules, see the
+[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/forwarding_rules.yaml)
+rule file.
+
 ## Location scanner
 Allow customers to ensure their resources are located only in the intended 
 locations. Set guards around locations as part of automated project deployment.
@@ -216,6 +226,12 @@ For examples of how to define scanner rules for log sink, see the
 [`log_sink_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/log_sink_rules.yaml)
 rule file.
 
+## Retention scanner
+
+Allow customers to ensure the retention policies on their resources are set as intended.
+
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
+
 ## Service Account Key scanner
 
 It's best to periodically rotate your user-managed service account
@@ -228,17 +244,3 @@ For examples of how to define scanner rules for your service account keys, see t
 [`service_account_key_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/service_account_key_rules.yaml)
 file.
 
-## Retention scanner
-
-Allow customers to ensure the retention policies on their resources are set as intended.
-
-For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
-
-## KMS scanner
-
-This scanner checks if the crypto keys in the organization are rotated within 
-the time specified, and notifies if they are not. 
-
-For examples of how to define scanner rules for your crypto keys, see the
-[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
-rule file.
