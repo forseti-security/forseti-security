@@ -172,11 +172,11 @@ EOM
 
 }
 
-# Set up cronjob if running cron within docker container
-# For now setup crontab under user ubuntu as existing codebase expects that
-# Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
 set_container_cron_schedule(){
-USER=root # pre-existing code used ubuntu. Any issues here? Also we may want to get away from using root?
+# Set up crontab if running cron within docker container
+# Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
+
+USER=root # pre-existing code used ubuntu. Any issues here? Also we may want to get away from using root.
 
 # Use flock to prevent rerun of the same cron job when the previous job is still running.
 # If the lock file does not exist under the tmp directory, it will create the file and put a lock on top of the file.
@@ -195,7 +195,7 @@ echo "Added the run_forseti.sh to crontab under user $USER"
 
 start_server(){
 
-# if short lived k8s CronJob
+# if short lived k8s CronJob, start as background process
 if ${RUN_K8S_CRONJOB}; then
     forseti_server \
     --endpoint "localhost:50051" \
@@ -212,7 +212,7 @@ else
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
-    --enable_console_log &
+    --enable_console_log
 fi
 
 }
@@ -278,12 +278,6 @@ run_k8s_cron_job(){
     # End cut and paste from run_forseti.sh
 }
 
-#error_exit()
-#{
-#	echo "$1" 1>&2
-#	exit 1
-#}
-
 main(){
 
     if [[ ${LOG_LEVEL}='debug' ]]; then
@@ -294,13 +288,14 @@ main(){
     if ${RUN_SERVER}; then
         download_server_configuration_files
 
-        # If cron schedule specified, spin up the cron job after created needed env file
+        # If cron schedule specified, create the crontab entry, after created needed env file
         if [[ !(-z ${CRON_SCHEDULE}) ]]; then
             create_server_env_script
             set_container_cron_schedule
         fi
 
-        # Do this last as it blocks further commands in this script
+        # Do this last as it blocks further commands in this script when running
+        # server as foreground process
         start_server
 
     elif ${RUN_CLIENT}; then
@@ -308,17 +303,14 @@ main(){
 
         # Client CLI is essentially a long running container for users to ssh into and
         # run ad hoc commands. (This is more for a k8s PoC, not sure on the value of running
-        # the Client CLI in k8s and its not providing a 'service' in the k8s environment.)
+        # the Client CLI in k8s as it's not providing a 'service' in the k8s environment.)
         # TODO This is a hack. Is there a better way to keep the container running?
-        #sleep infinity & doesnt work
-        #try
         tail -f /dev/null
 
     elif ${RUN_K8S_CRONJOB}; then
         download_server_configuration_files
-        start_server
+        start_server # will start as background process for k8s CronJob
 
-        # run_k8s_cron_job deprecated and commented out for now
         # Run the cron script, after creating needed env script
         create_server_env_script
         /forseti-security/install/gcp/scripts/run_forseti.sh
