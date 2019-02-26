@@ -160,7 +160,7 @@ create_server_env_script(){
 # todo Could we just export the variables instead of using the env file and let the source step fail in run_forseti.sh?
 
 # Strip the 'gs://' portion of the bucket string
-SCANNER_BUCKET=$(${BUCKET} | cut -c 5-)
+SCANNER_BUCKET=$(echo ${BUCKET} | cut -c 6-)
 
 # Create /home/ubuntu if it doesnt exist
 mkdir -p /home/ubuntu
