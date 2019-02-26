@@ -29,8 +29,7 @@ VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 # Rule Modes.
 WHITELIST = 'whitelist'
 BLACKLIST = 'blacklist'
-REQUIRED = 'required'
-RULE_MODES = frozenset([BLACKLIST])
+RULE_MODES = frozenset([BLACKLIST, WHITELIST])
 
 
 class KMSRulesEngine(bre.BaseRulesEngine):
@@ -75,6 +74,7 @@ class KMSRulesEngine(bre.BaseRulesEngine):
         res = self.rule_book is None or force_rebuild
         if res:
             self.build_rule_book()
+
         violations = self.rule_book.find_violations(key)
 
         return violations
@@ -178,14 +178,6 @@ class KMSRuleBook(bre.BaseRuleBook):
             if not resource_ids or len(resource_ids) < 1:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
-
-            try:
-                for k in key:
-                    k.get('rotation_period')
-            except (ValueError, TypeError):
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Rotation period of crypto key is either missing or '
-                    ' not an integer in rule {}'.format(rule_index))
 
             # For each resource id associated with the rule, create a
             # mapping of resource => rules.
@@ -346,34 +338,115 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def is_key_rotated(self, creation_time, scan_time):
-        """Check if the key has been rotated within the time speciifed in the
-         policy.
+    @classmethod
+    def find_match_rotation_period(cls, key, rotation_period, mode):
+        """Check if there is a match for this rule rotation period against the
+        given resource.
+
+        If the mode is whitelist and days since the key was last rotated is less
+        than or equals to the rotation period specified then there is no
+        violation.
+
+        If the mode is blacklist and days since the key was last rotated is
+        greater than the rotation period specified then there is a violation.
 
         Args:
-            creation_time (datetime): The time at which the primary version of
-            the key was created.
-            scan_time (datetime): Snapshot timestamp.
+            key (Resource): The resource to check for a match.
+            mode (string): The mode specified in the rule.
+            rotation_period (string): The cut off rotation schedule of crypto
+            key specified in rule file.
 
         Returns:
-            bool: Returns true if key was rotated within the time specified.
+            bool: Returns true if a match is found.
         """
-        crypto_key = self.rule['key']
-        for key_data in crypto_key:
-            key_rotation_period = key_data.get('rotation_period')
         LOGGER.debug('Formatting rotation time...')
+        creation_time = key.primary_version.get('createTime')
+        scan_time = date_time.get_utc_now_datetime()
         last_rotation_time = creation_time[:-5]
         formatted_last_rotation_time = datetime.datetime.strptime(
             last_rotation_time, string_formats.TIMESTAMP_MICROS)
         days_since_rotated = (scan_time - formatted_last_rotation_time).days
+        if mode == BLACKLIST and days_since_rotated > rotation_period:
+            return True
+        elif mode == WHITELIST and days_since_rotated <= rotation_period:
+            return True
+        return False
 
-        if days_since_rotated > key_rotation_period:
-            return False
+    @classmethod
+    def find_match_algorithms(cls, key, rule_algorithms):
+        """Check if there is a match for this rule algorithm against the given
+        resource.
 
-        return True
+        Args:
+            key (Resource): The resource to check for a match.
+            rule_algorithms (string): The algorithms of this rule.
+
+        Returns:
+            bool: Returns true if a match is found.
+        """
+        LOGGER.debug('Checking if the algorithm specified matches with that of'
+                     ' crypto key.')
+        key_algorithm = key.primary_version.get('algorithm')
+        for algorithm in rule_algorithms:
+            if key_algorithm == algorithm:
+                return True
+        return False
+
+    @classmethod
+    def find_match_protection_level(cls, key, rule_protection_level):
+        """Check if there is a match for this rule protection level against the
+         given resource.
+
+        Args:
+            key (Resource): The resource to check for a match.
+            rule_protection_level (string): The protection level of this rule.
+
+        Returns:
+            bool: Returns true if a match is found.
+        """
+        key_protection_level = key.primary_version.get('protectionLevel')
+        if key_protection_level == rule_protection_level:
+            return True
+        return False
+
+    @classmethod
+    def find_match_purpose(cls, key, rule_purpose):
+        """Check if there is a match for this rule purpose against the given
+        resource.
+
+        Args:
+            key (Resource): The resource to check for a match.
+            rule_purpose (list): The purpose of this rule.
+
+        Returns:
+            bool: Returns true if a match is found.
+        """
+        key_purpose = key.purpose
+        for purpose in rule_purpose:
+            if key_purpose == purpose:
+                return True
+        return False
+
+    @classmethod
+    def find_match_state(cls, key, rule_state):
+        """Check if there is a match for this rule state against the given
+        resource.
+
+        Args:
+            key (Resource): The resource to check for a match.
+            rule_state (list): The state of this rule.
+
+        Returns:
+            bool: Returns true if a match is found.
+        """
+        key_state = key.primary_version.get('state')
+        for state in rule_state:
+            if state == key_state:
+                return True
+        return False
 
     def find_violations(self, key):
-        """Find crypto key violations based on the rotation period.
+        """Find violations for this rule against the given resource.
 
         Args:
             key (Resource): The resource to check for violations.
@@ -382,15 +455,43 @@ class Rule(object):
             list: Returns a list of RuleViolation named tuples.
         """
         violations = []
-        creation_time = key.primary_version.get('createTime')
         state = key.primary_version.get('state')
         if not state == 'ENABLED':
             return violations
-        scan_time = date_time.get_utc_now_datetime()
-        if self.rule['mode'] == BLACKLIST:
-            if not self.is_key_rotated(creation_time, scan_time):
-                violation_reason = ('Key %s was not rotated since %s.' %
-                                    (key.name, creation_time))
+
+        mode = self.rule['mode']
+
+        crypto_key_rule = self.rule['key']
+        for key_data in crypto_key_rule:
+            has_violation = False
+            rule_algorithms = key_data.get('algorithms')
+            rule_protection_level = key_data.get('protection_level')
+            rule_purpose = key_data.get('purpose')
+            rule_state = key_data.get('state')
+            rotation_period = key_data.get('rotation_period')
+            all_matched = True
+            if rotation_period:
+                all_matched = all_matched and self.find_match_rotation_period(
+                    key, rotation_period, mode)
+            if rule_algorithms:
+                all_matched = all_matched and self.find_match_algorithms(
+                    key, rule_algorithms)
+            if rule_protection_level:
+                all_matched = all_matched and self.find_match_protection_level(
+                    key, rule_protection_level)
+            if rule_purpose:
+                all_matched = all_matched and self.find_match_purpose(
+                    key, rule_purpose)
+            if rule_state:
+                all_matched = all_matched and self.find_match_state(
+                    key, rule_state)
+
+            if mode == BLACKLIST and all_matched:
+                has_violation = True
+            elif mode == WHITELIST and not all_matched:
+                has_violation = True
+
+            if has_violation:
                 violations.append(RuleViolation(
                     resource_id=key.id,
                     resource_type=key.type,
@@ -402,9 +503,11 @@ class Rule(object):
                     primary_version=key.primary_version,
                     next_rotation_time=key.next_rotation_time,
                     rotation_period=key.rotation_period,
-                    violation_reason=violation_reason,
+                    state=key.primary_version.get('state'),
+                    algorithm=key.primary_version.get('algorithm'),
+                    protection_level=key.primary_version.get('protectionLevel'),
+                    purpose=key.purpose,
                     key_creation_time=key.create_time,
-                    version_creation_time=creation_time,
                     resource_data=key.data))
 
         return violations
@@ -453,16 +556,20 @@ class Rule(object):
 # next_rotation_time: string
 # rule_name: string
 # rule_index: int
+# full_name: string
 # violation_type: CRYPTO_KEY_VIOLATION
-# violation_reason: string
+# state: string
+# purpose: string
+# algorithm: string
+# protection_level: string
 # rotation_period: string
-# last_rotation_time: string
 # key_creation_time: string
 # resource_data: string
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_id', 'resource_type', 'resource_name',
                             'full_name', 'rule_index', 'rule_name',
-                            'violation_type', 'violation_reason',
+                            'violation_type', 'state',
                             'primary_version', 'next_rotation_time',
                             'rotation_period', 'key_creation_time',
-                            'version_creation_time', 'resource_data'])
+                            'algorithm', 'protection_level',
+                            'purpose', 'resource_data'])

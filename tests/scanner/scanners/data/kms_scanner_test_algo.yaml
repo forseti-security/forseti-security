@@ -1,5 +1,5 @@
 rules:
-  - name: Block crypto keys that match this config.
+  - name: Block google symmetric encryption algorithm for all crypto keys.
     mode: blacklist
     resource:
       - type: organization
@@ -8,6 +8,3 @@ rules:
     key:
        - algorithms:
          - GOOGLE_SYMMETRIC_ENCRYPTION
-         protection_level: SOFTWARE
-         purpose:
-         - ENCRYPT_DECRYPT
