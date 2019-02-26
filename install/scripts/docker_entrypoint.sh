@@ -148,37 +148,27 @@ create_server_env_script(){
 
 # run_forseti.sh has hard coded /home/ubuntu/forseti_env.sh
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
-
-# HACK
-# As creating the env file not working on docker for some reason
-# try exporting the needed vars
-# and let the env source step fail in run_forseti.sh
-# check if the failure allows the rest of the script to continue to run OK
-# todo verify if this works
+# todo Could we just export the variables instead of using the env file and let the source step fail in run_forseti.sh?
 
 # Strip the 'gs://' portion of the bucket string
-export SCANNER_BUCKET=${BUCKET} | cut -c 5-
-export FORSETI_HOME=/forseti-security
-export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
+SCANNER_BUCKET=${BUCKET} | cut -c 5-
 # todo do we need path change?
-#export PATH=${PATH}:/usr/local/bin
 
 # Create /home/ubuntu if it doesnt exist
-#mkdir -p /home/ubuntu
+mkdir -p /home/ubuntu
 
-#local FILE="/home/ubuntu/forseti_env.sh"
-#touch ${FILE}
+local FILE="/home/ubuntu/forseti_env.sh"
 
-#/bin/cat <<EOM >$FILE
-##!/bin/bash
+/bin/cat <<EOM >$FILE
+#!/bin/bash
 
-#export PATH=${PATH}:/usr/local/bin
+export PATH=${PATH}:/usr/local/bin
 
 # Forseti environment variables
-#export FORSETI_HOME=/forseti-security
-#export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
-#export SCANNER_BUCKET=${SCANNER_BUCKET}
-#EOM
+export FORSETI_HOME=/forseti-security
+export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
+export SCANNER_BUCKET=${SCANNER_BUCKET}
+EOM
 
 }
 
@@ -311,6 +301,11 @@ main(){
         if [[ !(-z ${CRON_SCHEDULE}) ]]; then
             create_server_env_script
             set_container_cron_schedule
+
+            # TODO Research the need for this hack.
+            # crontab doesnt seem to keep the container alive as expected
+            # so do this to keep container running
+            tail -f /dev/null
         fi
 
     elif ${RUN_CLIENT}; then
