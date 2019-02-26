@@ -385,7 +385,7 @@ class Rule(object):
             bool: Returns true if a match is found.
         """
         LOGGER.debug('Checking if the algorithm specified matches with that of'
-                     ' crypto key')
+                     ' crypto key.')
         key_algorithm = key.primary_version.get('algorithm')
         for algorithm in rule_algorithms:
             if key_algorithm == algorithm:
@@ -456,12 +456,14 @@ class Rule(object):
         """
         violations = []
         state = key.primary_version.get('state')
+        if not state == 'ENABLED':
+            return violations
 
         mode = self.rule['mode']
-        has_violation = False
 
         crypto_key_rule = self.rule['key']
         for key_data in crypto_key_rule:
+            has_violation = False
             rule_algorithms = key_data.get('algorithms')
             rule_protection_level = key_data.get('protection_level')
             rule_purpose = key_data.get('purpose')
@@ -489,27 +491,24 @@ class Rule(object):
             elif mode == WHITELIST and not all_matched:
                 has_violation = True
 
-            if not state == 'ENABLED':
-                has_violation = False
-
-        if has_violation:
-            violations.append(RuleViolation(
-                resource_id=key.id,
-                resource_type=key.type,
-                resource_name=key.id,
-                full_name=key.crypto_key_full_name,
-                rule_index=self.rule_index,
-                rule_name=self.rule_name,
-                violation_type=VIOLATION_TYPE,
-                primary_version=key.primary_version,
-                next_rotation_time=key.next_rotation_time,
-                rotation_period=key.rotation_period,
-                state=key.primary_version.get('state'),
-                algorithm=key.primary_version.get('algorithm'),
-                protection_level=key.primary_version.get('protectionLevel'),
-                purpose=key.purpose,
-                key_creation_time=key.create_time,
-                resource_data=key.data))
+            if has_violation:
+                violations.append(RuleViolation(
+                    resource_id=key.id,
+                    resource_type=key.type,
+                    resource_name=key.id,
+                    full_name=key.crypto_key_full_name,
+                    rule_index=self.rule_index,
+                    rule_name=self.rule_name,
+                    violation_type=VIOLATION_TYPE,
+                    primary_version=key.primary_version,
+                    next_rotation_time=key.next_rotation_time,
+                    rotation_period=key.rotation_period,
+                    state=key.primary_version.get('state'),
+                    algorithm=key.primary_version.get('algorithm'),
+                    protection_level=key.primary_version.get('protectionLevel'),
+                    purpose=key.purpose,
+                    key_creation_time=key.create_time,
+                    resource_data=key.data))
 
         return violations
 

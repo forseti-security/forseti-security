@@ -44,6 +44,7 @@ CRYPTO_KEY_ID_3 = '12873861500163377328'
 CRYPTO_KEY_ID_4 = '12873861500163377330'
 CRYPTO_KEY_ID_5 = '12873861500163377332'
 CRYPTO_KEY_ID_6 = '12873861500163377334'
+CRYPTO_KEY_ID_6 = '12873861500163377336'
 VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
 
 TIME_NOW = datetime.utcnow()
@@ -207,6 +208,23 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
             self.assertEquals(violation.purpose, 'ENCRYPT_DECRYPT')
+        self.assertEquals(1, mock_output_results.call_count)
+
+    @mock.patch.object(
+        kms_scanner.KMSScanner,
+        '_output_results_to_db', autospec=True)
+    def test_run_scanner_rotation_period_whitelist_match(self,
+                                                         mock_output_results):
+        self.scanner = kms_scanner.KMSScanner(
+            {}, {}, self.service_config, self.model_name,
+            '', unittest_utils.get_datafile_path(
+                __file__,
+                'kms_scanner_whitelist_test.yaml'))
+
+        self.scanner.run()
+        crypto_key = self.scanner._retrieve()
+        violations = self.scanner._find_violations(crypto_key)
+        self.assertEquals(1, len(violations))
         self.assertEquals(1, mock_output_results.call_count)
 
 
