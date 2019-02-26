@@ -205,7 +205,9 @@ echo "Added the run_forseti.sh to crontab under user $USER"
 
 start_server(){
 
-if ${RUN_K8S_CRONJOB}; then # short lived cronjob, start as background process
+# if short lived k8s CronJob
+# or long running server with docker cron process, start as background process
+if ${RUN_K8S_CRONJOB} || [[ !(-z ${CRON_SCHEDULE}) ]]; then
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -213,15 +215,16 @@ if ${RUN_K8S_CRONJOB}; then # short lived cronjob, start as background process
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
     --enable_console_log &
-
-else # long lived server, start as foreground process
+# long lived server (with no docker cron), start as foreground process
+# (otherwise the container would stop immediately after starting the server)
+else
     forseti_server \
     --endpoint "0.0.0.0:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
-    --enable_console_log
+    --enable_console_log &
 fi
 
 }
