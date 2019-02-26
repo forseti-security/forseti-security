@@ -121,9 +121,9 @@ download_server_configuration_files(){
     # TODO There is an intermittent issue with gsutil error that anonymous user not authorized to access the bucket.
     # Problem with secret?
     # Timing issue? Would pausing a bit help in case the secret setup not completed (just a wild guess here) ?
-    # Possibly add code to verify the secret file exists and that GOOGLE_APPLICATION_CREDENTIALS points to the file
-    echo 'GOOGLE_APPLICATION_CREDENTIALS='.${GOOGLE_APPLICATION_CREDENTIALS};
-    echo 'Verifying '.${GOOGLE_APPLICATION_CREDENTIALS}.' exists'. -r .${GOOGLE_APPLICATION_CREDENTIALS};
+    echo 'GOOGLE_APPLICATION_CREDENTIALS='.${GOOGLE_APPLICATION_CREDENTIALS}
+    local EXISTS=$(-r ${GOOGLE_APPLICATION_CREDENTIALS})
+    echo .${GOOGLE_APPLICATION_CREDENTIALS}.' exists='.${EXISTS}
 
     # Start with a clean slate
     rm -f /forseti-security/configs/forseti_conf_server.yaml
