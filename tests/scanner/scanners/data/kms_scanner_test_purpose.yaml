@@ -1,9 +1,10 @@
 rules:
-  - name: Allow only asymmetric encryption.
+  - name: Block google symmetric encryption algorithm for all crypto keys.
     mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-       - purpose: symmetric
+       - purpose:
+         - ENCRYPT_DECRYPT

@@ -343,6 +343,13 @@ class Rule(object):
         """Check if there is a match for this rule rotation period against the
         given resource.
 
+        If the mode is whitelist and days since the key was last rotated is less
+        than or equals to the rotation period specified then there is no
+        violation.
+
+        If the mode is blacklist and days since the key was last rotated is
+        greater than the rotation period specified then there is a violation.
+
         Args:
             key (Resource): The resource to check for a match.
             mode (string): The mode specified in the rule.
@@ -409,17 +416,15 @@ class Rule(object):
 
         Args:
             key (Resource): The resource to check for a match.
-            rule_purpose (string): The purpose of this rule.
+            rule_purpose (list): The purpose of this rule.
 
         Returns:
             bool: Returns true if a match is found.
         """
         key_purpose = key.purpose
-        symmetric_algorithm = 'ENCRYPT_DECRYPT'
-        if rule_purpose == 'symmetric' and key_purpose == symmetric_algorithm:
-            return True
-        elif not key_purpose == symmetric_algorithm:
-            return True
+        for purpose in rule_purpose:
+            if key_purpose == purpose:
+                return True
         return False
 
     @classmethod

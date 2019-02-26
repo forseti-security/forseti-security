@@ -9,4 +9,5 @@ rules:
        - algorithms:
          - GOOGLE_SYMMETRIC_ENCRYPTION
          protection_level: SOFTWARE
-         purpose: symmetric
+         purpose:
+         - ENCRYPT_DECRYPT
