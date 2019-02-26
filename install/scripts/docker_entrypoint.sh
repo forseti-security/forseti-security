@@ -149,25 +149,36 @@ create_server_env_script(){
 # run_forseti.sh has hard coded /home/ubuntu/forseti_env.sh
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
 
+# HACK
+# As creating the env file not working on docker for some reason
+# try exporting the needed vars
+# and let the env source step fail in run_forseti.sh
+# check if the failure allows the rest of the script to continue to run OK
+# todo verify if this works
+
 # Strip the 'gs://' portion of the bucket string
-SCANNER_BUCKET=${BUCKET} | cut -c 5-
-
-# Create /home/ubuntu if it doesnt exist
-mkdir -p /home/ubuntu
-
-local FILE="/home/ubuntu/forseti_env.sh"
-touch ${FILE}
-
-/bin/cat <<EOM >$FILE
-#!/bin/bash
-
-export PATH=${PATH}:/usr/local/bin
-
-# Forseti environment variables
+export SCANNER_BUCKET=${BUCKET} | cut -c 5-
 export FORSETI_HOME=/forseti-security
 export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
-export SCANNER_BUCKET=${SCANNER_BUCKET}
-EOM
+# todo do we need path change?
+#export PATH=${PATH}:/usr/local/bin
+
+# Create /home/ubuntu if it doesnt exist
+#mkdir -p /home/ubuntu
+
+#local FILE="/home/ubuntu/forseti_env.sh"
+#touch ${FILE}
+
+#/bin/cat <<EOM >$FILE
+##!/bin/bash
+
+#export PATH=${PATH}:/usr/local/bin
+
+# Forseti environment variables
+#export FORSETI_HOME=/forseti-security
+#export FORSETI_SERVER_CONF=/forseti-security/configs/forseti_conf_server.yaml
+#export SCANNER_BUCKET=${SCANNER_BUCKET}
+#EOM
 
 }
 
@@ -175,7 +186,7 @@ EOM
 # For now setup crontab under user ubuntu as existing codebase expects that
 # Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
 set_container_cron_schedule(){
-USER=ubuntu
+USER=root # pre-existing code used ubuntu. Any issues here? Also we may want to get away from using root?
 
 # Use flock to prevent rerun of the same cron job when the previous job is still running.
 # If the lock file does not exist under the tmp directory, it will create the file and put a lock on top of the file.
@@ -185,7 +196,8 @@ USER=ubuntu
 # queue up the jobs.
 # If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
 
-(echo "${CRON_SCHEDULE} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock /forseti-security/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+#(echo "${CRON_SCHEDULE} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock /forseti-security/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+(echo "${CRON_SCHEDULE} (/usr/bin/flock -n /forseti-security/forseti_cron_runner.lock /forseti-security/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 }
