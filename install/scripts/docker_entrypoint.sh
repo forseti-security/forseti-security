@@ -117,8 +117,8 @@ done
 # Nevertheless, I think we still need to do this once before starting the server.
 download_server_configuration_files(){
     # Start with a clean slate (to help debugging an intermittent gsutil issue)
-    rm /forseti-security/configs/forseti_conf_server.yaml
-    rm /forseti-security/rules/*.yaml
+    rm -f /forseti-security/configs/forseti_conf_server.yaml
+    rm -f /forseti-security/rules/*.yaml
 
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
