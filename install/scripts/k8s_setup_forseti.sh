@@ -19,12 +19,13 @@ set -e
 set -x
 
 ## VARIABLES, need to be set before running
-# Variables for cluster creation (development defaults), what is appropriate disk size for production?
+# Variables for cluster creation (development settings)
 CLUSTER=forseti-cluster
 ZONE=us-central1-c
 NODES=1
 MACHINE=n1-standard-2
-DISK_SIZE=10GB
+DISK_SIZE=32GB
+DISK_TYPE=pd-ssd
 
 # Full path to Forseti service account credentials json file
 # Needed to create k8s secret
@@ -56,7 +57,7 @@ export FORSETI_SERVER_IP=10.43.240.3
 
 	# Use beta to enable latest stackdriver k8s monitoring
 	gcloud beta container clusters create ${CLUSTER} --num-nodes=${NODES} --machine-type=${MACHINE} \
-	--disk-size=${DISK_SIZE} --enable-stackdriver-kubernetes
+	--disk-size=${DISK_SIZE} --disk-type=${DISK_TYPE} --enable-stackdriver-kubernetes
 
 # Create Secret 'credentials' containing file 'key.json'
 # copied from the forseti service or client account credentials file.
