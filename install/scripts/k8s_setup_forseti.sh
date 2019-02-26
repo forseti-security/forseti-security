@@ -20,12 +20,16 @@ set -x
 
 ## VARIABLES, need to be set before running
 # Variables for cluster creation (development settings)
+CREATE_CLUSTER=true # Set to false if deploying to existing cluster
 CLUSTER=forseti-cluster
-ZONE=us-central1-c
+ZONE=us-central1-c # is this needed if not creating cluster?
+
+# Optional used if creating cluster
 NODES=1
 MACHINE=n1-standard-2
 DISK_SIZE=32GB
 DISK_TYPE=pd-ssd
+# End Cluster variables
 
 # Full path to Forseti service account credentials json file
 # Needed to create k8s secret
@@ -53,11 +57,13 @@ export FORSETI_SERVER_IP=10.43.240.3
 ## END VARIABLES
 
 # Create Cluster
+if ${CREATE_CLUSTER}; then
 	gcloud config set compute/zone ${ZONE}
 
 	# Use beta to enable latest stackdriver k8s monitoring
 	gcloud beta container clusters create ${CLUSTER} --num-nodes=${NODES} --machine-type=${MACHINE} \
 	--disk-size=${DISK_SIZE} --disk-type=${DISK_TYPE} --enable-stackdriver-kubernetes
+fi
 
 # Create Secret 'credentials' containing file 'key.json'
 # copied from the forseti service or client account credentials file.
@@ -66,10 +72,6 @@ export FORSETI_SERVER_IP=10.43.240.3
 	gcloud config set container/cluster ${CLUSTER}
 
 	kubectl create secret generic server-credentials --from-file=key.json=${SERVER_CREDENTIALS}
-
-	# Optionally verify
-	# kubectl get secret credentials -o yaml
-
 
 	if ${DEPLOY_CLIENT}; then
 	    kubectl create secret generic client-credentials --from-file=client_key.json=${CLIENT_CREDENTIALS}
