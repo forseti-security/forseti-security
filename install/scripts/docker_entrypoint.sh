@@ -199,6 +199,11 @@ USER=root # pre-existing code used ubuntu. Any issues here? Also we may want to 
 (echo "${CRON_SCHEDULE} (/usr/bin/flock -n /forseti-security/forseti_cron_runner.lock /forseti-security/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
+# todo best practices for docker are to run only 1 process, this is an additional process
+# If it is appropriate to run cron in same container as server is debatable,
+# This just proves the concept if it's whats wanted.
+# CON Doing it this way means docker wont know if cron fails.
+cron start &
 }
 
 
