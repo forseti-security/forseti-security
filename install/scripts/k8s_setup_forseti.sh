@@ -6,7 +6,7 @@
 #  active project is where the k8s cluster will spin up
 #  GKE API is enabled on the project
 #  user authorised to administer GKE
-#  user has uploaded the forseti service account credentials json file(s) to the cloud shell VM
+#  user has uploaded the forseti service account credentials json file(s) to the Cloud Shell VM
 
 # WARNINGS
 # User is responsible for secure handling of the forseti service account credentials file
@@ -19,16 +19,16 @@ set -e
 set -x
 
 ## VARIABLES, need to be set before running
-# Variables for cluster creation (development settings)
+# Variables for cluster creation
 CREATE_CLUSTER=true # Set to false if deploying to existing cluster
 CLUSTER=forseti-cluster
-ZONE=us-central1-c # is this needed if not creating cluster?
+ZONE=us-central1-c
 
-# Optional used if creating cluster
+# Optional, used if creating cluster (my development settings, not necessarily optimal for other scenarios)
 NODES=1
 MACHINE=n1-standard-2
-DISK_SIZE=32GB
-DISK_TYPE=pd-ssd
+DISK_SIZE=10GB
+DISK_TYPE=pd-ssd # or pd-standard
 # End Cluster variables
 
 # Full path to Forseti service account credentials json file
@@ -52,21 +52,20 @@ export SERVER_BUCKET=''#gs://<server bucketname>
 export CLIENT_BUCKET=''#gs://<client bucketname>
 export CLOUD_SQL_CONNECTION=''#<project>:<region>:<db>
 export CRON_SCHEDULE="*/60 * * * *"
-export CLOUDSQL_IP=10.43.240.2
-export FORSETI_SERVER_IP=10.43.240.3
+export CLOUDSQL_IP=10.43.240.2 # k8s Cluster IP for Cloud SQL Proxy
+export FORSETI_SERVER_IP=10.43.240.3 # k8s Cluster IP for Forseti Server. Don't forget to manually add this to the Client config file in GCS bucket if using Client.
 ## END VARIABLES
 
 # Create Cluster
 if ${CREATE_CLUSTER}; then
 	gcloud config set compute/zone ${ZONE}
 
-	# Use beta to enable latest stackdriver k8s monitoring
+	# Use beta to enable latest Stackdriver k8s monitoring
 	gcloud beta container clusters create ${CLUSTER} --num-nodes=${NODES} --machine-type=${MACHINE} \
 	--disk-size=${DISK_SIZE} --disk-type=${DISK_TYPE} --enable-stackdriver-kubernetes
 fi
 
-# Create Secret 'credentials' containing file 'key.json'
-# copied from the forseti service or client account credentials file.
+# Create Secret credentials copied from the forseti service and/or client account credentials file.
 
 	# Set default cluster for gcloud / kubectl
 	gcloud config set container/cluster ${CLUSTER}
@@ -109,5 +108,6 @@ elif ${DEPLOY_SERVER}; then
 fi
 
 if ${DEPLOY_CLIENT}; then
+    # Deploy forseti client in its own pod
     kubectl apply -f forseti.client.yaml
 fi

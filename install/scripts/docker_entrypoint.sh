@@ -113,10 +113,19 @@ while [[ "$1" != "" ]]; do
     shift # Move remaining args down 1 position
 done
 
-# Note, run_forseti.sh also does this at start of each cron run.
-# Nevertheless, I think we still need to do this once before starting the server.
+
 download_server_configuration_files(){
-    # Start with a clean slate (to help debugging an intermittent gsutil issue)
+    # Note, run_forseti.sh also does this at start of each cron run.
+    # Nevertheless, I think we still need to do this once before starting the server.
+
+    # TODO There is an intermittent issue with gsutil error that anonymous user not authorized to access the bucket.
+    # Problem with secret?
+    # Timing issue? Would pausing a bit help in case the secret setup not completed (just a wild guess here) ?
+    # Possibly add code to verify the secret file exists and that GOOGLE_APPLICATION_CREDENTIALS points to the file
+    echo 'GOOGLE_APPLICATION_CREDENTIALS='.${GOOGLE_APPLICATION_CREDENTIALS};
+    echo 'Verifying '.${GOOGLE_APPLICATION_CREDENTIALS}.' exists'. -r .${GOOGLE_APPLICATION_CREDENTIALS};
+
+    # Start with a clean slate
     rm -f /forseti-security/configs/forseti_conf_server.yaml
     rm -f /forseti-security/rules/*.yaml
 
@@ -134,6 +143,7 @@ download_server_configuration_files(){
 client_cli_setup(){
 # Store the Client CLI variables in /etc/profile.d/forseti_environment.sh
 # so all ssh sessions will have access to them
+# todo add to .bashrc so that its automatically sourced for users
 
 local FILE="/etc/profile.d/forseti_environment.sh"
 /bin/cat <<EOM >$FILE
@@ -152,7 +162,6 @@ create_server_env_script(){
 
 # Strip the 'gs://' portion of the bucket string
 SCANNER_BUCKET=${BUCKET} | cut -c 5-
-# todo do we need path change?
 
 # Create /home/ubuntu if it doesnt exist
 mkdir -p /home/ubuntu
@@ -176,6 +185,7 @@ set_container_cron_schedule(){
 # Set up crontab if running cron within docker container
 # Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
 
+# todo decide on user
 USER=root # pre-existing code used ubuntu. Any issues here? Also we may want to get away from using root.
 
 # Use flock to prevent rerun of the same cron job when the previous job is still running.
@@ -205,6 +215,8 @@ if ${RUN_K8S_CRONJOB}; then
     --log_level=${LOG_LEVEL} \
     --enable_console_log &
 # long lived server start as foreground process
+# Note this will block further command processing in this script.
+# Call this after all other setup has been completed.
 else
     forseti_server \
     --endpoint "0.0.0.0:50051" \
