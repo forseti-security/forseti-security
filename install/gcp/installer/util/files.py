@@ -158,24 +158,18 @@ def generate_file_from_template(template_path, output_path, template_values):
 
 def copy_file_to_destination(file_path, output_path,
                              is_directory=False,
-                             suppress_output=False,
-                             dry_run=False):
+                             suppress_output=False):
     """Copy the config to the created bucket.
 
     Args:
         file_path (str): Path to the file.
         output_path (str): Path of the copied file.
         is_directory (bool): Whether or not the input file_path is a directory.
-        dry_run (bool): Whether or not the installer is in dry run mode.
         suppress_output (bool): Suppress output.
 
     Returns:
         bool: True if copy file succeeded, otherwise False.
     """
-
-    if dry_run:
-        return False
-
     if is_directory:
         args = ['gsutil', 'cp', '-r', file_path, output_path]
     else:

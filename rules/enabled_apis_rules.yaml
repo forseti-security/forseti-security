@@ -13,6 +13,8 @@
 # limitations under the License.
 
 # rules:
+#   # Note: please use the id of the resource (such as organization id,
+#   # folder id, project id, etc.) when specifying the resource ids.
 #   # example rules
 #   - name: Example Enabled APIs whitelist
 #     mode: whitelist
