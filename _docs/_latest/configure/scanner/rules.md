@@ -598,7 +598,8 @@ rules:
         algorithm: 
         - GOOGLE_SYMMETRIC_ENCRYPTION
         protection_level: SOFTWARE
-        purpose: symmetric
+        purpose: 
+        - ENCRYPT_DECRYPT
         state:
         - ENABLED
 ```
@@ -641,12 +642,11 @@ rules:
       * **Valid values**: One of `SOFTWARE` or `HSM`.
       
     * `purpose`
-      * **Description**: Optional, the purpose to which you want to apply the 
-      rule.
-      * **Valid values**: One of `symmetric` or `asymmetric`.
-      * **Note**: 
-        * `symmetric`: Allow/block symmetric keys.
-        * `asymmetric`: Allow/block asymmetric keys.
+      * **Description**: Optional, a list of algorithms to whitelist/blacklist. 
+      * **Valid values**: String
+      * **Example values**: `ENCRYPT_DECRYPT`, `ASYMMETRIC_SIGN` and 
+      `ASYMMETRIC_DECRYPT`.
+
       
     * `state`
       * **Description**: Optional, a list of states to whitelist/blacklist.
