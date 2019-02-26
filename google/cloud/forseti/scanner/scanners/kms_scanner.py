@@ -60,6 +60,13 @@ class KMSScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
+            violation_data = {'resource_id': violation.resource_id,
+                              'full_name': violation.full_name,
+                              'rotation_period': violation.rotation_period,
+                              'state': violation.state,
+                              'protection_level': violation.protection_level,
+                              'algorithm': violation.algorithm,
+                              'purpose': violation.purpose}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -68,7 +75,7 @@ class KMSScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation.violation_reason,
+                'violation_data': violation_data,
                 'resource_data': violation.resource_data
             }
 

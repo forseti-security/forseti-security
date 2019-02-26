@@ -168,6 +168,9 @@ def to_full_resource_name(full_parent_name, resource_type_name):
     Returns:
         str: full_resource_name of the child
     """
+    # Strip out the fake composite root parent from the full resource name.
+    if full_parent_name == 'composite_root/root/':
+        return '{}/'.format(resource_type_name)
 
     return '{}{}/'.format(full_parent_name, resource_type_name)
 
