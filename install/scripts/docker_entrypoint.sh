@@ -151,16 +151,16 @@ export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
 EOM
 }
 
+create_server_env_script(){
 # Create env script used by run_forseti.sh
 # Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L251
-create_server_env_script(){
 
 # run_forseti.sh has hard coded /home/ubuntu/forseti_env.sh
 # For now use /home/ubuntu as I don't know what might break in existing codebase if we change it
 # todo Could we just export the variables instead of using the env file and let the source step fail in run_forseti.sh?
 
 # Strip the 'gs://' portion of the bucket string
-SCANNER_BUCKET=${BUCKET} | cut -c 5-
+SCANNER_BUCKET=$(${BUCKET} | cut -c 5-)
 
 # Create /home/ubuntu if it doesnt exist
 mkdir -p /home/ubuntu
