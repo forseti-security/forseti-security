@@ -196,8 +196,7 @@ echo "Added the run_forseti.sh to crontab under user $USER"
 start_server(){
 
 # if short lived k8s CronJob
-# or long running server with docker cron process, start as background process
-if ${RUN_K8S_CRONJOB} || [[ !(-z ${CRON_SCHEDULE}) ]]; then
+if ${RUN_K8S_CRONJOB}; then
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
@@ -205,8 +204,7 @@ if ${RUN_K8S_CRONJOB} || [[ !(-z ${CRON_SCHEDULE}) ]]; then
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
     --enable_console_log &
-# long lived server (with no docker cron), start as foreground process
-# (otherwise the container would stop immediately after starting the server)
+# long lived server start as foreground process
 else
     forseti_server \
     --endpoint "0.0.0.0:50051" \
@@ -295,18 +293,15 @@ main(){
 
     if ${RUN_SERVER}; then
         download_server_configuration_files
-        start_server
 
         # If cron schedule specified, spin up the cron job after created needed env file
         if [[ !(-z ${CRON_SCHEDULE}) ]]; then
             create_server_env_script
             set_container_cron_schedule
-
-            # TODO Research the need for this hack.
-            # crontab doesnt seem to keep the container alive as expected
-            # so do this to keep container running
-            tail -f /dev/null
         fi
+
+        # Do this last as it blocks further commands in this script
+        start_server
 
     elif ${RUN_CLIENT}; then
         client_cli_setup
