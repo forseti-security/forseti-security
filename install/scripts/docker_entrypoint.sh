@@ -116,14 +116,13 @@ done
 
 download_server_configuration_files(){
     # Note, run_forseti.sh also does this at start of each cron run.
-    # Nevertheless, I think we still need to do this once before starting the server.
+    # Nevertheless, we still need to do this once before starting the server.
 
     # TODO There is an intermittent issue with gsutil error that anonymous user not authorized to access the bucket.
     # Problem with secret?
-    # Timing issue? Would pausing a bit help in case the secret setup not completed (just a wild guess here) ?
+    # Timing issue? Would pausing a bit help in case the secret setup not completed (just a wild guess) ?
     echo 'GOOGLE_APPLICATION_CREDENTIALS='.${GOOGLE_APPLICATION_CREDENTIALS}
-    local EXISTS=$(-r ${GOOGLE_APPLICATION_CREDENTIALS})
-    echo .${GOOGLE_APPLICATION_CREDENTIALS}.' exists='.${EXISTS}
+    [ -r ${GOOGLE_APPLICATION_CREDENTIALS} ] && echo "Credentials file exist" || echo "Credentials file does not exist"
 
     # Start with a clean slate
     rm -f /forseti-security/configs/forseti_conf_server.yaml
