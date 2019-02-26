@@ -24,7 +24,8 @@ steps:
   # ref. https://cloud.google.com/cloud-build/docs/speeding-up-builds
   # ref. https://github.com/GoogleCloudPlatform/cloud-builders/issues/253
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ '-c', '|', 'docker pull gcr.io/$PROJECT_ID/forseti-base:latest', '||', 'exit 0']
+  entrypoint: 'bash'
+  args: [ '-c', 'docker pull gcr.io/$PROJECT_ID/forseti-base:latest || exit 0']
   waitFor: ['-']
   id: pull-base-for-cache
 
