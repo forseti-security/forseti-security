@@ -1172,11 +1172,14 @@ class Storage(BaseStorage):
 
     def commit(self):
         """Commit the stored inventory."""
-
+        if self.inventory_index.inventory_index_warnings:
+            status = IndexState.PARTIAL_SUCCESS
+        else:
+            status = IndexState.SUCCESS
         try:
             self.buffer.flush()
             self.session.commit()
-            self.inventory_index.complete()
+            self.inventory_index.complete(status=status)
             self.session.commit()
         finally:
             self.session_completed = True
@@ -1385,7 +1388,8 @@ class Storage(BaseStorage):
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.parent_id == None,
                 Inventory.category == Categories.resource,
-                Inventory.resource_type.in_(['organization',
+                Inventory.resource_type.in_(['composite_root',
+                                             'organization',
                                              'folder',
                                              'project'])
             )).first()

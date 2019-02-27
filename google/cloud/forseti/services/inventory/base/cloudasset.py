@@ -105,13 +105,21 @@ def load_cloudasset_data(session, config):
         config.get_api_quota_configs())
     imported_assets = 0
 
+    root_resources = []
+    if config.use_composite_root():
+        root_resources.extend(config.get_composite_root_resources())
+    else:
+        root_resources.append(config.get_root_resource_id())
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
-        for content_type in CONTENT_TYPES:
-            futures.append(executor.submit(_export_assets,
-                                           cloudasset_client,
-                                           config,
-                                           content_type))
+        for root_id in root_resources:
+            for content_type in CONTENT_TYPES:
+                futures.append(executor.submit(_export_assets,
+                                               cloudasset_client,
+                                               config,
+                                               root_id,
+                                               content_type))
 
         for future in concurrent.futures.as_completed(futures):
             temporary_file = ''
@@ -133,12 +141,13 @@ def load_cloudasset_data(session, config):
     return imported_assets
 
 
-def _export_assets(cloudasset_client, config, content_type):
+def _export_assets(cloudasset_client, config, root_id, content_type):
     """Worker function for exporting assets and downloading dump from GCS.
 
     Args:
         cloudasset_client (CloudAssetClient): CloudAsset API client interface.
         config (object): Inventory configuration on server.
+        root_id (str): The name of the parent resource to export assests under.
         content_type (ContentTypes): The content type to export.
 
     Returns:
@@ -150,7 +159,6 @@ def _export_assets(cloudasset_client, config, content_type):
         asset_types = DEFAULT_ASSET_TYPES
     timeout = config.get_cai_timeout()
 
-    root_id = config.get_root_resource_id()
     timestamp = int(time.time())
     export_path = _get_gcs_path(config.get_cai_gcs_path(),
                                 content_type,
@@ -178,6 +186,9 @@ def _export_assets(cloudasset_client, config, content_type):
         return None
     except api_errors.OperationTimeoutError as e:
         LOGGER.warn('Timeout getting cloud asset data: %s', e)
+        return None
+    except ValueError as e:
+        LOGGER.warn('Invalid root resource id: %s', e)
         return None
 
     if 'error' in results:

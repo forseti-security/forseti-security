@@ -47,10 +47,12 @@ class CloudAssetRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
-        self._projects = None
-        self._projects_operations = None
+        self._folders = None
+        self._folders_operations = None
         self._organizations = None
         self._organizations_operations = None
+        self._projects = None
+        self._projects_operations = None
 
         super(CloudAssetRepositoryClient, self).__init__(
             API_NAME, versions=['v1beta1'],
@@ -61,20 +63,20 @@ class CloudAssetRepositoryClient(_base_repository.BaseRepositoryClient):
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
-    def projects(self):
-        """Returns a _CloudAssetProjectsRepository instance."""
-        if not self._projects:
-            self._projects = self._init_repository(
-                _CloudAssetProjectsRepository)
-        return self._projects
+    def folders(self):
+        """Returns a _CloudAssetFoldersRepository instance."""
+        if not self._folders:
+            self._folders = self._init_repository(
+                _CloudAssetFoldersRepository)
+        return self._folders
 
     @property
-    def projects_operations(self):
-        """Returns a _CloudAssetProjectsOperationsRepository instance."""
-        if not self._projects_operations:
-            self._projects_operations = self._init_repository(
-                _CloudAssetProjectsOperationsRepository)
-        return self._projects_operations
+    def folders_operations(self):
+        """Returns a _CloudAssetFoldersOperationsRepository instance."""
+        if not self._folders_operations:
+            self._folders_operations = self._init_repository(
+                _CloudAssetFoldersOperationsRepository)
+        return self._folders_operations
 
     @property
     def organizations(self):
@@ -92,13 +94,28 @@ class CloudAssetRepositoryClient(_base_repository.BaseRepositoryClient):
                 _CloudAssetOrganizationsOperationsRepository)
         return self._organizations_operations
 
+    @property
+    def projects(self):
+        """Returns a _CloudAssetProjectsRepository instance."""
+        if not self._projects:
+            self._projects = self._init_repository(
+                _CloudAssetProjectsRepository)
+        return self._projects
+
+    @property
+    def projects_operations(self):
+        """Returns a _CloudAssetProjectsOperationsRepository instance."""
+        if not self._projects_operations:
+            self._projects_operations = self._init_repository(
+                _CloudAssetProjectsOperationsRepository)
+        return self._projects_operations
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
-class _CloudAssetProjectsRepository(
+class _CloudAssetFoldersRepository(
         repository_mixins.ExportAssetsQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Cloud Asset Projects repository."""
+    """Implementation of Cloud Asset Folders repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -106,14 +123,14 @@ class _CloudAssetProjectsRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_CloudAssetProjectsRepository, self).__init__(
-            component='projects', **kwargs)
+        super(_CloudAssetFoldersRepository, self).__init__(
+            component='folders', **kwargs)
 
 
-class _CloudAssetProjectsOperationsRepository(
+class _CloudAssetFoldersOperationsRepository(
         repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Cloud Asset Projects Operations repository."""
+    """Implementation of Cloud Asset Folders Operations repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -121,8 +138,8 @@ class _CloudAssetProjectsOperationsRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_CloudAssetProjectsOperationsRepository, self).__init__(
-            key_field='name', component='projects.operations', **kwargs)
+        super(_CloudAssetFoldersOperationsRepository, self).__init__(
+            key_field='name', component='folders.operations', **kwargs)
 
 
 class _CloudAssetOrganizationsRepository(
@@ -155,11 +172,41 @@ class _CloudAssetOrganizationsOperationsRepository(
             key_field='name', component='organizations.operations', **kwargs)
 
 
+class _CloudAssetProjectsRepository(
+        repository_mixins.ExportAssetsQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Cloud Asset Projects repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_CloudAssetProjectsRepository, self).__init__(
+            component='projects', **kwargs)
+
+
+class _CloudAssetProjectsOperationsRepository(
+        repository_mixins.GetQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Cloud Asset Projects Operations repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_CloudAssetProjectsOperationsRepository, self).__init__(
+            key_field='name', component='projects.operations', **kwargs)
+
+
 class CloudAssetClient(object):
     """Cloud Asset Client."""
 
     # Estimation of how long to wait for an async API to complete.
-    OPERATION_DELAY_IN_SEC = 5
+    OPERATION_DELAY_IN_SEC = 5.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -205,12 +252,14 @@ class CloudAssetClient(object):
             OperationTimeoutError: Raised if the operation times out.
             ValueError: Raised on invalid parent resource name.
         """
-        if parent.startswith('projects/'):
-            repository = self.repository.projects
+        if parent.startswith('folders/'):
+            repository = self.repository.folders
         elif parent.startswith('organizations/'):
             repository = self.repository.organizations
+        elif parent.startswith('projects/'):
+            repository = self.repository.projects
         else:
-            raise ValueError('parent must start with either projects/ or '
+            raise ValueError('parent must start with folders/, projects/, or '
                              'organizations/')
 
         try:
@@ -244,13 +293,15 @@ class CloudAssetClient(object):
             ApiExecutionError: Returns if there is an error in the API response.
             ValueError: Raised on invalid parent resource name.
         """
-        if operation_name.startswith('projects/'):
-            repository = self.repository.projects_operations
+        if operation_name.startswith('folders/'):
+            repository = self.repository.folders_operations
         elif operation_name.startswith('organizations/'):
             repository = self.repository.organizations_operations
+        elif operation_name.startswith('projects/'):
+            repository = self.repository.projects_operations
         else:
-            raise ValueError('operation_name must start with either projects/ '
-                             'or organizations/')
+            raise ValueError('operation_name must start with folders/, '
+                             'projects/, or organizations/')
         try:
             results = repository.get(operation_name)
             LOGGER.debug('Getting the operation status, operation_name = %s, '
