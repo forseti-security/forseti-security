@@ -142,13 +142,16 @@ download_server_configuration_files(){
 client_cli_setup(){
 # Store the Client CLI variables in /etc/profile.d/forseti_environment.sh
 # so all ssh sessions will have access to them
-# todo add to .bashrc so that its automatically sourced for users
 
 local FILE="/etc/profile.d/forseti_environment.sh"
 /bin/cat <<EOM >$FILE
 export FORSETI_HOME=/forseti-security
 export FORSETI_CLIENT_CONFIG=${BUCKET}/configs/forseti_conf_client.yaml
 EOM
+
+# Source the environment variable script in .bashrc so it'ss sourced  automatically
+# when users start a bash session
+echo '. /etc/profile.d/forseti_environment.sh' >> ~/.bashrc
 }
 
 create_server_env_script(){
@@ -181,7 +184,7 @@ EOM
 }
 
 set_container_cron_schedule(){
-# Set up crontab if running cron within docker container
+# Set up crontab if running cron within docker container and start cron
 # Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/5e8b511cc26efe61894a99a81852794541416403/deployment-templates/compute-engine/server/forseti-instance-server.py#L267
 
 # todo decide on user
