@@ -171,6 +171,7 @@ class Violation(BASE):
     scanner_index_id = Column(BigInteger)
     violation_data = Column(Text)
     violation_hash = Column(String(256))
+    violation_message = Text()
     violation_type = Column(String(256), nullable=False)
 
     def __repr__(self):
@@ -193,6 +194,9 @@ class Violation(BASE):
         """
         columns_to_create = [Column('resource_name',
                                     String(256),
+                                    default=''),
+                             Column('violation_message',
+                                    Text(),
                                     default='')]
 
         schema_update_actions = {'CREATE': columns_to_create}
