@@ -1147,7 +1147,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Rule files updates:
   - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to be able to use the four
-    new use cases that has been added.
+    new use cases that have been added.
   
 ### Steps to upgrade using Terraform
 
@@ -1157,7 +1157,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Rule files updates:
   - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to be able to use the four
-    new use cases that has been added.
+    new use cases that have been added.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.11.0 to 2.12.0" content=upgrading_2_11_0_to_2_12_0 uid=13 %}
