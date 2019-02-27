@@ -1112,7 +1112,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-9` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates: 
    **Inventory**
-   - Update the `inventory` section to include `kms_scanner` and `resource`.
+   - Update the `inventory` to include support for `composite_root_resources`.
       ```
        inventory:
             
@@ -1154,9 +1154,10 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Update the `version` inside `main.tf` file to `1.2.0`.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
-1. Rule file updates:
-   - [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
-    has been updated to support four new use cases.
+1. Rule files updates:
+  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
+    under `rules/` in your Forseti server GCS bucket to be able to use the four
+    new use cases that has been added.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.11.0 to 2.12.0" content=upgrading_2_11_0_to_2_12_0 uid=13 %}
