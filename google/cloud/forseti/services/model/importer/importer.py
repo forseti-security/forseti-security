@@ -150,6 +150,7 @@ class InventoryImporter(object):
                 inventory type.
         """
         gcp_type_list = [
+            'composite_root',
             'organization',
             'folder',
             'project',
@@ -546,6 +547,7 @@ class InventoryImporter(object):
             'billing_account': self._convert_billing_account,
             'bucket': self._convert_bucket,
             'cloudsqlinstance': self._convert_cloudsqlinstance,
+            'composite_root': self._convert_composite_root,
             'compute_autoscaler': self._convert_computeengine_resource,
             'compute_backendbucket': self._convert_computeengine_resource,
             'compute_healthcheck': self._convert_computeengine_resource,
@@ -663,6 +665,14 @@ class InventoryImporter(object):
             resource (dict): A resource to store.
         """
         self._convert_resource(resource, cached=False)
+
+    def _convert_composite_root(self, resource):
+        """Convert a composite root resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=True)
 
     def _convert_computeengine_resource(self, resource):
         """Convert an AppEngine resource to a database object.

@@ -41,13 +41,18 @@
 # not compared.
 
 rules:
-  - name: All cryptographic keys should be rotated in 100 days
-    mode: blacklist
+  - name: All crypto keys with following config should be rotated in 100 days
+    mode: whitelist
     resource:
       - type: organization
         resource_ids:
           - '*'
     key:
-      - rotation_period: 100 #days
-
-
+       - rotation_period: 100 #days
+         algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION
+         protection_level: SOFTWARE
+         purpose:
+         - ENCRYPT_DECRYPT
+         state:
+         - ENABLED

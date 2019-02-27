@@ -2329,9 +2329,13 @@ def create_engine(*args, **kwargs):
     if is_sqlite:
         engine = sqlalchemy_create_engine(*args, **forward_kwargs)
     else:
-        engine = sqlalchemy_create_engine(*args,
-                                          pool_size=50,
-                                          **forward_kwargs)
+        # Default connection timeout for mysql is 10 seconds which is
+        # not enough for a bigger dataset, increasing this to 1 hour instead.
+        engine = sqlalchemy_create_engine(
+            *args,
+            pool_size=50,
+            connect_args={'connect_timeout': 3600},
+            **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
         @event.listens_for(engine, 'connect')

@@ -1,0 +1,13 @@
+# Good configuration with composite_root_resources.
+
+##############################################################################
+
+inventory:
+
+    composite_root_resources:
+        - "folders/12345"
+        - "folders/45678"
+        - "projects/98765"
+        - "organizations/56789"
+
+##############################################################################

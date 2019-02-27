@@ -1,0 +1,9 @@
+rules:
+  - name: Block software protection level on all crypto keys.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+      - protection_level: SOFTWARE
