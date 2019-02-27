@@ -215,6 +215,8 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: false
+        - name: gcv_scanner
+          enabled: false
         - name: group
           enabled: true
         - name: iam_policy
