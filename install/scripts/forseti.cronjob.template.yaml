@@ -11,19 +11,18 @@ spec:
           volumes:
             - name: google-cloud-key
               secret:
-                secretName: credentials
+                secretName: server-credentials
           containers:
             - name: forseti
               image: ${FORSETI_IMAGE}
               command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
-                        "--bucket", "${BUCKET}",
+                        "--bucket", "${SERVER_BUCKET}",
                         "--log_level", "debug",
-                        "--run_server",
-                        "--services", "scanner model inventory explain notifier",
-                        "--run_cronjob" ]
+                        "--services", "scanner model inventory notifier",
+                        "--run_k8s_cronjob" ]
               securityContext:
-                runAsUser: 0  # root user
-                allowPrivilegeEscalation: true
+                runAsUser: 0  # root user. TODO use non-root as soon as practical
+                allowPrivilegeEscalation: false
               volumeMounts:
                 - name: google-cloud-key
                   mountPath: /var/secrets/google
