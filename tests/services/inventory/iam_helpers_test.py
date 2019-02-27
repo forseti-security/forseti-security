@@ -43,6 +43,13 @@ BIGQUERY_TESTS = [
      make_iam_policy('roles/bigquery.dataViewer', ['user:test@forseti.test']),
      [{'role': 'READER', 'userByEmail': 'test@forseti.test'}]),
 
+    ('dataViewer-ServiceAccount',
+     make_iam_policy(
+         'roles/bigquery.dataViewer',
+         ['serviceAccount:12345-compute@developer.gserviceaccount.com']),
+     [{'role': 'READER',
+       'userByEmail': '12345-compute@developer.gserviceaccount.com'}]),
+
     ('dataViewer-Group',
      make_iam_policy('roles/bigquery.dataViewer',
                      ['group:my-group@forseti.test']),
@@ -239,6 +246,14 @@ class IamHelpersTest(unittest_utils.ForsetiTestCase):
                                             expected_result):
         """Validate IAM to Bigquery policy conversion."""
         result = iam_helpers.convert_iam_to_bigquery_policy(iam_policy)
+        self.assertEqual(result, expected_result)
+
+    @parameterized.parameterized.expand(BIGQUERY_TESTS)
+    def test_convert_bigquery_policy_to_iam(self, name, expected_result,
+                                            access_policy):
+        """Validate Bigquery policy to IAM conversion."""
+        result = iam_helpers.convert_bigquery_policy_to_iam(access_policy,
+                                                            TEST_PROJECT_ID)
         self.assertEqual(result, expected_result)
 
     @parameterized.parameterized.expand(STORAGE_TESTS)

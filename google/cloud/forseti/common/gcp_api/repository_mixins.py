@@ -403,19 +403,19 @@ class InsertResourceMixin(object):
         return self.execute_command(verb=verb, verb_arguments=arguments)
 
 
-class UpdateResourceMixin(object):
-    """Mixin that implements the Update API command for resources."""
+class _ModifyResourceBaseMixin(object):
+    """Base class for Patch and Update Mixins."""
 
-    def update(self, resource, data, target=None, verb='update', **kwargs):
-        """Update an existing resource.
+    def _modify_resource(self, resource, data, target, verb, **kwargs):
+        """Patch or update an existing resource.
 
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
-            resource (str): Name of the parent resource to update the resource
+            resource (str): Name of the parent resource to modify the resource
                 under.
-            data (dict): The json representation of the resource to update, this
-                will replace the existing resource.
-            target (str): Name of the entity to update.
+            data (dict): The json representation of the resource to modify, this
+                will update the existing resource.
+            target (str): Name of the entity to modify.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the api.
 
@@ -447,12 +447,65 @@ class UpdateResourceMixin(object):
 
         if self.read_only:
             LOGGER.info(
-                'Update called on a read only repository, no action taken on '
-                'target %s, resource %s for data %s.', target, resource, data)
+                '%s called on a read only repository, no action taken on '
+                'target %s, resource %s for data %s.', verb, target, resource,
+                data)
             resource_link = self._build_resource_link(**arguments)
             return _create_fake_operation(resource_link, verb, target)
 
         return self.execute_command(verb=verb, verb_arguments=arguments)
+
+
+class PatchResourceMixin(_ModifyResourceBaseMixin):
+    """Mixin that implements the Patch API command for resources."""
+
+    def patch(self, resource, data, target=None, verb='patch', **kwargs):
+        """Patch an existing resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): Name of the parent resource to patch the resource
+                under.
+            data (dict): The json representation of the resource to patch, this
+                will update the existing resource.
+            target (str): Name of the entity to patch.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the api.
+
+        Returns:
+            dict: The API response containing the async operation.
+
+        Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+        """
+        return self._modify_resource(resource, data, target, verb, **kwargs)
+
+
+class UpdateResourceMixin(_ModifyResourceBaseMixin):
+    """Mixin that implements the Update API command for resources."""
+
+    def update(self, resource, data, target=None, verb='update', **kwargs):
+        """Update an existing resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): Name of the parent resource to update the resource
+                under.
+            data (dict): The json representation of the resource to update, this
+                will replace the existing resource.
+            target (str): Name of the entity to update.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the api.
+
+        Returns:
+            dict: The API response containing the async operation.
+
+        Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+        """
+        return self._modify_resource(resource, data, target, verb, **kwargs)
 
 
 class DeleteResourceMixin(object):

@@ -44,14 +44,14 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
     projects_rule = base_rule + """
     resource:
       - type: project
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
 def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
@@ -111,6 +111,12 @@ class LienRulesEngineTest(ForsetiTestCase):
         got_violations = list(rules_engine.find_violations(data.PROJECT, []))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
+    def test_find_violations_project_wildcard(self):
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, '*')
+        got_violations = list(rules_engine.find_violations(data.PROJECT, []))
+        self.assertEqual(got_violations, data.VIOLATIONS)
+
     def test_find_violations_projects_multiple_liens(self):
         id_to_restrictions = {'l1': ['a', 'b'], 'l2': ['c']}
 
@@ -126,7 +132,7 @@ class LienRulesEngineTest(ForsetiTestCase):
             }
 
             liens.append(lien.Lien.from_json(
-                data.PROJECT, 'l1', json.dumps(lien_dict)))
+                data.PROJECT, json.dumps(lien_dict)))
 
         rules_engine = get_rules_engine_with_rule(
             Rules.projects_rule, data.PROJECT.id, restrictions=['a', 'c'])

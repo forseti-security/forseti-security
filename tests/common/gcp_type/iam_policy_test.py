@@ -108,8 +108,6 @@ class IamPolicyTest(ForsetiTestCase):
             'user:anyone@mycompany.com.notmycompany.com'))
         self.assertFalse(iam_policy_members[3].matches(
             'serviceAccount:someone@gserviceaccount.com'))
-        self.assertFalse(iam_policy_members[3].matches(
-            'serviceAccount:someone@.gserviceaccount.com'))
 
 
     def test_member_invalid_type_raises(self):
@@ -137,7 +135,7 @@ class IamPolicyTest(ForsetiTestCase):
             'members': self.test_members
         }
         iam_binding2 = IamPolicyBinding.create_from(binding2)
-        self.assertEqual('^roles\/.+$', iam_binding2.role_pattern.pattern)
+        self.assertEqual('^roles\/.*$', iam_binding2.role_pattern.pattern)
 
     def test_binding_missing_role_raises(self):
         """Test that a binding with no role raises an exception."""

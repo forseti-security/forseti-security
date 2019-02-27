@@ -118,3 +118,110 @@ PERMISSION_DENIED = """
  }
 }
 """
+
+GET_TABLES_PAGE_1 = """
+{
+  "kind": "bigquery#tableList",
+  "etag": "6M3sY2P57RlRag1RA5x-vVNSeSo/fuVUqg2afF6rsRcMDFKYmWpN06o",
+  "tables": [
+  {
+    "kind": "bigquery#table",
+    "id": "bqtable-test-project:bqtable_tb01s",
+    "tableReference": {
+    "projectId": "bqtable-test-project",
+    "datasetId": "venus_data",
+    "tableId": "venu01s"
+    },
+    "type": "TABLE",
+    "creationTime": "1541099822329",
+    "expirationTime": "1592939822329"
+  },
+  {
+    "kind": "bigquery#table",
+    "id": "bqtable-test-project:bqtable_tb02s",
+    "tableReference": {
+    "projectId": "bqtable-test-project",
+    "datasetId": "venus_data",
+    "tableId": "venu02s"
+    },
+    "type": "TABLE",
+    "creationTime": "1542901234400",
+    "expirationTime": "1594741234400"
+  }
+  ],
+  "totalItems": 2,
+  "nextPageToken": "token1"
+}
+"""
+
+GET_TABLES_PAGE_2 = """
+{
+  "kind": "bigquery#tableList",
+  "etag": "6M3sY2P57RlRag1RA5x-vVNSeSo/fuVUqg2afF6rsRcMDFKYmWpN06o",
+  "tables": [
+  {
+    "kind": "bigquery#table",
+    "id": "bqtable-test-project:bqtable_tb03s",
+    "tableReference": {
+    "projectId": "bqtable-test-project",
+    "datasetId": "venus_data",
+    "tableId": "venu03s"
+    },
+    "type": "TABLE",
+    "creationTime": "1541099822329",
+    "expirationTime": "1592939822329"
+  },
+  {
+    "kind": "bigquery#table",
+    "id": "bqtable-test-project:bqtable_tb04s",
+    "tableReference": {
+    "projectId": "bqtable-test-project",
+    "datasetId": "venus_data",
+    "tableId": "venu04s"
+    },
+    "type": "TABLE",
+    "creationTime": "1542901234400",
+    "expirationTime": "1594741234400"
+  }
+  ],
+  "totalItems": 2
+}
+"""
+
+GET_TABLES_RESPONSES = [GET_TABLES_PAGE_1,
+                        GET_TABLES_PAGE_2]
+
+TABLES_GET_EXPECTED = [
+    {'kind': 'bigquery#table',
+     'creationTime': '1541099822329',
+     'tableReference': {'projectId': 'bqtable-test-project',
+                         'tableId': 'venu01s',
+                         'datasetId': 'venus_data'},
+     'expirationTime': '1592939822329',
+     'type': 'TABLE',
+     'id': 'bqtable-test-project:bqtable_tb01s'},
+    {'kind': 'bigquery#table',
+     'creationTime': '1542901234400',
+     'tableReference': {'projectId': 'bqtable-test-project',
+                         'tableId': 'venu02s',
+                         'datasetId': 'venus_data'},
+     'expirationTime': '1594741234400',
+     'type': 'TABLE',
+     'id': 'bqtable-test-project:bqtable_tb02s'},
+    {'kind': 'bigquery#table',
+     'creationTime': '1541099822329',
+     'tableReference': {'projectId': 'bqtable-test-project',
+                         'tableId': 'venu03s',
+                         'datasetId': 'venus_data'},
+     'expirationTime': '1592939822329',
+     'type': 'TABLE',
+     'id': 'bqtable-test-project:bqtable_tb03s'},
+    {'kind': 'bigquery#table',
+     'creationTime': '1542901234400',
+     'tableReference': {'projectId': 'bqtable-test-project',
+                         'tableId': 'venu04s',
+                         'datasetId': 'venus_data'},
+     'expirationTime': '1594741234400',
+     'type': 'TABLE',
+     'id': 'bqtable-test-project:bqtable_tb04s'},
+]

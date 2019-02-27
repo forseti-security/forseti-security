@@ -87,7 +87,7 @@ RESOURCE_TYPE_ARGS_MAP = {
 # Roles
 GCP_READ_IAM_ROLES = [
     'roles/appengine.appViewer',
-    'roles/bigquery.dataViewer',
+    'roles/bigquery.metadataViewer',
     'roles/browser',
     'roles/cloudasset.viewer',
     'roles/cloudsql.viewer',
@@ -112,10 +112,6 @@ PROJECT_IAM_ROLES_SERVER = [
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
     'roles/logging.logWriter'
-]
-
-FORSETI_CAI_BUCKET_ROLES = [
-    'objectAdmin'
 ]
 
 SVC_ACCT_ROLES = [
@@ -202,7 +198,7 @@ MESSAGE_HAS_ROLE_SCRIPT = (
 
 MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
     'IMPORTANT NOTE\n'
-    'Your Forseti Security Installation will not work until '
+    'Your Forseti Security will not inventory/scan GSuite data until '
     'you enable GSuite data collection:\n'
     'https://forsetisecurity.org/docs/latest/configure/'
     'inventory/gsuite.html\n')

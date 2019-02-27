@@ -265,8 +265,7 @@ class Rule(object):
         self.applies_to = applies_to
 
         loc_re_str = '|'.join([
-            regular_exp.escape_and_globify(loc_wildcard.lower(),
-                                           wildcard_is_zero_or_more=True)
+            regular_exp.escape_and_globify(loc_wildcard.lower())
             for loc_wildcard in location_patterns
         ])
         self.location_re = re.compile(loc_re_str)

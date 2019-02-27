@@ -100,7 +100,6 @@ class LienScanner(base_scanner.BaseScanner):
 
                 parent_resource_to_liens[proj].append(lien.Lien.from_json(
                     parent=proj,
-                    name=lien_resource.name,
                     json_string=lien_resource.data))
 
             return parent_resource_to_liens

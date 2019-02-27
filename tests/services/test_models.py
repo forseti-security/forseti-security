@@ -54,6 +54,76 @@ RESOURCE_EXPANSION_2 = {
     'bindings': {},
 }
 
+COMPLEX_MODEL = {
+    'resources': {
+        'organization/org1': {
+            'project/project1': {
+                'bucket/bucket1': {},
+            },
+            'project/project2': {
+                'bucket/bucket2': {},
+                'vm/instance-1': {},
+            },
+        },
+    },
+    'memberships': {
+        'group/a': {
+            'user/a': {},
+            'user/b': {},
+            'user/c': {},
+            'group/b': {
+                'user/a': {},
+                'user/d': {},
+                'group/c': {
+                    'user/a': {},
+                    'user/f': {},
+                }
+            },
+        },
+        'user/e': {},
+    },
+    'roles': {
+        'role/a': ['permission/a', 'permission/b', 'permission/c',
+                   'permission/d', 'permission/e'],
+        'role/b': ['permission/a', 'permission/b', 'permission/c'],
+        'role/c': ['permission/f', 'permission/g', 'permission/h'],
+        'role/d': ['permission/f', 'permission/g', 'permission/i'],
+        # Include legacy roles for project(owner|editor|viewer) expansion
+        'roles/viewer': ['permission/a'],
+        'roles/editor': ['permissions/a', 'permissions/b', 'permissions/c',
+                         'permission/d', 'permission/e', 'permission/f',
+                         'permission/g'],
+        'roles/owner': ['permissions/a', 'permissions/b', 'permissions/c',
+                        'permission/d', 'permission/e', 'permission/f',
+                        'permission/g', 'permissions/j'],
+    },
+    'bindings': {
+        'organization/org1': {
+            'role/b': ['group/a'],
+        },
+        'project/project2': {
+            'role/a': ['group/b'],
+            'roles/viewer': ['user/e'],
+        },
+        'project/project1': {
+            'roles/editor': ['user/b', 'group/b'],
+            'roles/owner': ['group/c'],
+        },
+        'vm/instance-1': {
+            'role/a': ['user/a'],
+        },
+        'bucket/bucket1': {
+            'role/c': ['projecteditor/project1',
+                       'projecteditor/project_does_not_exist'],
+            'role/d': ['projectowner/project1'],
+        },
+        'bucket/bucket2': {
+            'role/c': ['projectviewer/project2'],
+            'role/d': ['allauthenticatedusers'],
+        },
+    },
+}
+
 MEMBER_TESTING_1 = {
     'resources': {},
     'memberships': {

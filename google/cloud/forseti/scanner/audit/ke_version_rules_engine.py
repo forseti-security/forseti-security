@@ -300,10 +300,13 @@ class VersionRule(object):
             ValueError: Raised if operator is not an allowed value.
         """
         self._major = parse_version(major)
+        self._major_str = major
         if minor:
             self._minor = parse_version(minor)
+            self._minor_str = minor
         else:
             self._minor = None
+            self._minor_str = '*'
 
         if operator not in self.ALLOWED_OPERATORS:
             raise ValueError('Operator %s not allowed.' % operator)
@@ -317,8 +320,9 @@ class VersionRule(object):
         Returns:
             str: String representation.
         """
-        minor = self._minor if self._minor else '*'
-        return '%s %s.%s' % (self._operator_str, self._major, minor)
+        return '%s %s.%s' % (self._operator_str,
+                             self._major_str,
+                             self._minor_str)
 
     def __hash__(self):
         """Calculate hash.
@@ -416,7 +420,7 @@ class Rule(object):
         return RuleViolation(
             resource_name=ke_cluster.name,
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
-            resource_id=ke_cluster.name,
+            resource_id=ke_cluster.id,
             full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
