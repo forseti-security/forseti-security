@@ -291,9 +291,6 @@ class _RunData(object):
         alternate_services = set()
         direct_access_sources = set()
         for backend in backend_service.backends:
-            print '-----'
-            print backend
-            print '-----'
             instance_group = self.find_instance_group_by_url(
                 backend.get('resourceGroup'))
             if not instance_group:
