@@ -412,6 +412,9 @@ class Rule(object):
         if self.allowed_iap_enabled != '^.+$':
             iap_enabled_regex = re.compile(
                 self.allowed_iap_enabled)
+            regex_match_result = iap_enabled_regex.match(
+                str(iap_resource.iap_enabled))
+            inverse_result = not regex_match_result
             iap_enabled_violation = not iap_enabled_regex.match(
                 str(iap_resource.iap_enabled))
         else:
