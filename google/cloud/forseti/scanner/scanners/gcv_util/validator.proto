@@ -1,0 +1,54 @@
+// The definition of validator RPC service.
+syntax = "proto3";
+
+package validator;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+// Asset contains GCP resource metadata and additional metadata set on a resource, such as Cloud IAM policy.
+message Asset {
+  // GCP resource name as defined by Cloud Asset Inventory.
+  // See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/resource-name-format for the format.
+  string name = 1;
+  // Cloud Asset Inventory type. Example: "google.cloud.sql.Instance" is the type of Cloud SQL instance.
+  // This field has a redundant "asset" prefix to be consistent with Cloud Asset Inventory output.
+  // See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview#supported_resource_types for the list of types.
+  string asset_type = 2;
+  // Ancestral project/folder/org information in a path-like format.
+  // For example, a GCP project that is nested under a folder may have the following path:
+  // organization/9999/folders/8888/projects/7777
+  string ancestry_path = 3;
+  // GCP resource metadata. The schema is type dependent.
+  google.protobuf.Value resource = 4;
+}
+
+// Violation contains the relevant information to explain how a constraint is violated.
+message Violation {
+  // The name of the constraint that's violated.
+  string constraint = 1;
+  // GCP resource name. This is the same name in Asset.
+  string resource = 2;
+  // Human readable error message.
+  string message = 3;
+  // Metadata is optional. It contains the constraint-specific information that can potentially be used for remediation.
+  // Example: In a firewall rule constraint violation, Metadata can contain the open port number.
+  google.protobuf.Value metadata = 4;
+}
+
+message AddDataRequest {
+  repeated Asset assets = 1;
+}
+
+message AuditResponse {
+  repeated Violation violations = 1;
+}
+
+service Validator {
+  // AddData adds GCP resource metadata to be audited later.
+  rpc AddData(AddDataRequest) returns (google.protobuf.Empty) {}
+  // Audit checks the GCP resource metadata that has been added via AddData to determine if any of the constraint is violated.
+  rpc Audit(google.protobuf.Empty) returns (AuditResponse) {}
+  // Reset clears previously added data from the underlying query evaluation engine.
+  rpc Reset(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
