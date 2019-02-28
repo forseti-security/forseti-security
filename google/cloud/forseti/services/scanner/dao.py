@@ -243,6 +243,7 @@ class ViolationAccess(object):
                 violation_data=json.dumps(
                     violation.get('violation_data'), sort_keys=True),
                 violation_hash=violation_hash,
+                violation_message=violation.get('violation_message', ''),
                 violation_type=violation.get('violation_type')
             )
             self.session.add(violation)

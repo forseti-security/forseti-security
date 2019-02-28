@@ -1,9 +1,9 @@
 from retrying import retry
 
-
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
 from google.cloud.forseti.scanner.scanners import base_scanner
+from google.cloud.forseti.scanner.scanners.gcv_util import validator_client
 
 
 class GCVScanner(base_scanner.BaseScanner):
@@ -81,22 +81,6 @@ class GCVScanner(base_scanner.BaseScanner):
 
         Yields:
             rtype: (dict, dict): Resource data and IAM policy.
-        """
-        pass
-
-    @classmethod
-    def _convert_to_cai(data, data_type):
-        """Convert data to CAI format.
-
-        Args:
-            dict: Data in dictionary format, can be resource data or IAM policy data.
-            str: Type of the data, can either be 'resource' or 'iam_policy'.
-
-        Returns:
-            dict: Data in CAI format.
-
-        Raises:
-            ValueError: if data_type is have an unexpected type.
         """
         pass
 

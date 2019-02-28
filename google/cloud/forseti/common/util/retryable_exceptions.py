@@ -14,6 +14,7 @@
 
 """Module to determine whether an exception should be retried."""
 
+import grpc
 import httplib
 import socket
 import ssl
@@ -31,6 +32,10 @@ RETRYABLE_EXCEPTIONS = (
     urllib2.URLError,  # include "no network connection"
 )
 
+RETRYABLE_GRPC_EXCEPTIONS = {
+    grpc.StatusCode.UNAVAILABLE
+}
+
 
 def is_retryable_exception(e):
     """Whether exception should be retried.
@@ -42,3 +47,18 @@ def is_retryable_exception(e):
         bool: True for exceptions to retry. False otherwise.
     """
     return isinstance(e, RETRYABLE_EXCEPTIONS)
+
+
+def is_retryable_exception_grpc(e):
+    """Whether exception should be retried for grpc communications.
+
+    Args:
+        e (Exception): Exception object.
+
+    Returns:
+        bool: True for exceptions to retry. False otherwise.
+    """
+
+    return (isinstance(e, grpc.RpcError) and
+            (e.code() in
+             RETRYABLE_GRPC_EXCEPTIONS))  # pylint: disable=no-member
