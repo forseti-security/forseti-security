@@ -42,12 +42,12 @@ BACKEND_SERVICES = {
             name='bs1',
             backends=[{
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_managed')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_managed')
             }, {
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_unmanaged')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_unmanaged')
             }],
             iap={'enabled': True},
             port=80,
@@ -72,8 +72,8 @@ BACKEND_SERVICES = {
             name='bs1_different_port',
             backends=[{
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_managed')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_managed')
             }],
             port=81,
         ),
@@ -84,8 +84,8 @@ BACKEND_SERVICES = {
             name='bs1_same_instance',
             backends=[{
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_same_instance')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_same_instance')
             }],
             port=80,
         ),
@@ -95,8 +95,8 @@ BACKEND_SERVICES = {
             name='bs1_different_network',
             backends=[{
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_different_network')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_different_network')
             }],
             port=80,
         ),
@@ -106,8 +106,8 @@ BACKEND_SERVICES = {
             name='bs1_different_instance',
             backends=[{
                 'group': ('https://www.googleapis.com/compute/v1/'
-                                  'projects/foo/regions/wl-redqueen1/'
-                                  'instanceGroups/ig_different_instance')
+                          'projects/foo/regions/wl-redqueen1/'
+                          'instanceGroups/ig_different_instance')
             }],
             port=80,
         ),
