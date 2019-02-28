@@ -41,11 +41,11 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_managed')
             }, {
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_unmanaged')
             }],
@@ -59,7 +59,7 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1_same_backend',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                           'projects/foo/regions/wl-redqueen1/'
                           'instanceGroups/ig_managed')
             }],
@@ -71,7 +71,7 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1_different_port',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_managed')
             }],
@@ -83,7 +83,7 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1_same_instance',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_same_instance')
             }],
@@ -94,7 +94,7 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1_different_network',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_different_network')
             }],
@@ -105,7 +105,7 @@ BACKEND_SERVICES = {
             project_id='foo',
             name='bs1_different_instance',
             backends=[{
-                'resourceGroup': ('https://www.googleapis.com/compute/v1/'
+                'group': ('https://www.googleapis.com/compute/v1/'
                                   'projects/foo/regions/wl-redqueen1/'
                                   'instanceGroups/ig_different_instance')
             }],

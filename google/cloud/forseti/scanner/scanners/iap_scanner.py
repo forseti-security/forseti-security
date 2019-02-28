@@ -292,7 +292,7 @@ class _RunData(object):
         direct_access_sources = set()
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
-                backend.get('resourceGroup'))
+                backend.get('group'))
             if not instance_group:
                 continue
 
@@ -347,7 +347,7 @@ class _RunData(object):
             return False
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
-                backend.get('resourceGroup'))
+                backend.get('group'))
             if not instance_group:
                 continue
 
@@ -358,7 +358,7 @@ class _RunData(object):
 
             for backend2 in backend_service2.backends:
                 instance_group2 = self.find_instance_group_by_url(
-                    backend2.get('resourceGroup'))
+                    backend2.get('group'))
                 if not instance_group2:
                     continue
                 network_port2 = self.instance_group_network_port(
