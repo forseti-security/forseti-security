@@ -70,7 +70,7 @@ def run():
                         help='Type of the installation, '
                              'either client or server')
     parser.add_argument('--inventoried-project-id',
-                        help='The project id to be inventried, '
+                        help='The project id to be inventoried, '
                              'instead of the organization id. '
                              'Without this flag, the entire org will be attempted.')
 
