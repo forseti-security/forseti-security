@@ -9,6 +9,11 @@ This guide explains how to use the Forseti installation tool.
 
 ---
 
+### Terraform installation
+
+Starting from Forseti v2.11.0, users will be able to install Forseti using 
+Terraform. Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google)
+
 ## Before you begin
 
 Before you run the setup wizard, you will need:
