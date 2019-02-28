@@ -72,7 +72,8 @@ def run():
     parser.add_argument('--inventoried-project-id',
                         help='The project id to be inventoried, '
                              'instead of the organization id. '
-                             'Without this flag, the entire org will be attempted.')
+                             'Without this flag, the entire org '
+                             'will be attempted.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
