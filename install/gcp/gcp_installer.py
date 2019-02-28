@@ -69,9 +69,10 @@ def run():
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
-    parser.add_argument('--target-project-id',
-                        help='The target project id, '
-                             'instead of the organization id.')
+    parser.add_argument('--inventoried-project-id',
+                        help='The project id to be inventried, '
+                             'instead of the organization id. '
+                             'Without this flag, the entire org will be attempted.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',

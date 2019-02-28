@@ -221,10 +221,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.target_project_id:
             organization_id = gcloud.lookup_organization(
                 self.target_project_id)
-            domain = gcloud.get_domain_from_organization_id(organization_id)
         else:
             organization_id = self.resource_root_id.split('/')[-1]
-            domain = gcloud.get_domain_from_organization_id(organization_id)
+
+        domain = gcloud.get_domain_from_organization_id(organization_id)
 
         return {
             'ORGANIZATION_ID': organization_id,
