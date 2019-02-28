@@ -38,12 +38,12 @@ to the target folder:
    for more details.
 
 1. If Forseti was installed with Org Admin credentials, then the org-level
-roles will be inherited on the folder-level.
+   roles will be inherited on the folder-level.
 
 1. If Foresti was not installed with Org Admin credentails, then you need
-to grant the Forseti server service account to have the same roles on the
-target resources, as was [originally granted on the
-organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
+   to grant the Forseti server service account to have the same roles on the
+   target resources, as was [originally granted on the
+   organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
 
 1. Saving changes.
    1. Save the changes to `forseti_conf_server.yaml` file.
