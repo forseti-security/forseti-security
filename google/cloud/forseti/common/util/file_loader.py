@@ -61,7 +61,9 @@ def copy_file_from_gcs(file_path, output_path=None, storage_client=None):
         storage_client = storage.StorageClient()
 
     if not output_path:
-        _, output_path = tempfile.mkstemp()
+        tmp_file, output_path = tempfile.mkstemp()
+        # Ensure the handle returned by mkstemp is not leaked.
+        os.close(tmp_file)
 
     with open(output_path, mode='wb') as f:
         storage_client.download(full_bucket_path=file_path, output_file=f)

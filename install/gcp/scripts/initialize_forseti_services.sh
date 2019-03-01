@@ -36,7 +36,7 @@ SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
-FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
+FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?charset=utf8"
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
@@ -48,6 +48,7 @@ SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
 API_SERVICE="$(cat << EOF
 [Unit]
 Description=Forseti API Server
+Wants=cloudsqlproxy.service
 [Service]
 User=ubuntu
 Restart=always
@@ -55,7 +56,6 @@ RestartSec=3
 ExecStart=$FORSETI_COMMAND
 [Install]
 WantedBy=multi-user.target
-Wants=cloudsqlproxy.service
 EOF
 )"
 echo "$API_SERVICE" > /tmp/forseti.service

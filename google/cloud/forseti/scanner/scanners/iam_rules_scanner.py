@@ -16,19 +16,30 @@
 
 import json
 
+from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
+from google.cloud.forseti.common.gcp_type.dataset import Dataset
 from google.cloud.forseti.common.gcp_type.folder import Folder
-from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import iam_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
+
+# List of Resource types that have supported IAM policy bindings.
+# Add new supported resources to this dict to enable support in the scanner.
+IAM_TYPE_RESOURCE_MAP = {
+    ResourceType.BILLING_ACCOUNT: BillingAccount,
+    ResourceType.BUCKET: Bucket,
+    ResourceType.DATASET: Dataset,
+    ResourceType.FOLDER: Folder,
+    ResourceType.ORGANIZATION: Organization,
+    ResourceType.PROJECT: Project,
+}
 
 
 # pylint: disable=too-many-branches
@@ -194,15 +205,11 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-
             policy_data = []
-            supported_iam_types = [
-                ResourceType.ORGANIZATION, ResourceType.BILLING_ACCOUNT,
-                ResourceType.FOLDER, ResourceType.PROJECT, ResourceType.BUCKET]
-            resource_counts = {iam_type: 0 for iam_type in supported_iam_types}
-
+            resource_counts = {iam_type: 0
+                               for iam_type in IAM_TYPE_RESOURCE_MAP}
             for policy in data_access.scanner_iter(session, 'iam_policy'):
-                if policy.parent.type not in supported_iam_types:
+                if policy.parent.type not in IAM_TYPE_RESOURCE_MAP:
                     continue
 
                 policy_bindings = filter(None, [  # pylint: disable=bad-builtin
@@ -210,52 +217,22 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     for b in json.loads(policy.data).get('bindings', [])])
 
                 resource_counts[policy.parent.type] += 1
-                if policy.parent.type == ResourceType.BUCKET:
-                    policy_data.append(
-                        (Bucket(policy.parent.name,
-                                policy.parent.full_name,
-                                policy.data),
-                         policy, policy_bindings))
-                elif policy.parent.type == ResourceType.PROJECT:
-                    policy_data.append(
-                        (Project(policy.parent.name,
-                                 policy.parent.full_name,
-                                 policy.data),
-                         policy, policy_bindings))
-                elif policy.parent.type == ResourceType.FOLDER:
-                    policy_data.append(
-                        (Folder(
-                            policy.parent.name,
-                            policy.parent.full_name,
-                            policy.data),
-                         policy, policy_bindings))
-                elif policy.parent.type == ResourceType.BILLING_ACCOUNT:
-                    policy_data.append(
-                        (BillingAccount(policy.parent.name,
-                                        policy.parent.full_name,
-                                        policy.data),
-                         policy, policy_bindings))
-                elif policy.parent.type == ResourceType.ORGANIZATION:
-                    policy_data.append(
-                        (Organization(
-                            policy.parent.name,
-                            policy.parent.full_name,
-                            policy.data),
-                         policy, policy_bindings))
+                resource_class = IAM_TYPE_RESOURCE_MAP[policy.parent.type]
+                policy_data.append(
+                    (resource_class(policy.parent.name,
+                                    policy.parent.full_name,
+                                    policy.data),
+                     policy, policy_bindings))
 
         if not policy_data:
-            LOGGER.warn('No policies found. Exiting.')
-            raise util_errors.NoDataError('No policies found. Exiting.')
+            LOGGER.warn('No policies found.')
+            return [], 0
 
         return policy_data, resource_counts
 
     def run(self):
         """Runs the data collection."""
-        try:
-            policy_data, _ = self._retrieve()
-        except util_errors.NoDataError:
-            return
-
+        policy_data, _ = self._retrieve()
         _add_bucket_ancestor_bindings(policy_data)
         all_violations = self._find_violations(policy_data)
         self._output_results(all_violations)

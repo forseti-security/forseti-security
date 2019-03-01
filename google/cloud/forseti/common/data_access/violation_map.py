@@ -43,10 +43,13 @@ VIOLATION_RESOURCES = {
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),
+    'CRYPTO_KEY_VIOLATION': 'kms_violations',
     'LIEN_VIOLATION': 'lien_violations',
     'LOCATION_VIOLATION': 'location_violations',
     'LOG_SINK_VIOLATION': 'log_sink_violations',
+    'RESOURCE_VIOLATION': 'resource_violations',
     'RETENTION_VIOLATION': 'retention_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
+    'EXTERNAL_PROJECT_ACCESS_VIOLATION': 'external_project_access_violations'
 }

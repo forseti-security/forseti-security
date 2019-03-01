@@ -14,6 +14,31 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+def get_patch_search_expression(forseti_version):
+    """Returns a glob expression matching all patches of the given version.
+
+    TODO: Update in client/forseti-instance-client if update here.
+
+    Args:
+        forseti_version (str): Installed forseti version.  Should start with
+            'tags/v' if patches are to be updated automatically.
+
+    Returns:
+        str: Glob expression matching all patches of given forseti_version.
+        None: Returns None if forseti_version is not in 'tags/vX.Y.Z' format.
+    """
+
+    if forseti_version[:6] != 'tags/v':
+        return None
+    segments = forseti_version.replace('tags/v', '').split('.')
+
+    for segment in segments:
+        if not segment.isdigit():
+            return None
+
+    return 'v{}.{}.{{[0-9],[0-9][0-9]}}'.format(segments[0], segments[1])
+
+
 def GenerateConfig(context):
     """Generate configuration."""
 
@@ -23,9 +48,29 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    FORSETI_VERSION = (
-        "git checkout {forseti_version}".format(
-            forseti_version=context.properties['forseti-version']))
+    patch_search_expression = get_patch_search_expression(context.properties['forseti-version'])
+    if patch_search_expression:
+        CHECKOUT_FORSETI_VERSION = (
+        """versions=$(git tag -l {patch_search_expression})
+versions=(${{versions//;/ }})
+for version in "${{versions[@]}}"
+do
+segments=(${{version//./ }})
+patch=${{segments[2]}}
+patch=${{patch: 0: 2}}
+patch=$(echo $patch | sed 's/[^0-9]*//g')
+# latest_version is an array [full_version, patch_number]
+if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+then
+  latest_version=($version $patch)
+fi
+done
+git checkout ${{latest_version[0]}}"""
+        .format(patch_search_expression=patch_search_expression))
+    else:
+        CHECKOUT_FORSETI_VERSION = (
+            "git checkout {forseti_version}".format(
+                forseti_version=context.properties['forseti-version']))
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -145,6 +190,8 @@ rm -rf *forseti*
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+# Fetch tags updates tag changes which fetch all doesn't do
+git fetch --tags
 git fetch --all
 {checkout_forseti_version}
 
@@ -228,6 +275,7 @@ USER=ubuntu
 (echo "{run_frequency} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
+
 echo "Execution of startup script finished"
 """.format(
     # Cloud SQL properties
@@ -236,8 +284,9 @@ echo "Execution of startup script finished"
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
 
-    # Checkout Forseti version.
-    checkout_forseti_version=FORSETI_VERSION,
+    # If installed on a version tag, checkout latest patch.
+    # Otherwise checkout originally installed version.
+    checkout_forseti_version=CHECKOUT_FORSETI_VERSION,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,

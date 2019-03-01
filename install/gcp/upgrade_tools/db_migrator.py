@@ -108,8 +108,7 @@ def migrate_schema(base, dao_classes):
                                             None)
         if (not callable(get_schema_update_actions) or
                 dao_class.__tablename__ not in tables):
-            LOGGER.warn('Method: %s is not callable or Table: %s doesn\'t '
-                        'exist', schema_update_actions_method,
+            LOGGER.info('Table %s doesn\'t require update.',
                         dao_class.__tablename__)
             continue
         LOGGER.info('Updating table %s', dao_class.__tablename__)

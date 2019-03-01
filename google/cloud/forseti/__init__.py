@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GOogle CLoud Forseti."""
+"""Google CLoud Forseti."""
 
-__version__ = '2.7.0'
+__version__ = '2.11.1'
 __package_name__ = 'forseti-security'

@@ -86,6 +86,8 @@ class Dataset(resource.Resource):
             dataset_id=dataset_id,
             full_name='{}dataset/{}/'.format(parent.full_name, dataset_id),
             display_name=dataset_id,
-            locations=[dataset_dict['location']],
+            # The default location if not specified is US
+            # https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets
+            locations=[dataset_dict.get('location', 'US')],
             data=json_string,
         )

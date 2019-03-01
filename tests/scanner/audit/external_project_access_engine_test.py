@@ -127,9 +127,12 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
     """Tests for the ExternalProjectAccessRuleBook."""
 
     TEST_GOOD_RULE = dict(name='default',
-                          allowed_ancestors=['organizations/7890'])
+                          allowed_ancestors=['organizations/7890'],
+                          users=['user@example.com'])
     TEST_BAD_RULE = dict(name='default',
-                         allowed_ancestors=['policy/12345'])
+                         allowed_ancestors=['policy/12345'],
+                         users=['user2@example.com',
+                                'user1_at_example_dot_com'])
     TEST_RULE_DEFS = dict(rules=[TEST_GOOD_RULE])
 
     TEST_ANCESTORS = [Project('123'),
@@ -153,14 +156,29 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
 
     def test_validate_good_ancestor(self):
         """Test proper rule validation"""
-        self.rule_book.validate_ancestors(
-            self.TEST_GOOD_RULE['allowed_ancestors'], 0)
+        self.assertIsNone(
+            self.rule_book.validate_ancestors(
+                self.TEST_GOOD_RULE['allowed_ancestors'], 0))
 
     def test_validate_bad_ancestor(self):
         """Test proper rule validation against bad ancestor"""
         with self.assertRaises(audit_errors.InvalidRulesSchemaError):
             self.rule_book.validate_ancestors(
                 self.TEST_BAD_RULE['allowed_ancestors'], 0)
+
+    def test_validate_good_user(self):
+        """Test proper rule validation"""
+        self.assertIsNone(
+            self.rule_book.validate_users(
+                self.TEST_GOOD_RULE['users'], 0))
+    
+    def test_validate_bad_user(self):
+        """Test proper rule validation against bad user"""
+        with self.assertRaises(audit_errors.InvalidRulesSchemaError) as error:
+            self.rule_book.validate_users(
+                self.TEST_BAD_RULE['users'], 0)
+        self.assertIn('user1_at_example_dot_com', str(error.exception))
+        self.assertNotIn('user2@example.com', str(error.exception))
 
     def test_missing_ancestors(self):
         """Test proper rule validation against missing ancestors"""
@@ -169,9 +187,9 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
 
     def test_process_good_rule(self):
         """Test proper rule processing"""
-        resources = self.rule_book.process_rule(self.TEST_GOOD_RULE, 0)
-        self.assertEqual(resources[0].id, '7890')
-        self.assertTrue(isinstance(resources[0], Organization))
+        processed_rule = self.rule_book.process_rule(self.TEST_GOOD_RULE, 0)
+        self.assertEqual(processed_rule['ancestor_resources'][0].id, '7890')
+        self.assertTrue(isinstance(processed_rule['ancestor_resources'][0], Organization))
 
 
     def test_process_bad_rule(self):
@@ -211,27 +229,95 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
 
     def test_single_item_in_rule_match(self):
         """Test no violations are found with single item in rule"""
+        processed_rule = {
+            'ancestor_resources': [Organization('7890')],
+        }
+
         rule = engine_module.Rule(rule_name='test_single_item_in_rule_match',
                                   rule_index=0,
-                                  rules=[Organization('7890')])
+                                  rules=processed_rule)
         violation = rule.find_violation('user1@example.com',
                                         self.TEST_ANCESTORS)
         self.assertIsNone(violation)
+
+    def test_single_item_in_rule_match_with_user(self):
+        """Test no violations are found with single item in rule with a user"""
+        processed_rule = {
+            'ancestor_resources': [Organization('7890')],
+            'users': ['user1@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_single_item_in_rule_match_with_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+        self.assertIsNone(violation)
+
+    def test_single_item_in_rule_match_with_wrong_user(self):
+        """Test no violations are found with single item in rule with a user that doesn't match the rule"""
+        processed_rule = {
+            'ancestor_resources': [Organization('7890')],
+            'users': ['user1@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_single_item_in_rule_match_with_wrong_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user2@example.com',
+                                        self.TEST_ANCESTORS)
+        self.assertIsNotNone(violation)
 
     def test_multi_items_in_rule_match(self):
         """Test no violations are found with multiple items in rule"""
+        processed_rule = {
+            'ancestor_resources': [Folder('456'), Organization('7890')]
+        }
+
         rule = engine_module.Rule(rule_name='test_multi_items_in_rule_match',
                                   rule_index=0,
-                                  rules=[Folder('456'), Organization('7890')])
+                                  rules=processed_rule)
         violation = rule.find_violation('user1@example.com',
                                         self.TEST_ANCESTORS)
         self.assertIsNone(violation)
 
+    def test_multi_items_in_rule_match_with_user(self):
+        """Test no violations are found with multiple items in rule with a user"""
+        processed_rule = {
+            'ancestor_resources': [Folder('456'), Organization('7890')],
+            'users': ['user1@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_multi_items_in_rule_match_with_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+        self.assertIsNone(violation)
+
+    def test_multi_items_in_rule_match_with_wrong_user(self):
+        """Test no violations are found with multiple items in rule with user that doesn't match the rule"""
+        processed_rule = {
+            'ancestor_resources': [Folder('456'), Organization('7890')],
+            'users': ['user2@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_multi_items_in_rule_match_with_wrong_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+        self.assertIsNotNone(violation)
+
     def test_single_item_no_match(self):
         """Test violations are found with single item in rule"""
+        processed_rule = {
+            'ancestor_resources': [Organization('789')]
+        }
+
         rule = engine_module.Rule(rule_name='test_single_item_no_match',
                                   rule_index=0,
-                                  rules=[Organization('789')])
+                                  rules=processed_rule)
         violation = rule.find_violation('user1@example.com',
                                         self.TEST_ANCESTORS)
 
@@ -242,17 +328,100 @@ class ExternalProjectAccessRuleTest(ForsetiTestCase):
         self.assertEqual('projects/123,folders/456,organizations/7890',
                          violation.resource_data)
 
+    def test_single_item_no_match_with_user(self):
+        """Test violations are found with single item in rule with a user"""
+        processed_rule = {
+            'ancestor_resources': [Organization('789')],
+            'users': ['user1@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_single_item_no_match_with_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+
+        self.assertEqual(0, violation.rule_index)
+        self.assertEqual('test_single_item_no_match_with_user',
+                         violation.rule_name)
+        self.assertEqual('projects/123', violation.full_name)
+        self.assertEqual('projects/123,folders/456,organizations/7890',
+                         violation.resource_data)
+
+    def test_single_item_no_match_with_wrong_user(self):
+        """Test violations are found with single item in rule with user that doesn't match the rule"""
+        processed_rule = {
+            'ancestor_resources': [Organization('789')],
+            'users': ['user2@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_single_item_no_match_with_wrong_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+
+        self.assertEqual(0, violation.rule_index)
+        self.assertEqual('test_single_item_no_match_with_wrong_user',
+                         violation.rule_name)
+        self.assertEqual('projects/123', violation.full_name)
+        self.assertEqual('projects/123,folders/456,organizations/7890',
+                         violation.resource_data)
 
     def test_multi_items_no_match(self):
         """Test violations are found with multiple items in rule"""
+        processed_rule = {
+            'ancestor_resources': [Folder('45'), Organization('789')]
+        }
+
         rule = engine_module.Rule(rule_name='test_multi_items_no_match',
                                   rule_index=0,
-                                  rules=[Folder('45'), Organization('789')])
+                                  rules=processed_rule)
         violation = rule.find_violation('user1@example.com',
                                         self.TEST_ANCESTORS)
 
         self.assertEqual(0, violation.rule_index)
         self.assertEqual('test_multi_items_no_match',
+                         violation.rule_name)
+        self.assertEqual('projects/123', violation.full_name)
+        self.assertEqual('projects/123,folders/456,organizations/7890',
+                         violation.resource_data)
+
+    def test_multi_items_no_match_with_user(self):
+        """Test violations are found with multiple items in rule with a user"""
+        processed_rule = {
+            'ancestor_resources': [Folder('45'), Organization('789')],
+            'users': ['user1@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_multi_items_no_match_with_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+
+        self.assertEqual(0, violation.rule_index)
+        self.assertEqual('test_multi_items_no_match_with_user',
+                         violation.rule_name)
+        self.assertEqual('projects/123', violation.full_name)
+        self.assertEqual('projects/123,folders/456,organizations/7890',
+                         violation.resource_data)
+
+    def test_multi_items_no_match_with_wrong_user(self):
+        """Test violations are found with multiple items in rule with user that doesn't match the rule"""
+        processed_rule = {
+            'ancestor_resources': [Folder('45'), Organization('789')],
+            'users': ['user2@example.com']
+        }
+
+        rule = engine_module.Rule(rule_name='test_multi_items_no_match_with_wrong_user',
+                                  rule_index=0,
+                                  rules=processed_rule)
+        violation = rule.find_violation('user1@example.com',
+                                        self.TEST_ANCESTORS)
+
+        self.assertEqual(0, violation.rule_index)
+        self.assertEqual('test_multi_items_no_match_with_wrong_user',
                          violation.rule_name)
         self.assertEqual('projects/123', violation.full_name)
         self.assertEqual('projects/123,folders/456,organizations/7890',
