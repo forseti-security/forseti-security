@@ -31,6 +31,78 @@ from google.cloud.forseti.services.utils import to_type_name
 
 LOGGER = logger.get_logger(__name__)
 
+GCP_TYPE_LIST = [
+    'composite_root',
+    'organization',
+    'folder',
+    'project',
+    'appengine_app',
+    'appengine_service',
+    'appengine_version',
+    'appengine_instance',
+    'backendservice',
+    'billing_account',
+    'bucket',
+    'cloudsqlinstance',
+    'compute_autoscaler',
+    'compute_backendbucket',
+    'compute_healthcheck',
+    'compute_httphealthcheck',
+    'compute_httpshealthcheck',
+    'compute_license',
+    'compute_project',
+    'compute_router',
+    'compute_sslcertificate',
+    'compute_targethttpproxy',
+    'compute_targethttpsproxy',
+    'compute_targetinstance',
+    'compute_targetpool',
+    'compute_targetsslproxy',
+    'compute_targettcpproxy',
+    'compute_targetvpngateway',
+    'compute_urlmap',
+    'compute_vpntunnel',
+    'crm_org_policy',
+    'dataproc_cluster',
+    'dataset',
+    'disk',
+    'dns_managedzone',
+    'dns_policy',
+    'firewall',
+    'forwardingrule',
+    'image',
+    'instance',
+    'instancegroup',
+    'instancegroupmanager',
+    'instancetemplate',
+    'kms_cryptokey',
+    'kms_cryptokeyversion',
+    'kms_keyring',
+    'kubernetes_cluster',
+    'lien',
+    'network',
+    'pubsub_subscription',
+    'pubsub_topic',
+    'serviceaccount',
+    'serviceaccount_key',
+    'sink',
+    'snapshot',
+    'spanner_instance',
+    'spanner_database',
+    'subnetwork',
+    'bigquery_table',
+]
+
+GSUITE_TYPE_LIST = [
+    'gsuite_group',
+    'gsuite_user',
+]
+
+MEMBER_TYPE_LIST = [
+    'gsuite_user_member',
+    'gsuite_group_member',
+]
+
 
 class ResourceCache(dict):
     """Resource cache."""
@@ -149,78 +221,6 @@ class InventoryImporter(object):
             NotImplementedError: If the importer encounters an unknown
                 inventory type.
         """
-        gcp_type_list = [
-            'composite_root',
-            'organization',
-            'folder',
-            'project',
-            'appengine_app',
-            'appengine_service',
-            'appengine_version',
-            'appengine_instance',
-            'backendservice',
-            'billing_account',
-            'bucket',
-            'cloudsqlinstance',
-            'compute_autoscaler',
-            'compute_backendbucket',
-            'compute_healthcheck',
-            'compute_httphealthcheck',
-            'compute_httpshealthcheck',
-            'compute_license',
-            'compute_project',
-            'compute_router',
-            'compute_sslcertificate',
-            'compute_targethttpproxy',
-            'compute_targethttpsproxy',
-            'compute_targetinstance',
-            'compute_targetpool',
-            'compute_targetsslproxy',
-            'compute_targettcpproxy',
-            'compute_targetvpngateway',
-            'compute_urlmap',
-            'compute_vpntunnel',
-            'crm_org_policy',
-            'dataproc_cluster',
-            'dataset',
-            'disk',
-            'dns_managedzone',
-            'dns_policy',
-            'firewall',
-            'forwardingrule',
-            'image',
-            'instance',
-            'instancegroup',
-            'instancegroupmanager',
-            'instancetemplate',
-            'kms_cryptokey',
-            'kms_cryptokeyversion',
-            'kms_keyring',
-            'kubernetes_cluster',
-            'lien',
-            'network',
-            'pubsub_subscription',
-            'pubsub_topic',
-            'serviceaccount',
-            'serviceaccount_key',
-            'sink',
-            'snapshot',
-            'spanner_instance',
-            'spanner_database',
-            'subnetwork',
-            'bigquery_table',
-        ]
-
-        gsuite_type_list = [
-            'gsuite_group',
-            'gsuite_user',
-        ]
-
-        member_type_list = [
-            'gsuite_user_member',
-            'gsuite_group_member',
-        ]
-
         autocommit = self.session.autocommit
         autoflush = self.session.autoflush
         try:
@@ -249,7 +249,7 @@ class InventoryImporter(object):
 
                 item_counter = 0
                 LOGGER.debug('Start storing resources into models.')
-                for resource in inventory.iter(gcp_type_list):
+                for resource in inventory.iter(GCP_TYPE_LIST):
                     item_counter += 1
                     self._store_resource(resource)
                     if not item_counter % 1000:
@@ -270,35 +270,35 @@ class InventoryImporter(object):
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_dataset_policy=True),
                     self._convert_dataset_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_gcs_policy=True),
                     self._convert_gcs_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_service_config=True),
                     self._convert_service_config
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gsuite_type_list),
+                    inventory.iter(GSUITE_TYPE_LIST),
                     self._store_gsuite_principal
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list, fetch_enabled_apis=True),
+                    inventory.iter(GCP_TYPE_LIST, fetch_enabled_apis=True),
                     self._convert_enabled_apis
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(member_type_list, with_parent=True),
+                    inventory.iter(MEMBER_TYPE_LIST, with_parent=True),
                     self._store_gsuite_membership,
                     post_action=self._store_gsuite_membership_post
                 )
@@ -306,7 +306,7 @@ class InventoryImporter(object):
                 self.dao.denorm_group_in_group(self.session)
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_iam_policy=True),
                     self._store_iam_policy
                 )

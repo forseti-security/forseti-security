@@ -1,12 +1,34 @@
 from retrying import retry
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import retryable_exceptions
 from google.cloud.forseti.scanner.scanners import base_scanner
+from google.cloud.forseti.scanner.scanners.gcv_util import gcv_data_converter
 from google.cloud.forseti.scanner.scanners.gcv_util import validator_client
+from google.cloud.forseti.services.model.importer import importer
 
 
 class GCVScanner(base_scanner.BaseScanner):
+    """GCV Scanner."""
+
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
+        """Constructor for the base pipeline.
+
+         Args:
+             global_configs (dict): Global configurations.
+             scanner_configs (dict): Scanner configurations.
+             service_config (ServiceConfig): Service configuration.
+             model_name (str): name of the data model
+             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+             rules (str): Fully-qualified path and filename of the rules file.
+         """
+        super(GCVScanner, self).__init__(
+            global_configs, scanner_configs, service_config,
+            model_name, snapshot_timestamp, rules)
+        self.validator_client = validator_client.ValidatorClient()
+
+        # Maps resourceType/resourceId -> (full_name, resource_data).
+        self.resource_lookup_table = {}
 
     @staticmethod
     def _flatten_violations(violations):
@@ -18,23 +40,12 @@ class GCVScanner(base_scanner.BaseScanner):
         Yields:
             dict: Iterator of GCV violations as a dict per violation.
         """
+        for violation in violations:
+            pass
+
+
         # Refer to the mapping table above to flatten the data.
         pass
-
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception, wait_exponential_multiplier=1000,
-           wait_exponential_max=10000, stop_max_attempt_number=5)
-    def _find_violations(self):
-        """Find violations by querying the GCV instance.
-
-        Returns:
-            list: A list of violations returned by GCV.
-
-        Raises:
-            GCVServerUnavailableError: if the GCV server is not available after retries.
-            GCVQueryError: if the GCV server is available but unable to query.
-        """
-        # Invoke GCV Query.
-        # Return results returned from GCV Query.
 
     def _output_results(self, all_violations):
         """Output results.
@@ -42,58 +53,50 @@ class GCVScanner(base_scanner.BaseScanner):
         Args:
             all_violations (List[RuleViolation]): A list of GCV violations.
         """
-        pass
-
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception, wait_exponential_multiplier=1000,
-           wait_exponential_max=10000, stop_max_attempt_number=5)
-    def _add_data(self, data):
-        """Add data to GCV.
-
-        Yields:
-            list: A list of data to add to GCV.
-
-        Raises:
-            GCVServerUnavailableError: if the GCV server is not available after retries.
-            GCVAddDataError: if the GCV server is available but failed to add data.
-        """
-        pass
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(all_violations)
 
     def _retrieve(self):
         """Retrieves the data for scanner.
 
         Yields:
-            rtype: (dict, dict): Resource and IAM policy in CAI format.
+            Asset: Google Config Validator Asset.
 
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        # Get the root resource data & iam policy from model.
-        # iam_policy = [root iam policy]
-        # for resource, policy in _retrieve_dfs(root, iam_policy):
-        #   yield _convert_to_cai(resource, 'resource'), _convert_to_cai(policy,
-        #     'iam_policy')
-        # yield convert_to_cai(root_resource, 'resource'),
-        #   convert_to_cai(root_policy, 'iam_policy')
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
 
-    @classmethod
-    def _retrieve_dfs(root, iam_policy):
-        """Retrieves the resource data and iam policy with DFS.
+        with scoped_session as session:
+            # fetching GCP resources.
+            for resource_type in importer.GCP_TYPE_LIST:
+                for resource in data_access.scanner_iter(session,
+                                                         resource_type):
+                    self.resource_lookup_table[resource.type_name] = (
+                        resource_type.full_name, resource.data)
+                    yield gcv_data_converter.convert_data_to_gcv_asset(
+                        resource, 'resource')
 
-        Yields:
-            rtype: (dict, dict): Resource data and IAM policy.
-        """
-        pass
+            # fetching IAM policy.
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                yield gcv_data_converter.convert_data_to_gcv_asset(
+                    policy, 'iam_policy')
 
     def run(self):
         """Runs the GCV Scanner."""
-        # 1. Call _retrieve() and get a generator.
-        # 2. Generate data in chunks.
-        # 3. Call _add_data() with that chunk of data.
-        # 4. Repeat steps above until the generator is empty.
-        # 5. Call _find_violations.
-        # 6. Call _flatten_violations on all the violations returned from 5.
-        # 7. Store the violations in the db.
-        cai_fmt_data = self._retrieve()
+        # Get all the data in GCV Asset format.
+        gcv_assets = self._retrieve()
 
-        for data in cai_fmt_data:
-            pass
+        # Add asset data to GCV.
+        for gcv_asset in gcv_assets:
+            self.validator_client.add_data_to_buffer(gcv_asset)
+
+        # Find all violations.
+        violations = self.validator_client.audit()
+
+        # Clean up GCV.
+        self.validator_client.reset()
+
+        # Output to db.
+        self._output_results(violations)
