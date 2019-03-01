@@ -14,6 +14,8 @@
 
 """A Folder Resource."""
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -56,3 +58,29 @@ class Folder(resource.Resource):
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        """Creates a Folder from a JSON string.
+
+        Args:
+            parent (Resource): resource this folder belongs to.
+            json_string (str): JSON string of a folder GCP resource.
+
+        Returns:
+            Folder: folder resource.
+        """
+        folder_dict = json.loads(json_string)
+        name = folder_dict['name']
+        folder_id = name.split('/')[-1]
+        full_name = '{}folder/{}/'.format(parent.full_name, folder_id)
+        lifecycle = folder_dict.get('lifecycleState',
+                                    FolderLifecycleState.UNSPECIFIED)
+        return cls(
+            folder_id=folder_id,
+            full_name=full_name,
+            data=json_string,
+            name=name,
+            display_name=folder_dict.get('displayName'),
+            parent=parent,
+            lifecycle_state=lifecycle)

@@ -78,6 +78,13 @@ class ResourceUtilTest(ForsetiTestCase):
         """Test that trying to get plural nonexistent resource returns None."""
         self.assertIsNone(resource_util.pluralize('nonexistent'))
 
+    def test_can_create_from_json(self):
+        """Test that can_create resources in map have a from_json method."""
+        for resource in resource_util._RESOURCE_TYPE_MAP.values():
+            if resource['can_create_resource']:
+                self.assertTrue(hasattr(resource['class'], 'from_json'),
+                                msg='%s missing from_json' % resource['class'])
+
 
 if __name__ == '__main__':
     unittest.main()
