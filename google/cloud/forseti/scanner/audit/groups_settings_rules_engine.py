@@ -17,6 +17,7 @@ from collections import namedtuple
 import datetime
 import threading
 
+from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger, date_time, string_formats
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -30,10 +31,14 @@ VIOLATION_TYPE = 'GSUITE_GROUPS_SETTINGS_VIOLATION'
 WHITELIST = 'whitelist'
 BLACKLIST = 'blacklist'
 REQUIRED = 'required'
-RULE_MODES = frozenset([BLACKLIST])
+RULE_MODES = frozenset([BLACKLIST, WHITELIST])
+SUPPORTED_SETTINGS = frozenset([
+    'whoCanAdd', 'whoCanJoin', 
+    'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 
+    'allowExternalMembers', 'whoCanLeaveGroup'])
 
 
-class GroupsSettingsEngine(bre.BaseRulesEngine):
+class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
     """Rules engine for KMS scanner."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
@@ -92,9 +97,9 @@ class GroupsSettingsEngine(bre.BaseRulesEngine):
 class GroupsSettingsRuleBook(bre.BaseRuleBook):
     """The RuleBook for crypto key rules."""
 
-    supported_resource_types = frozenset([
-        'organization'
-    ])
+    # supported_resource_types = frozenset([
+    #     'organization'
+    # ])
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -139,7 +144,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         Returns:
             str: The object representation.
         """
-        return 'KMSRuleBook <{}>'.format(self.resource_rules_map)
+        return 'GroupsSettingsRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -147,6 +152,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs (dict): rule definitions dictionary
         """
+        print("adding rules for groups settings")
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -159,56 +165,42 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        resources = rule_def.get('resource')
         mode = rule_def.get('mode')
-        key = rule_def.get('key')
+        settings = rule_def.get('settings')
+        groups_emails = rule_def.get('groups_emails')
 
-        if not resources or key is None or mode not in RULE_MODES:
+        if settings is None or not groups_emails or mode not in RULE_MODES:
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_index))
 
-        for resource in resources:
-            resource_type = resource.get('type')
-            resource_ids = resource.get('resource_ids')
-
-            if resource_type not in self.supported_resource_types:
+        for rule_setting in settings:
+            if rule_setting not in SUPPORTED_SETTINGS:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Invalid resource type in rule {}'.format(rule_index))
+                    'Faulty rule {}'.format(rule_index))
 
-            if not resource_ids or len(resource_ids) < 1:
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Missing resource ids in rule {}'.format(rule_index))
-
-            try:
-                for k in key:
-                    k.get('rotation_period')
-            except (ValueError, TypeError):
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Rotation period of crypto key is either missing or '
-                    ' not an integer in rule {}'.format(rule_index))
+        for group_email in groups_emails:
 
             # For each resource id associated with the rule, create a
             # mapping of resource => rules.
-            for resource_id in resource_ids:
-                gcp_resource = resource_util.create_resource(
-                    resource_id=resource_id,
-                    resource_type=resource_type)
+            gcp_resource = resource_util.create_resource(
+                resource_id=group_email,
+                resource_type=resource.ResourceType.GROUPS_SETTINGS)
 
-                rule_def_resource = {
-                    'key': key,
-                    'mode': mode
-                }
-                rule = Rule(rule_name=rule_def.get('name'),
-                            rule_index=rule_index,
-                            rule=rule_def_resource)
+            rule_def_resource = {
+                'settings': settings,
+                'mode': mode
+            }
+            rule = Rule(rule_name=rule_def.get('name'),
+                        rule_index=rule_index,
+                        rule=rule_def_resource)
 
-                resource_rules = self.resource_rules_map.setdefault(
-                    gcp_resource, ResourceRules(resource=gcp_resource))
+            resource_rules = self.resource_rules_map.setdefault(
+                gcp_resource, ResourceRules(resource=gcp_resource))
 
-                if not resource_rules:
-                    self.resource_rules_map[rule_index] = rule
-                if rule not in resource_rules.rules:
-                    resource_rules.rules.add(rule)
+            if not resource_rules:
+                self.resource_rules_map[rule_index] = rule
+            if rule not in resource_rules.rules:
+                resource_rules.rules.add(rule)
 
     def get_resource_rules(self, resource):
         """Get all the resource rules for resource.
@@ -221,7 +213,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         """
         return self.resource_rules_map.get(resource)
 
-    def find_violations(self, key):
+    def find_violations(self, settings):
         """Find crypto key violations in the rule book.
 
         Args:
@@ -231,33 +223,21 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
             RuleViolation: resource crypto key rule violations.
         """
         LOGGER.debug('Looking for crypto key violations: %s',
-                     key.name)
+                     settings.name)
         violations = []
-        resource_ancestors = resource_util.get_ancestors_from_full_name(
-            key.crypto_key_full_name)
 
-        LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
+        resource_rules = self.get_resource_rules(settings)
+        if resource_rules:
+            violations.extend(
+                resource_rules.find_violations(settings))
 
-        checked_wildcards = set()
-        for curr_resource in resource_ancestors:
-            if not curr_resource:
-                # The leaf node in the hierarchy
-                continue
+        wildcard_resource = resource_util.create_resource( 
+            resource_id='*', resource_type=settings.type)
 
-            resource_rule = self.get_resource_rules(curr_resource)
-            if resource_rule:
-                violations.extend(
-                    resource_rule.find_violations(key))
-
-            wildcard_resource = resource_util.create_resource(
-                resource_id='*', resource_type=curr_resource.type)
-            if wildcard_resource in checked_wildcards:
-                continue
-            checked_wildcards.add(wildcard_resource)
-            resource_rule = self.get_resource_rules(wildcard_resource)
-            if resource_rule:
-                violations.extend(
-                    resource_rule.find_violations(key))
+        resource_rules = self.get_resource_rules(wildcard_resource)
+        if resource_rules:
+            violations.extend(
+                resource_rules.find_violations(settings))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -280,7 +260,7 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_violations(self, key):
+    def find_violations(self, settings):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -291,7 +271,7 @@ class ResourceRules(object):
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_violations(key)
+            rule_violations = rule.find_violations(settings)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -327,7 +307,7 @@ class ResourceRules(object):
         Returns:
             str: debug string
         """
-        return 'KMSResourceRules<resource={}, rules={}>'.format(
+        return 'GroupsSettingsResourceRules<resource={}, rules={}>'.format(
             self.resource, self.rules)
 
 
@@ -346,33 +326,43 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
 
-    def is_key_rotated(self, creation_time, scan_time):
-        """Check if the key has been rotated within the time speciifed in the
-         policy.
+    def rule_requirements(self):
+        rule_list = []
+        for setting, value in self.rule['settings'].iteritems():
+            rule_list.append('{}:{}'.format(setting, value))
+        return ' AND '.join(rule_list)        
 
-        Args:
-            creation_time (datetime): The time at which the primary version of
-            the key was created.
-            scan_time (datetime): Snapshot timestamp.
-
-        Returns:
-            bool: Returns true if key was rotated within the time specified.
+    def find_blacklist_violation(self, settings):
         """
-        crypto_key = self.rule['key']
-        for key_data in crypto_key:
-            key_rotation_period = key_data.get('rotation_period')
-        LOGGER.debug('Formatting rotation time...')
-        last_rotation_time = creation_time[:-5]
-        formatted_last_rotation_time = datetime.datetime.strptime(
-            last_rotation_time, string_formats.TIMESTAMP_MICROS)
-        days_since_rotated = (scan_time - formatted_last_rotation_time).days
+            for all everything in self.rule['settings'], look for match.  If no matches found, return message 
+            "rule specified A:B AND X:Y is not allowed"
+        """
+        #TODO make sure no invalid properties in rule
+        violation_reason = None
+        if not self.rule['settings']:
+            return violation_reason
 
-        if days_since_rotated > key_rotation_period:
-            return False
+        violates_every_setting_in_rule = True
+        for setting, value in self.rule['settings'].iteritems():
+            if getattr(settings, setting) != value:
+                violates_every_setting_in_rule = False
+        if violates_every_setting_in_rule:
+            violation_reason = "rule specified ({}) together is not allowed".format(self.rule_requirements())
 
-        return True
+        return violation_reason
 
-    def find_violations(self, key):
+    def find_whitelist_violation(self, settings):
+        violation_reason = None
+        a_setting_doesnt_match = False
+        for setting, value in self.rule['settings'].iteritems():
+            if getattr(settings, setting) != value:
+                a_setting_doesnt_match = True
+        if a_setting_doesnt_match:
+            violation_reason = "rule specified ({}) is required".format(self.rule_requirements())
+
+        return violation_reason
+
+    def find_violations(self, settings):
         """Find crypto key violations based on the rotation period.
 
         Args:
@@ -382,31 +372,29 @@ class Rule(object):
             list: Returns a list of RuleViolation named tuples.
         """
         violations = []
-        creation_time = key.primary_version.get('createTime')
-        state = key.primary_version.get('state')
-        if not state == 'ENABLED':
-            return violations
-        scan_time = date_time.get_utc_now_datetime()
+        if settings.id == 'data-scientists@henrychang.mygbiz.com':
+            print("found data scientists")
         if self.rule['mode'] == BLACKLIST:
-            if not self.is_key_rotated(creation_time, scan_time):
-                violation_reason = ('Key %s was not rotated since %s.' %
-                                    (key.name, creation_time))
-                violations.append(RuleViolation(
-                    resource_id=key.id,
-                    resource_type=key.type,
-                    resource_name=key.id,
-                    full_name=key.crypto_key_full_name,
-                    rule_index=self.rule_index,
-                    rule_name=self.rule_name,
-                    violation_type=VIOLATION_TYPE,
-                    primary_version=key.primary_version,
-                    next_rotation_time=key.next_rotation_time,
-                    rotation_period=key.rotation_period,
-                    violation_reason=violation_reason,
-                    key_creation_time=key.create_time,
-                    version_creation_time=creation_time,
-                    resource_data=key.data))
+            violation_reason = self.find_blacklist_violation(settings)
+        elif self.rule['mode'] == WHITELIST:
+            violation_reason = self.find_whitelist_violation(settings)
 
+        if violation_reason: 
+            violations.append(RuleViolation(
+                group_email=settings.id,
+                resource_type=settings.type,
+                rule_index=self.rule_index,
+                rule_name=self.rule_name,
+                violation_type=VIOLATION_TYPE,
+                violation_reason=violation_reason,
+                whoCanAdd=settings.whoCanAdd,
+                whoCanJoin=settings.whoCanJoin,
+                whoCanViewMembership=settings.whoCanViewMembership,
+                whoCanViewGroup=settings.whoCanViewGroup,
+                whoCanInvite=settings.whoCanInvite,
+                allowExternalMembers=settings.allowExternalMembers,
+                whoCanLeaveGroup=settings.whoCanLeaveGroup
+                ))
         return violations
 
     def __eq__(self, other):
@@ -460,9 +448,8 @@ class Rule(object):
 # key_creation_time: string
 # resource_data: string
 RuleViolation = namedtuple('RuleViolation',
-                           ['resource_id', 'resource_type', 'resource_name',
-                            'full_name', 'rule_index', 'rule_name',
-                            'violation_type', 'violation_reason',
-                            'primary_version', 'next_rotation_time',
-                            'rotation_period', 'key_creation_time',
-                            'version_creation_time', 'resource_data'])
+                           ['group_email', 'resource_type','rule_index', 
+                            'rule_name', 'violation_type', 'violation_reason',
+                            'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership',
+                            'whoCanViewGroup', 'whoCanInvite', 
+                            'allowExternalMembers', 'whoCanLeaveGroup'])

@@ -33,10 +33,8 @@ LOGGER = logger.get_logger(__name__)
 
 def size_t_hash(key):
     """Hash the key using size_t.
-
     Args:
         key (str): The key to hash.
-
     Returns:
         str: The hashed key.
     """
@@ -45,14 +43,11 @@ def size_t_hash(key):
 
 def from_root_id(client, root_id):
     """Start the crawling from root if the root type is supported.
-
     Args:
         client (object): GCP API client.
         root_id (str): id of the root.
-
     Returns:
         Resource: the root resource instance.
-
     Raises:
         Exception: Unsupported root id.
     """
@@ -72,10 +67,8 @@ def from_root_id(client, root_id):
 
 def cached(field_name):
     """Decorator to perform caching.
-
     Args:
         field_name (str): The name of the attribute to cache.
-
     Returns:
         wrapper: Function wrapper to perform caching.
     """
@@ -83,21 +76,17 @@ def cached(field_name):
 
     def _cached(f):
         """Cache wrapper.
-
         Args:
             f (func): function to be decorated.
-
         Returns:
             wrapper: Function wrapper to perform caching.
         """
 
         def wrapper(*args, **kwargs):
             """Function wrapper to perform caching.
-
             Args:
                 *args: args to be passed to the function.
                 **kwargs: kwargs to be passed to the function.
-
             Returns:
                 object: Results of executing f.
             """
@@ -117,7 +106,6 @@ class ResourceFactory(object):
 
     def __init__(self, attributes):
         """Initialize.
-
         Args:
             attributes (dict): attributes for a specific type of resource.
         """
@@ -125,11 +113,9 @@ class ResourceFactory(object):
 
     def create_new(self, data, root=False):
         """Create a new instance of a Resource type.
-
         Args:
             data (str): raw data.
             root (Resource): root of this resource.
-
         Returns:
             Resource: Resource instance.
         """
@@ -144,7 +130,6 @@ class Resource(object):
 
     def __init__(self, data, root=False, contains=None, **kwargs):
         """Initialize.
-
         Args:
             data (str): raw data.
             root (Resource): the root of this crawling.
@@ -164,7 +149,6 @@ class Resource(object):
     @staticmethod
     def _utcnow():
         """Wrapper for datetime.datetime.now() injection.
-
         Returns:
             datatime: the datetime.
         """
@@ -172,13 +156,10 @@ class Resource(object):
 
     def __getitem__(self, key):
         """Get Item.
-
         Args:
             key (str): key of this resource.
-
         Returns:
             str: data of this resource.
-
         Raises:
             KeyError: 'key: {}, data: {}'
         """
@@ -189,7 +170,6 @@ class Resource(object):
 
     def __setitem__(self, key, value):
         """Set the value of an item.
-
         Args:
             key (str): key of this resource.
             value (str): value to set on this resource.
@@ -198,7 +178,6 @@ class Resource(object):
 
     def set_inventory_key(self, key):
         """Set the inventory unique id for the resource.
-
         Args:
             key (int): The unique id for the resource from the storage.
         """
@@ -206,7 +185,6 @@ class Resource(object):
 
     def inventory_key(self):
         """Gets the inventory key for this resource, if set.
-
         Returns:
             int: The unique id for the resource in storage.
         """
@@ -215,7 +193,6 @@ class Resource(object):
     @staticmethod
     def type():
         """Get type of this resource.
-
         Raises:
             NotImplementedError: method not implemented.
         """
@@ -223,7 +200,6 @@ class Resource(object):
 
     def data(self):
         """Get data on this resource.
-
         Returns:
             str: raw data.
         """
@@ -231,7 +207,6 @@ class Resource(object):
 
     def parent(self):
         """Get parent of this resource.
-
         Returns:
             Resource: parent of this resource.
         """
@@ -244,7 +219,6 @@ class Resource(object):
 
     def key(self):
         """Get key of this resource.
-
         Raises:
             NotImplementedError: key method not implemented.
         """
@@ -252,7 +226,6 @@ class Resource(object):
 
     def add_warning(self, warning):
         """Add warning on this resource.
-
         Args:
             warning (str): warning to be added.
         """
@@ -260,7 +233,6 @@ class Resource(object):
 
     def get_warning(self):
         """Get warning on this resource.
-
         Returns:
             str: warning message.
         """
@@ -269,7 +241,6 @@ class Resource(object):
     # pylint: disable=broad-except
     def try_accept(self, visitor, stack=None):
         """Handle exceptions on the call the accept.
-
         Args:
             visitor (object): The class implementing the visitor pattern.
             stack (list): The resource stack from the root to immediate parent
@@ -285,7 +256,6 @@ class Resource(object):
 
     def accept(self, visitor, stack=None):
         """Accept of resource in visitor pattern.
-
         Args:
             visitor (Crawler): visitor instance.
             stack (list): resource hierarchy stack.
@@ -300,7 +270,7 @@ class Resource(object):
                 for resource in yielder.iter():
                     res = resource
                     new_stack = stack + [self]
-
+                    
                     # Parallelization for resource subtrees.
                     if res.should_dispatch():
                         callback = partial(res.try_accept, visitor, new_stack)
@@ -320,7 +290,6 @@ class Resource(object):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy template.
-
         Args:
             client (object): GCP API client.
         """
@@ -330,7 +299,6 @@ class Resource(object):
     @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
         """Get gcs policy template.
-
         Args:
             client (object): GCP API client.
         """
@@ -340,7 +308,6 @@ class Resource(object):
     @cached('sql_policy')
     def get_cloudsql_policy(self, client=None):
         """Get cloudsql policy template.
-
         Args:
             client (object): GCP API client.
         """
@@ -350,7 +317,6 @@ class Resource(object):
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Get dataset policy template.
-
         Args:
             client (object): GCP API client.
         """
@@ -360,7 +326,6 @@ class Resource(object):
     @cached('group_members')
     def get_group_members(self, client=None):
         """Get group member template.
-
         Args:
             client (object): GCP API client.
         """
@@ -370,7 +335,6 @@ class Resource(object):
     @cached('billing_info')
     def get_billing_info(self, client=None):
         """Get billing info template.
-
         Args:
             client (object): GCP API client.
         """
@@ -380,7 +344,6 @@ class Resource(object):
     @cached('enabled_apis')
     def get_enabled_apis(self, client=None):
         """Get enabled apis template.
-
         Args:
             client (object): GCP API client.
         """
@@ -390,7 +353,6 @@ class Resource(object):
     @cached('service_config')
     def get_kubernetes_service_config(self, client=None):
         """Get kubernetes service config method template.
-
         Args:
             client (object): GCP API client.
         """
@@ -399,7 +361,6 @@ class Resource(object):
 
     def get_timestamp(self):
         """Template for timestamp when the resource object.
-
         Returns:
             str: a string timestamp when the resource object was created.
         """
@@ -407,10 +368,8 @@ class Resource(object):
 
     def stack(self):
         """Get resource hierarchy stack of this resource.
-
         Returns:
             list: resource hierarchy stack of this resource.
-
         Raises:
             Exception: 'Stack not initialized yet'.
         """
@@ -420,10 +379,8 @@ class Resource(object):
 
     def visitor(self):
         """Get visitor on this resource.
-
         Returns:
             Crawler: visitor on this resource.
-
         Raises:
             Exception: 'Visitor not initialized yet'.
         """
@@ -433,7 +390,6 @@ class Resource(object):
 
     def should_dispatch(self):
         """Whether resources should run in parallel threads.
-
         Returns:
             bool: whether this resource should run in parallel threads.
         """
@@ -441,7 +397,6 @@ class Resource(object):
 
     def __repr__(self):
         """String Representation.
-
         Returns:
             str: Resource representation.
         """
@@ -456,14 +411,12 @@ class Resource(object):
 
 def resource_class_factory(resource_type, key_field, hash_key=False):
     """Factory function to generate Resource subclasses.
-
     Args:
         resource_type (str): The static resource type for this subclass.
         key_field (str): The field in the resource data to use as the resource
             unique key.
         hash_key (bool): If true, use a hash of the key field data instead of
             the value of the key field.
-
     Returns:
         class: A new class object.
     """
@@ -474,7 +427,6 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
         @staticmethod
         def type():
             """Get type of this resource.
-
             Returns:
                 str: The static resource type for this subclass.
             """
@@ -482,7 +434,6 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
 
         def key(self):
             """Get key of this resource.
-
             Returns:
                 str: key of this resource.
             """
@@ -492,7 +443,7 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
                 return size_t_hash(self[key_field])
 
             return self[key_field]
-
+        
     return ResourceSubclass
 
 
@@ -503,13 +454,10 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Organization.
-
         Saves ApiExecutionErrors as warnings.
-
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
-
         Returns:
             Organization: Organization resource.
         """
@@ -526,10 +474,8 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this organization.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: organization IAM Policy.
         """
@@ -542,7 +488,6 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
 
     def has_directory_resource_id(self):
         """Whether this organization has a directoryCustomerId.
-
         Returns:
             bool: True if the data exists, else False.
         """
@@ -551,7 +496,6 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource.
         """
@@ -563,7 +507,6 @@ class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource
         """
@@ -579,11 +522,9 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Folder.
-
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
-
         Returns:
             Folder: Folder resource.
         """
@@ -599,7 +540,6 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource.
         """
@@ -607,7 +547,6 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
 
     def should_dispatch(self):
         """Folder resources should run in parallel threads.
-
         Returns:
             bool: whether folder resources should run in parallel threads.
         """
@@ -616,10 +555,8 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this folder.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Folder IAM Policy.
         """
@@ -636,7 +573,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def __init__(self, data, root=False, contains=None, **kwargs):
         """Initialize.
-
         Args:
             data (str): raw data.
             root (Resource): the root of this crawling.
@@ -650,11 +586,9 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Project.
-
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
-
         Returns:
             Project: created project.
         """
@@ -672,10 +606,8 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this project.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Project IAM Policy.
         """
@@ -693,10 +625,8 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
     @cached('billing_info')
     def get_billing_info(self, client=None):
         """Get billing info.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Project Billing Info resource.
         """
@@ -713,10 +643,8 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
     @cached('enabled_apis')
     def get_enabled_apis(self, client=None):
         """Get project enabled API services.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             list: A list of ManagedService resource dicts.
         """
@@ -735,7 +663,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def should_dispatch(self):
         """Project resources should run in parallel threads.
-
         Returns:
             bool: whether project resources should run in parallel threads.
         """
@@ -743,7 +670,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def enumerable(self):
         """Check if this project is enumerable.
-
         Returns:
             bool: if this project is enumerable.
         """
@@ -751,7 +677,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def billing_enabled(self):
         """Check if billing is configured.
-
         Returns:
             bool: if billing is enabled on the project.
         """
@@ -763,10 +688,8 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def is_api_enabled(self, service_name):
         """Returns True if the API service is enabled on the project.
-
         Args:
             service_name (str): The API service name to check.
-
         Returns:
             bool: whether a service api is enabled
         """
@@ -778,7 +701,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def bigquery_api_enabled(self):
         """Check if the bigquery api is enabled.
-
         Returns:
             bool: if this API service is enabled on the project.
         """
@@ -788,7 +710,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def compute_api_enabled(self):
         """Check if the compute api is enabled.
-
         Returns:
             bool: if this API service is enabled on the project.
         """
@@ -798,7 +719,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def container_api_enabled(self):
         """Check if the container api is enabled.
-
         Returns:
             bool: if this API service is enabled on the project.
         """
@@ -808,7 +728,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     def storage_api_enabled(self):
         """whether storage api is enabled.
-
         Returns:
             bool: if this API service is enabled on the project.
         """
@@ -820,7 +739,6 @@ class ResourceManagerLien(resource_class_factory('lien', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource
         """
@@ -854,7 +772,6 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
     def _set_cache(self, field_name, value):
         """Manually set a cache value if it isn't already set.
-
         Args:
             field_name (str): The name of the attribute to cache.
             value (str): The value to cache.
@@ -866,10 +783,8 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """IAM policy for this Dataset.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Dataset Policy.
         """
@@ -890,10 +805,8 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Dataset Policy.
         """
@@ -923,7 +836,6 @@ class BillingAccount(resource_class_factory('billing_account', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource.
         """
@@ -932,10 +844,8 @@ class BillingAccount(resource_class_factory('billing_account', None)):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this folder.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Billing Account IAM Policy.
         """
@@ -948,8 +858,7 @@ class BillingAccount(resource_class_factory('billing_account', None)):
 
 
 # CloudSQL resource classes
-class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
-                                              hash_key=True)):
+class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'name')):
     """The Resource implementation for CloudSQL Instance."""
 
 
@@ -1093,10 +1002,8 @@ class DataprocCluster(resource_class_factory('dataproc_cluster',
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Dataproc Cluster IAM policy.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Dataproc Cluster IAM policy.
         """
@@ -1146,10 +1053,8 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Service Account IAM policy for this service account.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Service Account IAM policy.
         """
@@ -1167,7 +1072,6 @@ class IamServiceAccountKey(resource_class_factory('serviceaccount_key', None)):
 
     def key(self):
         """Get key of this resource.
-
         Key name is in the format:
            projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
         Returns:
@@ -1184,10 +1088,8 @@ class KmsCryptoKey(resource_class_factory('kms_cryptokey', 'name',
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """KMS CryptoKey IAM policy.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: CryptoKey IAM policy.
         """
@@ -1211,10 +1113,8 @@ class KmsKeyRing(resource_class_factory('kms_keyring', 'name',
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """KMS Keyring IAM policy.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Keyring IAM policy.
         """
@@ -1235,10 +1135,8 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
     @cached('service_config')
     def get_kubernetes_service_config(self, client=None):
         """Get service config for KubernetesCluster.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
@@ -1256,7 +1154,6 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
 
     def location(self):
         """Get KubernetesCluster location.
-
         Returns:
             str: KubernetesCluster location.
         """
@@ -1270,7 +1167,6 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
 
     def zone(self):
         """Get KubernetesCluster zone.
-
         Returns:
             str: KubernetesCluster zone.
         """
@@ -1289,7 +1185,6 @@ class LoggingSink(resource_class_factory('sink', None)):
 
     def key(self):
         """Get key of this resource.
-
         Returns:
             str: key of this resource
         """
@@ -1308,11 +1203,14 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
 
     def should_dispatch(self):
         """GSuite Groups should always dispatch to another thread.
-
         Returns:
             bool: Always returns True.
         """
         return True
+
+
+class GsuiteGroupsSettings(resource_class_factory('gsuite_groups_settings', 'email')):
+    """The Resource implementation for GSuite Settings."""
 
 
 class GsuiteUserMember(resource_class_factory('gsuite_user_member', 'id')):
@@ -1331,10 +1229,8 @@ class PubsubSubscription(resource_class_factory('pubsub_subscription', 'name',
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get IAM policy for this Pubsub Subscription.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Pubsub Subscription IAM policy.
         """
@@ -1353,10 +1249,8 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get IAM policy for this Pubsub Topic.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Pubsub Topic IAM policy.
         """
@@ -1386,10 +1280,8 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get IAM policy for this Storage bucket.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: bucket IAM policy.
         """
@@ -1403,17 +1295,14 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
     @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
         """Get Bucket Access Control policy for this storage bucket.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             list: bucket access controls.
         """
         try:
             # Full projection returns GCS policy with the resource.
-            if self['acl']:
-                return self['acl']
+            return self['acl']
         except KeyError:
             pass
 
@@ -1421,7 +1310,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             return client.fetch_storage_bucket_acls(
                 self.key(),
                 self.parent()['projectId'],
-                self.parent()['projectNumber'])
+                self['projectNumber'])
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Could not get bucket Access Control policy: %s', e)
             self.add_warning(e)
@@ -1433,10 +1322,8 @@ class StorageObject(resource_class_factory('storage_object', 'id')):
 
     def get_gcs_policy(self, client=None):
         """Full projection returns GCS policy with the resource.
-
         Args:
             client (object): GCP API client.
-
         Returns:
             dict: Object acl.
         """
@@ -1451,7 +1338,6 @@ class ResourceIterator(object):
 
     def __init__(self, resource, client):
         """Initialize.
-
         Args:
             resource (Resource): The parent resource.
             client (object): GCP API Client.
@@ -1461,7 +1347,6 @@ class ResourceIterator(object):
 
     def iter(self):
         """Resource iterator.
-
         Raises:
             NotImplementedError: Abstract class method not implemented.
         """
@@ -1475,7 +1360,6 @@ def resource_iter_class_factory(api_method_name,
                                 resource_validation_method_name=None,
                                 **kwargs):
     """Factory function to generate ResourceIterator subclasses.
-
     Args:
         api_method_name (str): The method to call on the API client class to
             iterate resources.
@@ -1489,14 +1373,12 @@ def resource_iter_class_factory(api_method_name,
             to validate that the resource supports iterating resources of this
             type.
         **kwargs (dict): Additional keyword args to send to the api method.
-
     Returns:
         class: A new class object.
     """
 
     def always_true():
         """Helper function that always returns True.
-
         Returns:
             bool: True
         """
@@ -1507,7 +1389,6 @@ def resource_iter_class_factory(api_method_name,
 
         def iter(self):
             """Resource iterator.
-
             Yields:
                 Resource: resource returned from client.
             """
@@ -1563,7 +1444,6 @@ class ResourceManagerProjectIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: Project created
         """
@@ -1592,7 +1472,6 @@ class AppEngineAppIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: AppEngineApp created
         """
@@ -1612,7 +1491,6 @@ class AppEngineServiceIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: AppEngineService created
         """
@@ -1630,7 +1508,6 @@ class AppEngineVersionIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: AppEngineVersion created
         """
@@ -1650,7 +1527,6 @@ class AppEngineInstanceIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: AppEngineInstance created
         """
@@ -1689,21 +1565,18 @@ class BillingAccountIterator(resource_iter_class_factory(
 class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
-        api_method_arg_key='projectId',
-        additional_arg_keys=['projectNumber'],
+        api_method_arg_key='projectNumber',
         resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
 def compute_iter_class_factory(api_method_name, resource_name):
     """Factory function to generate ResourceIterator subclasses for Compute.
-
     Args:
         api_method_name (str): The method to call on the API client class to
             iterate resources.
         resource_name (str): The name of the resource to create from the
             resource factory.
-
     Returns:
         class: A new class object.
     """
@@ -1779,7 +1652,6 @@ class ComputeInstanceGroupIterator(ResourceIterator):
 
     def iter(self):
         """Compute InstanceGroup iterator.
-
         Yields:
             Resource: Compute InstanceGroup resource.
         """
@@ -1950,7 +1822,6 @@ class GsuiteGroupIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: GsuiteGroup created
         """
@@ -1970,7 +1841,6 @@ class GsuiteMemberIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: GsuiteUserMember or GsuiteGroupMember created
         """
@@ -1991,7 +1861,6 @@ class GsuiteUserIterator(ResourceIterator):
 
     def iter(self):
         """Resource iterator.
-
         Yields:
             Resource: GsuiteUser created
         """
@@ -2004,6 +1873,23 @@ class GsuiteUserIterator(ResourceIterator):
             except ResourceNotSupported as e:
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
+
+
+class GsuiteGroupsSettingsIterator(ResourceIterator):
+    """The Resource iterator implementation for Gsuite Group Settings"""
+
+    def iter(self):
+        """Resource iterator.
+        Yields:
+            Resource: GsuiteGroupsSettings created
+        """
+        gsuite = self.client
+        try:
+            data = gsuite.fetch_gsuite_groups_settings(self.resource['email'])
+            yield FACTORIES['gsuite_groups_settings'].create_new(data)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
 
 
 class IamOrganizationCuratedRoleIterator(resource_iter_class_factory(
@@ -2468,7 +2354,13 @@ FACTORIES = {
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,
+            GsuiteGroupsSettingsIterator,
         ]}),
+
+    'gsuite_groups_settings': ResourceFactory({
+        'dependsOn': ['gsuite_group'],
+        'cls': GsuiteGroupsSettings,
+        'contains': []}),
 
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],

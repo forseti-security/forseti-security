@@ -37,7 +37,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(KMSScanner, self).__init__(
+        super(GroupsSettingsScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
@@ -58,18 +58,30 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
 
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
+
         """
+
         for violation in violations:
+            resource_data = {
+                'whoCanAdd': violation.whoCanAdd,
+                'whoCanJoin': violation.whoCanJoin,
+                'whoCanViewMembership': violation.whoCanViewMembership,
+                'whoCanViewGroup': violation.whoCanViewGroup,
+                'whoCanInvite': violation.whoCanInvite,
+                'allowExternalMembers': violation.allowExternalMembers,
+                'whoCanLeaveGroup': violation.whoCanLeaveGroup,
+            }
+
             yield {
-                'resource_id': violation.resource_id,
+                'resource_id': violation.group_email,
+                'full_name': violation.group_email,
+                'resource_name': violation.group_email,
+                'resource_data': str(resource_data),
+                'violation_data': violation.violation_reason,
                 'resource_type': violation.resource_type,
-                'resource_name': violation.resource_id,
-                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation.violation_reason,
-                'resource_data': violation.resource_data
             }
 
     def _output_results(self, all_violations):
@@ -91,7 +103,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
             list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding crypto key rotation violations...')
+        LOGGER.info('Finding groups settings violations...')
 
         for settings in settings_list:
             violations = self.rules_engine.find_violations(settings)
@@ -108,24 +120,15 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         Raises:
             ValueError: if resources have an unexpected type.
         """
+        print("retrieve on settings called")
         settings_list = []
 
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            for key in data_access.scanner_iter(session, 'kms_cryptokey'):
-                if not key.parent_type_name.startswith('kms_keyring'):
-                    raise ValueError(
-                        'Unexpected type of parent resource type: '
-                        'got %s, want kms_keyring' % key.parent_type_name
-                    )
-
-                settings_list.append(groups_settings.GroupsSettings.from_json(
-                    key.name,
-                    key.full_name,
-                    key.parent_type_name,
-                    key.type,
-                    key.data))
+            for settings in data_access.scanner_fetch_groups_settings(session):
+                email = settings[0].split('group/')[1]
+                settings_list.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
 
         return settings_list
 

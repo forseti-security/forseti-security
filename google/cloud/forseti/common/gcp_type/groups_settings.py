@@ -27,16 +27,14 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-class CryptoKey(resource.Resource):
+class GroupsSettings(resource.Resource): #TODO ensure id and type are set in a way that they match what its put into the rules map in the engine
     """Represents the CryptoKey resource."""
 
     # pylint: disable=too-many-instance-attributes, too-many-arguments, expression-not-assigned
     def __init__(
-            self, crypto_key_name=None, crypto_key_full_name=None,
-            crypto_key_parent_type_name=None, crypto_key_type=None,
-            primary_version=None, purpose=None, create_time=None,
-            next_rotation_time=None, version_template=None, labels=None,
-            rotation_period=None, data=None):
+            self, email, whoCanAdd=None, whoCanJoin=None, whoCanViewMembership=None,
+            whoCanViewGroup=None, whoCanInvite=None, 
+            allowExternalMembers=None, whoCanLeaveGroup=None):
         """Initialize.
 
         Args:
@@ -54,50 +52,30 @@ class CryptoKey(resource.Resource):
             rotation_period (str): Scheduled rotation period of CryptoKey.
             data (Resource): Cryptokey resource data.
         """
-        super(CryptoKey, self).__init__(
-            resource_id=crypto_key_name,
-            name=crypto_key_name,
-            parent=crypto_key_parent_type_name,
-            resource_type=resource.ResourceType.CRYPTO_KEY),
-        self.crypto_key_full_name = crypto_key_full_name
-        self.crypto_key_type = crypto_key_type
-        self.primary_version = primary_version
-        self.purpose = purpose
-        self.create_time = create_time
-        self.next_rotation_time = next_rotation_time
-        self.version_template = version_template
-        self.labels = labels
-        self.rotation_period = rotation_period
-        self.data = data
+        super(GroupsSettings, self).__init__(
+            resource_id=email,
+            name=email,
+            resource_type=resource.ResourceType.GROUPS_SETTINGS),
+
+        
+        self.whoCanAdd = whoCanAdd
+        self.whoCanJoin = whoCanJoin
+        self.whoCanViewMembership = whoCanViewMembership
+        self.whoCanViewGroup = whoCanViewGroup
+        self.whoCanInvite = whoCanInvite
+        self.allowExternalMembers = bool(allowExternalMembers)
+        self.whoCanLeaveGroup = whoCanLeaveGroup
 
     @classmethod
-    def from_json(cls, crypto_key_name, crypto_key_full_name,
-                  crypto_key_parent_type_name, crypto_key_type, json_string):
-        """Returns a new CryptoKey object from a JSON object.
-
-        Args:
-            crypto_key_name (str): The unique Cryptokey id.
-            crypto_key_full_name (str): The Cryptokey full name.
-            crypto_key_parent_type_name (str): The Cryptokey parent type name.
-            crypto_key_type (str): The Cryptokey type name.
-            json_string(str): JSON string of a Cryptokey GCP API response.
-
-        Returns:
-           CryptoKey: A new CryptoKey object.
-        """
-        key_dict = json.loads(json_string)
-
+    def from_json(cls, email, settings):
+        settings = json.loads(settings)
         return cls(
-            crypto_key_name=crypto_key_name,
-            crypto_key_full_name=crypto_key_full_name,
-            crypto_key_parent_type_name=crypto_key_parent_type_name,
-            crypto_key_type=crypto_key_type,
-            primary_version=key_dict.get('primary', {}),
-            purpose=key_dict.get('purpose'),
-            create_time=key_dict.get('createTime'),
-            next_rotation_time=key_dict.get('nextRotationTime'),
-            version_template=key_dict.get('versionTemplate', {}),
-            labels=key_dict.get('labels', {}),
-            rotation_period=key_dict.get('rotationPeriod'),
-            data=json.dumps(key_dict, sort_keys=True),
-        )
+            email=email, 
+            whoCanAdd=settings["whoCanAdd"], 
+            whoCanJoin=settings["whoCanJoin"],
+            whoCanViewMembership=settings["whoCanViewMembership"],
+            whoCanViewGroup=settings["whoCanViewGroup"],
+            whoCanInvite=settings["whoCanInvite"],
+            allowExternalMembers=settings["allowExternalMembers"],
+            whoCanLeaveGroup=settings["whoCanLeaveGroup"]
+            )

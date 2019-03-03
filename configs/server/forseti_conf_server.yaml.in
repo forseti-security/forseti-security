@@ -209,7 +209,7 @@ scanner:
           enabled: true
         - name: kms_scanner
           enabled: true
-        - name: groups_settings_scanner
+        - name: groups_settings
           enabled: true
         - name: lien
           enabled: true
