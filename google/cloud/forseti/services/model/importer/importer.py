@@ -463,7 +463,7 @@ class InventoryImporter(object):
             self.membership_items.append(
                 dict(group_name=group_name(parent), members_name=member))
 
-    def _store_groups_settings(self, settings, group):
+    def _store_groups_settings(self, settings):
         """Store gsuite settings.
 
         Args:
@@ -472,8 +472,8 @@ class InventoryImporter(object):
         """
 
         settings_dict = settings.get_resource_data()
-        group_name = group_name(group)
-        settings_row = dict(group_name=group_name, 
+        group_email = group_name(settings)
+        settings_row = dict(group_name=group_email, 
                             settings=json.dumps(settings_dict,  sort_keys=True))
         stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
         self.session.execute(stmt)
