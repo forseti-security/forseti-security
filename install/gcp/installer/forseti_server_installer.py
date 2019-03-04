@@ -216,7 +216,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.composite_root_resources:
             composite_root_resources = '\n'
             for resource in self.composite_root_resources:
-                composite_root_resources += '\t- \"' + resource + '\"\n'
+                composite_root_resources += '  - \"' + resource + '\"\n'
         else:
             root_id = self.resource_root_id
 
