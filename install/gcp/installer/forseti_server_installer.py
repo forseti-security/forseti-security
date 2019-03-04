@@ -36,8 +36,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     resource_root_id = None
     access_target = None
     target_id = None
-    # ejg@
-    # target_project_id = None
     composite_root_resources = []
     user_can_grant_roles = True
 
@@ -209,7 +207,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         bucket_name = self.generate_bucket_name()
 
-        # ejg@
         resource_root_id = ''
         composite_root_resources = ''
 
@@ -239,7 +236,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        # ejg@
         if self.composite_root_resources:
             # split element 0 into type and id
             rType, rId = self.composite_root_resources[0].split('/')
@@ -299,12 +295,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 else:
                     self.target_id = gcloud.choose_project()
 
-        print("ejg: access_target[" + self.access_target + "]")
         if self.composite_root_resources:
-            # ejg@
             self.resource_root_id = self.composite_root_resources[0]
         else:
-            # ejg@
             self.resource_root_id = utils.format_resource_id(
              self.access_target, self.target_id)
 

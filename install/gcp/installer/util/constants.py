@@ -158,7 +158,6 @@ REQUIRED_APIS = [
 ]
 
 # Org Resource Types
-# ejg@
 RESOURCE_TYPES = ['organizations', 'folders', 'projects']
 
 # Paths

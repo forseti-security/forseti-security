@@ -33,8 +33,6 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
-        # ejg@
-        # self.target_project_id = kwargs.get('inventoried_project_id')
         if kwargs.get('composite_root_resources'):
           self.composite_root_resources = kwargs.get('composite_root_resources').split(",")
         else:

@@ -83,8 +83,6 @@ class ForsetiInstaller(object):
     version = None
     project_id = None
     organization_id = None
-    # ejg@
-    # target_project_id = None
     composite_root_resources = []
     gcp_service_acct_email = None
     user_can_grant_roles = True

@@ -70,15 +70,13 @@ def run():
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
-    # ejg@
     parser.add_argument('--composite-root-resources',
                         help='The resource ids to be inventoried.\n'
                              'Without this flag, the entire org '
                              'will be attempted.\n'
                              'Resources must be comma-separated and '
                              'in the form type/id,\nwhere type is '
-                             'one of organizations, folders, or projects.\n'
-                             '\nNOTE: ONLY ONE RESOURCE IS CURRENTLY SUPPORTED')
+                        'one of organizations, folders, or projects.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
