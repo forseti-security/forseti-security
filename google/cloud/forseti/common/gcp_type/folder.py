@@ -75,7 +75,7 @@ class Folder(resource.Resource):
         folder_id = name.split('/')[-1]
         full_name = 'folder/{}/'.format(folder_id)
         if parent:
-          full_name = '{}{}'.format(parent.full_name, full_name)
+            full_name = '{}{}'.format(parent.full_name, full_name)
         lifecycle = folder_dict.get('lifecycleState',
                                     FolderLifecycleState.UNSPECIFIED)
         return cls(
