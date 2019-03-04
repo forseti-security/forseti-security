@@ -17,24 +17,43 @@
 # Example invocation:
 #   gcloud container builds submit --config scripts/docker/cloudbuild.yaml ./
 
+
+
 steps:
+  # Optionally cache base image
+  # ref. https://cloud.google.com/cloud-build/docs/speeding-up-builds
+  # ref. https://github.com/GoogleCloudPlatform/cloud-builders/issues/253
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: [ '-c', 'docker pull gcr.io/$PROJECT_ID/forseti-base:latest || exit 0']
+  waitFor: ['-']
+  id: pull-base-for-cache
+
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
-  - '--file=scripts/docker/base'
+  - '--file=install/docker/base'
   - '--tag=gcr.io/$PROJECT_ID/forseti-base'
+  - '--cache-from'
+  - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
-  waitFor: ['-']
+  waitFor: ['pull-base-for-cache']
   id: base
 
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
-  - '--file=scripts/docker/forseti'
+  - '--file=install/docker/forseti'
   - '--build-arg=BASE_IMAGE=gcr.io/$PROJECT_ID/forseti-base'
   - '--tag=gcr.io/$PROJECT_ID/forseti'
   - '.'
   waitFor: ['base']
   id: forseti
+
+# Uncomment below to include optional unit tests in the build process
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: ['run', 'gcr.io/$PROJECT_ID/forseti', 'python', '-m', 'unittest', 'discover', '--verbose', '-s', '.', '-p', '*_test.py']
+#  waitFor: ['forseti']
+#  id: unittest
 
 images: ['gcr.io/$PROJECT_ID/forseti-base', 'gcr.io/$PROJECT_ID/forseti']

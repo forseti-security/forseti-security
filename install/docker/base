@@ -24,5 +24,6 @@ RUN apt-get update -qq 1> /dev/null && \
     apt-get install -qq -y $(cat /tmp/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
     rm -rf /var/lib/apt/lists/*
 
-# Install the CloudSDK for `gcloud`.
-RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
+# Install Google Cloud SDK
+RUN curl -sSL https://sdk.cloud.google.com | bash
+ENV PATH $PATH:/root/google-cloud-sdk/bin
