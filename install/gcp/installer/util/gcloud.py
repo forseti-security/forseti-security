@@ -218,8 +218,7 @@ def grant_server_svc_acct_roles(enable_write,
 
     Args:
         enable_write (bool): Whether or not to enable write access.
-        access_target (str): Access target, either org, folder or project.
-        target_id (str): Id of the access_target.
+        resources (list): List of resources, either org, folder or project.
         project_id (str): GCP Project Id.
         gcp_service_account (str): GCP service account email.
         user_can_grant_roles (bool): Whether or not user has
@@ -242,18 +241,18 @@ def grant_server_svc_acct_roles(enable_write,
         user_can_grant_roles, roles)
 
     for resource in resources:
-      utils.print_banner('Assigning Roles To The GCP Service Account '
-                         'for the resource[' + resource + ']',
-                       gcp_service_account)
-      access_target, target_id = resource.split('/')
-      access_target_roles = constants.GCP_READ_IAM_ROLES
-      if enable_write:
-         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
-      roles = {}
-      roles[access_target] = access_target_roles
-      has_role_script_rest = _grant_svc_acct_roles(
-          target_id, project_id, gcp_service_account,
-          user_can_grant_roles, roles)
+        utils.print_banner('Assigning Roles To The GCP Service Account '
+                           'for the resource[' + resource + ']',
+                           gcp_service_account)
+        access_target, target_id = resource.split('/')
+        access_target_roles = constants.GCP_READ_IAM_ROLES
+        if enable_write:
+            access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
+        roles = {}
+        roles[access_target] = access_target_roles
+        has_role_script_rest = _grant_svc_acct_roles(
+            target_id, project_id, gcp_service_account,
+            user_can_grant_roles, roles)
 
     return has_role_script_rest
 

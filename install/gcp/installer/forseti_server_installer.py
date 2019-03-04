@@ -81,9 +81,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         resources = []
         if self.composite_root_resources:
-          resources = self.composite_root_resources
+            resources = self.composite_root_resources
         else:
-          resources = [self.resource_root_id]
+            resources = [self.resource_root_id]
 
         self.has_roles_script = gcloud.grant_server_svc_acct_roles(
             self.enable_write_access,
@@ -213,11 +213,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.composite_root_resources:
             composite_root_resources = '\n'
             for resource in self.composite_root_resources:
-                composite_root_resources += '  - \"' + resource + '\"\n'
+                composite_root_resources += '       - \"' + resource + '\"\n'
         else:
-            root_id = self.resource_root_id
+            resource_root_id = self.resource_root_id
 
-        
         return {
             'CAI_ENABLED': 'organizations' in self.resource_root_id,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
@@ -238,9 +237,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         if self.composite_root_resources:
             # split element 0 into type and id
-            rType, rId = self.composite_root_resources[0].split('/')
+            rid = self.composite_root_resources[0].split('/')[-1]
 
-            organization_id = gcloud.lookup_organization(rId)
+            organization_id = gcloud.lookup_organization(rid)
         else:
             organization_id = self.resource_root_id.split('/')[-1]
 
@@ -261,9 +260,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.composite_root_resources:
             # split element 0 into type and id
-            rType, rId = self.composite_root_resources[0].split('/')
-            self.access_target = rType
-            self.target_id = rId
+            rtype, rid = self.composite_root_resources[0].split('/')
+            self.access_target = rtype
+            self.target_id = rid
         else:
             self.access_target = constants.RESOURCE_TYPES[0]
             self.target_id = self.organization_id
@@ -299,7 +298,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.resource_root_id = self.composite_root_resources[0]
         else:
             self.resource_root_id = utils.format_resource_id(
-             self.access_target, self.target_id)
+                self.access_target, self.target_id)
 
     def get_email_settings(self):
         """Ask user for specific install values."""
