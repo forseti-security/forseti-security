@@ -32,14 +32,10 @@ WHITELIST = 'whitelist'
 BLACKLIST = 'blacklist'
 REQUIRED = 'required'
 RULE_MODES = frozenset([BLACKLIST, WHITELIST])
-SUPPORTED_SETTINGS = frozenset([
-    'whoCanAdd', 'whoCanJoin', 
-    'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 
-    'allowExternalMembers', 'whoCanLeaveGroup'])
 
 
 class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for KMS scanner."""
+    """Rules engine for Groups Settings scanner."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -57,7 +53,7 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
         self._lock = threading.Lock()
 
     def build_rule_book(self, global_configs=None):
-        """Build KMSRuleBook from the rules definition file.
+        """Build GroupsSettingsRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
@@ -67,10 +63,10 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
                 self._load_rule_definitions())
 
     def find_violations(self, settings, force_rebuild=False):
-        """Determine whether crypto settings configuration violates rules.
+        """Determine whether Groups Settings violates rules.
 
         Args:
-            settings (Cryptosettings): A crypto settings resource to check.
+            settings (GroupsSettings): A GroupsSettings resource to check.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -95,17 +91,18 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
 
 
 class GroupsSettingsRuleBook(bre.BaseRuleBook):
-    """The RuleBook for crypto key rules."""
+    """The RuleBook for GroupsSettings rules."""
 
-    # supported_resource_types = frozenset([
-    #     'organization'
-    # ])
+    supported_settings = frozenset([
+    'whoCanAdd', 'whoCanJoin', 
+    'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 
+    'allowExternalMembers', 'whoCanLeaveGroup'])
 
     def __init__(self, rule_defs=None):
         """Initialization.
 
         Args:
-            rule_defs (list): CryptoKeys rule definition dicts
+            rule_defs (list): GroupsSettings rule definition dicts
         """
         super(GroupsSettingsRuleBook, self).__init__()
         self._lock = threading.Lock()
@@ -174,12 +171,11 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
                 'Faulty rule {}'.format(rule_index))
 
         for rule_setting in settings:
-            if rule_setting not in SUPPORTED_SETTINGS:
+            if rule_setting not in self.supported_settings:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_index))
 
         for group_email in groups_emails:
-
             # For each resource id associated with the rule, create a
             # mapping of resource => rules.
             gcp_resource = resource_util.create_resource(
@@ -214,15 +210,15 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         return self.resource_rules_map.get(resource)
 
     def find_violations(self, settings):
-        """Find crypto key violations in the rule book.
+        """Find groups settings violations in the rule book.
 
         Args:
-            key (CryptoKey): The GCP resource to check for violations.
+            settings (GroupsSettings): The GCP resource to check for violations.
 
         Returns:
-            RuleViolation: resource crypto key rule violations.
+            RuleViolation: resource groups settings rule violations.
         """
-        LOGGER.debug('Looking for crypto key violations: %s',
+        LOGGER.debug('Looking for groups settings violations: %s',
                      settings.name)
         violations = []
 
@@ -264,7 +260,7 @@ class ResourceRules(object):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
-            key (CryptoKey): crypto key resource.
+            settings (GroupsSettings): groups settings resource.
 
         Returns:
             list: RuleViolation
@@ -327,18 +323,26 @@ class Rule(object):
         self.rule = rule
 
     def rule_requirements(self):
+        """Used to create violation reason.
+
+       Returns: 
+           str of property:value couples specified in rule,
+           joined by AND.
+        """
         rule_list = []
         for setting, value in self.rule['settings'].iteritems():
             rule_list.append('{}:{}'.format(setting, value))
         return ' AND '.join(rule_list)        
 
     def find_blacklist_violation(self, settings):
+        """Finds violations in case that rule is blacklist.
+        Args:
+            settings (GroupsSettings): 
+        Returns:
+            violation_reason (str): Statement of what the broken rule required,
+                or empty string in case that rule is not violated.
         """
-            for all everything in self.rule['settings'], look for match.  If no matches found, return message 
-            "rule specified A:B AND X:Y is not allowed"
-        """
-        #TODO make sure no invalid properties in rule
-        violation_reason = None
+        violation_reason = ''
         if not self.rule['settings']:
             return violation_reason
 
@@ -352,7 +356,14 @@ class Rule(object):
         return violation_reason
 
     def find_whitelist_violation(self, settings):
-        violation_reason = None
+        """Finds violations in case that rule is whitelist.
+        Args:
+            settings (GroupsSettings): 
+        Returns:
+            violation_reason (str): Statement of what the broken rule required,
+                or empty string in case that rule is not violated.
+        """
+        violation_reason = ''
         a_setting_doesnt_match = False
         for setting, value in self.rule['settings'].iteritems():
             if getattr(settings, setting) != value:
@@ -363,10 +374,10 @@ class Rule(object):
         return violation_reason
 
     def find_violations(self, settings):
-        """Find crypto key violations based on the rotation period.
+        """Find GroupsSettings violations.
 
         Args:
-            key (Resource): The resource to check for violations.
+            settings (GroupsSettings): The resource to check for violations.
 
         Returns:
             list: Returns a list of RuleViolation named tuples.
@@ -434,19 +445,19 @@ class Rule(object):
 # pylint: enable=inconsistent-return-statements
 
 # Rule violation.
+# group_email: string
 # resource_type: string
-# resource_id: string
-# resource_name: string
-# primary_version: string
-# next_rotation_time: string
-# rule_name: string
 # rule_index: int
-# violation_type: CRYPTO_KEY_VIOLATION
+# rule_name: string
+# violation_type: string
 # violation_reason: string
-# rotation_period: string
-# last_rotation_time: string
-# key_creation_time: string
-# resource_data: string
+# whoCanAdd: string
+# whoCanJoin: string
+# whoCanViewMembership: string
+# whoCanViewGroup: string
+# whoCanInvite: string
+# allowExternalMembers: bool
+# whoCanLeaveGroup: string
 RuleViolation = namedtuple('RuleViolation',
                            ['group_email', 'resource_type','rule_index', 
                             'rule_name', 'violation_type', 'violation_reason',

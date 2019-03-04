@@ -354,7 +354,7 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
-        - resource: groups_settings
+        - resource: groups_settings_violations
           should_notify: true
           notifiers:
             # Email violations

@@ -27,8 +27,8 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-class GroupsSettings(resource.Resource): #TODO ensure id and type are set in a way that they match what its put into the rules map in the engine
-    """Represents the CryptoKey resource."""
+class GroupsSettings(resource.Resource):
+    """Represents the GroupsSettings resource."""
 
     # pylint: disable=too-many-instance-attributes, too-many-arguments, expression-not-assigned
     def __init__(
@@ -38,19 +38,14 @@ class GroupsSettings(resource.Resource): #TODO ensure id and type are set in a w
         """Initialize.
 
         Args:
-            crypto_key_name (str): The unique Cryptokey id.
-            crypto_key_full_name (str): The Cryptokey full name.
-            crypto_key_parent_type_name (Resource): Resource this Cryptokey
-            belongs to.
-            crypto_key_type (str): The Cryptokey type name.
-            primary_version (dict): Primary Cryptokey version.
-            purpose (enum): Immutable purpose of this Cryptokey.
-            create_time (str): The time at which this Cryptokey was created.
-            next_rotation_time (str): Time when the Cryptokey rotates.
-            version_template (dict): Cryptokey version setting details.
-            labels (dict): User-defined metadata.
-            rotation_period (str): Scheduled rotation period of CryptoKey.
-            data (Resource): Cryptokey resource data.
+            email (str): The unique group email.
+            whoCanAdd (str): Setting for who can add.
+            whoCanJoin (str): Setting for who can join.
+            whoCanViewMembership (str): Setting for who can view membership.
+            whoCanViewGroup (str): Setting for who can view group.
+            whoCanInvite (str): Setting for who can invite to group.
+            allowExternalMembers (str): Setting for are external members allowed.
+            whoCanLeaveGroup (str): Setting for who can leave group.
         """
         super(GroupsSettings, self).__init__(
             resource_id=email,

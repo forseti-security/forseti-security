@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the KMS rules engine."""
+"""Scanner for the GroupsSettings rules engine."""
 
 from google.cloud.forseti.common.gcp_type import groups_settings
 from google.cloud.forseti.common.util import logger
@@ -23,7 +23,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class GroupsSettingsScanner(base_scanner.BaseScanner):
-    """Scanner for CryptoKeys data."""
+    """Scanner for GroupsSettings data."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -97,7 +97,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            settings_list (list): Cryptosettings_list to find violations in.
+            settings_list (list): GroupsSettings list to find violations in.
 
         Returns:
             list: All violations.
@@ -116,11 +116,10 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         """Runs the data collection.
 
         Returns:
-            list: CryptoKey objects.
+            list: GroupsSettings objects.
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        print("retrieve on settings called")
         settings_list = []
 
         model_manager = self.service_config.model_manager
