@@ -73,7 +73,9 @@ class Folder(resource.Resource):
         folder_dict = json.loads(json_string)
         name = folder_dict['name']
         folder_id = name.split('/')[-1]
-        full_name = '{}folder/{}/'.format(parent.full_name, folder_id)
+        full_name = 'folder/{}/'.format(folder_id)
+        if parent:
+          full_name = '{}{}'.format(parent.full_name, full_name)
         lifecycle = folder_dict.get('lifecycleState',
                                     FolderLifecycleState.UNSPECIFIED)
         return cls(

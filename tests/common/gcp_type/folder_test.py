@@ -74,6 +74,17 @@ class FolderTest(ForsetiTestCase):
         self.assertEqual(folder.FolderLifecycleState.ACTIVE,
                          my_folder.lifecycle_state)
 
+    def test_create_parentless_folder_from_json(self):
+        """Tests creation of a folder without a parent from a JSON string."""
+        my_folder = folder.Folder.from_json(None, _FOLDER_JSON)
+        self.assertEqual('987', my_folder.id)
+        self.assertEqual('folder', my_folder.type)
+        self.assertEqual('folders/987', my_folder.name)
+        self.assertEqual('My folder', my_folder.display_name)
+        self.assertEqual('folder/987/', my_folder.full_name)
+        self.assertEqual(folder.FolderLifecycleState.ACTIVE,
+                         my_folder.lifecycle_state)
+
 
 
 if __name__ == '__main__':
