@@ -55,8 +55,8 @@ inventory:
           period: 1.2
           disable_polling: False
         groupssettings:
-          max_calls: 14
-          period: 1.0
+          max_calls: 5
+          period: 1.1
           disable_polling: False
         iam:
           max_calls: 90

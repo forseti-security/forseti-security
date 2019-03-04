@@ -63,7 +63,7 @@ class GroupsSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
-        self._groups_settings = None
+        self._groups = None
 
         super(GroupsSettingsRepositoryClient, self).__init__(
             API_NAME, versions=['v1'],
@@ -75,16 +75,16 @@ class GroupsSettingsRepositoryClient(_base_repository.BaseRepositoryClient):
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
-    def groups_settings(self):
-        """Returns a _GroupsSettingsRepository instance."""
-        if not self._groups_settings:
-            self._groups_settings = self._init_repository(
-                _GroupsSettingsRepository)
-        return self._groups_settings
+    def groups(self):
+        """Returns a _GroupsSettingsGroupsRepository instance."""
+        if not self._groups:
+            self._groups = self._init_repository(
+                _GroupsSettingsGroupsRepository)
+        return self._groups
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
-class _GroupsSettingsRepository(
+class _GroupsSettingsGroupsRepository(
         repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Groups Settings repository."""
@@ -95,7 +95,7 @@ class _GroupsSettingsRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_GroupsSettingsRepository, self).__init__(
+        super(_GroupsSettingsGroupsRepository, self).__init__(
             key_field='groupUniqueId', component='groups', **kwargs)
 
 
@@ -132,14 +132,14 @@ class GroupsSettingsClient(object):
             group_email (str): The gsuite group email to scope the request to.
 
         Returns:
-            list: A list of group settings objects returned from the API.
+            list: A dict of group settings for given group_email.
 
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.
             RefreshError: If the authentication fails.
         """
         try:
-            result = self.repository.groups_settings.get(group_email)
+            result = self.repository.groups.get(group_email)
             LOGGER.debug('Getting group settings information for group id = %s,'
                          ' result = %s',
                          group_email, result)

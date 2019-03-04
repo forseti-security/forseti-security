@@ -1953,9 +1953,9 @@ class ApiClientImpl(ApiClient):
         for group in result:
             yield group
 
-    @create_lazy('settings', _create_groups_settings)
+    @create_lazy('groups_settings', _create_groups_settings)
     def fetch_gsuite_groups_settings(self, group_email):
-        """Iterate Gsuite groups settings from GCP API.
+        """Retrieve Gsuite groups settings from GCP API.
 
         Args:
             group_email (str): Gsuite group email.
@@ -1963,7 +1963,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of groups settings.
         """
-        return self.settings.get_groups_settings(group_email)
+        return self.groups_settings.get_groups_settings(group_email)
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_users(self, gsuite_id):
