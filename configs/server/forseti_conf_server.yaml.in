@@ -197,6 +197,8 @@ scanner:
           enabled: false
         - name: group
           enabled: true
+        - name: groups_settings
+          enabled: true
         - name: iam_policy
           enabled: true
         - name: iap
@@ -208,8 +210,6 @@ scanner:
         - name: ke_version_scanner
           enabled: true
         - name: kms_scanner
-          enabled: true
-        - name: groups_settings
           enabled: true
         - name: lien
           enabled: true

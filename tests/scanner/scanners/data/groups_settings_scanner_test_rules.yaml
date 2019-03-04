@@ -1,0 +1,31 @@
+rules:
+  - name: cant allow external members with INVITED_CAN_JOIN
+    mode: blacklist
+    groups_emails:
+      - '*'
+    settings:
+      allowExternalMembers: True
+      whoCanJoin: INVITED_CAN_JOIN
+  - name: no ALL_IN_DOMAIN_CAN_VIEW for non_wildcard@test.com
+    mode: blacklist
+    groups_emails:
+      - 'non_wildcard@test.com'
+      - 'non_wildcard2@test.com'
+    settings:
+      whoCanViewGroup: "ALL_IN_DOMAIN_CAN_VIEW"
+  - name: needs ALL_MEMBERS_CAN_LEAVE and ALL_MANAGERS_CAN_INVITE
+    mode: whitelist
+    groups_emails:
+      - '*'
+    settings:
+      whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE",
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+
+
+
+  #check that a X and Y blacklist rule picks up for X and Y, not for X
+    #settings 1 violates, settings 2 does not
+  #check that works for resource id
+    #settings 3 violates, settings 4 does not
+  #check that a white list breaks on a single miss, and doesnt break otherwise
+    #settings 5 violates
