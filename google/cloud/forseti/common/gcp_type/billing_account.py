@@ -14,6 +14,8 @@
 
 """A Billing Account Resource."""
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -58,3 +60,26 @@ class BillingAccount(resource.Resource):
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        """Creates a billing account from a JSON string.
+
+        Args:
+            parent (Resource): resource this billing account belongs to.
+            json_string (str): JSON string of a billing account GCP resource.
+
+        Returns:
+            BillingAccount: billing account resource.
+        """
+        acct_dict = json.loads(json_string)
+        name = acct_dict['name']
+        acct_id = name.split('/')[-1]
+        full_name = '{}billing_account/{}/'.format(parent.full_name, acct_id)
+        return cls(
+            billing_account_id=acct_id,
+            full_name=full_name,
+            data=json_string,
+            name=name,
+            display_name=acct_dict.get('displayName'),
+            parent=parent)
