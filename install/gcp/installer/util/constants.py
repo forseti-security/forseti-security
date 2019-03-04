@@ -158,7 +158,8 @@ REQUIRED_APIS = [
 ]
 
 # Org Resource Types
-RESOURCE_TYPES = ['organization', 'folder', 'project']
+# ejg@
+RESOURCE_TYPES = ['organizations', 'folders', 'projects']
 
 # Paths
 ROOT_DIR_PATH = os.path.dirname(

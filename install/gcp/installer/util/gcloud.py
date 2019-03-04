@@ -202,8 +202,7 @@ def grant_client_svc_acct_roles(project_id,
 
 
 def grant_server_svc_acct_roles(enable_write,
-                                access_target,
-                                target_id,
+                                resources,
                                 project_id,
                                 gcp_service_account,
                                 user_can_grant_roles):
@@ -230,21 +229,31 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated.
     """
 
-    utils.print_banner('Assigning Roles To The GCP Service Account',
+    utils.print_banner('Assigning Roles To The GCP Service Account '
+                       'for the forseti project',
                        gcp_service_account)
-    access_target_roles = constants.GCP_READ_IAM_ROLES
-    if enable_write:
-        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
-
-    roles = {
-        '%ss' % access_target: access_target_roles,
-        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
-        'service_accounts': constants.SVC_ACCT_ROLES,
-    }
+    roles = {}
+    roles['forseti_project'] = constants.PROJECT_IAM_ROLES_SERVER
+    roles['service_accounts'] = constants.SVC_ACCT_ROLES
+    target_id = project_id
 
     has_role_script_rest = _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
+
+    for resource in resources:
+      utils.print_banner('Assigning Roles To The GCP Service Account '
+                         'for the resource[' + resource + ']',
+                       gcp_service_account)
+      access_target, target_id = resource.split('/')
+      access_target_roles = constants.GCP_READ_IAM_ROLES
+      if enable_write:
+         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
+      roles = {}
+      roles[access_target] = access_target_roles
+      has_role_script_rest = _grant_svc_acct_roles(
+          target_id, project_id, gcp_service_account,
+          user_can_grant_roles, roles)
 
     return has_role_script_rest
 

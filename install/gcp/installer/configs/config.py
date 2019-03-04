@@ -33,7 +33,12 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
-        self.target_project_id = kwargs.get('inventoried_project_id')
+        # ejg@
+        # self.target_project_id = kwargs.get('inventoried_project_id')
+        if kwargs.get('composite_root_resources'):
+          self.composite_root_resources = kwargs.get('composite_root_resources').split(",")
+        else:
+          self.composite_root_resources = []
         self.service_account_key_file = kwargs.get('service_account_key_file')
         self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
         self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'
