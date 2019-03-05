@@ -52,7 +52,6 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         use_versioned_discovery_doc = False
         if self.version == 'v1beta1':
             use_versioned_discovery_doc = True
-            # alpha would use the discovery_doc without version in the name
 
         super(SecurityCenterRepositoryClient, self).__init__(
             API_NAME, versions=[self.version],
@@ -120,13 +119,13 @@ class SecurityCenterClient(object):
                      version)
         self.repository = SecurityCenterRepositoryClient(version=version)
 
-    def create_finding(self, finding, organization_id=None, source_id=None,
+    # pylint: disable=inconsistent-return-statements
+    def create_finding(self, finding, source_id=None,
                        finding_id=None):
         """Creates a finding in CSCC.
 
         Args:
             finding (dict): Forseti violation in CSCC format.
-            organization_id (str): The id prefixed with 'organizations/'.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
             finding_id (str): id hash of the CSCC finding
@@ -152,4 +151,3 @@ class SecurityCenterClient(object):
                 violation_data = (
                     finding.get('source_properties').get('violation_data'))
                 raise api_errors.ApiExecutionError(violation_data, e)
-

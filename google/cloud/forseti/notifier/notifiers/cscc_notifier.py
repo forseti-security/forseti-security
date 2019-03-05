@@ -110,6 +110,7 @@ class CsccNotifier(object):
                     tmp_violations.name, gcs_upload_path)
         return
 
+    # pylint: disable=inconsistent-return-statements
     def _transform_for_api(self, violations, source_id=None):
         """Transform forseti violations to findings for CSCC API.
 
@@ -159,13 +160,11 @@ class CsccNotifier(object):
                 findings.append((finding_id, finding))
             return findings
 
-    def _send_findings_to_cscc(self, violations, organization_id=None,
-                               source_id=None):
+    def _send_findings_to_cscc(self, violations, source_id=None):
         """Send violations to CSCC directly via the CSCC API.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
-            organization_id (str): The id prefixed with 'organizations/'.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -192,15 +191,13 @@ class CsccNotifier(object):
                     continue
             return
 
-    def run(self, violations, gcs_path=None, mode=None, organization_id=None,
-            source_id=None):
+    def run(self, violations, gcs_path=None, mode=None, source_id=None):
         """Generate the temporary json file and upload to GCS.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
             mode (str): The mode in which to send the CSCC notification.
-            organization_id (str): The id of the organization.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -213,4 +210,6 @@ class CsccNotifier(object):
         if source_id:
             LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
             self._send_findings_to_cscc(violations, source_id=source_id)
-            return
+        if mode is None or mode == 'bucket':
+            self._send_findings_to_gcs(violations, gcs_path)
+        return

@@ -76,7 +76,7 @@ def convert_to_timestamp(violations):
     return violations
 
 
-# pylint: disable=too-many-branches,too-many-statements
+# pylint: disable=too-many-branches
 def run(inventory_index_id,
         scanner_index_id,
         progress_queue,
