@@ -27,7 +27,7 @@ class GCVScanner(base_scanner.BaseScanner):
             model_name, snapshot_timestamp, rules)
         self.validator_client = validator_client.ValidatorClient()
 
-        # Maps resourceType/resourceId -> (full_name, resource_data).
+        # Maps CAI resource name-> (full_name, resource_data).
         self.resource_lookup_table = {}
 
     @staticmethod
@@ -40,11 +40,9 @@ class GCVScanner(base_scanner.BaseScanner):
         Yields:
             dict: Iterator of GCV violations as a dict per violation.
         """
-        for violation in violations:
-            pass
-
-
         # Refer to the mapping table above to flatten the data.
+        for violation in violations:
+            continue
         pass
 
     def _output_results(self, all_violations):
