@@ -156,7 +156,8 @@ class CsccNotifier(object):
                                        sort_keys=True))
                     },
                 }
-                findings.append((finding_id, finding))
+                # findings.append((finding_id, finding))
+                findings.append([finding_id, finding])
             return findings
 
         # alpha api
@@ -187,6 +188,24 @@ class CsccNotifier(object):
             findings.append(finding)
         return findings
 
+    def find_stale_findings(self, new_findings, existing_findings):
+        """Finds the findings that does not correspond to the latest scanner run
+        and updates it's state to inactive.
+
+        Args:
+            new_findings (list): Latest violations that are transformed to
+            findings.
+            existing_findings (list): Findings pulled from CSCC UI that
+            corresponds to the previous scanner run.
+
+        Returns:
+            list: Findings whose state has been marked as 'INACTIVE'.
+        """
+
+        inactive_findings = []
+
+        return inactive_findings
+
     def _send_findings_to_cscc(self, violations, organization_id=None,
                                source_id=None):
         """Send violations to CSCC directly via the CSCC API.
@@ -202,13 +221,25 @@ class CsccNotifier(object):
         if source_id:
             LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
                          '%s', source_id)
-            findings = self._transform_for_api(violations, source_id=source_id)
+            new_findings = self._transform_for_api(violations,
+                                                   source_id=source_id)
 
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
-            for finding_tuple in findings:
-                finding_id = finding_tuple[0]
-                finding = finding_tuple[1]
+            existing_findings = client.list_findings(source_id=source_id)
+            print('existing findings:', existing_findings)
+            for i in existing_findings:
+                print('finding from CSCC UI:', existing_findings)
+            print('next:', next(existing_findings))
+
+            old_findings = self.find_stale_findings(new_findings,
+                                                    existing_findings)
+
+            to_be_updated_findings = new_findings + old_findings
+
+            for finding_list in to_be_updated_findings:
+                finding_id = finding_list[0]
+                finding = finding_list[1]
                 LOGGER.debug('Creating finding CSCC:\n%s.', finding)
                 try:
                     client.create_finding(finding, source_id=source_id,
