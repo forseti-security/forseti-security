@@ -21,7 +21,8 @@ from datetime import datetime
 
 from tests import unittest_utils
 from tests.services.util.db import create_test_engine
-from tests.scanner.test_data import fake_groups_settings_scanner_data
+from tests.scanner.test_data.fake_groups_settings_scanner_data import (
+    SETTINGS_1, SETTINGS_3, SETTINGS_5, SETTINGS)
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import groups_settings_scanner
 from google.cloud.forseti.common.util.string_formats import TIMESTAMP_MICROS
@@ -29,31 +30,21 @@ from google.cloud.forseti.services.dao import ModelManager
 
 
 """
-Assumptions: In data/kms_scanner_test_rules.yaml, rotation_period is set to
-100 days.
+Rule 1 mainly tests that blacklist picks up violations when
+and only when all specified properties are matched
 
-Test: Create two crypto keys, one with creation time over 100 days ago, and
-other with creation time less than 100 days ago.
+Rule 2 mainly tests that scanner works with specific resource ids
+(other rules use wild cards)
 
-The crypto key with creation time over 100 days ago should be flagged as a
-violation but not the other one.
+Rule 3 mainly tests that whitelist breaks when and only
+when at least one specified property is violated
 """
-
-KEY_RING_ID = '4063867491605246570'
-CRYPTO_KEY_ID = '12873861500163377322'
-CRYPTO_KEY_ID_1 = '12873861500163377324'
-CRYPTO_KEY_ID_2 = '12873861500163377326'
-VIOLATION_TYPE = 'CRYPTO_KEY_VIOLATION'
-
-TIME_NOW = datetime.utcnow()
-
 
 class FakeServiceConfig(object):
 
     def __init__(self):
         engine = create_test_engine()
-        import pdb
-        pdb.set_trace()
+        print(engine.url.database)
         self.model_manager = ModelManager(engine)
 
 
@@ -61,6 +52,7 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
 
     @classmethod
     def setUpClass(cls):
+        print("setup class is run")
         cls.service_config = FakeServiceConfig()
         cls.model_name = cls.service_config.model_manager.create(
             name='groups-settings-scanner-test')
@@ -68,16 +60,17 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
         scoped_session, data_access = (
             cls.service_config.model_manager.get(cls.model_name))
 
+        def add_settings_to_test_db(settings_row):
+            # session.flush()
+            data_access.add_member(session, settings_row['group_name'])
+            stmt = data_access.TBL_GROUPS_SETTINGS.insert(settings_row)
+            session.execute(stmt)
+            session.commit()
+
         # Add organization to model.
         with scoped_session as session:
-           settings_row = fake_groups_settings_scanner_data.SETTINGS_1
-           session.flush()
-           stmt = data_access.TBL_GROUPS_SETTINGS.insert(settings_row)
-           session.execute(stmt)
-
-           session.commit()
-        import pdb
-        pdb.set_trace()
+           for settings_row in SETTINGS:
+                add_settings_to_test_db(settings_row)
 
     def setUp(self):
         self.scanner = groups_settings_scanner.GroupsSettingsScanner(
@@ -85,19 +78,21 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
             '', unittest_utils.get_datafile_path(
                 __file__, 'groups_settings_scanner_test_rules.yaml'))
 
-    # @mock.patch.object(
-    #     groups_settings_scanner.GroupsSettingsScanner,
-    #     '_output_results_to_db', autospec=True)
-    # def test_run_scanner(self, mock_output_results):
-        # self.scanner.run()
-        # crypto_key = self.scanner._retrieve()
-        # violations = self.scanner._find_violations(crypto_key)
-        # for violation in violations:
-        #     state = violation.primary_version.get('state')
-        #     self.assertEquals(state, 'ENABLED')
-        #     self.assertEquals(violation.resource_type, 'kms_cryptokey')
-        #     self.assertEquals(violation.violation_type, VIOLATION_TYPE)
-        # self.assertEquals(1, mock_output_results.call_count)
+    @mock.patch.object(
+        groups_settings_scanner.GroupsSettingsScanner,
+        '_output_results_to_db', autospec=True)
+    def test_run_scanner(self, mock_output_results):
+        self.scanner.run()
+        settings = self.scanner._retrieve()
+        violations = self.scanner._find_violations(settings)
+        self.assertEquals(1, mock_output_results.call_count)
+        self.assertEquals(3, len(violations))
+        self.assertEquals(json.loads(SETTINGS_1['settings'])['email'], 
+                          violations[0].group_email)
+        self.assertEquals(json.loads(SETTINGS_3['settings'])['email'], 
+                          violations[1].group_email)
+        self.assertEquals(json.loads(SETTINGS_5['settings'])['email'], 
+                          violations[2].group_email)
 
 
 if __name__ == '__main__':

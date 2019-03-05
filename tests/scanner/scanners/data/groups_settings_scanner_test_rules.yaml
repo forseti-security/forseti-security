@@ -18,14 +18,5 @@ rules:
     groups_emails:
       - '*'
     settings:
-      whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE",
+      whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE"
       whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
-
-
-
-  #check that a X and Y blacklist rule picks up for X and Y, not for X
-    #settings 1 violates, settings 2 does not
-  #check that works for resource id
-    #settings 3 violates, settings 4 does not
-  #check that a white list breaks on a single miss, and doesnt break otherwise
-    #settings 5 violates
