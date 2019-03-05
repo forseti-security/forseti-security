@@ -150,4 +150,3 @@ class GroupsSettingsClient(object):
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
-
