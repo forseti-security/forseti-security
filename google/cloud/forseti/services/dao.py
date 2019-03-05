@@ -272,7 +272,6 @@ def define_model(model_name, dbengine, model_seed):
                Text(16777215)),
     )
 
-
     def get_string_by_dialect(db_dialect, column_size):
         """Get Sqlalchemy String by dialect.
         Sqlite doesn't support collation type, need to define different
