@@ -21,7 +21,7 @@ installer]({% link _docs/latest/setup/install.md %}) or the [terraform
 installer](https://github.com/terraform-google-modules/terraform-google-forseti).
 This is a quick way to install the service accounts, Cloud SQL and GCS buckets.
 The VM's may be deleted or shutdown after the install as they will be replaced
-k8s solution.
+by the k8s solution.
 
 Alternatively follow the [manual setup instructions]({% link _docs/latest/setup/manual.md %})
 for service accounts, Cloud SQL and GCS buckets.
