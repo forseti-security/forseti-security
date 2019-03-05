@@ -522,6 +522,7 @@ class IapScannerTest(ForsetiTestCase):
         self.assertEquals(
             set([bs.key for bs in BACKEND_SERVICES.values()]),
             set(iap_resources.keys()))
+
         self.assertEquals(
             iap_scanner.IapResource(
                 project_full_name='organization/12345/project/foo/',

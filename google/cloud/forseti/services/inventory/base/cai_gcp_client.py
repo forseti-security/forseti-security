@@ -302,6 +302,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'backend': 'backends',
             'healthCheck': 'healthChecks',
+            'resourceGroup': 'group'
         }
         resources = self._iter_compute_resources('BackendService',
                                                  project_number)
