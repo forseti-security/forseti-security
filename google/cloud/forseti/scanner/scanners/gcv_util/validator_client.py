@@ -1,7 +1,10 @@
 import sys
 from retrying import retry
 
+import grpc
+
 from google.cloud.forseti.common.util import retryable_exceptions
+import google.cloud.forseti.scanner.scanners.gcv_util.errors as scanner_error
 from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2
 from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2_grpc
 
@@ -20,7 +23,7 @@ class ValidatorClient(object):
         self.buffer_sender = BufferedGCVDataSender(self)
         self.stub = validator_pb2_grpc.ValidatorStub(channel)
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_grpc,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def add_data(self, assets):
@@ -28,9 +31,20 @@ class ValidatorClient(object):
 
         Args:
             assets (list): A list of asset data.
+
+        Raises:
+            GCVAddDataError: GCV Add Data Error.
+            GCVServerUnavailableError: GCV Server Unavailable Error.
         """
-        request = validator_pb2.AddDataRequest(assets=assets)
-        self.stub.AddData(request)
+        try:
+            request = validator_pb2.AddDataRequest(assets=assets)
+            self.stub.AddData(request)
+        except grpc.RpcError as e:
+            # pylint: disable=no-member
+            if e.code() == grpc.StatusCode.UNAVAILABLE:
+                raise scanner_error.GCVServerUnavailableError(e.message)
+            else:
+                raise scanner_error.GCVAddDataError(e.message)
 
     def add_data_to_buffer(self, asset):
         """Add asset data to buffer, intended to manage sending data in bulk.
@@ -45,7 +59,7 @@ class ValidatorClient(object):
         GCV and empty the buffer."""
         self.buffer_sender.flush()
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_grpc,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def audit(self):
@@ -53,15 +67,37 @@ class ValidatorClient(object):
 
         Returns:
             list: List of violations.
-        """
-        self.stub.Audit()
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_grpc,
+        Raises:
+            GCVAuditError: GCV Audit Error.
+            GCVServerUnavailableError: GCV Server Unavailable Error.
+        """
+        try:
+            self.stub.Audit()
+        except grpc.RpcError as e:
+            # pylint: disable=no-member
+            if e.code() == grpc.StatusCode.UNAVAILABLE:
+                raise scanner_error.GCVServerUnavailableError(e.message)
+            else:
+                raise scanner_error.GCVAuditError(e.message)
+
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def reset(self):
-        """Clears previously added data from GCV."""
-        self.stub.Reset()
+        """Clears previously added data from GCV.
+
+        Raises:
+            GCVResetError: GCV Reset Error.
+            GCVServerUnavailableError: GCV Server Unavailable Error."""
+        try:
+            self.stub.Reset()
+        except grpc.RpcError as e:
+            # pylint: disable=no-member
+            if e.code() == grpc.StatusCode.UNAVAILABLE:
+                raise scanner_error.GCVServerUnavailableError(e.message)
+            else:
+                raise scanner_error.GCVResetError(e.message)
 
 
 class BufferedGCVDataSender(object):
@@ -72,7 +108,7 @@ class BufferedGCVDataSender(object):
     def __init__(self,
                  validator_client,
                  max_size=1024,
-                 max_packet_size=MAX_ALLOWED_PACKET * .75):
+                 max_packet_size=MAX_ALLOWED_PACKET):
         """Initialize.
 
         Args:
@@ -94,9 +130,12 @@ class BufferedGCVDataSender(object):
         """
 
         self.buffer.append(asset)
+        asset_size = sys.getsizeof(asset)
+        if self.packet_size + asset_size > self.max_packet_size:
+            self.flush()
+        self.packet_size += asset_size
         self.packet_size += sys.getsizeof(asset)
-        if (self.packet_size > self.max_packet_size or
-                len(self.buffer) >= self.max_size):
+        if len(self.buffer) >= self.max_size:
             self.flush()
 
     def flush(self):

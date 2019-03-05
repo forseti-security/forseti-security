@@ -14,13 +14,13 @@
 
 """Module to determine whether an exception should be retried."""
 
-import grpc
 import httplib
 import socket
 import ssl
 import urllib2
-
 import httplib2
+
+import google.cloud.forseti.scanner.scanners.gcv_util.errors as gcv_errors
 
 
 RETRYABLE_EXCEPTIONS = (
@@ -32,9 +32,9 @@ RETRYABLE_EXCEPTIONS = (
     urllib2.URLError,  # include "no network connection"
 )
 
-RETRYABLE_GRPC_EXCEPTIONS = {
-    grpc.StatusCode.UNAVAILABLE
-}
+RETRYABLE_GRPC_EXCEPTIONS = (
+    gcv_errors.GCVServerUnavailableError
+)
 
 
 def is_retryable_exception(e):
@@ -49,8 +49,8 @@ def is_retryable_exception(e):
     return isinstance(e, RETRYABLE_EXCEPTIONS)
 
 
-def is_retryable_exception_grpc(e):
-    """Whether exception should be retried for grpc communications.
+def is_retryable_exception_gcv(e):
+    """Whether exception should be retried for gcv communications.
 
     Args:
         e (Exception): Exception object.
@@ -59,6 +59,4 @@ def is_retryable_exception_grpc(e):
         bool: True for exceptions to retry. False otherwise.
     """
 
-    return (isinstance(e, grpc.RpcError) and
-            (e.code() in
-             RETRYABLE_GRPC_EXCEPTIONS))  # pylint: disable=no-member
+    return isinstance(e, RETRYABLE_GRPC_EXCEPTIONS)
