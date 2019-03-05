@@ -77,6 +77,8 @@ def run():
                              'Resources must be comma-separated and '
                              'in the form type/id,\nwhere type is '
                         'one of organizations, folders, or projects.')
+    parser.add_argument('--project-id',
+                         help='The project id for the forseti installaltion.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',

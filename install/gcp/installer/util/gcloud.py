@@ -54,6 +54,16 @@ def get_gcloud_info():
     return project_id, authed_user, is_devshell
 
 
+def set_project_id(self):
+    """Set the project."""
+    print('Setting Project %s' % self.config.project_id)
+    return_code, out, err = utils.run_command(
+        ['gcloud', 'config', 'set', 'project', self.config.project_id])
+    if return_code:
+        print(err)
+        sys.exit(1)
+
+
 def set_network_host_project_id(self):
     """Get the host project."""
     if not self.config.vpc_host_project_id:

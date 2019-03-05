@@ -33,6 +33,7 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
+        self.project_id = kwargs.get('project_id') or None
         if kwargs.get('composite_root_resources'):
             tmpcrr = kwargs.get('composite_root_resources')
             self.composite_root_resources = tmpcrr.split(',')
