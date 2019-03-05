@@ -42,8 +42,9 @@ class GCVScanner(base_scanner.BaseScanner):
         """
         # Refer to the mapping table above to flatten the data.
         for violation in violations:
+            # TODO
             continue
-        pass
+        return violations
 
     def _output_results(self, all_violations):
         """Output results.
@@ -89,6 +90,7 @@ class GCVScanner(base_scanner.BaseScanner):
         # Add asset data to GCV.
         for gcv_asset in gcv_assets:
             self.validator_client.add_data_to_buffer(gcv_asset)
+        self.validator_client.flush_buffer()
 
         # Find all violations.
         violations = self.validator_client.audit()
