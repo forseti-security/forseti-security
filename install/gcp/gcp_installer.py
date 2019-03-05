@@ -22,7 +22,6 @@ import site
 import sys
 
 from installer.util.utils import run_command
-from argparse import RawTextHelpFormatter
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
@@ -59,7 +58,8 @@ def run():
     install_required_packages()
     site.main() # Load up the package
 
-    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')

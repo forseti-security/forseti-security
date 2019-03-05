@@ -34,9 +34,10 @@ class Config(object):
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         if kwargs.get('composite_root_resources'):
-          self.composite_root_resources = kwargs.get('composite_root_resources').split(",")
+            tmpcrr = kwargs.get('composite_root_resources')
+            self.composite_root_resources = tmpcrr.split(',')
         else:
-          self.composite_root_resources = []
+            self.composite_root_resources = []
         self.service_account_key_file = kwargs.get('service_account_key_file')
         self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
         self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'

@@ -294,11 +294,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 else:
                     self.target_id = gcloud.choose_project()
 
-        if self.composite_root_resources:
-            self.resource_root_id = self.composite_root_resources[0]
-        else:
-            self.resource_root_id = utils.format_resource_id(
-                self.access_target, self.target_id)
+        self.resource_root_id = utils.format_resource_id(
+            self.access_target, self.target_id)
 
     def get_email_settings(self):
         """Ask user for specific install values."""
