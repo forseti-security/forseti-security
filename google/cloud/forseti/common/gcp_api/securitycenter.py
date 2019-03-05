@@ -93,9 +93,7 @@ class _SecurityCenterOrganizationsFindingsRepository(
         # pylint: disable=protected-access
         if kwargs.get('gcp_service')._resourceDesc.get('version') == 'v1beta1':
             component = 'organizations.sources.findings'
-        else:
-            # alpha api
-            component = 'organizations.findings'
+
         # pylint: enable=protected-access
 
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
@@ -155,22 +153,3 @@ class SecurityCenterClient(object):
                     finding.get('source_properties').get('violation_data'))
                 raise api_errors.ApiExecutionError(violation_data, e)
 
-        # alpha api
-        try:
-            LOGGER.debug('Creating finding with alpha api.')
-            response = self.repository.findings.create(
-                arguments={
-                    'body': {'sourceFinding': finding},
-                    'orgName': organization_id
-                }
-            )
-            LOGGER.debug('Created finding response with CSCC alpha: %s',
-                         response)
-            return response
-        except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.exception(
-                'Unable to create CSCC finding: Resource: %s', finding)
-            full_name = (
-                finding.get('properties').get('violation_data')
-                .get('full_name'))
-            raise api_errors.ApiExecutionError(full_name, e)

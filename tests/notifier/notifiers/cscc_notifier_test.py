@@ -28,7 +28,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
     def setUp(self):
         """Setup method."""
         super(CsccNotifierTest, self).setUp()
-        self.maxDiff=None
+        self.maxDiff = None
 
     def tearDown(self):
         """Tear down method."""
@@ -104,47 +104,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         self.assertEquals(expected_beta_findings, finding_results)
 
-    def test_can_transform_to_alpha_findings_in_api_mode(self):
-
-        expected_alpha_findings = [
-            {'assetIds': ['full_name_111'],
-             'category': 'disallow_all_ports_111',
-             'eventTime': '2010-08-28T10:20:30Z',
-             'id': '539cfbdb1113a74ec18edf583eada77a',
-             'properties': {
-                 'db_source': 'table:violations/id:1',
-                 'inventory_index_id': 'iii',
-                 'resource_data': 'inventory_data_111',
-                 'resource_id': 'fake_firewall_111',
-                 'resource_type': 'firewall_rule',
-                 'rule_index': 111,
-                 'scanner_index_id': 1282990830000000,
-                 'violation_data': '{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}'},
-                 'source_id': 'FORSETI'},
-            {'assetIds': ['full_name_222'],
-             'category': 'disallow_all_ports_222',
-             'eventTime': '2010-08-28T10:20:30Z',
-             'id': '3eff279ccb96799d9eb18e6b76055b22',
-             'properties': {
-                 'db_source': 'table:violations/id:2',
-                 'inventory_index_id': 'iii',
-                 'resource_data': 'inventory_data_222',
-                 'resource_id': 'fake_firewall_222',
-                 'resource_type': 'firewall_rule',
-                 'rule_index': 222,
-                 'scanner_index_id': 1282990830000000,
-                 'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}'},
-                 'source_id': 'FORSETI'}]
-
-        violations_as_dict = self._populate_and_retrieve_violations()
-
-        finding_results = (
-            cscc_notifier.CsccNotifier('iii')._transform_for_api(
-                violations_as_dict)
-        )
-
-        self.assertEquals(expected_alpha_findings, finding_results)
-
     @mock.patch('google.cloud.forseti.common.util.date_time.'
                 'get_utc_now_datetime')
     def test_can_transform_to_findings_in_bucket_mode(self, mock_get_utc_now):
@@ -192,37 +151,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         )
 
         self.assertEquals(expected_findings, finding_results)
-
-    @mock.patch('google.cloud.forseti.notifier.notifiers.cscc_notifier.LOGGER')
-    def test_modes_are_run_correctly(self, mock_logger):
-
-        # This whole test case is for alpha API, and can be deleted
-        # when CSCC alpha support is removed.
-
-        notifier = cscc_notifier.CsccNotifier(None)
-
-        notifier._send_findings_to_gcs = mock.MagicMock()
-        notifier._send_findings_to_cscc = mock.MagicMock()
-        notifier.LOGGER = mock.MagicMock()
-
-        self.assertEquals(0, notifier._send_findings_to_gcs.call_count)
-        notifier.run(None, None, None, None)
-        self.assertEquals(1, notifier._send_findings_to_gcs.call_count)
-
-        notifier.run(None, None, 'bucket', None)
-        self.assertEquals(2, notifier._send_findings_to_gcs.call_count)
-
-        # alpha api
-        self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
-        notifier.run(None, None, 'api', None)
-        self.assertEquals(1, notifier._send_findings_to_cscc.call_count)
-
-        self.assertEquals(3, mock_logger.info.call_count)
-        notifier.run(None, None, 'foo', None)
-        self.assertEquals(5, mock_logger.info.call_count)
-        self.assertTrue(
-            'not selected' in mock_logger.info.call_args_list[4][0][0])
-
     
     def test_beta_api_is_invoked_correctly(self):
 

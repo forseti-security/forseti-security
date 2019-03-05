@@ -173,18 +173,6 @@ def run(inventory_index_id,
                             '%s', source_id)
                         (cscc_notifier.CsccNotifier(inventory_index_id)
                          .run(violations_as_dict, source_id=source_id))
-                    else:
-                        # alpha mode
-                        LOGGER.debug('Running CSCC notifier with alpha API.')
-                        gcs_path = (
-                            violation_configs.get('cscc').get('gcs_path'))
-                        mode = violation_configs.get('cscc').get('mode')
-                        organization_id = (
-                            violation_configs.get('cscc').get(
-                                'organization_id'))
-                        (cscc_notifier.CsccNotifier(inventory_index_id)
-                         .run(violations_as_dict, gcs_path, mode,
-                              organization_id))
 
         InventorySummary(service_config, inventory_index_id).run()
 

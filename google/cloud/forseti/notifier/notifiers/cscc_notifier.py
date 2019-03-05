@@ -159,34 +159,6 @@ class CsccNotifier(object):
                 findings.append((finding_id, finding))
             return findings
 
-        # alpha api
-        LOGGER.debug('Transforming findings with beta API. source_id: %s',
-                     source_id)
-        for violation in violations:
-            finding = {
-                # CSCC can't accept the full hash, so this must be shortened.
-                'id': violation.get('violation_hash')[:32],
-                'assetIds': [
-                    violation.get('full_name')
-                ],
-                'eventTime': violation.get('created_at_datetime'),
-                'properties': {
-                    'db_source': 'table:{}/id:{}'.format(
-                        'violations', violation.get('id')),
-                    'inventory_index_id': self.inv_index_id,
-                    'resource_data': violation.get('resource_data'),
-                    'resource_id': violation.get('resource_id'),
-                    'resource_type': violation.get('resource_type'),
-                    'rule_index': violation.get('rule_index'),
-                    'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data')
-                },
-                'source_id': 'FORSETI',
-                'category': violation.get('rule_name')
-            }
-            findings.append(finding)
-        return findings
-
     def _send_findings_to_cscc(self, violations, organization_id=None,
                                source_id=None):
         """Send violations to CSCC directly via the CSCC API.
@@ -220,22 +192,6 @@ class CsccNotifier(object):
                     continue
             return
 
-        # alpha api
-        LOGGER.debug('Sending findings to CSCC with alpha API.')
-        findings = self._transform_for_api(violations)
-
-        client = securitycenter.SecurityCenterClient()
-
-        for finding in findings:
-            LOGGER.debug('Creating finding CSCC:\n%s.', finding)
-            try:
-                client.create_finding(finding, organization_id=organization_id)
-                LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                             finding)
-            except api_errors.ApiExecutionError:
-                LOGGER.exception('Encountered CSCC API error.')
-                continue
-
     def run(self, violations, gcs_path=None, mode=None, organization_id=None,
             source_id=None):
         """Generate the temporary json file and upload to GCS.
@@ -258,14 +214,3 @@ class CsccNotifier(object):
             LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
             self._send_findings_to_cscc(violations, source_id=source_id)
             return
-
-        # alpha api
-        LOGGER.debug('Running CSCC with alpha API.')
-        if mode is None or mode == 'bucket':
-            self._send_findings_to_gcs(violations, gcs_path)
-        elif mode == 'api':
-            self._send_findings_to_cscc(violations, organization_id)
-        else:
-            LOGGER.info(
-                'A valid mode for CSCC notification was not selected: %s. '
-                'Please use either "bucket" or "api" mode.', mode)
