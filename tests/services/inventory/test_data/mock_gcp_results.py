@@ -121,7 +121,8 @@ AD_GET_GROUPS = {
     ]
 }
 
-AD_GET_GROUPS_SETTINGS = {
+AD_GROUP_SETTINGS_TEMPLATE = """
+{{
   "allowExternalMembers": "True", 
   "whoCanEnterFreeFormTags": "NONE", 
   "whoCanMarkDuplicate": "NONE", 
@@ -141,7 +142,7 @@ AD_GET_GROUPS_SETTINGS = {
   "isArchived": "True",
   "membersCanPostAsTheGroup": "false",
   "allowWebPosting": "True",
-  "email": "group_settings@foo.testing",
+  "email": "{email}",
   "whoCanAssignTopics": "NONE",
   "sendMessageDenyNotification": "false",
   "description": "value used in test case",
@@ -165,6 +166,14 @@ AD_GET_GROUPS_SETTINGS = {
   "maxMessageBytes": 26214400,
   "customFooterText": "",
   "allowGoogleCommunication": "True"
+}}
+"""
+
+AD_GET_GROUPS_SETTINGS = {
+  'a_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='a_grp@forseti.test')),
+  'b_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='b_grp@forseti.test')),
+  'c_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='c_grp@forseti.test')),
+  'a_GRP@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='a_GRP@forseti.test')),
 }
 
 # Fields: id, email, type
