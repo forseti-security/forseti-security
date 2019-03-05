@@ -191,13 +191,11 @@ class CsccNotifier(object):
                     continue
             return
 
-    def run(self, violations, gcs_path=None, mode=None, source_id=None):
+    def run(self, violations, source_id=None):
         """Generate the temporary json file and upload to GCS.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
-            gcs_path (str): The GCS bucket to upload the findings.
-            mode (str): The mode in which to send the CSCC notification.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -210,6 +208,4 @@ class CsccNotifier(object):
         if source_id:
             LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
             self._send_findings_to_cscc(violations, source_id=source_id)
-        if mode is None or mode == 'bucket':
-            self._send_findings_to_gcs(violations, gcs_path)
-        return
+            return

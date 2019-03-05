@@ -59,7 +59,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
 
         result = self.securitycenter_beta_api_client.create_finding(
             'fake finding',
-            fake_cscc.ORGANIZATION_ID,
             source_id=self.source_id
             )
         self.assertEquals(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
@@ -73,7 +72,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.securitycenter_beta_api_client.create_finding(
                 fake_beta_finding,
-                fake_cscc.ORGANIZATION_ID,
                 source_id=self.source_id)
 
 
