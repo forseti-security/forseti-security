@@ -188,7 +188,8 @@ class CsccNotifier(object):
             findings.append(finding)
         return findings
 
-    def find_stale_findings(self, new_findings, existing_findings):
+    @classmethod
+    def find_stale_findings(cls, new_findings, findings_in_cscc):
         """Finds the findings that does not correspond to the latest scanner run
         and updates it's state to inactive.
 
@@ -203,7 +204,26 @@ class CsccNotifier(object):
         """
 
         inactive_findings = []
+        new_findings_map = {}
+        temp = []
 
+        for finding_list in new_findings:
+            finding_id = finding_list[0]
+            finding = finding_list[1]
+            add_to_dict = {finding_id: finding}
+            new_findings_map.update(add_to_dict)
+
+        for finding_list in findings_in_cscc:
+            finding_id = finding_list[0]
+            to_be_updated_finding = finding_list[1]
+            if finding_id not in new_findings_map.keys():
+                to_be_updated_finding['state'] = 'INACTIVE'
+                temp.append(finding_id)
+                temp.append(to_be_updated_finding)
+                inactive_findings.append(temp)
+                temp.clear()
+        del temp
+        del new_findings_map
         return inactive_findings
 
     def _send_findings_to_cscc(self, violations, organization_id=None,
@@ -226,16 +246,16 @@ class CsccNotifier(object):
 
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
-            existing_findings = client.list_findings(source_id=source_id)
-            print('existing findings:', existing_findings)
-            for i in existing_findings:
-                print('finding from CSCC UI:', existing_findings)
-            print('next:', next(existing_findings))
+            findings_in_cscc = client.list_findings(source_id=source_id)
+            print('existing findings:', findings_in_cscc)
+            for i in findings_in_cscc:
+                print('finding from CSCC UI:', findings_in_cscc)
+            print('next:', next(findings_in_cscc))
 
-            old_findings = self.find_stale_findings(new_findings,
-                                                    existing_findings)
+            inactive_findings = self.find_stale_findings(new_findings,
+                                                         findings_in_cscc)
 
-            to_be_updated_findings = new_findings + old_findings
+            to_be_updated_findings = new_findings + inactive_findings
 
             for finding_list in to_be_updated_findings:
                 finding_id = finding_list[0]
