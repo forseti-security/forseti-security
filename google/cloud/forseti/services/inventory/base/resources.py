@@ -1313,7 +1313,8 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
         return True
 
 
-class GsuiteGroupsSettings(resource_class_factory('gsuite_groups_settings', 'email')):
+class GsuiteGroupsSettings(resource_class_factory(
+    'gsuite_groups_settings', 'email')):
     """The Resource implementation for GSuite Settings."""
 
 
