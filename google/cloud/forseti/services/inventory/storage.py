@@ -298,6 +298,8 @@ class Inventory(BASE):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     inventory_index_id = Column(BigInteger)
+    cai_resource_name = Column(String(4096))
+    cai_resource_type = Column(String(512))
     category = Column(Enum(Categories))
     resource_type = Column(String(255))
     resource_id = Column(Text)
@@ -314,13 +316,30 @@ class Inventory(BASE):
         Index('idx_parent_id',
               'parent_id'))
 
+    @staticmethod
+    def get_schema_update_actions():
+        """Maintain all the schema changes for this table.
+
+        Returns:
+            dict: A mapping of Action: Column.
+        """
+        columns_to_create = [Column('cai_resource_type',
+                                    String(512),
+                                    default=''),
+                             Column('cai_resource_name',
+                                    String(4096),
+                                    default='')]
+
+        schema_update_actions = {'CREATE': columns_to_create}
+        return schema_update_actions
+
     @classmethod
     def from_resource(cls, index, resource):
         """Creates a database row object from a crawled resource.
 
         Args:
-            index (object): InventoryIndex to associate.
-            resource (object): Crawled resource.
+            index (InventoryIndex): InventoryIndex to associate.
+            resource (Resource): Crawled resource.
 
         Returns:
             object: database row object.
@@ -335,7 +354,21 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
+        cai_resource_name = None
+        cai_resource_type = None
+
+        try:
+            # Retrieve and clean up cai resource name and type if exist.
+            cai_resource_name = resource['cai_resource_name']
+            cai_resource_type = resource['cai_resource_type']
+            del resource['cai_resource_name']
+            del resource['cai_resource_type']
+        except KeyError:
+            pass
+
         rows = [Inventory(
+            cai_resource_name=cai_resource_name,
+            cai_resource_type=cai_resource_type,
             inventory_index_id=index.id,
             category=Categories.resource,
             resource_id=resource.key(),
@@ -348,6 +381,8 @@ class Inventory(BASE):
         if iam_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.iam_policy,
                     resource_id=resource.key(),
@@ -359,6 +394,8 @@ class Inventory(BASE):
         if gcs_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.gcs_policy,
                     resource_id=resource.key(),
@@ -370,6 +407,8 @@ class Inventory(BASE):
         if dataset_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.dataset_policy,
                     resource_id=resource.key(),
@@ -381,6 +420,8 @@ class Inventory(BASE):
         if billing_info:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.billing_info,
                     resource_id=resource.key(),
@@ -392,6 +433,8 @@ class Inventory(BASE):
         if enabled_apis:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.enabled_apis,
                     resource_id=resource.key(),
@@ -403,6 +446,8 @@ class Inventory(BASE):
         if service_config:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.kubernetes_service_config,
                     resource_id=resource.key(),
@@ -439,6 +484,22 @@ class Inventory(BASE):
                     self.inventory_index_id,
                     self.resource_id,
                     self.resource_type)
+
+    def get_cai_resource_name(self):
+        """Get the row's cai resource name.
+
+        Returns:
+            str: cai resource name.
+        """
+        return self.cai_resource_name
+
+    def get_cai_resource_type(self):
+        """Get the row's cai resource type.
+
+        Returns:
+            str: cai resource type.
+        """
+        return self.cai_resource_type
 
     def get_resource_id(self):
         """Get the row's resource id.
@@ -582,10 +643,16 @@ class CaiTemporaryStore(object):
             dict: The dict representation of the asset data.
         """
         asset = json.loads(self.asset_data)
+
         if content_type == ContentTypes.resource:
-            return asset['resource']['data']
+            asset = asset['resource']['data']
         elif content_type == ContentTypes.iam_policy:
-            return asset['iam_policy']
+            asset = asset['iam_policy']
+
+        # Injecting CAI name and resource type to the dictionary,
+        # will need to clean up before inserting to the db.
+        asset['cai_resource_name'] = self.name
+        asset['cai_resource_type'] = self.asset_type
 
         return asset
 

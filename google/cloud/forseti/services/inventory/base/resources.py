@@ -147,7 +147,7 @@ class Resource(object):
         """Initialize.
 
         Args:
-            data (str): raw data.
+            data (dict): raw data.
             root (Resource): the root of this crawling.
             contains (list): child types to crawl.
             **kwargs (dict): arguments.
@@ -170,6 +170,14 @@ class Resource(object):
             datatime: the datetime.
         """
         return date_time.get_utc_now_datetime()
+
+    def __delitem__(self, key):
+        """Delete item.
+
+        Args:
+            key (str): key of this resource.
+        """
+        self._data.pop(key, None)
 
     def __getitem__(self, key):
         """Get Item.

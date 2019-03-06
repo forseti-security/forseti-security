@@ -612,7 +612,7 @@ class InventoryImporter(object):
         """Convert resource to a database object.
 
         Args:
-            resource (dict): A resource to store.
+            resource (Resource): A resource to store.
             cached (bool): Set to true for resources that have child resources
                 or policies associated with them.
             display_key (str): The key in the resource dictionary to lookup to
@@ -628,6 +628,8 @@ class InventoryImporter(object):
             parent, full_res_name, type_name = self._full_resource_name(
                 resource)
         row = self.dao.TBL_RESOURCE(
+            cai_resource_name=resource.get_cai_resource_name(),
+            cai_resource_type=resource.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=resource.get_resource_id(),
@@ -851,6 +853,8 @@ class InventoryImporter(object):
                                  resource_identifier)
 
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=cloudsqlinstance.get_cai_resource_name(),
+            cai_resource_type=cloudsqlinstance.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=cloudsqlinstance.get_resource_id(),
@@ -876,6 +880,8 @@ class InventoryImporter(object):
             dataset_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=dataset_policy.get_cai_resource_name(),
+            cai_resource_type=dataset_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=dataset_policy.get_resource_id(),
@@ -897,6 +903,8 @@ class InventoryImporter(object):
             ':'.join(parent.type_name.split('/')))
         apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=enabled_apis.get_cai_resource_name(),
+            cai_resource_type=enabled_apis.get_cai_resource_type(),
             full_name=apis_res_name,
             type_name=apis_type_name,
             name=enabled_apis.get_resource_id(),
@@ -918,6 +926,8 @@ class InventoryImporter(object):
             gcs_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=gcs_policy.get_cai_resource_name(),
+            cai_resource_type=gcs_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=gcs_policy.get_resource_id(),
@@ -942,6 +952,8 @@ class InventoryImporter(object):
             full_res_name,
             iam_policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=iam_policy.get_cai_resource_name(),
+            cai_resource_type=iam_policy.get_cai_resource_type(),
             full_name=iam_policy_full_res_name,
             type_name=iam_policy_type_name,
             name=iam_policy.get_resource_id(),
@@ -986,6 +998,8 @@ class InventoryImporter(object):
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
             role_resource = self.dao.TBL_RESOURCE(
+                cai_resource_name=role.get_cai_resource_name(),
+                cai_resource_type=role.get_cai_resource_type(),
                 full_name=full_res_name,
                 type_name=type_name,
                 name=role.get_resource_id(),
@@ -1015,6 +1029,8 @@ class InventoryImporter(object):
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=service_config.get_cai_resource_name(),
+            cai_resource_type=service_config.get_cai_resource_type(),
             full_name=sc_res_name,
             type_name=sc_type_name,
             name=service_config.get_resource_id(),
