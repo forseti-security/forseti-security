@@ -1,3 +1,19 @@
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""GCV Data Converter."""
+
 from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2
 
 
@@ -7,38 +23,30 @@ _RESOURCE = 'resource'
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
 
 
-def convert_resource_type_to_cai_format(data_type):
-    """Convert the GCP type to cai format.
+CAI_RESOURCE_TYPE_MAPPING = {
+    # TODO: Support non cai resource type by creating a fake cai resource type.
+    # e.g. 'lien' -> 'google.SOME_RESOURCE_TYPE.Lien'
+}
 
-    You can read more about the supported types in:
-        google.cloud.forseti.model.importer.GCP_TYPE_LIST
+
+def _generate_ancestry_path(full_name):
+    """Generate ancestry path from full_name.
 
     Args:
-        data_type (string): GCP data type, either resource or iam_policy.
+        full_name (str): Full name of the resource.
 
     Returns:
-        str: Resource type in CAI format.
+        str: Ancestry path.
     """
-    return data_type
-
-    # def _is_compute_resource(resource_type):
-    #     return 'compute_' in resource_type
-    # def _is_appeng_resource(resource_type):
-    #     return 'appengine_' in resource_type
-    # def is_crm_resource(resource_type):
-    #     return resource_type in ['organization', 'folder', 'project']
-    # def is_gcs_resource(resource_type):
-    #     return resource_type in ['bucket']
-    # def is_csql_resource(resource_type):
-    #     return 'cloudsql' in resource_type
-    # def is_spanner_resource(resource_type):
-    #     return 'spanner_' in resource_type
-    # def is_pubsub_resource(resource_type):
-    #     return 'pubsub_' in resource_type
-    # def is_bigtable_resource(resource_type):
-    #     return 'bigtable_' in resource_type
-    # def is_redis_resource(resource_type):
-    #     return 'redis_' in resource_type
+    supported_ancestors = ['organization', 'folder', 'project']
+    ancestry_path = ''
+    full_name_items = full_name.split('/')
+    for i in range(0, len(full_name_items)-1):
+        if full_name_items[i] in supported_ancestors:
+            ancestry_path += full_name_items[i] + '/' + full_name_items[i+1]
+            i += 1
+        else:
+            break
 
 
 def convert_data_to_gcv_asset(resource, data_type):
@@ -58,9 +66,15 @@ def convert_data_to_gcv_asset(resource, data_type):
     if data_type not in SUPPORTED_DATA_TYPE:
         raise ValueError("Data type %s not supported.", data_type)
 
-    cai_type = convert_resource_type_to_cai_format(data_type)
+    if (not resource.cai_resource_name and
+            resource.type not in CAI_RESOURCE_TYPE_MAPPING):
+        raise ValueError("Resource %s not supported to use GCV scanner.",
+                         resource.type)
 
-    return validator_pb2.Asset(name=resource.name,
-                               asset_type=cai_type,
-                               ancestry_path=resource.full_name,
+    # Generate ancestry path that ends at project as the lowest level.
+    ancestry_path = _generate_ancestry_path(resource.full_name)
+
+    return validator_pb2.Asset(name=resource.cai_resource_name,
+                               asset_type=resource.cai_resource_type,
+                               ancestry_path=ancestry_path,
                                resource=resource.data)
