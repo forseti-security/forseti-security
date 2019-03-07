@@ -472,10 +472,10 @@ class ExplainClient(ForsetiClient):
         """List resources by name prefix.
 
         Args:
-            resource_name_prefix (str): the prefix of resource_name to query
+            resource_name_prefix (str): the prefix of resource_name to query.
 
-        Returns:
-            proto: the returned proto message of list_resources
+        Yields:
+            object: generator for a list of resource name.
         """
 
         return self.stub.ListResources(
