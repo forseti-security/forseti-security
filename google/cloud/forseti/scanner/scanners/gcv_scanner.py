@@ -75,7 +75,7 @@ class GCVScanner(base_scanner.BaseScanner):
                 'violation_type': GCVScanner.violation_type,
                 'violation_data': violation.meta_data,
                 'resource_data': resource_data,
-                'message': violation.message
+                'violation_message': violation.message
             }
 
     def _output_results(self, all_violations):
