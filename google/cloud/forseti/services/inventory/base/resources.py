@@ -1314,7 +1314,7 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
 
 
 class GsuiteGroupsSettings(resource_class_factory(
-    'gsuite_groups_settings', 'email')):
+        'gsuite_groups_settings', 'email')):
     """The Resource implementation for GSuite Settings."""
 
 

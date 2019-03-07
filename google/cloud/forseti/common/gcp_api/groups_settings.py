@@ -132,7 +132,7 @@ class GroupsSettingsClient(object):
             group_email (str): The gsuite group email to scope the request to.
 
         Returns:
-            list: A dict of group settings for given group_email.
+            dict:group settings for given group_email.
 
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.

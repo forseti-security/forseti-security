@@ -350,6 +350,7 @@ class InventoryImporter(object):
         Returns:
             int: Number of item iterated.
         """
+
         LOGGER.debug('Performing model action: %s', action)
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
@@ -468,7 +469,6 @@ class InventoryImporter(object):
 
         Args:
             settings (object): settings resource object.
-            group (object): group resource object.
         """
 
         settings_dict = settings.get_resource_data()
