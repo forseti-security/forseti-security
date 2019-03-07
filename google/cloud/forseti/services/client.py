@@ -474,8 +474,8 @@ class ExplainClient(ForsetiClient):
         Args:
             resource_name_prefix (str): the prefix of resource_name to query.
 
-        Yields:
-            object: generator for a list of resource name.
+        Returns:
+            object: generator of proto message of resources.
         """
 
         return self.stub.ListResources(
@@ -491,7 +491,7 @@ class ExplainClient(ForsetiClient):
             member_name_prefix (str): the prefix of member_name to query
 
         Returns:
-            proto: the returned proto message of list_members
+            object: generator of proto message of members.
         """
 
         return self.stub.ListGroupMembers(
@@ -507,7 +507,7 @@ class ExplainClient(ForsetiClient):
             role_name_prefix (str): the prefix of role_name to query
 
         Returns:
-            proto: the returned proto message of list_roles
+            object: generator of proto message of roles.
         """
 
         return self.stub.ListRoles(
@@ -566,7 +566,7 @@ class ExplainClient(ForsetiClient):
                 one of roles or permission_names should be not none
 
         Returns:
-            proto: the returned proto message of explain_denied
+            object: generator of proto message of bindingstrategies.
 
         Raises:
             Exception: Either roles or permission names must be set
@@ -626,7 +626,7 @@ class ExplainClient(ForsetiClient):
             expand_groups (bool): whether to expand group relations
 
         Returns:
-            proto: the returned proto message of query_access_by_resources
+            object: generator of proto message of accesses.
         """
 
         request = explain_pb2.GetAccessByResourcesRequest(
@@ -648,7 +648,7 @@ class ExplainClient(ForsetiClient):
             expand_resources (bool): whether to expand resource hierarchy
 
         Returns:
-            proto: the returned proto message of query_access_by_members
+            object: generator of proto message of accesses.
         """
 
         request = explain_pb2.GetAccessByMembersRequest(
