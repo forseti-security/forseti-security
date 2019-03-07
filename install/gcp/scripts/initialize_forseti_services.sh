@@ -40,9 +40,10 @@ FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?c
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
+GCV_COMMAND="/home/ubuntu/forseti-security/install/gcv-binary --constraint-repos=/home/ubuntu/gcv_constraints/"
+
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
-
 
 # Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
@@ -60,6 +61,22 @@ EOF
 )"
 echo "$API_SERVICE" > /tmp/forseti.service
 sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
+
+# GCV Service.
+GCV_SERVICE="$(cat << EOF
+[Unit]
+Description=GCV API Server
+[Service]
+User=ubuntu
+Restart=always
+RestartSec=3
+ExecStart=$GCV_COMMAND
+[Install]
+WantedBy=multi-user.target
+EOF
+)"
+echo "GCV_SERVICE" > /tmp/gcv.service
+sudo mv /tmp/forseti.service /lib/systemd/system/gcv.service
 
 # By default, Systemd starts the executable stated in ExecStart= as root.
 # See github issue #1761 for why this neds to be run as root.

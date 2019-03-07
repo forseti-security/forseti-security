@@ -235,6 +235,9 @@ echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | s
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
+# Download the GCV constraints from GCV
+gsutil cp -r gs://{scanner_bucket}/gcv_constraints /home/ubuntu/
+
 # Start Forseti service depends on vars defined above.
 bash ./install/gcp/scripts/initialize_forseti_services.sh
 
