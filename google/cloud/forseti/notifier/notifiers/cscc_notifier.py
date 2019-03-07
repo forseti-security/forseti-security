@@ -196,7 +196,7 @@ class CsccNotifier(object):
         Args:
             new_findings (list): Latest violations that are transformed to
             findings.
-            existing_findings (list): Findings pulled from CSCC UI that
+            findings_in_cscc (list): Findings pulled from CSCC UI that
             corresponds to the previous scanner run.
 
         Returns:
@@ -205,7 +205,6 @@ class CsccNotifier(object):
 
         inactive_findings = []
         new_findings_map = {}
-        temp = []
 
         for finding_list in new_findings:
             finding_id = finding_list[0]
@@ -218,11 +217,7 @@ class CsccNotifier(object):
             to_be_updated_finding = finding_list[1]
             if finding_id not in new_findings_map.keys():
                 to_be_updated_finding['state'] = 'INACTIVE'
-                temp.append(finding_id)
-                temp.append(to_be_updated_finding)
-                inactive_findings.append(temp)
-                temp.clear()
-        del temp
+                inactive_findings.append([finding_id, to_be_updated_finding])
         del new_findings_map
         return inactive_findings
 
@@ -239,6 +234,7 @@ class CsccNotifier(object):
 
         # beta api
         if source_id:
+            existing_findings_list = []
             LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
                          '%s', source_id)
             new_findings = self._transform_for_api(violations,
@@ -247,10 +243,13 @@ class CsccNotifier(object):
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
             findings_in_cscc = client.list_findings(source_id=source_id)
-            print('existing findings:', findings_in_cscc)
             for i in findings_in_cscc:
-                print('finding from CSCC UI:', findings_in_cscc)
-            print('next:', next(findings_in_cscc))
+                print('page data:', i)
+                existing_findings_list.append(i)
+            print('existing_findings_list:', existing_findings_list)
+            print('existing findings:', findings_in_cscc)
+            cscc_findings = list(findings_in_cscc)
+            print('cscc_findings:', cscc_findings)
 
             inactive_findings = self.find_stale_findings(new_findings,
                                                          findings_in_cscc)
@@ -260,6 +259,7 @@ class CsccNotifier(object):
             for finding_list in to_be_updated_findings:
                 finding_id = finding_list[0]
                 finding = finding_list[1]
+                print('finding id:', finding_id)
                 LOGGER.debug('Creating finding CSCC:\n%s.', finding)
                 try:
                     client.create_finding(finding, source_id=source_id,

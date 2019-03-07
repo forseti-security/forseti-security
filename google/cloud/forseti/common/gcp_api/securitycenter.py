@@ -100,7 +100,10 @@ class _SecurityCenterOrganizationsFindingsRepository(
         # pylint: enable=protected-access
 
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-            key_field='name', component=component, **kwargs)
+            key_field='name',
+            component=component,
+            max_results_field="pageSize",
+            **kwargs)
 
 
 class SecurityCenterClient(object):
@@ -177,7 +180,6 @@ class SecurityCenterClient(object):
             raise api_errors.ApiExecutionError(full_name, e)
 
     def list_findings(self, source_id):
-        response = self.repository.findings.list(parent=source_id,
-                                                 max_results_field='pageSize')
+        response = self.repository.findings.list(parent=source_id)
         return response
 
