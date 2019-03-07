@@ -326,7 +326,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
+        Yields:
             object: Generator of proto message of access tuples by resource.
         """
         reply = explain_pb2.Access()
@@ -341,7 +341,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request.permission_names,
             request.expand_groups)
         for role, members in mapping.iteritems():
-            access = explain_pb2.GetAccessByResourcesReply.Access(
+            access = explain_pb2.Access(
                 role=role, resource=request.resource_name, members=members)
             yield access
 
@@ -353,7 +353,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
+        Yields:
             object: Generator of proto message of access tuples by members.
         """
         reply = explain_pb2.Access()
@@ -367,7 +367,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                                      request.member_name,
                                                      request.permission_names,
                                                      request.expand_resources):
-            access = explain_pb2.GetAccessByMembersReply.Access(
+            access = explain_pb2.MemberAccess(
                 role=role, resources=resources, member=request.member_name)
             yield access
 

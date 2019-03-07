@@ -27,7 +27,7 @@ service Explain {
 
   rpc GetAccessByPermissions(GetAccessByPermissionsRequest) returns (stream Access) {}
   rpc GetAccessByResources(GetAccessByResourcesRequest) returns (stream Access) {}
-  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (stream Access) {}
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (stream MemberAccess) {}
   rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
 
   rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
@@ -172,11 +172,8 @@ message GetAccessByMembersRequest {
   bool expand_resources = 3;
 }
 
-message GetAccessByMembersReply {
-  message Access {
-    string member = 1;
-    repeated string resources = 2;
-    string role = 3;
-  }
-  repeated Access accesses = 1;
+message MemberAccess {
+  string member = 1;
+  repeated string resources = 2;
+  string role = 3;
 }
