@@ -113,7 +113,7 @@ class GCVScanner(base_scanner.BaseScanner):
                                      resource.type)
                         break
                     self.resource_lookup_table[resource.cai_resource_name] = (
-                        resource_type.full_name, resource.data)
+                        resource.full_name, resource.data)
                     yield gcv_data_converter.convert_data_to_gcv_asset(
                         resource, 'resource')
 

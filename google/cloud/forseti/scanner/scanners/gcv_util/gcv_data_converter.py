@@ -29,7 +29,7 @@ CAI_RESOURCE_TYPE_MAPPING = {
 }
 
 
-def _generate_ancestry_path(full_name):
+def generate_ancestry_path(full_name):
     """Generate ancestry path from full_name.
 
     Args:
@@ -72,7 +72,7 @@ def convert_data_to_gcv_asset(resource, data_type):
                          resource.type)
 
     # Generate ancestry path that ends at project as the lowest level.
-    ancestry_path = _generate_ancestry_path(resource.full_name)
+    ancestry_path = generate_ancestry_path(resource.full_name)
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,

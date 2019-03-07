@@ -32,7 +32,7 @@ RETRYABLE_EXCEPTIONS = (
     urllib2.URLError,  # include "no network connection"
 )
 
-RETRYABLE_GRPC_EXCEPTIONS = (
+RETRYABLE_GRPCEXCEPTIONS = (
     gcv_errors.GCVServerUnavailableError
 )
 
@@ -59,4 +59,4 @@ def is_retryable_exception_gcv(e):
         bool: True for exceptions to retry. False otherwise.
     """
 
-    return isinstance(e, RETRYABLE_GRPC_EXCEPTIONS)
+    return isinstance(e, RETRYABLE_GRPCEXCEPTIONS)

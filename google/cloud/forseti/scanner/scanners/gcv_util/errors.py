@@ -14,28 +14,22 @@
 
 """GCV Exceptions."""
 
-from exceptions import Exception
 
-
-class Error(Exception):
-    """Base error class for the module."""
-
-
-class GCVAddDataError(Error):
+class GCVAddDataError(Exception):
     """GCV Add Data Error."""
     pass
 
 
-class GCVServerUnavailableError(Error):
+class GCVServerUnavailableError(Exception):
     """GCV Server Unavailable Error."""
     pass
 
 
-class GCVAuditError(Error):
+class GCVAuditError(Exception):
     """GCV Audit Error."""
     pass
 
 
-class GCVResetError(Error):
+class GCVResetError(Exception):
     """GCV Reset Error."""
     pass
