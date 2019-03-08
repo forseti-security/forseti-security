@@ -97,7 +97,7 @@ If Scanner rules_path defaulted to `/home/ubuntu/forseti-security/rules`
 
 [forseti-security/configs/server/forseti_conf_server.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/983d2952eb48d8c5928b1fbd5113eef2ee2e7905/configs/server/forseti_conf_server.yaml.sample#L192-L197)
 
-`rules_path: RULES_PATH`
+`rules_path: /forseti-security/rules`
 
 ## 7. Run the Kubernetes Deployment Script (from its directory)
 
