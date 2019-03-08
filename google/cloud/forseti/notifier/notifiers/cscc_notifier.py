@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Upload violations to GCS bucket as Findings."""
+import ast
 import json
 import tempfile
 
@@ -85,7 +86,7 @@ class CsccNotifier(object):
         """
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZONE)
+            string_formats.TIMESTAMP_TIMEZall_clean_cscc_findings)
         return string_formats.CSCC_FINDINGS_FILENAME.format(output_timestamp)
 
     def _send_findings_to_gcs(self, violations, gcs_path):
@@ -215,6 +216,17 @@ class CsccNotifier(object):
         for finding_list in findings_in_cscc:
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
+            to_be_updated_finding.pop('securityMarks')
+            to_be_updated_finding.pop('createTime')
+            source_properties = to_be_updated_finding.get('sourceProperties')
+            event_time = to_be_updated_finding.get('eventTime')
+            resource_name = to_be_updated_finding.get('resourceName')
+            to_be_updated_finding.pop('sourceProperties')
+            to_be_updated_finding.pop('eventTime')
+            to_be_updated_finding.pop('resourceName')
+            to_be_updated_finding.update({'source_properties': source_properties})
+            to_be_updated_finding.update({'event_time': event_time})
+            to_be_updated_finding.update({'resource_name': resource_name})
             if finding_id not in new_findings_map.keys():
                 to_be_updated_finding['state'] = 'INACTIVE'
                 inactive_findings.append([finding_id, to_be_updated_finding])
@@ -234,7 +246,7 @@ class CsccNotifier(object):
 
         # beta api
         if source_id:
-            existing_findings_list = []
+            formatted_cscc_findings = []
             LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
                          '%s', source_id)
             new_findings = self._transform_for_api(violations,
@@ -243,23 +255,27 @@ class CsccNotifier(object):
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
             findings_in_cscc = client.list_findings(source_id=source_id)
-            for i in findings_in_cscc:
-                print('page data:', i)
-                existing_findings_list.append(i)
-            print('existing_findings_list:', existing_findings_list)
-            print('existing findings:', findings_in_cscc)
-            cscc_findings = list(findings_in_cscc)
-            print('cscc_findings:', cscc_findings)
+            for findings_per_page in findings_in_cscc:
+                clean_cscc_findings = (
+                    ast.literal_eval(json.dumps(findings_per_page)))
+                clean_cscc_findings.pop('nextPageToken', None)
+                clean_cscc_findings.pop('totalSize', None)
+                clean_cscc_findings.pop('readTime', None)
+                all_findings = clean_cscc_findings.get('findings')
+                for finding_data in all_findings:
+                    name = finding_data.get('name')
+                    finding_id = name[-32:]
+                    formatted_cscc_findings.append([finding_id, finding_data])
 
-            inactive_findings = self.find_stale_findings(new_findings,
-                                                         findings_in_cscc)
+            inactive_findings = self.find_stale_findings(
+                new_findings,
+                formatted_cscc_findings)
 
             to_be_updated_findings = new_findings + inactive_findings
 
             for finding_list in to_be_updated_findings:
                 finding_id = finding_list[0]
                 finding = finding_list[1]
-                print('finding id:', finding_id)
                 LOGGER.debug('Creating finding CSCC:\n%s.', finding)
                 try:
                     client.create_finding(finding, source_id=source_id,
