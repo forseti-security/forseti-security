@@ -7,8 +7,11 @@ order: 004
 
 This guide explains how to setup Forseti on Kubernetes.
 
-Note: The current work here is considered not yet ready for production use.
-Instead, it is to be a starting point to iterate and improve upon before
+If you decide to use this in production, consider implementing the
+[k8s hardening recommendations](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster),
+as well as [CIS Benchmarks for GCP, section 7, Kubernetes](https://learn.cisecurity.org/benchmarks").
+
+Note: This is a starting point to iterate and improve upon before
 releasing a smoother installation approach for general usage, possibly by
 using pre-built images stored on a public repo such as DockerHub.
 
@@ -30,10 +33,6 @@ for service accounts, Cloud SQL and GCS buckets.
 
 There are various ways to build the docker image, using git clone or
 a personal fork.
-
-Note: [cloudbuild.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/docker/cloudbuild.yaml)
-base image cache step will fail first time as their is no base image to cache,
-comment this out manually if it's not yet commented out in the codebase.
 
 BUILD IMAGE (git clone example)
 ```
@@ -84,10 +83,6 @@ Long running server example:
 Run `kubectl get pods` to get pod ids
 Connect: `kubectl exec -it <CLIENT_POD_ID> -- /bin/bash`
 
-After connecting to client, source the environment variables before
-running Forseti CLI commands:
-`. /etc/profile.d/forseti_environment.sh`
-
 Run Forseti commands to verify that Forseti server is working as expected.
 
 ## k8s Cron Job
@@ -101,24 +96,20 @@ k8s CronJob example:
 Drill into Forseti Workload to see Job History
 {% responsive_image path: images/docs/setup/k8s_job_history.png alt: "k8s job history" %}
 
-## KNOWN ISSUES
-Occasional intermittent gsutil error about anonymous user when downloading
-files from GCS. Under investigation.
-
 ## File Notes
 
 File | Changes to Support GKE
---- | ---
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/.dockerignore | Added .dockerignore to reduce   Docker image size.
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/dependencies/apt_packages.txt | Add cron (to install on base   image)
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/docker/base | Install Google Cloud SDK on base   image
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/docker/cloudbuild.yaml | Added optional cache base image   build step to reduce build time     Added optional unit tests build step
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/docker/forseti | chmod +x docker_entrypoint.sh
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/cloudsqlproxy.service.template.yaml | Cloud SQL Proxy Cluster IP   Service Deployment template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/cloudsqlproxy.template.yaml | Cloud SQL Proxy Deployment   template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/docker_entrypoint.sh | docker_entrpoint.sh initialises   the container, starts services, runs scan as needed.
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/forseti.client.template.yaml | Forseti Client Deployment   template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/forseti.cronjob.template.yaml | Forseti CronJob Template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/forseti.server.service.template.yaml | Forseti Server Cluster IP   Service Deployment template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/forseti.server.template.yaml | Forseti Server Deployment   template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/k8s_setup_forseti.sh | Example script to spin up   cluster and deploy Forseti to GKE
+-- | --
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/.dockerignore | Added .dockerignore to reduce Docker image size.
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/dependencies/apt_packages.txt | Add cron (to install on base image)
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/docker/base | Install Google Cloud SDK on base image
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/docker/cloudbuild.yaml | Added optional cache base image build step to reduce build time. Added optional unit tests build step
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/docker/forseti | chmod +x docker_entrypoint.sh
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/cloudsqlproxy.service.template.yaml | Cloud SQL Proxy Cluster IP Service Deployment template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/cloudsqlproxy.template.yaml | Cloud SQL Proxy Deployment template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/docker_entrypoint.sh | docker_entrpoint.sh initialises the container, starts services, runs scan as needed.
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.client.template.yaml | Forseti Client Deployment template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.cronjob.template.yaml | Forseti CronJob Template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.service.template.yaml | Forseti Server Cluster IP Service Deployment template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.template.yaml | Forseti Server Deployment template
+https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/k8s_setup_forseti.sh | Example script to spin up cluster and deploy Forseti to GKE
