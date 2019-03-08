@@ -86,7 +86,7 @@ class CsccNotifier(object):
         """
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZall_clean_cscc_findings)
+            string_formats.TIMESTAMP_TIMEZONE)
         return string_formats.CSCC_FINDINGS_FILENAME.format(output_timestamp)
 
     def _send_findings_to_gcs(self, violations, gcs_path):
@@ -224,7 +224,8 @@ class CsccNotifier(object):
             to_be_updated_finding.pop('sourceProperties')
             to_be_updated_finding.pop('eventTime')
             to_be_updated_finding.pop('resourceName')
-            to_be_updated_finding.update({'source_properties': source_properties})
+            to_be_updated_finding.update(
+                {'source_properties': source_properties})
             to_be_updated_finding.update({'event_time': event_time})
             to_be_updated_finding.update({'resource_name': resource_name})
             if finding_id not in new_findings_map.keys():
@@ -233,6 +234,7 @@ class CsccNotifier(object):
         del new_findings_map
         return inactive_findings
 
+    # pylint: disable=too-many-locals
     def _send_findings_to_cscc(self, violations, organization_id=None,
                                source_id=None):
         """Send violations to CSCC directly via the CSCC API.
@@ -256,12 +258,12 @@ class CsccNotifier(object):
 
             findings_in_cscc = client.list_findings(source_id=source_id)
             for findings_per_page in findings_in_cscc:
-                clean_cscc_findings = (
+                new_cscc_findings = (
                     ast.literal_eval(json.dumps(findings_per_page)))
-                clean_cscc_findings.pop('nextPageToken', None)
-                clean_cscc_findings.pop('totalSize', None)
-                clean_cscc_findings.pop('readTime', None)
-                all_findings = clean_cscc_findings.get('findings')
+                new_cscc_findings.pop('nextPageToken', None)
+                new_cscc_findings.pop('totalSize', None)
+                new_cscc_findings.pop('readTime', None)
+                all_findings = new_cscc_findings.get('findings')
                 for finding_data in all_findings:
                     name = finding_data.get('name')
                     finding_id = name[-32:]
