@@ -218,18 +218,15 @@ class CsccNotifier(object):
             to_be_updated_finding = finding_list[1]
             to_be_updated_finding.pop('securityMarks')
             to_be_updated_finding.pop('createTime')
-            source_properties = to_be_updated_finding.get('sourceProperties')
-            event_time = to_be_updated_finding.get('eventTime')
-            resource_name = to_be_updated_finding.get('resourceName')
-            to_be_updated_finding.pop('sourceProperties')
-            to_be_updated_finding.pop('eventTime')
-            to_be_updated_finding.pop('resourceName')
-            to_be_updated_finding.update(
-                {'source_properties': source_properties})
-            to_be_updated_finding.update({'event_time': event_time})
-            to_be_updated_finding.update({'resource_name': resource_name})
+            to_be_updated_finding['source_properties'] = (
+                to_be_updated_finding.pop('sourceProperties'))
+            to_be_updated_finding['event_time'] = (
+                to_be_updated_finding.pop('eventTime'))
+            to_be_updated_finding['resource_name'] = (
+                to_be_updated_finding.pop('resourceName'))
             if finding_id not in new_findings_map.keys():
                 to_be_updated_finding['state'] = 'INACTIVE'
+                print('in INACTIVE state')
                 inactive_findings.append([finding_id, to_be_updated_finding])
         del new_findings_map
         return inactive_findings
