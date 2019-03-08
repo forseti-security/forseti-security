@@ -7,77 +7,101 @@ order: 004
 
 This guide explains how to setup Forseti on Kubernetes.
 
+This is a proof of concept (POC).
+
 If you decide to use this in production, consider implementing the
 [k8s hardening recommendations](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster),
-as well as [CIS Benchmarks for GCP, section 7, Kubernetes](https://learn.cisecurity.org/benchmarks").
+as well as [CIS Benchmarks for GCP, section 7, Kubernetes](https://learn.cisecurity.org/benchmarks).
 
-Note: This is a starting point to iterate and improve upon before
-releasing a smoother installation approach for general usage, possibly by
-using pre-built images stored on a public repo such as DockerHub.
+## 0. Install Pre-Requistes
 
----
+Create (or use) a project with Forseti PaaS dependencies deployed:
+GCS buckets, Cloud SQL DB and Service Account(s)
 
-## Pre-Requistes
+Install Forseti server and client using
+* the [standard installer]({% link _docs/latest/setup/install.md %})
+* or the [terraform installer](https://github.com/terraform-google-modules/terraform-google-forseti).
 
-Install Forseti server and client using the [standard
-installer]({% link _docs/latest/setup/install.md %}) or the [terraform
-installer](https://github.com/terraform-google-modules/terraform-google-forseti).
-This is a quick way to install the service accounts, Cloud SQL and GCS buckets.
+We are using dev branch for the POC.
+
 The VM's may be deleted or shutdown after the install as they will be replaced
 by the k8s solution.
 
-Alternatively follow the [manual setup instructions]({% link _docs/latest/setup/manual.md %})
-for service accounts, Cloud SQL and GCS buckets.
+Remaining steps can be run from a Google Cloud Shell VM in Forseti GCP project.
 
-## Build Docker Image
+## 1. Obtain Service Account Keys
 
-There are various ways to build the docker image, using git clone or
-a personal fork.
+[Download the Forseti server (and optionally client) service account
+keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
+and store them locally on the Cloud Shell VM temporarily for k8s secret
+creation. It is your responsibility to keep the key files secure.
 
-BUILD IMAGE (git clone example)
+## 2. Clone the Forseti Security Rit Repo
+
 ```
-Clone the forseti security repo to the Cloud Shell VM in your project
-cd to forseti-security directory
-git checkout dev (or other branch)
+git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+cd forseti-security
+git checkout dev
+```
+
+## 3. Build Docker Image
+
+```
 gcloud builds submit --config install/docker/cloudbuild.yaml .
-(Dont forget the dot at the end)
 ```
+
+Dont forget the dot at the end.
+
 Ref. https://cloud.google.com/cloud-build/docs/quickstart-docker#build_using_a_build_config_file
 
-BUILD IMAGE (Forked repo trigger example)
+
+## 4. Edit the Example Kubernetes Deployment Script
+
 ```
-Create a fork of the forseti security repository in github.
-Create a Cloud Build Trigger to automatically build when changes pushed to your forked repo
-Specify the branch (e.g. dev)
-Specify the cloudbuild.yaml build config file
+cd install/scripts
+vi k8s_setup_forseti.sh
 ```
 
-Example:
-{% responsive_image path: images/docs/setup/k8s_cloud_build.png alt: "k8s cloud build" %}
+Specify the variables
 
-## Deploy to Kubernetes
+* New cluster spec or name of existing cluster
+* Path to service account keys
+* Forseti GCS buckets
+* MySQL connection string
+* Type of k8s deployment: CronJob or long running server (+ optional client)
+* Cron schedule
 
-1. Open a cloud shell VM in your project.
-1. Upload the server and client service account keys to Cloud Shell.
-Note the file locations for later.
-1. Clone your forked repo and switch to the `dev` branch.
-1. Modify [forseti-security/install/scripts/k8s_setup_forseti.sh](https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/k8s_setup_forseti.sh)
-* setting the environment variables
-* paths to your service account keys
-* choose the architecture, either k8s CronJob or long running server
-1. `cd to ../forseti-security/install/scripts/` and run the `k8s_setup_forseti.sh` script.
 
-NOTE: In client config file in GCS bucket, change IP of forseti-server
-to match the Cluster Ip of Forseti Service
+## 5. Update Client Config File with Forseti Service IP
 
-Ref. https://github.com/GoogleCloudPlatform/forseti-security/blob/docker-poc/install/scripts/k8s_setup_forseti.sh
+If using the client, modify the client config file in the GCS bucket to point
+to the Forseti Server Cluster IP.
 
-## Verify
+[forseti-security/install/scripts/k8s_setup_forseti.sh](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/k8s_setup_forseti.sh)
+```
+export FORSETI_SERVER_IP=10.43.240.3 # k8s Cluster IP for Forseti Server. Don't forget to manually add this to the Client config file in GCS bucket if using Client. 
+```
+
+[forseti-security/configs/client/forseti_conf_client.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/configs/client/forseti_conf_client.yaml.sample)
+```
+server_ip: <server cluster ip>
+```
+
+We will move away from this hard coded approach, however this is the current
+POC implementation.
+
+## 6. Run the Kubernetes Deployment Script (from its directory)
+
+```
+./k8s_setup_forseti.sh
+```
+
+## 7. Verify
 
 Monitor the deployment in the GKE web console. Allow approximately 2 minutes
 for the cluster to spin up and another 30 seconds for the pods to become active.
 
-Long running server example:
+### Long Running Server Example
 {% responsive_image path: images/docs/setup/k8s_long_running_server.png alt: "k8s long running server" %}
 
 Run `kubectl get pods` to get pod ids
@@ -85,10 +109,7 @@ Connect: `kubectl exec -it <CLIENT_POD_ID> -- /bin/bash`
 
 Run Forseti commands to verify that Forseti server is working as expected.
 
-## k8s Cron Job
-
-Note: The long running server approach doesn't have an internal cron yet,
-so use the CronJob approach for now if periodic scans needed.
+### k8s Cron Job Example
 
 k8s CronJob example:
 {% responsive_image path: images/docs/setup/k8s_cron_job.png alt: "k8s cron job" %}
