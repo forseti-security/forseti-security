@@ -90,13 +90,22 @@ server_ip: <server cluster ip>
 We will move away from this hard coded approach, however this is the current
 POC implementation.
 
-## 6. Run the Kubernetes Deployment Script (from its directory)
+## 6. Update the rules_path in server config
+
+If Scanner rules_path defaulted to `/home/ubuntu/forseti-security/rules`
+(instead of using gs:// path), change it to `/forseti-security/rules`
+
+[forseti-security/configs/server/forseti_conf_server.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/983d2952eb48d8c5928b1fbd5113eef2ee2e7905/configs/server/forseti_conf_server.yaml.sample#L192-L197)
+
+`rules_path: RULES_PATH`
+
+## 7. Run the Kubernetes Deployment Script (from its directory)
 
 ```
 ./k8s_setup_forseti.sh
 ```
 
-## 7. Verify
+## 8. Verify
 
 Monitor the deployment in the GKE web console. Allow approximately 2 minutes
 for the cluster to spin up and another 30 seconds for the pods to become active.
