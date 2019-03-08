@@ -1,7 +1,7 @@
 First, help us help you by providing the following information when opening an issue.
 
  - [ ] Which version of Forseti Security you're using (look in `/home/ubuntu/forseti-security/google/cloud/forseti/init.py` 
- (on the client).
+ on the client).
  - [ ] Which module(s) (inventory, scanner, enforcer, explain) you're having trouble with.
  - [ ] Include errors, log output, and host operating system, including installed packages.
  - [ ] Note how you deployed (via Deployment Manager, Terraform, local system, etc.).
