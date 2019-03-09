@@ -126,6 +126,8 @@ class InventoryImporter(object):
         self.membership_map = {}  # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
+        self.settings_groups_cache = {}
+
 
         self.found_root = False
 
@@ -232,83 +234,83 @@ class InventoryImporter(object):
                 self.model.add_description(json.dumps(description,
                                                       sort_keys=True))
 
-                if root.get_resource_type() in ['organization']:
-                    LOGGER.debug('Root resource is organization: %s', root)
-                else:
-                    LOGGER.debug('Root resource is not organization: %s.', root)
+            if root.get_resource_type() in ['organization']:
+                LOGGER.debug('Root resource is organization: %s', root)
+            else:
+                LOGGER.debug('Root resource is not organization: %s.', root)
 
-                item_counter = 0
-                LOGGER.debug('Start storing resources into models.')
-                for resource in inventory.iter(gcp_type_list):
-                    item_counter += 1
-                    self._store_resource(resource)
-                    if not item_counter % 1000:
-                        # Flush database every 1000 resources
-                        LOGGER.debug('Flushing model write session: %s',
-                                     item_counter)
-                        self.session.flush()
-
-                if item_counter % 1000:
-                    # Additional rows added since last flush.
+            item_counter = 0
+            LOGGER.debug('Start storing resources into models.')
+            for resource in inventory.iter(gcp_type_list):
+                item_counter += 1
+                self._store_resource(resource)
+                if not item_counter % 1000:
+                    # Flush database every 1000 resources
+                    LOGGER.debug('Flushing model write session: %s',
+                                 item_counter)
                     self.session.flush()
-                LOGGER.debug('Finished storing resources into models.')
 
-                item_counter += self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(['role']),
-                    self._convert_role,
-                    post_action=self._convert_role_post
-                )
+            if item_counter % 1000:
+                # Additional rows added since last flush.
+                self.session.flush()
+            LOGGER.debug('Finished storing resources into models.')
 
-                item_counter += self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gcp_type_list,
-                                   fetch_dataset_policy=True),
-                    self._convert_dataset_policy
-                )
+            item_counter += self.model_action_wrapper(
+                self.session,
+                inventory.iter(['role']),
+                self._convert_role,
+                post_action=self._convert_role_post
+            )
 
-                item_counter += self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gcp_type_list,
-                                   fetch_service_config=True),
-                    self._convert_service_config
-                )
+            item_counter += self.model_action_wrapper(
+                self.session,
+                inventory.iter(gcp_type_list,
+                               fetch_dataset_policy=True),
+                self._convert_dataset_policy
+            )
 
-                self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gsuite_type_list),
-                    self._store_gsuite_principal
-                )
+            item_counter += self.model_action_wrapper(
+                self.session,
+                inventory.iter(gcp_type_list,
+                               fetch_service_config=True),
+                self._convert_service_config
+            )
 
-                self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gcp_type_list, fetch_enabled_apis=True),
-                    self._convert_enabled_apis
-                )
+            self.model_action_wrapper(
+                self.session,
+                inventory.iter(gsuite_type_list),
+                self._store_gsuite_principal
+            )
 
-                self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(member_type_list, with_parent=True),
-                    self._store_gsuite_membership,
-                    post_action=self._store_gsuite_membership_post
-                )
+            self.model_action_wrapper(
+                self.session,
+                inventory.iter(gcp_type_list, fetch_enabled_apis=True),
+                self._convert_enabled_apis
+            )
 
-                self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(groups_settings_list),
-                    self._store_groups_settings
-                )
+            self.model_action_wrapper(
+                self.session,
+                inventory.iter(member_type_list, with_parent=True),
+                self._store_gsuite_membership,
+                post_action=self._store_gsuite_membership_post
+            )
 
-                self.dao.denorm_group_in_group(self.session)
+            self.model_action_wrapper(
+                self.session,
+                inventory.iter(groups_settings_list),
+                self._store_groups_settings
+            )
 
-                self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gcp_type_list,
-                                   fetch_iam_policy=True),
-                    self._store_iam_policy
-                )
+            self.dao.denorm_group_in_group(self.session)
 
-                self.dao.expand_special_members(self.session)
+            self.model_action_wrapper(
+                self.session,
+                inventory.iter(gcp_type_list,
+                               fetch_iam_policy=True),
+                self._store_iam_policy
+            )
+
+            self.dao.expand_special_members(self.session)
 
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
@@ -473,10 +475,12 @@ class InventoryImporter(object):
 
         settings_dict = settings.get_resource_data()
         group_email = group_name(settings)
-        settings_row = dict(group_name=group_email,
-                            settings=json.dumps(settings_dict, sort_keys=True))
-        stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
-        self.session.execute(stmt)
+        if not self.settings_groups_cache.get(group_email):
+            self.settings_groups_cache[group_email] = True
+            settings_row = dict(group_name=group_email,
+                                settings=json.dumps(settings_dict, sort_keys=True))
+            stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
+            self.session.execute(stmt)
 
     def _store_iam_policy(self, policy):
         """Store the iam policy of the resource.
