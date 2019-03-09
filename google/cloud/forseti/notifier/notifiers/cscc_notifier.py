@@ -226,7 +226,6 @@ class CsccNotifier(object):
                 to_be_updated_finding.pop('resourceName'))
             if finding_id not in new_findings_map.keys():
                 to_be_updated_finding['state'] = 'INACTIVE'
-                print('in INACTIVE state')
                 inactive_findings.append([finding_id, to_be_updated_finding])
         del new_findings_map
         return inactive_findings
@@ -270,7 +269,7 @@ class CsccNotifier(object):
                 new_findings,
                 formatted_cscc_findings)
 
-            to_be_updated_findings = new_findings + inactive_findings
+            to_be_updated_findings = new_findings
 
             for finding_list in to_be_updated_findings:
                 finding_id = finding_list[0]
@@ -284,6 +283,20 @@ class CsccNotifier(object):
                 except api_errors.ApiExecutionError:
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
+
+            for finding_list in inactive_findings:
+                finding_id = finding_list[0]
+                finding = finding_list[1]
+                LOGGER.debug('Updating finding CSCC:\n%s.', finding)
+                try:
+                    client.update_finding(finding, finding_id,
+                                          finding['state'], source_id=source_id)
+                    LOGGER.debug('Successfully updated finding in CSCC:\n%s',
+                                 finding)
+                except api_errors.ApiExecutionError:
+                    LOGGER.exception('Encountered CSCC API error.')
+                    continue
+
             return
 
         # alpha api

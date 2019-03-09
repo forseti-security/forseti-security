@@ -162,6 +162,7 @@ class SecurityCenterClient(object):
         # alpha api
         try:
             LOGGER.debug('Creating finding with alpha api.')
+
             response = self.repository.findings.create(
                 arguments={
                     'body': {'sourceFinding': finding},
@@ -183,3 +184,35 @@ class SecurityCenterClient(object):
         response = self.repository.findings.list(parent=source_id)
         return response
 
+    def update_finding(self, finding, finding_id, state, source_id=None):
+        """Creates a finding in CSCC.
+
+        Args:
+            finding (dict): Forseti violation in CSCC format.
+            name (str): Name of the CSCC finding
+            state (str): State of the CSCC finding
+            organization_id (str): The id prefixed with 'organizations/'.
+            source_id (str): Unique ID assigned by CSCC, to the organization
+                that the violations are originating from.
+            finding_id (str): id hash of the CSCC finding
+
+        Returns:
+            dict: An API response containing one page of results.
+        """
+        if source_id:
+            # beta api
+            try:
+                LOGGER.debug('Creating finding with beta api.')
+                response = self.repository.findings.patch(
+                    '{}/findings/{}'.format(source_id, finding_id),
+                    finding, updateMask=state)
+                LOGGER.debug('Created finding response with CSCC beta api: %s',
+                             response)
+                return response
+            # handle 409, finding exists
+            except (errors.HttpError, HttpLib2Error) as e:
+                LOGGER.exception(
+                    'Unable to create CSCC finding: Resource: %s', finding)
+                violation_data = (
+                    finding.get('source_properties').get('violation_data'))
+                raise api_errors.ApiExecutionError(violation_data, e)
