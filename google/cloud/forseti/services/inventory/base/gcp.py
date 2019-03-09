@@ -1960,8 +1960,8 @@ class ApiClientImpl(ApiClient):
         Args:
             group_email (str): Gsuite group email.
 
-        Yields:
-            dict: Generator of groups settings.
+        Returns:
+            dict: Dictionary of groups settings.
         """
         return self.groups_settings.get_groups_settings(group_email)
 
