@@ -36,7 +36,7 @@ keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#c
 and store them locally on the Cloud Shell VM temporarily for k8s secret
 creation. It is your responsibility to keep the key files secure.
 
-## 2. Clone the Forseti Security Rit Repo
+## 2. Clone the Forseti Security Git Repo
 
 ```
 git clone https://github.com/GoogleCloudPlatform/forseti-security.git
@@ -92,12 +92,12 @@ POC implementation.
 
 ## 6. Update the rules_path in server config
 
-If Scanner rules_path defaulted to `/home/ubuntu/forseti-security/rules`
-(instead of using gs:// path), change it to `/forseti-security/rules`
+If Scanner rules_path defaulted to `/home/ubuntu/forseti-security/rules`,
+change it to use the GCS storage bucket directly:
 
 [forseti-security/configs/server/forseti_conf_server.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/983d2952eb48d8c5928b1fbd5113eef2ee2e7905/configs/server/forseti_conf_server.yaml.sample#L192-L197)
 
-`rules_path: /forseti-security/rules`
+`rules_path: gs://<server bucket>/rules`
 
 ## 7. Run the Kubernetes Deployment Script (from its directory)
 
