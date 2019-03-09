@@ -480,6 +480,7 @@ def _mock_gcs():
 
     return gcs_patcher, mock_gcs
 
+
 def _mock_groups_settings():
     """Groups Settings client."""
 

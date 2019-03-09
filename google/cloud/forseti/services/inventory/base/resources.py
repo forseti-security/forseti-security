@@ -300,6 +300,7 @@ class Resource(object):
                 for resource in yielder.iter():
                     res = resource
                     new_stack = stack + [self]
+
                     # Parallelization for resource subtrees.
                     if res.should_dispatch():
                         callback = partial(res.try_accept, visitor, new_stack)

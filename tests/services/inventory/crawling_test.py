@@ -150,6 +150,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
             if item.get_kubernetes_service_config():
                 item_counts.setdefault('service_config', 0)
                 item_counts['service_config'] += 1
+
         return result_counts
 
     def _run_crawler(self, config, has_org_access=True, session=None):
@@ -196,6 +197,7 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = GCP_API_RESOURCES
+
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_folder(self):
@@ -222,6 +224,7 @@ class CrawlerTest(CrawlerBase):
             'role': {'resource': 1},
             'sink': {'resource': 1},
         }
+
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_from_project(self):
@@ -552,6 +555,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
                     self.assertEqual(0,
                                      progresser.errors,
                                      'No errors should have occurred')
+
                     result_counts = self._get_resource_counts_from_storage(
                         storage)
 

@@ -577,7 +577,7 @@ class ApiClient(object):
 
     @abc.abstractmethod
     def fetch_gsuite_groups_settings(self, group_email):
-        """Iterate Gsuite groups settings from GCP API.
+        """Fetch Gsuite groups settings from GCP API.
 
         Args:
             group_email (str): Gsuite group email.

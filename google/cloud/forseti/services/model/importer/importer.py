@@ -128,7 +128,6 @@ class InventoryImporter(object):
         self.member_cache_policies = {}
         self.settings_groups_cache = {}
 
-
         self.found_root = False
 
     # pylint: disable=too-many-statements
@@ -352,8 +351,8 @@ class InventoryImporter(object):
         Returns:
             int: Number of item iterated.
         """
-
         LOGGER.debug('Performing model action: %s', action)
+
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
             if isinstance(inventory_data, tuple):
