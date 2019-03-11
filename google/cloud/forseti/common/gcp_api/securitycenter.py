@@ -144,6 +144,8 @@ class SecurityCenterClient(object):
             # beta api
             try:
                 LOGGER.debug('Creating finding with beta api.')
+
+                # Findings will be created for newly produced violations.
                 response = self.repository.findings.patch(
                     '{}/findings/{}'.format(source_id, finding_id),
                     finding
@@ -184,35 +186,37 @@ class SecurityCenterClient(object):
         response = self.repository.findings.list(parent=source_id)
         return response
 
-    def update_finding(self, finding, finding_id, state, source_id=None):
+    def update_finding(self, finding, finding_id, state, event_time,
+                       source_id=None):
         """Creates a finding in CSCC.
 
         Args:
             finding (dict): Forseti violation in CSCC format.
-            name (str): Name of the CSCC finding
-            state (str): State of the CSCC finding
-            organization_id (str): The id prefixed with 'organizations/'.
+            name (str): Name of the CSCC finding.
+            state (str): State of the CSCC finding.
+            event_time (str): Event time of the the CSCC finding.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
-            finding_id (str): id hash of the CSCC finding
+            finding_id (str): id hash of the CSCC finding.
 
         Returns:
             dict: An API response containing one page of results.
         """
         if source_id:
-            # beta api
+
             try:
-                LOGGER.debug('Creating finding with beta api.')
+                LOGGER.debug('Updated finding with beta api.')
+
+                # State and event time will be updated for outdated findings.
                 response = self.repository.findings.patch(
                     '{}/findings/{}'.format(source_id, finding_id),
-                    finding, updateMask=state)
-                LOGGER.debug('Created finding response with CSCC beta api: %s',
-                             response)
+                    finding, updateMask='state,event_time')
+
                 return response
             # handle 409, finding exists
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.exception(
-                    'Unable to create CSCC finding: Resource: %s', finding)
+                    'Unable to update CSCC finding: Resource: %s', finding)
                 violation_data = (
                     finding.get('source_properties').get('violation_data'))
                 raise api_errors.ApiExecutionError(violation_data, e)

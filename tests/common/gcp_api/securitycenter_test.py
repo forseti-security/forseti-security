@@ -89,5 +89,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
                 fake_cscc.ORGANIZATION_ID,
                 source_id=self.source_id)
 
+
 if __name__ == '__main__':
     unittest.main()

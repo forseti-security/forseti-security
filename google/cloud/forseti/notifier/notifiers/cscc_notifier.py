@@ -157,7 +157,6 @@ class CsccNotifier(object):
                                        sort_keys=True))
                     },
                 }
-                # findings.append((finding_id, finding))
                 findings.append([finding_id, finding])
             return findings
 
@@ -216,8 +215,12 @@ class CsccNotifier(object):
         for finding_list in findings_in_cscc:
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
+
+            # Removing keys that are not part of the Finding data structure.
             to_be_updated_finding.pop('securityMarks')
             to_be_updated_finding.pop('createTime')
+
+            # Renaming keys to match the keys in the Finding data structure.
             to_be_updated_finding['source_properties'] = (
                 to_be_updated_finding.pop('sourceProperties'))
             to_be_updated_finding['event_time'] = (
@@ -290,7 +293,9 @@ class CsccNotifier(object):
                 LOGGER.debug('Updating finding CSCC:\n%s.', finding)
                 try:
                     client.update_finding(finding, finding_id,
-                                          finding['state'], source_id=source_id)
+                                          finding['state'],
+                                          finding['event_time'],
+                                          source_id=source_id)
                     LOGGER.debug('Successfully updated finding in CSCC:\n%s',
                                  finding)
                 except api_errors.ApiExecutionError:
