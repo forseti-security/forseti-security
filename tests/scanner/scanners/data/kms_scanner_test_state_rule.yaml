@@ -1,0 +1,10 @@
+rules:
+  - name: Block keys with state enabled.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+       - state:
+         - ENABLED

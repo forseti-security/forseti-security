@@ -1,0 +1,48 @@
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Versisn 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forseti-client
+spec:
+  selector:
+    matchLabels:
+      app: forseti-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: forseti-client
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: client-credentials
+      containers:
+        - name: forseti-client
+          image: ${FORSETI_IMAGE}
+          command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
+                    "--bucket", "${CLIENT_BUCKET}",
+                    "--run_client"]
+          securityContext:
+            runAsUser: 0  # root user. TODO use non-root as soon as practical
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/client_key.json

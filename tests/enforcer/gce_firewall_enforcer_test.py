@@ -386,17 +386,6 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
             with self.assertRaises(fe.InvalidFirewallRuleError):
                 self.firewall_rules._check_rule_before_adding(test_rule)
 
-    def test_missing_source_key(self):
-        """Rule missing source(Ranges|Tags) raises InvalidFirewallRuleError."""
-        self.test_rule.pop('sourceRanges')
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-            self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-        # Adding sourceTags makes the rule valid again
-        self.test_rule['sourceTags'] = 'test-tag'
-        self.assertTrue(
-            self.firewall_rules._check_rule_before_adding(self.test_rule))
-
     def test_missing_ip_protocol(self):
         """Rule missing IPProtocol in an allow predicate raises an exception."""
         self.test_rule['allowed'][0].pop('IPProtocol')
@@ -464,14 +453,6 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
       """Rule with direction set to EGRESS with sourceRanges raises
          exception."""
       self.test_rule['direction'] = 'EGRESS'
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_direction_egress_no_ranges(self):
-      """Rule with direction set to EGRESS with no IP ranges raises
-         exception."""
-      self.test_rule['direction'] = 'EGRESS'
-      self.test_rule.pop('sourceRanges')
       with self.assertRaises(fe.InvalidFirewallRuleError):
         self.firewall_rules._check_rule_before_adding(self.test_rule)
 
@@ -692,6 +673,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
                         'test-net').format(fe.API_VERSION),
             'sourceRanges': [u'10.2.3.4/32'],
             'logConfig': {'enable': False},
+            'disabled': False,
             'priority': 1000,
             'direction': u'INGRESS'
         }
@@ -979,7 +961,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         """Validate apply_change works with no errors."""
         delete_function = self.gce_api_client.delete_firewall_rule
         insert_function = self.gce_api_client.insert_firewall_rule
-        update_function = self.gce_api_client.update_firewall_rule
+        update_function = self.gce_api_client.patch_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[

@@ -228,7 +228,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         for violation in violations:
             rule_ancestors_names = []
 
-            for ancestor in violation.rule_ancestors:
+            for ancestor in violation.rule_data['ancestor_resources']:
                 rule_ancestors_names.append(ancestor.name)
 
             violation_data = {
@@ -262,7 +262,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
             api_helpers.get_delegated_credential(user_email, SCOPES))
 
         client = CloudResourceManagerClient(
-            global_configs=self.inventory_configs,
+            global_configs=self.inventory_configs.get_api_quota_configs(),
             credentials=user_scoped_credential)
 
         return client

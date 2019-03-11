@@ -1,0 +1,13 @@
+rules:
+  - name: Block crypto keys that match this config.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+       - algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION
+         protection_level: SOFTWARE
+         purpose:
+         - ENCRYPT_DECRYPT

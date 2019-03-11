@@ -254,11 +254,8 @@ def generate_service_acct_info(prefix, installation_type,
     return service_account_email, service_account_name
 
 
-def infer_version(advanced_mode):
+def infer_version():
     """Infer the Forseti version, or ask user to input one not listed.
-
-    Args:
-        advanced_mode (bool): Whether or not the installer is in advanced mode.
 
     Returns:
         str: Selected Forseti branch.
@@ -272,24 +269,6 @@ def infer_version(advanced_mode):
               '#installation-and-deployment for more information.')
         sys.exit(1)
 
-    if not advanced_mode:
-        return cur_version
-
-    user_choice = 'n'
-
-    while user_choice != 'y' and user_choice != 'n':
-        user_choice = raw_input(
-            'Install Forseti branch/tag %s? (y/n) '
-            % cur_version).lower().strip()
-
-    if user_choice == 'n':
-        branch = checkout_git_branch()
-        if branch:
-            cur_version = branch
-        else:
-            print('No branch/tag was chosen; using %s' % cur_version)
-
-    print('Forseti branch/tag: %s' % cur_version)
     return cur_version
 
 

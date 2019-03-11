@@ -186,6 +186,61 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         self.assertTrue(results)
         self.validate_data_in_table()
 
+    def test_load_cloudasset_data_composite_root(self):
+        """Validate load_cloudasset_data correctly works with composite root."""
+        composite_root_resources = ['projects/1043', 'projects/1044']
+        inventory_config = InventoryConfig(None,
+                                           '',
+                                           {},
+                                           0,
+                                           {'enabled': True,
+                                            'gcs_path': 'gs://test-bucket'},
+                                           composite_root_resources)
+
+        # Ignore call to export_assets for this test.
+        self.mock_export_assets.return_value = {'done': True}
+
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            if 'resource' in file_path:
+                if 'projects-1043' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project3_resources.dump')
+                if 'projects-1044' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project4_resources.dump')
+            elif 'iam_policy' in file_path:
+                if 'projects-1043' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project3_iam_policies.dump')
+                if 'projects-1044' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project4_iam_policies.dump')
+
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  inventory_config)
+        expected_results = 12  # Total of resources and IAM policies in dumps.
+        self.assertEqual(expected_results, results)
+
+        # Validate data from both projects in database.
+        for root_id in composite_root_resources:
+            for content_type in [storage.ContentTypes.resource,
+                                 storage.ContentTypes.iam_policy]:
+
+                expected_resource_name = (
+                    '//cloudresourcemanager.googleapis.com/%s' % root_id)
+                resource = storage.CaiDataAccess.fetch_cai_asset(
+                    content_type,
+                    'google.cloud.resourcemanager.Project',
+                    expected_resource_name,
+                    self.session)
+                self.assertTrue(resource,
+                                msg=('Resource %s type %s is missing'
+                                     % (root_id, content_type)))
+
     def test_long_resource_name(self):
         """Validate load_cloudasset_data handles resources with long names."""
         # Ignore call to export_assets for this test.
@@ -236,6 +291,23 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         )
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
+        self.assertIsNone(results)
+        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.validate_no_data_in_table()
+
+    def test_load_cloudasset_data_cai_valueerror(self):
+        """Validate load_cloud_asset handles a bad root resource id."""
+        inventory_config = InventoryConfig('bad_resource/987654321',
+                                           '',
+                                           {},
+                                           0,
+                                           {'enabled': True,
+                                            'gcs_path': 'gs://test-bucket'})
+        self.mock_export_assets.side_effect = (
+            ValueError('parent must start with folders/, projects/, or '
+                       'organizations/'))
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
         self.validate_no_data_in_table()

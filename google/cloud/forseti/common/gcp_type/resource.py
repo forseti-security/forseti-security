@@ -54,6 +54,7 @@ class ResourceType(object):
     BUCKET = resources.StorageBucket.type()
     CLOUD_SQL_INSTANCE = resources.CloudSqlInstance.type()
     DATASET = resources.BigqueryDataSet.type()
+    TABLE = resources.BigqueryTable.type()
 
     # AppEngine
     APPENGINE_APP = resources.AppEngineApp.type()
@@ -66,6 +67,12 @@ class ResourceType(object):
     # Logging
     LOG_SINK = resources.LoggingSink.type()
 
+    # Crypto key
+    CRYPTO_KEY = resources.KmsCryptoKey.type()
+
+    # Key Ring
+    KEY_RING = resources.KmsKeyRing.type()
+
     resource_types = frozenset([
         ORGANIZATION,
         BILLING_ACCOUNT,
@@ -76,6 +83,8 @@ class ResourceType(object):
         FORWARDING_RULE,
         LIEN,
         LOG_SINK,
+        CRYPTO_KEY,
+        KEY_RING
     ])
 
     @classmethod

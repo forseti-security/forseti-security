@@ -175,19 +175,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             dict: Generator of datasets.
         """
 
-        resources = list(self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.bigquery.Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session))
-
-        if resources and not all('location' in ds for ds in resources):
-            LOGGER.info('Datasets missing location key in CAI, '
-                        'falling back to live API.')
-            resources = list(
-                super(CaiApiClientImpl,
-                      self).iter_bigquery_datasets(project_number))
+            self.session)
 
         for dataset in resources:
             yield dataset
@@ -226,21 +219,30 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for account in resources:
             yield account
 
-    def iter_cloudsql_instances(self, project_number):
+    def iter_cloudsql_instances(self, project_id, project_number):
         """Iterate Cloud sql instances from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of cloudsql instance.
+            dict: Generator of cloudsql instances.
         """
-        resources = self.dao.iter_cai_assets(
+        resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.sql.Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.session))
+        if not resources:
+            # CloudSQL instances may not have parent data from CAI.
+            resources = list(self.dao.iter_cai_assets(
+                ContentTypes.resource,
+                'google.cloud.sql.Instance',
+                '//cloudsql.googleapis.com/projects/{}'.format(project_id),
+                self.session))
+
         for instance in resources:
             yield instance
 
@@ -300,6 +302,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'backend': 'backends',
             'healthCheck': 'healthChecks',
+            'resourceGroup': 'group'
         }
         resources = self._iter_compute_resources('BackendService',
                                                  project_number)
@@ -420,6 +423,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'namedPort': 'namedPorts',
             'targetPool': 'targetPools',
+            'version': 'versions',
         }
         resources = self._iter_compute_resources('InstanceGroupManager',
                                                  project_number)

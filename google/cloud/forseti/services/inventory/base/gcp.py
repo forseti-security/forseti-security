@@ -100,10 +100,11 @@ class ApiClient(object):
         """Iterate visible Billing Accounts in an organization from GCP API."""
 
     @abc.abstractmethod
-    def iter_cloudsql_instances(self, project_number):
+    def iter_cloudsql_instances(self, project_id, project_number):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
         """
 
@@ -1196,15 +1197,17 @@ class ApiClientImpl(ApiClient):
             yield account
 
     @create_lazy('cloudsql', _create_cloudsql)
-    def iter_cloudsql_instances(self, project_number):
+    def iter_cloudsql_instances(self, project_id, project_number):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of cloudsql instance.
         """
+        del project_id  # Not used by the API client
         for item in self.cloudsql.get_instances(project_number):
             yield item
 
