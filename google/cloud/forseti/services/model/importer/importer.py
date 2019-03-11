@@ -477,7 +477,8 @@ class InventoryImporter(object):
         if not self.settings_groups_cache.get(group_email):
             self.settings_groups_cache[group_email] = True
             settings_row = dict(group_name=group_email,
-                settings=json.dumps(settings_dict, sort_keys=True))
+                                settings=json.dumps(settings_dict, 
+                                                    sort_keys=True))
             stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
             self.session.execute(stmt)
 
