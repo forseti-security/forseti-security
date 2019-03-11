@@ -1966,6 +1966,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Dictionary of groups settings.
         """
+        # pylint:disable=no-member
         return self.groups_settings.get_groups_settings(group_email)
 
     @create_lazy('ad', _create_ad)
