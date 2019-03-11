@@ -70,7 +70,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
             )
         self.assertEquals(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
 
-
     def test_create_findings_raises(self):
         """Test create cscc finding raises exception."""
         http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')

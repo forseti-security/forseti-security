@@ -229,6 +229,10 @@ class CsccNotifier(object):
                 to_be_updated_finding.pop('resourceName'))
             if finding_id not in new_findings_map.keys():
                 to_be_updated_finding['state'] = 'INACTIVE'
+                current_time = date_time.get_utc_now_datetime()
+                actual_time = current_time.strftime(
+                    string_formats.TIMESTAMP_TIMEZONE)
+                to_be_updated_finding['event_time'] = actual_time
                 inactive_findings.append([finding_id, to_be_updated_finding])
         del new_findings_map
         return inactive_findings
