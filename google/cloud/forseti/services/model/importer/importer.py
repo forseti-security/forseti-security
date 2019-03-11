@@ -309,7 +309,6 @@ class InventoryImporter(object):
                 )
 
                 self.model_action_wrapper(
-                    self.session,
                     inventory.iter(groups_settings_list),
                     self._store_groups_settings
                 )
