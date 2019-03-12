@@ -920,7 +920,7 @@ class CaiDataAccess(object):
         if row:
             return row.extract_asset_data(content_type)
 
-        return {}
+        return {}, None
 
 
 class DataAccess(object):
