@@ -189,7 +189,7 @@ class CsccNotifier(object):
         return findings
 
     @classmethod
-    def find_stale_findings(cls, new_findings, findings_in_cscc):
+    def find_outdated_findings(cls, new_findings, findings_in_cscc):
         """Finds the findings that does not correspond to the latest scanner run
         and updates it's state to inactive.
 
@@ -272,13 +272,11 @@ class CsccNotifier(object):
                     finding_id = name[-32:]
                     formatted_cscc_findings.append([finding_id, finding_data])
 
-            inactive_findings = self.find_stale_findings(
+            inactive_findings = self.find_outdated_findings(
                 new_findings,
                 formatted_cscc_findings)
 
-            to_be_updated_findings = new_findings
-
-            for finding_list in to_be_updated_findings:
+            for finding_list in new_findings:
                 finding_id = finding_list[0]
                 finding = finding_list[1]
                 LOGGER.debug('Creating finding CSCC:\n%s.', finding)
