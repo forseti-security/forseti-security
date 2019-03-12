@@ -347,5 +347,13 @@ class ImporterTest(ForsetiTestCase):
         session.flush.assert_called()
         self.assertEqual(session.flush.call_count, 2)
 
+    def test_group_name(self):
+        """group name unit test"""
+        resource = mock.Mock()
+        resource.get_resource_data = mock.MagicMock(return_value={'email': 'test@test.com'})
+        name = importer.group_name(resource)
+        self.assertEqual(name, 'group/test@test.com')
+
+
 if __name__ == '__main__':
     unittest.main()
