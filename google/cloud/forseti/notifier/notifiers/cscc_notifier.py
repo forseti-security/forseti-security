@@ -216,18 +216,7 @@ class CsccNotifier(object):
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
 
-            # Removing keys that are not part of the Finding data structure.
-            to_be_updated_finding.pop('securityMarks')
-            to_be_updated_finding.pop('createTime')
-
-            # Renaming keys to match the keys in the Finding data structure.
-            to_be_updated_finding['source_properties'] = (
-                to_be_updated_finding.pop('sourceProperties'))
-            to_be_updated_finding['event_time'] = (
-                to_be_updated_finding.pop('eventTime'))
-            to_be_updated_finding['resource_name'] = (
-                to_be_updated_finding.pop('resourceName'))
-            if finding_id not in new_findings_map.keys():
+            if finding_id not in new_findings_map:
                 to_be_updated_finding['state'] = 'INACTIVE'
                 current_time = date_time.get_utc_now_datetime()
                 actual_time = current_time.strftime(
