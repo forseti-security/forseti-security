@@ -134,7 +134,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             ['all'],
             constants.FirewallRuleDirection.INGRESS,
             200,
-            self.config.vpc_host_network)
+            self.config.vpc_host_network,
+            None,
+            self.config.vpc_host_project_id)
 
         # Rule to open only port tcp:50051 within the
         # internal network (ip-ranges - 10.128.0.0/9).
@@ -146,7 +148,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             100,
             self.config.vpc_host_network,
-            '10.128.0.0/9')
+            '10.128.0.0/9',
+            self.config.vpc_host_project_id)
 
         # Create firewall rule to open only port tcp:22 (ssh)
         # to all the external traffic from the internet to ssh into server VM.
@@ -159,7 +162,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             100,
             self.config.vpc_host_network,
-            '0.0.0.0/0')
+            '0.0.0.0/0',
+            self.config.vpc_host_project_id)
 
     def delete_firewall_rules(self):
         """Deletes default firewall rules as the forseti service account rules
