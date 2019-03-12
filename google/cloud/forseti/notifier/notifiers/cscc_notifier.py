@@ -234,7 +234,6 @@ class CsccNotifier(object):
                     string_formats.TIMESTAMP_TIMEZONE)
                 to_be_updated_finding['event_time'] = actual_time
                 inactive_findings.append([finding_id, to_be_updated_finding])
-        del new_findings_map
         return inactive_findings
 
     # pylint: disable=too-many-locals
