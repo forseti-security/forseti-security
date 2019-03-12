@@ -211,9 +211,11 @@ class SecurityCenterClient(object):
         Returns:
             dict: An API response containing one page of results.
         """
+        # alpha api
         if not source_id:
             return
 
+        # beta api
         try:
             LOGGER.debug('Updated finding with beta api.')
 
@@ -223,7 +225,6 @@ class SecurityCenterClient(object):
                 finding, updateMask='state,event_time')
 
             return response
-        # handle 409, finding exists
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception(
                 'Unable to update CSCC finding: Resource: %s', finding)

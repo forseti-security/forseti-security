@@ -188,16 +188,16 @@ class CsccNotifier(object):
             findings.append(finding)
         return findings
 
-    @classmethod
-    def find_inactive_findings(cls, new_findings, findings_in_cscc):
+    @staticmethod
+    def find_inactive_findings(new_findings, findings_in_cscc):
         """Finds the findings that does not correspond to the latest scanner run
-        and updates it's state to inactive.
+           and updates it's state to inactive.
 
         Args:
             new_findings (list): Latest violations that are transformed to
-            findings.
-            findings_in_cscc (list): Findings pulled from CSCC UI that
-            corresponds to the previous scanner run.
+                findings.
+            findings_in_cscc (list): Findings pulled from CSCC that
+                corresponds to the previous scanner run.
 
         Returns:
             list: Findings whose state has been marked as 'INACTIVE'.
@@ -247,15 +247,15 @@ class CsccNotifier(object):
 
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
-            findings_in_cscc = client.list_findings(source_id=source_id)
-            for findings_per_page in findings_in_cscc:
-                new_cscc_findings = (
-                    ast.literal_eval(json.dumps(findings_per_page)))
-                new_cscc_findings.pop('nextPageToken', None)
-                new_cscc_findings.pop('totalSize', None)
-                new_cscc_findings.pop('readTime', None)
-                all_findings = new_cscc_findings.get('findings')
-                for finding_data in all_findings:
+            paged_findings_in_cscc = client.list_findings(source_id=source_id)
+
+            # No need to use the next page token, as the results here will
+            # return all the pages.
+            for page in paged_findings_in_cscc:
+                formated_findings_in_page = (
+                    ast.literal_eval(json.dumps(page)))
+                findings_in_page = formated_findings_in_page.get('findings')
+                for finding_data in findings_in_page:
                     name = finding_data.get('name')
                     finding_id = name[-32:]
                     formatted_cscc_findings.append([finding_id, finding_data])
