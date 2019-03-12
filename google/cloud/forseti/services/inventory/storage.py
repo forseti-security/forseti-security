@@ -42,6 +42,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
+from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
@@ -354,17 +355,12 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
-        cai_resource_name = None
-        cai_resource_type = None
+        cai_resource_name = ''
+        cai_resource_type = ''
 
-        try:
-            # Retrieve and clean up cai resource name and type if exist.
-            cai_resource_name = resource['cai_resource_name']
-            cai_resource_type = resource['cai_resource_type']
-            del resource['cai_resource_name']
-            del resource['cai_resource_type']
-        except KeyError:
-            pass
+        if resource.metadata():
+            cai_resource_name = resource.metadata().cai_name
+            cai_resource_type = resource.metadata().cai_type
 
         rows = [Inventory(
             cai_resource_name=cai_resource_name,
@@ -640,7 +636,8 @@ class CaiTemporaryStore(object):
             content_type (ContentTypes): The content type data to extract.
 
         Returns:
-            dict: The dict representation of the asset data.
+            Tuple[dict, AssetMetadata]: The dict representation of the asset
+                data and an Asset metadata along with it.
         """
         asset = json.loads(self.asset_data)
 
@@ -649,12 +646,10 @@ class CaiTemporaryStore(object):
         elif content_type == ContentTypes.iam_policy:
             asset = asset['iam_policy']
 
-        # Injecting CAI name and resource type to the dictionary,
-        # will need to clean up before inserting to the db.
-        asset['cai_resource_name'] = self.name
-        asset['cai_resource_type'] = self.asset_type
+        asset_metadata = AssetMetadata(cai_name=self.name,
+                                       cai_type=self.asset_type)
 
-        return asset
+        return asset, asset_metadata
 
     @classmethod
     def from_json(cls, asset_json):
