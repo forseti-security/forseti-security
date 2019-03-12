@@ -587,7 +587,8 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             dict: organization IAM Policy.
         """
         try:
-            return client.fetch_crm_organization_iam_policy(self['name'])
+            data, _ = client.fetch_crm_organization_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Could not get IAM policy: %s', e)
             self.add_warning(e)
