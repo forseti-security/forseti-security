@@ -140,7 +140,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
-        return {}
+        return {}, None
 
     def fetch_bigquery_dataset_policy(self, project_id, project_number,
                                       dataset_id):
@@ -1013,7 +1013,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Clusters with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_dataproc_clusters(self, project_id, region=None):
         """Iterate Dataproc clusters from GCP API.
@@ -1149,7 +1149,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Service accounts with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_iam_organization_roles(self, org_id):
         """Iterate Organization roles from Cloud Asset data.
@@ -1228,7 +1228,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Cryptokeys with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def fetch_kms_keyring_iam_policy(self, keyring):
         """Fetch KMS Keyring IAM Policy from Cloud Asset data.
@@ -1249,7 +1249,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Keyrings with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_kms_cryptokeys(self, parent):
         """Iterate KMS Cryptokeys in a keyring from Cloud Asset data.
@@ -1327,7 +1327,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Subscriptions with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from Cloud Asset data.
@@ -1348,7 +1348,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Topics with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_pubsub_subscriptions(self, project_id, project_number):
         """Iterate PubSub subscriptions from GCP API.
@@ -1444,7 +1444,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_id,
                 project_number), metadata
         # Return empty list if IAM policy isn't present.
-        return []
+        return [], None
 
     def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from Cloud Asset data.
