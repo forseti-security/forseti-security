@@ -507,6 +507,12 @@ class CaiTemporaryStore(object):
     asset_type = None
     asset_data = None
 
+    # Assets with no parent resource.
+    UNPARENTED_ASSETS = frozenset([
+        'google.cloud.resourcemanager.Organization',
+        'google.cloud.billing.BillingAccount',
+    ])
+
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
         """Initialize database column.
 
