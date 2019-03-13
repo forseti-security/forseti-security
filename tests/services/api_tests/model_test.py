@@ -167,8 +167,9 @@ class ExplainerTest(ForsetiTestCase):
 
         def test(client):
             """Test implementation with API client."""
-            list_resources_reply = client.explain.list_resources('')
-            self.assertEqual(set(list_resources_reply.full_resource_names),
+            list_resources_reply = set(
+                r.full_resource_name for r in client.explain.list_resources(''))
+            self.assertEqual(list_resources_reply,
                              set([
                                  'organization/org1',
                                  'project/project2',
@@ -184,8 +185,8 @@ class ExplainerTest(ForsetiTestCase):
 
         def test(client):
             """Test implementation with API client."""
-            list_members_reply = client.explain.list_members('')
-            self.assertEqual(set(list_members_reply.member_names),
+            list_members_reply = set(m.member_name for m in client.explain.list_members(''))
+            self.assertEqual(list_members_reply,
                              set([
                                  'allauthenticatedusers',
                                  'group/a',
@@ -208,8 +209,8 @@ class ExplainerTest(ForsetiTestCase):
 
         def test(client):
             """Test implementation with API client."""
-            list_roles_reply = client.explain.list_roles('')
-            self.assertEqual(set(list_roles_reply.role_names),
+            list_roles_reply = set(r.role_name for r in client.explain.list_roles(''))
+            self.assertEqual(list_roles_reply,
                              set([
                                  'role/a',
                                  'role/b',
@@ -323,7 +324,7 @@ class ExplainerTest(ForsetiTestCase):
                 resource_name='project/project2',
                 permission_names=['permission/a', 'permission/c'],
                 expand_groups=True)
-            access_details = expand_message(response.accesses, "access_by_resource")
+            access_details = expand_message(response, "access_by_resource")
             self.assertEqual(access_details,set([
                 'group/a project/project2 role/b',
                 'group/b project/project2 role/a',
@@ -349,7 +350,7 @@ class ExplainerTest(ForsetiTestCase):
                 resource_name='bucket/bucket2',
                 permission_names=['permission/h'],
                 expand_groups=True)
-            access_details = expand_message(response.accesses,
+            access_details = expand_message(response,
                                             "access_by_resource")
             self.assertEqual(access_details,set([
                 'projectviewer/project2 bucket/bucket2 role/c',
@@ -365,7 +366,7 @@ class ExplainerTest(ForsetiTestCase):
                 'group/a',
                 ['permission/a'],
                 expand_resources=True)
-            access_details = expand_message(response.accesses, "access_by_member")
+            access_details = expand_message(response, "access_by_member")
             self.assertEqual(access_details,set([
                 'group/a bucket/bucket1 role/b',
                 'group/a bucket/bucket2 role/b',
