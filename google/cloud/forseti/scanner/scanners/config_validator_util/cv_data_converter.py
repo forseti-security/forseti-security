@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCV Data Converter."""
+"""Config Validator Data Converter."""
 
-from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2
+from google.cloud.forseti.scanner.scanners.config_validator_util import \
+    validator_pb2
 
 
 _IAM_POLICY = 'iam_policy'
@@ -49,7 +50,7 @@ def generate_ancestry_path(full_name):
             break
 
 
-def convert_data_to_gcv_asset(resource, data_type):
+def convert_data_to_cv_asset(resource, data_type):
     """Convert data to CAI format.
 
     Args:
@@ -58,7 +59,7 @@ def convert_data_to_gcv_asset(resource, data_type):
             or 'iam_policy'.
 
     Returns:
-        Asset: A GCV Asset.
+        Asset: A Config Validator Asset.
 
     Raises:
         ValueError: if data_type is have an unexpected type.
@@ -68,8 +69,8 @@ def convert_data_to_gcv_asset(resource, data_type):
 
     if (not resource.cai_resource_name and
             resource.type not in CAI_RESOURCE_TYPE_MAPPING):
-        raise ValueError("Resource %s not supported to use GCV scanner.",
-                         resource.type)
+        raise ValueError("Resource %s not supported to use Config"
+                         " Validator scanner.", resource.type)
 
     # Generate ancestry path that ends at project as the lowest level.
     ancestry_path = generate_ancestry_path(resource.full_name)

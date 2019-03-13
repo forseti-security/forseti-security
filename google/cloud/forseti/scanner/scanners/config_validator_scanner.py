@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCV Scanner."""
+"""Config Validator Scanner."""
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
-from google.cloud.forseti.scanner.scanners.gcv_util import gcv_data_converter
-from google.cloud.forseti.scanner.scanners.gcv_util import validator_client
+from google.cloud.forseti.scanner.scanners.config_validator_util import cv_data_converter
+from google.cloud.forseti.scanner.scanners.config_validator_util import validator_client
 from google.cloud.forseti.services.model.importer import importer
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class GCVScanner(base_scanner.BaseScanner):
-    """GCV Scanner."""
+class ConfigValidatorScanner(base_scanner.BaseScanner):
+    """Config Validator Scanner."""
 
-    violation_type = 'GCV_VIOLATION'
+    violation_type = 'CONFIG_VALIDATOR_VIOLATION'
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -41,7 +41,7 @@ class GCVScanner(base_scanner.BaseScanner):
              snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
              rules (str): Fully-qualified path and filename of the rules file.
          """
-        super(GCVScanner, self).__init__(
+        super(ConfigValidatorScanner, self).__init__(
             global_configs, scanner_configs, service_config,
             model_name, snapshot_timestamp, rules)
         self.validator_client = validator_client.ValidatorClient()
@@ -50,13 +50,14 @@ class GCVScanner(base_scanner.BaseScanner):
         self.resource_lookup_table = {}
 
     def _flatten_violations(self, violations):
-        """Flatten GCV violations into a dict for each violation.
+        """Flatten Config Validator violations into a dict for each violation.
 
         Args:
-            violations (list): The GCV violations to flatten.
+            violations (list): The Config Validator violations to flatten.
 
         Yields:
-            dict: Iterator of GCV violations as a dict per violation.
+            dict: Iterator of Config Validator violations
+                as a dict per violation.
         """
 
         for violation in violations:
@@ -72,7 +73,7 @@ class GCVScanner(base_scanner.BaseScanner):
                 'full_name': full_name,
                 'rule_index': 0,
                 'rule_name': violation.constraint,
-                'violation_type': GCVScanner.violation_type,
+                'violation_type': ConfigValidatorScanner.violation_type,
                 'violation_data': violation.meta_data,
                 'resource_data': resource_data,
                 'violation_message': violation.message
@@ -82,7 +83,8 @@ class GCVScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (List[RuleViolation]): A list of GCV violations.
+            all_violations (List[RuleViolation]): A list of
+                Config Validator violations.
         """
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
@@ -91,7 +93,7 @@ class GCVScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Yields:
-            Asset: Google Config Validator Asset.
+            Asset: Config Validator Asset.
 
         Raises:
             ValueError: if resources have an unexpected type.
@@ -107,14 +109,14 @@ class GCVScanner(base_scanner.BaseScanner):
                                                          resource_type):
                     if (not resource.cai_resource_name and
                             resource.type not in
-                            gcv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+                            cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
                         LOGGER.debug('Resource type %s is not currently '
-                                     'supported in GCV scanner.',
+                                     'supported in Config Validator scanner.',
                                      resource.type)
                         break
                     self.resource_lookup_table[resource.cai_resource_name] = (
                         resource.full_name, resource.data)
-                    yield gcv_data_converter.convert_data_to_gcv_asset(
+                    yield cv_data_converter.convert_data_to_cv_asset(
                         resource, 'resource')
 
             # fetching IAM policy.
@@ -122,28 +124,28 @@ class GCVScanner(base_scanner.BaseScanner):
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 if (not policy.cai_resource_name and
                         policy.type not in
-                        gcv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+                        cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
                     LOGGER.debug('IAM Policy type %s is not currently '
-                                 'supported in GCV scanner.',
+                                 'supported in Config Validator scanner.',
                                  policy.type)
                     break
-                yield gcv_data_converter.convert_data_to_gcv_asset(
+                yield cv_data_converter.convert_data_to_cv_asset(
                     policy, 'iam_policy')
 
     def run(self):
-        """Runs the GCV Scanner."""
-        # Get all the data in GCV Asset format.
-        gcv_assets = self._retrieve()
+        """Runs the Config Validator Scanner."""
+        # Get all the data in Config Validator Asset format.
+        cv_assets = self._retrieve()
 
-        # Add asset data to GCV.
-        for gcv_asset in gcv_assets:
-            self.validator_client.add_data_to_buffer(gcv_asset)
+        # Add asset data to Config Validator.
+        for cv_asset in cv_assets:
+            self.validator_client.add_data_to_buffer(cv_asset)
         self.validator_client.flush_buffer()
 
         # Find all violations.
         violations = self.validator_client.audit()
 
-        # Clean up GCV.
+        # Clean up Config Validator.
         self.validator_client.reset()
 
         # Output to db.

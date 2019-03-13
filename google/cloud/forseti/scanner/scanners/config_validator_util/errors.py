@@ -12,24 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCV Exceptions."""
+"""Config Validator Exceptions."""
 
 
-class GCVAddDataError(Exception):
-    """GCV Add Data Error."""
+class ConfigValidatorAddDataError(Exception):
+    """ConfigValidator Add Data Error."""
     pass
 
 
-class GCVServerUnavailableError(Exception):
-    """GCV Server Unavailable Error."""
+class ConfigValidatorServerUnavailableError(Exception):
+    """ConfigValidator Server Unavailable Error."""
     pass
 
 
-class GCVAuditError(Exception):
-    """GCV Audit Error."""
+class ConfigValidatorAuditError(Exception):
+    """ConfigValidator Audit Error."""
     pass
 
 
-class GCVResetError(Exception):
-    """GCV Reset Error."""
+class ConfigValidatorResetError(Exception):
+    """ConfigValidator Reset Error."""
     pass

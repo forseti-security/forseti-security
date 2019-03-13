@@ -217,7 +217,7 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: false
-        - name: gcv_scanner
+        - name: config_validator
           enabled: false
         - name: group
           enabled: true
@@ -412,7 +412,7 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
-        - resource: gcv_violations
+        - resource: config_validator_violations
           should_notify: true
           notifiers:
             # Email violations

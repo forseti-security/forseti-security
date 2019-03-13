@@ -215,7 +215,7 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: false
-        - name: gcv_scanner
+        - name: config_validator
           enabled: false
         - name: group
           enabled: true

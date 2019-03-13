@@ -36,7 +36,7 @@ VIOLATION_RESOURCES = {
     'FIREWALL_MATCHES_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_REQUIRED_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
-    'GCV_VIOLATION': 'gcv_violations',
+    'CONFIG_VALIDATOR_VIOLATION': 'config_validator_violations',
     'GROUP_VIOLATION': 'groups_violations',
     'KE_VERSION_VIOLATION': 'ke_version_violations',
     'KE_VIOLATION': 'ke_violations',

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCV Validator Client."""
+"""Config Validator Validator Client."""
 
 
 import sys
@@ -21,9 +21,9 @@ import grpc
 from retrying import retry
 
 from google.cloud.forseti.common.util import retryable_exceptions
-import google.cloud.forseti.scanner.scanners.gcv_util.errors as scanner_error
-from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2
-from google.cloud.forseti.scanner.scanners.gcv_util import validator_pb2_grpc
+import google.cloud.forseti.scanner.scanners.config_validator_util.errors as scanner_error
+from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2
+from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2_grpc
 
 
 class ValidatorClient(object):
@@ -37,10 +37,10 @@ class ValidatorClient(object):
         Args:
             channel (String): The default Validator channel.
         """
-        self.buffer_sender = BufferedGCVDataSender(self)
+        self.buffer_sender = BufferedCVDataSender(self)
         self.stub = validator_pb2_grpc.ValidatorStub(channel)
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def add_data(self, assets):
@@ -50,8 +50,9 @@ class ValidatorClient(object):
             assets (list): A list of asset data.
 
         Raises:
-            GCVAddDataError: GCV Add Data Error.
-            GCVServerUnavailableError: GCV Server Unavailable Error.
+            ConfigValidatorAddDataError: Config Validator Add Data Error.
+            ConfigValidatorServerUnavailableError: Config Validator
+                Server Unavailable Error.
         """
         try:
             request = validator_pb2.AddDataRequest(assets=assets)
@@ -59,9 +60,9 @@ class ValidatorClient(object):
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.GCVServerUnavailableError(e.message)
+                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
             else:
-                raise scanner_error.GCVAddDataError(e.message)
+                raise scanner_error.ConfigValidatorAddDataError(e.message)
 
     def add_data_to_buffer(self, asset):
         """Add asset data to buffer, intended to manage sending data in bulk.
@@ -73,52 +74,54 @@ class ValidatorClient(object):
 
     def flush_buffer(self):
         """Flush the buffer, sending all the data to
-        GCV and empty the buffer."""
+        Config Validator and empty the buffer."""
         self.buffer_sender.flush()
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def audit(self):
-        """Audit existing data in GCV.
+        """Audit existing data in Config Validator.
 
         Returns:
             list: List of violations.
 
         Raises:
-            GCVAuditError: GCV Audit Error.
-            GCVServerUnavailableError: GCV Server Unavailable Error.
+            ConfigValidatorAuditError: Config Validator Audit Error.
+            ConfigValidatorServerUnavailableError: Config Validator Server
+                Unavailable Error.
         """
         try:
             return self.stub.Audit()
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.GCVServerUnavailableError(e.message)
+                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
             else:
-                raise scanner_error.GCVAuditError(e.message)
+                raise scanner_error.ConfigValidatorAuditError(e.message)
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_gcv,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def reset(self):
-        """Clears previously added data from GCV.
+        """Clears previously added data from Config Validator.
 
         Raises:
-            GCVResetError: GCV Reset Error.
-            GCVServerUnavailableError: GCV Server Unavailable Error."""
+            ConfigValidatorResetError: Config Validator Reset Error.
+            ConfigValidatorServerUnavailableError: Config Validator Server
+                Unavailable Error."""
         try:
             self.stub.Reset()
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.GCVServerUnavailableError(e.message)
+                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
             else:
-                raise scanner_error.GCVResetError(e.message)
+                raise scanner_error.ConfigValidatorResetError(e.message)
 
 
-class BufferedGCVDataSender(object):
-    """Buffered GCV data sender."""
+class BufferedCVDataSender(object):
+    """Buffered Config Validator data sender."""
 
     MAX_ALLOWED_PACKET = 4000000  # Default grpc message size limit is 4MB.
 
@@ -131,7 +134,8 @@ class BufferedGCVDataSender(object):
         Args:
             validator_client (ValidatorClient): The validator client.
             max_size (int): max size of buffer.
-            max_packet_size (int): max size of a packet to send to GCV.
+            max_packet_size (int): max size of a packet to send to Config
+                Validator.
         """
         self.validator_client = validator_client
         self.buffer = []
@@ -140,10 +144,10 @@ class BufferedGCVDataSender(object):
         self.max_packet_size = max_packet_size
 
     def add(self, asset):
-        """Add an Asset to the buffer to send to GCV.
+        """Add an Asset to the buffer to send to Config Validator.
 
         Args:
-            asset (Asset): Asset to send to GCV.
+            asset (Asset): Asset to send to Config Validator.
         """
 
         self.buffer.append(asset)
