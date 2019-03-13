@@ -1884,14 +1884,13 @@ class ComputeInstanceGroupIterator(ResourceIterator):
                     # IAP Scanner expects instance URLs to be included with the
                     # instance groups.
                     try:
-                        data['instance_urls'], _ = (
-                            gcp.fetch_compute_ig_instances(
+                        instance_urls, _ = gcp.fetch_compute_ig_instances(
                                 self.resource['projectNumber'],
                                 data['name'],
                                 zone=os.path.basename(data.get('zone', '')),
                                 region=os.path.basename(data.get('region', ''))
                             )
-                        )
+                        data['instance_urls'] = instance_urls
                     except ResourceNotSupported as e:
                         # API client doesn't support this resource, ignore.
                         LOGGER.debug(e)

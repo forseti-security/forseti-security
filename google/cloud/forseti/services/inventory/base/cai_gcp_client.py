@@ -124,21 +124,21 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         # Try fetching with project id, if that returns nothing, fall back to
         # project number.
-        resource = self.dao.fetch_cai_asset(
+        resource, meta_data = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.bigquery.Dataset',
             bigquery_name_fmt.format(project_id, dataset_id),
             self.session)
 
         if not resource:
-            resource = self.dao.fetch_cai_asset(
+            resource, meta_data = self.dao.fetch_cai_asset(
                 ContentTypes.iam_policy,
                 'google.cloud.bigquery.Dataset',
                 bigquery_name_fmt.format(project_number, dataset_id),
                 self.session)
 
         if resource:
-            return resource
+            return resource, meta_data
 
         return {}, None
 
@@ -155,11 +155,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             dict: Dataset Policy.
         """
 
-        resource = self.fetch_bigquery_iam_policy(
+        resource, metadata = self.fetch_bigquery_iam_policy(
             project_id, project_number, dataset_id)
 
         if resource:
-            return iam_helpers.convert_iam_to_bigquery_policy(resource)
+            return (iam_helpers.convert_iam_to_bigquery_policy(resource),
+                    metadata)
 
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(

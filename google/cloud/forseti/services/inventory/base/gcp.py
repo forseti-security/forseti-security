@@ -43,6 +43,23 @@ class AssetMetadata():
         self.cai_name = cai_name
         self.cai_type = cai_type
 
+    def __eq__(self, other):
+        """Equals.
+
+        Args:
+            other (AssetMetadata): other asset metadata.
+        """
+        return (self.cai_name == other.cai_name and
+                self.cai_type == other.cai_type)
+
+    def __repr__(self):
+        """Repr.
+
+        Returns:
+            str: repr.
+        """
+        return "cai_name: {}, cai_type: {}".format(
+            self.cai_name, self.cai_type)
 
 class ResourceNotSupported(Exception):
     """Exception raised for resources not supported by the API client."""
@@ -1486,7 +1503,7 @@ class ApiClientImpl(ApiClient):
             Tuple[dict, AssetMetadata]: Generator of compute project resources
                 and asset metadata that defaults to None for all GCP clients.
         """
-        yield self.fetch_compute_project(project_number), None
+        yield self.fetch_compute_project(project_number)
 
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
