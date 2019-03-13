@@ -54,11 +54,11 @@ def get_gcloud_info():
     return project_id, authed_user, is_devshell
 
 
-def set_project_id(self):
+def set_project_id(project_id):
     """Set the project."""
-    print('Setting Project %s' % self.config.project_id)
+    print('Setting Project %s' % project_id)
     return_code, out, err = utils.run_command(
-        ['gcloud', 'config', 'set', 'project', self.config.project_id])
+        ['gcloud', 'config', 'set', 'project', project_id])
     if return_code:
         print(err)
         sys.exit(1)

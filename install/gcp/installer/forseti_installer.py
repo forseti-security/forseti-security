@@ -196,7 +196,7 @@ class ForsetiInstaller(object):
         self.composite_root_resources = self.config.composite_root_resources
         service_account_key_file = self.config.service_account_key_file
         if self.config.project_id:
-            gcloud.set_project_id(self)
+            gcloud.set_project_id(self.config.project_id)
 
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
