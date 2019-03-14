@@ -1233,45 +1233,8 @@ If you see errors while running the deployment manager update command, please re
 1. Reset the Forseti server VM instance for changes in startup script to take effect. 
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE` 
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
-1. Repeat step `3-9` for Forseti client.
-1. Configuration file `forseti_conf_server.yaml` updates: 
-   **Inventory**
-   - Update the `inventory` to include support for `composite_root_resources`.
-      ```
-       inventory:
-            
-            # You must set ONLY one of root_resource_id or 
-            # composite_root_resources in your configuration. Defining both will 
-            # cause Forseti to exit with an error.
-           
-           ...
-            root_resource_id: ROOT_RESOURCE_ID
-           
-            # Composite root resources: combine multiple resource roots into a
-            # single inventory, for use across all the Forseti modules. Can obtain
-            # one or more resources from the GCP Resource Hierarchy in any 
-            # combination.
-            # https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy
-            #
-            # All resources must grant the appropriate IAM permissions to the 
-            # Forseti service account before they can be included in the inventory.
-            #
-            #Forseti Explain is not supported with a composite root at this time.
-            #
-            # Resources can exist in multiple organizations
-            #
-            #composite_root_resources:
-            #    - "folders/12345"
-            #    - "folders/45678"
-            #    - "projects/98765"
-            #    - "organizations/56789"
-
-       ```
-
-1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.13.0/rules/kms_rules.yaml)
-    under `rules/` in your Forseti server GCS bucket to be able to use the four
-    new use cases that have been added.
+1. Repeat step `3-9` for Forseti client. 
+ 
   
 ### Steps to upgrade using Terraform
 
@@ -1281,10 +1244,9 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command terraform apply to apply the infrastructure build.
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.12.0 to 2.13.0" content=upgrading_2_12_0_to_2_13_0 uid=13 %}
+{% include site/zippy/item.html title="Upgrading 2.12.0 to 2.13.0" content=upgrading_2_12_0_to_2_13_0 uid=14 %}
 
 {% capture deployment_manager_error %}
-
 If you get the following error while running the deployment manager:
 ```
 The fingerprint of the deployment is .....
