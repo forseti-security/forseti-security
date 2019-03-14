@@ -17,7 +17,7 @@ that Forseti Scanner and Explain use to perform their operations.
 Before you start using Inventory, make sure that Inventory is
 [configured]({% link _docs/v2.2/configure/inventory/index.md %}) and the
 proper [GCP]({% link _docs/v2.2/concepts/service-accounts.md %}) and
-[G Suite]({% link _docs/v2.2/configure/inventory/gsuite.md %}) acccess is set up
+[G Suite]({% link _docs/v2.2/configure/inventory/gsuite.md %}) access is set up
 for your Forseti GCP service account.
 
 ## Running Inventory
