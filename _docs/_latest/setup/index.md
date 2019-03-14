@@ -26,3 +26,7 @@ to the latest version.
 **[Deploy Forseti Security Manually]({% link _docs/latest/setup/manual.md %})**
 
 Deploy Forseti manually on GCP.
+
+**[Deploy Forseti Security on Kubernetes]({% link _docs/latest/setup/kubernetes.md %})**
+
+Proof-of-Concept of Forseti running on Kubernetes.
