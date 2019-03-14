@@ -14,7 +14,9 @@
 
 """Tests the CSCC notification notifier."""
 
+import ast
 import datetime
+import json
 import mock
 
 from google.cloud.forseti.notifier import notifier
@@ -57,7 +59,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
     def test_can_transform_to_beta_findings_in_api_mode(self):
 
         expected_beta_findings = [
-            ('539cfbdb1113a74ec18edf583eada77a',
+            ['539cfbdb1113a74ec18edf583eada77a',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_111',
               'resource_name': 'full_name_111',
               'name': 'organizations/11111/sources/22222/findings/539cfbdb1113a74ec18edf583eada77a',
@@ -74,8 +76,8 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                   'violation_data': '"{\\"policy_names\\": [\\"fw-tag-match_111\\"], \\"recommended_actions\\": {\\"DELETE_FIREWALL_RULES\\": [\\"fw-tag-match_111\\"]}}"',
                   'resource_id': 'fake_firewall_111',
                   'scanner_index_id': 1282990830000000,
-                  'resource_type': 'firewall_rule'}}),
-            ('3eff279ccb96799d9eb18e6b76055b22',
+                  'resource_type': 'firewall_rule'}}],
+            ['3eff279ccb96799d9eb18e6b76055b22',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_222',
               'resource_name': 'full_name_222',
               'name': 'organizations/11111/sources/22222/findings/3eff279ccb96799d9eb18e6b76055b22',
@@ -92,17 +94,17 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                   'violation_data': '"{\\"policy_names\\": [\\"fw-tag-match_222\\"], \\"recommended_actions\\": {\\"DELETE_FIREWALL_RULES\\": [\\"fw-tag-match_222\\"]}}"',
                   'resource_id': 'fake_firewall_222',
                   'scanner_index_id': 1282990830000000,
-                  'resource_type': 'firewall_rule'}})]
+                  'resource_type': 'firewall_rule'}}]]
 
         violations_as_dict = self._populate_and_retrieve_violations()
 
         finding_results = (
             cscc_notifier.CsccNotifier('iii')._transform_for_api(
                 violations_as_dict,
-                source_id='organizations/11111/sources/22222'
-        ))
+                source_id='organizations/11111/sources/22222'))
 
-        self.assertEquals(expected_beta_findings, finding_results)
+        self.assertEquals(expected_beta_findings,
+                          ast.literal_eval(json.dumps(finding_results)))
 
     def test_can_transform_to_alpha_findings_in_api_mode(self):
 
@@ -222,7 +224,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         self.assertEquals(5, mock_logger.info.call_count)
         self.assertTrue(
             'not selected' in mock_logger.info.call_args_list[4][0][0])
-
     
     def test_beta_api_is_invoked_correctly(self):
 
@@ -239,3 +240,111 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         _, kwargs = call
         
         self.assertEquals('111', kwargs['source_id'])
+
+    def test_outdated_findings_are_found(self):
+
+        NEW_FINDINGS = [['abc',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
+                             'name': 'organizations/123/sources/560/findings/abc',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'ACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0L,
+                                                   'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
+                                                   'resource_id': 'isthispublic',
+                                                   'scanner_index_id': 1551913369403591L,
+                                                   'resource_type': 'bucket'}}]]
+
+        FINDINGS_IN_CSCC = [['ffe',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
+                             'name': 'organizations/123/sources/560/findings/ffe',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'ACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0L,
+                                                   'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner", "role": "READER"}',
+                                                   'resource_id': 'isthispublic',
+                                                   'scanner_index_id': 1551913369403591L,
+                                                   'resource_type': 'bucket'}}]]
+
+        EXPECTED_INACTIVE_FINDINGS = [['ffe',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner-henry/bucket/isthispublic/',
+                             'name': 'organizations/123/sources/560/findings/ffe',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'INACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0L,
+                                                   'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner", "role": "READER"}',
+                                                   'resource_id': 'isthispublic',
+                                                   'scanner_index_id': 1551913369403591L,
+                                                   'resource_type': 'bucket'}}]]
+
+        notifier = cscc_notifier.CsccNotifier('123')
+
+        inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
+                                                            FINDINGS_IN_CSCC)
+        self.assertEquals(EXPECTED_INACTIVE_FINDINGS[0][1]['state'],
+                          inactive_findings[0][1]['state'])
+
+    def test_outdated_findings_are_not_found(self):
+
+        NEW_FINDINGS = [['abc',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
+                             'name': 'organizations/123/sources/560/findings/abc',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'ACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0L,
+                                                   'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
+                                                   'resource_id': 'isthispublic',
+                                                   'scanner_index_id': 1551913369403591L,
+                                                   'resource_type': 'bucket'}}]]
+
+        FINDINGS_IN_CSCC = [['abc',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
+                             'name': 'organizations/123/sources/560/findings/abc',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'ACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0L,
+                                                   'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
+                                                   'resource_id': 'isthispublic',
+                                                   'scanner_index_id': 1551913369403591L,
+                                                   'resource_type': 'bucket'}}]]
+
+        notifier = cscc_notifier.CsccNotifier('123')
+
+        inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
+                                                            FINDINGS_IN_CSCC)
+
+        assert(len(inactive_findings)) == 0
