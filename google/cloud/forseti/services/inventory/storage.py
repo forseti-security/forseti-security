@@ -38,9 +38,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import mapper
 
-from google.cloud.asset_v1beta1.proto import assets_pb2
-from google.protobuf import json_format
-
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
@@ -52,6 +49,7 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
+MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
 
 
 class Categories(enum.Enum):
@@ -509,6 +507,12 @@ class CaiTemporaryStore(object):
     asset_type = None
     asset_data = None
 
+    # Assets with no parent resource.
+    UNPARENTED_ASSETS = frozenset([
+        'google.cloud.resourcemanager.Organization',
+        'google.cloud.billing.BillingAccount',
+    ])
+
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
         """Initialize database column.
 
@@ -586,43 +590,43 @@ class CaiTemporaryStore(object):
         Returns:
             dict: The dict representation of the asset data.
         """
-        # The no-member is a false positive for the dynamic protobuf class.
-        # pylint: disable=no-member
-        asset_pb = assets_pb2.Asset.FromString(self.asset_data)
-        # pylint: enable=no-member
+        asset = json.loads(self.asset_data)
         if content_type == ContentTypes.resource:
-            return json_format.MessageToDict(asset_pb.resource.data)
+            return asset['resource']['data']
         elif content_type == ContentTypes.iam_policy:
-            return json_format.MessageToDict(asset_pb.iam_policy)
+            return asset['iam_policy']
 
-        return json_format.MessageToDict(asset_pb)
+        return asset
 
     @classmethod
     def from_json(cls, asset_json):
         """Creates a database row object from the json data in a dump file.
-
         Args:
             asset_json (str): The json representation of an Asset.
-
         Returns:
             object: database row object or None if there is no data.
         """
-        asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
-        if asset_pb.HasField('resource'):
+        asset = json.loads(asset_json)
+        if len(asset['name']) > 512:
+            LOGGER.warn('Skipping insert of asset %s, name too long.',
+                        asset['name'])
+            return None
+
+        if 'resource' in asset:
             content_type = ContentTypes.resource
-            parent_name = cls._get_parent_name(asset_pb)
-        elif asset_pb.HasField('iam_policy'):
+            parent_name = cls._get_parent_name(asset)
+        elif 'iam_policy' in asset:
             content_type = ContentTypes.iam_policy
-            parent_name = asset_pb.name
+            parent_name = asset['name']
         else:
             return None
 
         return cls(
-            name=asset_pb.name,
+            name=asset['name'],
             parent_name=parent_name,
             content_type=content_type,
-            asset_type=asset_pb.asset_type,
-            asset_data=asset_pb.SerializeToString()
+            asset_type=asset['asset_type'],
+            asset_data=asset_json
         )
 
     @classmethod
@@ -648,63 +652,97 @@ class CaiTemporaryStore(object):
             raise
 
     @staticmethod
-    def _get_parent_name(asset_pb):
+    def _get_parent_name(asset):
         """Determines the parent name from the resource data.
-
         Args:
-            asset_pb (assets_pb2.Asset): An Asset protobuf object.
-
+            asset (dict): An Asset object.
         Returns:
             str: The parent name for the resource.
         """
-        if asset_pb.resource.parent:
-            return asset_pb.resource.parent
+        if 'parent' in asset['resource']:
+            return asset['resource']['parent']
 
-        if (asset_pb.asset_type.startswith('google.appengine') or
-                asset_pb.asset_type.startswith('google.bigquery') or
-                asset_pb.asset_type.startswith('google.spanner')):
+        if asset['asset_type'] == 'google.cloud.kms.KeyRing':
+            # KMS KeyRings are parented by a location under a project, but
+            # the location is not directly discoverable without iterating all
+            # locations, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all keyrings
+            # in all locations to fix this broken behavior.
+            #
+            # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
+            # parent project.
+            return '/'.join(asset['name'].split('/')[:-4])
+
+        elif asset['asset_type'] == 'google.cloud.dataproc.Cluster':
+            # Dataproc Clusters are parented by a region under a project, but
+            # the region is not directly discoverable without iterating all
+            # regions, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all clusters
+            # in all regions to fix this broken behavior.
+            #
+            # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
+            # parent project.
+            return '/'.join(asset['name'].split('/')[:-4])
+
+        elif (asset['asset_type'].startswith('google.appengine') or
+              asset['asset_type'].startswith('google.cloud.bigquery') or
+              asset['asset_type'].startswith('google.cloud.sql') or
+              asset['asset_type'].startswith('google.cloud.kms') or
+              asset['asset_type'].startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
-            return '/'.join(asset_pb.name.split('/')[:-2])
+            return '/'.join(asset['name'].split('/')[:-2])
 
-        LOGGER.debug('Could not determine parent name for %s', asset_pb)
+        # Known unparented asset types.
+        if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
+            LOGGER.debug('Could not determine parent name for %s', asset)
+
         return ''
 
 
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024, commit_on_flush=False):
+    def __init__(self,
+                 session,
+                 max_size=1024,
+                 max_packet_size=MAX_ALLOWED_PACKET * .75,
+                 commit_on_flush=False):
         """Initialize
-
         Args:
             session (object): db session
             max_size (int): max size of buffer
+            max_packet_size (int): max size of a packet to send to SQL
             commit_on_flush (bool): If true, the session is committed to the
                 database when the data is flushed.
         """
         self.session = session
         self.buffer = []
+        self.estimated_packet_size = 0
         self.max_size = max_size
+        self.max_packet_size = max_packet_size
         self.commit_on_flush = commit_on_flush
 
-    def add(self, obj):
+    def add(self, obj, estimated_length=0):
         """Add an object to the buffer to write to db.
-
         Args:
             obj (object): Object to write to db.
+            estimated_length (int): The estimated length of this object.
         """
 
         self.buffer.append(obj)
-        if len(self.buffer) >= self.max_size:
+        self.estimated_packet_size += estimated_length
+        if (self.estimated_packet_size > self.max_packet_size or
+                len(self.buffer) >= self.max_size):
             self.flush()
 
     def flush(self):
         """Flush all pending objects to the database."""
 
-        self.session.add_all(self.buffer)
+        self.session.bulk_save_objects(self.buffer)
         self.session.flush()
         if self.commit_on_flush:
             self.session.commit()
+        self.estimated_packet_size = 0
         self.buffer = []
 
 
@@ -733,45 +771,31 @@ class CaiDataAccess(object):
     @staticmethod
     def populate_cai_data(data, session):
         """Add assets from cai data dump into cai temporary table.
-
         Args:
             data (file): A file like object, line delimeted text dump of json
                 data representing assets from Cloud Asset Inventory exportAssets
                 API.
             session (object): Database session.
-
         Returns:
             int: The number of rows inserted
         """
-        commit_buffer = BufferedDbWriter(session, commit_on_flush=True)
+        # CAI data can be large, so limit the number of rows written at one
+        # time to 512.
+        commit_buffer = BufferedDbWriter(session,
+                                         max_size=512,
+                                         commit_on_flush=True)
         num_rows = 0
         try:
             for line in data:
                 if not line:
                     continue
 
-                try:
-                    row = CaiTemporaryStore.from_json(line.strip())
-                except json_format.ParseError as e:
-                    # If the public protobuf definition differs from the
-                    # internal representation of the resource content in CAI
-                    # then the json_format module will throw a ParseError. The
-                    # crawler automatically falls back to using the live API
-                    # when this happens, so no content is lost.
-                    resource = json.loads(line)
-                    if 'iam_policy' in resource:
-                        content_type = 'iam_policy'
-                    elif 'resource' in resource:
-                        content_type = 'resource'
-                    else:
-                        content_type = 'none'
-                    LOGGER.info('Protobuf parsing error %s, falling back to '
-                                'live API for resource %s, asset type %s, '
-                                'content type %s', e, resource.get('name', ''),
-                                resource.get('asset_type', ''), content_type)
-                    continue
-                commit_buffer.add(row)
-                num_rows += 1
+                row = CaiTemporaryStore.from_json(line.strip())
+                if row:
+                    # Overestimate the packet length to ensure max size is never
+                    # exceeded. The actual length is closer to len(line) * 1.5.
+                    commit_buffer.add(row, estimated_length=len(line) * 2)
+                    num_rows += 1
             commit_buffer.flush()
         except SQLAlchemyError as e:
             LOGGER.exception('Error populating CAI data: %s', e)
