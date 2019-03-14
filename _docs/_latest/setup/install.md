@@ -59,7 +59,7 @@ steps below:
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.12.0.`:
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.13.0.`:
       ```bash
       # Make sure you are in the forseti-security folder.
       cd forseti-security
@@ -67,7 +67,7 @@ steps below:
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v2.12.0
+      git checkout tags/v2.13.0
       ```
 
   1. Install both client and server by running the installer:
