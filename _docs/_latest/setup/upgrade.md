@@ -1162,44 +1162,6 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.11.0 to 2.12.0" content=upgrading_2_11_0_to_2_12_0 uid=13 %}
 
-{% capture deployment_manager_error %}
-
-If you get the following error while running the deployment manager:
-```
-The fingerprint of the deployment is .....
-Waiting for update [operation-xxx-xxx-xxx-xxx]...failed.
-ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operation-xxx-xxx-xxx-xxx]: errors:
-- code: NO_METHOD_TO_UPDATE_FIELD
-  message: No method found to update field 'networkInterfaces' on resource 'forseti-server-vm-xxxxx'
-    of type 'compute.v1.instance'. The resource may need to be recreated with the
-    new field.
-```
-
-You can follow the following steps to workaround this deployment manager problem:
-1. Copy the compute engine section inside your deployment template and paste it to a text editor.
-    ```
-    # Compute Engine
-    - name: forseti-instance-server
-      type: forseti-instance-server.py
-      properties:
-        # GCE instance properties
-        image-project: ubuntu-os-cloud
-        image-family: ubuntu-1804-lts
-        instance-type: n1-standard-2
-        ...
-        run-frequency: ...
-    ```
-1. Remove the compute engine section from the deployment template.
-1. Run the deployment manager uppdate command on the updated deployment template.  
-`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
-This will remove your VM instance.
-1. Paste the compute engine section back to the deployment template, and run the update command again.  
-`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
-This will recreate the VM with updated fields.
-
-{% endcapture %}
-{% include site/zippy/item.html title="Error while running deployment manager" content=deployment_manager_error uid=50 %}
-
 {% capture upgrading_2_12_0_to_2_13_0 %}
 
 You can upgrade from 2.12.0 to 2.13.0 using Deployment Manager or Terraform. 
@@ -1245,6 +1207,44 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.12.0 to 2.13.0" content=upgrading_2_12_0_to_2_13_0 uid=14 %}
+
+{% capture deployment_manager_error %}
+
+If you get the following error while running the deployment manager:
+```
+The fingerprint of the deployment is .....
+Waiting for update [operation-xxx-xxx-xxx-xxx]...failed.
+ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operation-xxx-xxx-xxx-xxx]: errors:
+- code: NO_METHOD_TO_UPDATE_FIELD
+  message: No method found to update field 'networkInterfaces' on resource 'forseti-server-vm-xxxxx'
+    of type 'compute.v1.instance'. The resource may need to be recreated with the
+    new field.
+```
+
+You can follow the following steps to workaround this deployment manager problem:
+1. Copy the compute engine section inside your deployment template and paste it to a text editor.
+    ```
+    # Compute Engine
+    - name: forseti-instance-server
+      type: forseti-instance-server.py
+      properties:
+        # GCE instance properties
+        image-project: ubuntu-os-cloud
+        image-family: ubuntu-1804-lts
+        instance-type: n1-standard-2
+        ...
+        run-frequency: ...
+    ```
+1. Remove the compute engine section from the deployment template.
+1. Run the deployment manager uppdate command on the updated deployment template.  
+`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
+This will remove your VM instance.
+1. Paste the compute engine section back to the deployment template, and run the update command again.  
+`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
+This will recreate the VM with updated fields.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Error while running deployment manager" content=deployment_manager_error uid=50 %}
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.X installations" content=2x_upgrade uid=1 %}
