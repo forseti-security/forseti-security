@@ -583,11 +583,12 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
-def lookup_organization(project_id):
-    """Infer the organization from the project's parent.
+def lookup_organization(resource_id, type='projects'):
+    """Infer the organization from the resource's parent.
 
     Args:
-        project_id (str): GCP project id
+        resource_id (str): GCP resource id
+        type (str): GCP resource type
 
     Returns:
         str: GCP organization id
@@ -625,31 +626,40 @@ def lookup_organization(project_id):
                 _no_organization()
         return cur_id
 
-    return_code, out, err = utils.run_command(
-        ['gcloud', 'projects', 'describe',
-         project_id, '--format=json'])
-    if return_code:
-        print(err)
-        print('Error trying to find current organization from '
-              'project! Exiting.')
+    if type == 'organizations':
+        organization_id = resource_id
+    elif type == 'folders':
+        organization_id = _find_org_from_folder(resource_id)
+    elif type == 'projects':
+        return_code, out, err = utils.run_command(
+            ['gcloud', 'projects', 'describe',
+             resource_id, '--format=json'])
+        if return_code:
+            print(err)
+            print('Error trying to find current organization from '
+                  'project! Exiting.')
 
-    try:
-        project = json.loads(out)
-        project_parent = project.get('parent')
-        if not project_parent:
+        try:
+            project = json.loads(out)
+            project_parent = project.get('parent')
+            if not project_parent:
+                _no_organization()
+            parent_type = project_parent['type']
+            parent_id = project_parent['id']
+        except ValueError:
+            print('Error retrieving organization id')
             _no_organization()
-        parent_type = project_parent['type']
-        parent_id = project_parent['id']
-    except ValueError:
-        print('Error retrieving organization id')
-        _no_organization()
 
-    if parent_type == 'folder':
-        organization_id = _find_org_from_folder(parent_id)
-    elif parent_type == 'organization':
-        organization_id = parent_id
+        if parent_type == 'folder':
+            organization_id = _find_org_from_folder(parent_id)
+        elif parent_type == 'organization':
+            organization_id = parent_id
+        else:
+            _no_organization()
+
     else:
         _no_organization()
+
     if organization_id:
         print('Organization id: %s' % organization_id)
         return organization_id

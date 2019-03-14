@@ -237,9 +237,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         if self.composite_root_resources:
             # split element 0 into type and id
-            rid = self.composite_root_resources[0].split('/')[-1]
+            rtype, rid = self.composite_root_resources[0].split('/')
 
-            organization_id = gcloud.lookup_organization(rid)
+            organization_id = gcloud.lookup_organization(rid, rtype)
         else:
             organization_id = self.resource_root_id.split('/')[-1]
 
