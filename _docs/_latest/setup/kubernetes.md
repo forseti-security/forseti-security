@@ -7,9 +7,9 @@ order: 004
 
 This guide explains how to setup Forseti on Kubernetes.
 
-This is a proof of concept (POC).
+This is a proof of concept (POC) in the `dev` branch.
 
-If you decide to use this in production, consider implementing the
+If you decide to use this, consider implementing the
 [k8s hardening recommendations](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster),
 as well as [CIS Benchmarks for GCP, section 7, Kubernetes](https://learn.cisecurity.org/benchmarks).
 
