@@ -908,7 +908,7 @@ def run_explainer(client, config, output, _):
         if not any([config.roles, config.role_prefixes]):
             raise ValueError('please specify either a role or a role prefix')
         permissions = client.query_permissions_by_roles(config.roles,
-                                          config.role_prefixes)
+                                                        config.role_prefixes)
         output.write(permissions)
 
     def do_get_policy():
