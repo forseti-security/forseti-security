@@ -55,12 +55,15 @@ def get_gcloud_info():
 
 
 def set_project_id(project_id):
-    """Set the project."""
+    """Set the project for the installation.
+    Args:
+        project_id (str): The GCP Project Id
+    """
     print('Setting Project %s' % project_id)
     return_code, out, err = utils.run_command(
         ['gcloud', 'config', 'set', 'project', project_id])
     if return_code:
-        print(err)
+        print(out + '/' + err)
         sys.exit(1)
 
 
@@ -583,12 +586,12 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
-def lookup_organization(resource_id, type='projects'):
+def lookup_organization(resource_id, rtype='projects'):
     """Infer the organization from the resource's parent.
 
     Args:
         resource_id (str): GCP resource id
-        type (str): GCP resource type
+        rtype (str): GCP resource type
 
     Returns:
         str: GCP organization id
@@ -626,11 +629,11 @@ def lookup_organization(resource_id, type='projects'):
                 _no_organization()
         return cur_id
 
-    if type == 'organizations':
+    if rtype == 'organizations':
         organization_id = resource_id
-    elif type == 'folders':
+    elif rtype == 'folders':
         organization_id = _find_org_from_folder(resource_id)
-    elif type == 'projects':
+    elif rtype == 'projects':
         return_code, out, err = utils.run_command(
             ['gcloud', 'projects', 'describe',
              resource_id, '--format=json'])
