@@ -79,7 +79,7 @@ WantedBy=multi-user.target
 EOF
 )"
 echo "$CONFIG_VALIDATOR_SERVICE" > /tmp/config_validator.service
-sudo mv /tmp/config_validator.service /lib/systemd/system/config_validator.service
+sudo mv /tmp/config_validator.service /lib/systemd/system/config-validator.service
 
 # By default, Systemd starts the executable stated in ExecStart= as root.
 # See github issue #1761 for why this neds to be run as root.
