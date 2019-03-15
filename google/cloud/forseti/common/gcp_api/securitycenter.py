@@ -195,22 +195,21 @@ class SecurityCenterClient(object):
         response = self.repository.findings.list(parent=source_id)
         return response
 
-    # pylint: disable=inconsistent-return-statements
     def update_finding(self, finding, finding_id, source_id=None):
         """Updates a finding in CSCC.
 
         Args:
             finding (dict): Forseti violation in CSCC format.
+            finding_id (str): id hash of the CSCC finding.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
-            finding_id (str): id hash of the CSCC finding.
 
         Returns:
             dict: An API response containing one page of results.
         """
         # alpha api
         if not source_id:
-            return
+            return {}
 
         # beta api
         try:
