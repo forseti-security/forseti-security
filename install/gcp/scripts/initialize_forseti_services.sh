@@ -40,7 +40,10 @@ FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?c
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
-GCV_COMMAND="/home/ubuntu/forseti-security/install/gcv-binary --constraint-repos=/home/ubuntu/gcv_constraints/"
+CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external_dependencies/ConfigValidatorRPCServer"
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/'"
+CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
@@ -62,21 +65,21 @@ EOF
 echo "$API_SERVICE" > /tmp/forseti.service
 sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
 
-# GCV Service.
-GCV_SERVICE="$(cat << EOF
+# Config Validator Service.
+CONFIG_VALIDATOR_SERVICE="$(cat << EOF
 [Unit]
-Description=GCV API Server
+Description=Config Validator API Server
 [Service]
 User=ubuntu
 Restart=always
 RestartSec=3
-ExecStart=$GCV_COMMAND
+ExecStart=CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target
 EOF
 )"
-echo "GCV_SERVICE" > /tmp/gcv.service
-sudo mv /tmp/forseti.service /lib/systemd/system/gcv.service
+echo "$CONFIG_VALIDATOR_SERVICE" > /tmp/config_validator.service
+sudo mv /tmp/config_validator.service /lib/systemd/system/config_validator.service
 
 # By default, Systemd starts the executable stated in ExecStart= as root.
 # See github issue #1761 for why this neds to be run as root.
