@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.servicemanagement module
+=============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api.servicemanagement
+    :members:
+    :undoc-members:
+    :show-inheritance:
