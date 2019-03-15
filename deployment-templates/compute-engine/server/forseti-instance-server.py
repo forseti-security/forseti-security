@@ -243,6 +243,7 @@ bash ./install/gcp/scripts/initialize_forseti_services.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
+systemctl start config-validator
 sleep 5
 
 echo "Attempting to update database schema, if necessary."

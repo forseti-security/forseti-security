@@ -40,7 +40,7 @@ FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?c
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
-CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external-dependencies/ConfigValidatorRPCServer"
+CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external-dependencies/config-validator/ConfigValidatorRPCServer"
 CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/'"
 CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
@@ -102,6 +102,7 @@ sudo mv /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
 # proxy and block on the Forseti API server.
 FOREGROUND_RUNNER="$(cat << EOF
 $SQL_PROXY_COMMAND &&
+$CONFIG_VALIDATOR_COMMAND &&
 $FORSETI_COMMAND
 EOF
 )"
@@ -115,6 +116,7 @@ echo "immediately by running the following:"
 echo ""
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
+echo "    systemctl start config-validator"
 echo ""
 echo "Additionally, the Forseti server can be run in the foreground by using"
 echo "the foreground runner script: /usr/bin/forseti-foreground.sh"
