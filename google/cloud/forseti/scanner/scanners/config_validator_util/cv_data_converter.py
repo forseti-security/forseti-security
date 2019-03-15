@@ -14,6 +14,9 @@
 
 """Config Validator Data Converter."""
 
+from google.protobuf import json_format
+from google.protobuf.struct_pb2 import Value
+
 from google.cloud.forseti.scanner.scanners.config_validator_util import \
     validator_pb2
 
@@ -75,7 +78,13 @@ def convert_data_to_cv_asset(resource, data_type):
     # Generate ancestry path that ends at project as the lowest level.
     ancestry_path = generate_ancestry_path(resource.full_name)
 
+    import json
+
+    data = json.loads(resource.data)
+
+    pb = json_format.ParseDict(data, Value())
+
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
                                ancestry_path=ancestry_path,
-                               resource=resource.data)
+                               resource=pb)

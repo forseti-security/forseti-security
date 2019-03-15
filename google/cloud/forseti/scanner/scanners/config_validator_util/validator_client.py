@@ -29,16 +29,17 @@ from google.cloud.forseti.scanner.scanners.config_validator_util import validato
 class ValidatorClient(object):
     """Validator client."""
 
-    DEFAULT_CHANNEL = 'localhost:50052'
+    DEFAULT_ENDPOINT = 'localhost:50052'
 
-    def __init__(self, channel=DEFAULT_CHANNEL):
+    def __init__(self, endpoint=DEFAULT_ENDPOINT):
         """Initialize
 
         Args:
-            channel (String): The default Validator channel.
+            channel (String): The default Validator endpoint.
         """
         self.buffer_sender = BufferedCVDataSender(self)
-        self.stub = validator_pb2_grpc.ValidatorStub(channel)
+        self.channel = grpc.insecure_channel(endpoint)
+        self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
