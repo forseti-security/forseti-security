@@ -73,7 +73,7 @@ Description=Config Validator API Server
 User=ubuntu
 Restart=always
 RestartSec=3
-ExecStart=CONFIG_VALIDATOR_COMMAND
+ExecStart=$CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target
 EOF
