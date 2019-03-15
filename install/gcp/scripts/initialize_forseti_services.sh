@@ -40,7 +40,7 @@ FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?c
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
-CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external_dependencies/ConfigValidatorRPCServer"
+CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external-dependencies/ConfigValidatorRPCServer"
 CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/'"
 CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
