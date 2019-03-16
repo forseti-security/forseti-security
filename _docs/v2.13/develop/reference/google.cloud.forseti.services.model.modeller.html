@@ -1,0 +1,96 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.model.modeller module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.model.modeller">
+<span id="google-cloud-forseti-services-model-modeller-module"></span><h1>google.cloud.forseti.services.model.modeller module<a class="headerlink" href="#module-google.cloud.forseti.services.model.modeller" title="Permalink to this headline">¶</a></h1>
+<p>Modeller API.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.modeller.Modeller">
+<em class="property">class </em><code class="descname">Modeller</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/modeller.html#Modeller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.modeller.Modeller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements the Modeller API.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.modeller.Modeller.create_model">
+<code class="descname">create_model</code><span class="sig-paren">(</span><em>source</em>, <em>name</em>, <em>inventory_index_id</em>, <em>background</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/modeller.html#Modeller.create_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.modeller.Modeller.create_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a model from the import source.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>source</strong> (<em>str</em>) – The source of the model, “inventory” or “empty”</li>
+<li><strong>name</strong> (<em>str</em>) – Model name to instantiate.</li>
+<li><strong>inventory_index_id</strong> (<em>int64</em>) – Inventory id to import from</li>
+<li><strong>background</strong> (<em>bool</em>) – Whether to run the model creation in background</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the created data model</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.modeller.Modeller.delete_model">
+<code class="descname">delete_model</code><span class="sig-paren">(</span><em>model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/modeller.html#Modeller.delete_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.modeller.Modeller.delete_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model_name</strong> (<em>str</em>) – name of the model to be deleted</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.modeller.Modeller.get_model">
+<code class="descname">get_model</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/modeller.html#Modeller.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.modeller.Modeller.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get details of a model by name or handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<em>str</em>) – name or handle of the model to query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">db Model instance dao</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="google.cloud.forseti.services.dao.html#google.cloud.forseti.services.dao.Model" title="google.cloud.forseti.services.dao.Model">Model</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.modeller.Modeller.list_model">
+<code class="descname">list_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/modeller.html#Modeller.list_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.modeller.Modeller.list_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists all models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of Models in dao</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
