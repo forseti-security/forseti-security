@@ -13,12 +13,14 @@
 # limitations under the License.
 
 """Config Validator Data Converter."""
+import json
 
+from google.iam.v1.policy_pb2 import Policy
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value
 
-from google.cloud.forseti.scanner.scanners.config_validator_util import \
-    validator_pb2
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    validator_pb2)
 
 
 _IAM_POLICY = 'iam_policy'
@@ -78,13 +80,17 @@ def convert_data_to_cv_asset(resource, data_type):
     # Generate ancestry path that ends at project as the lowest level.
     ancestry_path = generate_ancestry_path(resource.full_name)
 
-    import json
-
     data = json.loads(resource.data)
 
-    pb = json_format.ParseDict(data, Value())
+    asset_resource, asset_iam_policy = {}, {}
+
+    if data_type == _IAM_POLICY:
+        asset_iam_policy = json_format.ParseDict(data, Policy())
+    else:
+        asset_resource = json_format.ParseDict(data, Value())
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
                                ancestry_path=ancestry_path,
-                               resource=pb)
+                               resource=asset_resource,
+                               iam_policy=asset_iam_policy)

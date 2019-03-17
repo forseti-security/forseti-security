@@ -20,10 +20,16 @@ import sys
 import grpc
 from retrying import retry
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
-import google.cloud.forseti.scanner.scanners.config_validator_util.errors as scanner_error
-from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2
-from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2_grpc
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    errors)
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    validator_pb2)
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    validator_pb2_grpc)
+
+LOGGER = logger.get_logger(__name__)
 
 
 class ValidatorClient(object):
@@ -56,14 +62,18 @@ class ValidatorClient(object):
                 Server Unavailable Error.
         """
         try:
-            request = validator_pb2.AddDataRequest(assets=assets)
+            request = validator_pb2.AddDataRequest()
+            request.assets.extend(assets)
             self.stub.AddData(request)
         except grpc.RpcError as e:
             # pylint: disable=no-member
+            print (e.message)
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
+                raise errors.ConfigValidatorServerUnavailableError(
+                    e.message)
             else:
-                raise scanner_error.ConfigValidatorAddDataError(e.message)
+                LOGGER.exception('ConfigValidatorAddDataError: %s', e.message)
+                raise errors.ConfigValidatorAddDataError(e.message)
 
     def add_data_to_buffer(self, asset):
         """Add asset data to buffer, intended to manage sending data in bulk.
@@ -93,13 +103,15 @@ class ValidatorClient(object):
                 Unavailable Error.
         """
         try:
-            return self.stub.Audit()
+            return self.stub.Audit(validator_pb2.AuditRequest())
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
+                raise errors.ConfigValidatorServerUnavailableError(
+                    e.message)
             else:
-                raise scanner_error.ConfigValidatorAuditError(e.message)
+                LOGGER.exception('ConfigValidatorAuditError: %s', e.message)
+                raise errors.ConfigValidatorAuditError(e.message)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -112,13 +124,15 @@ class ValidatorClient(object):
             ConfigValidatorServerUnavailableError: Config Validator Server
                 Unavailable Error."""
         try:
-            self.stub.Reset()
+            self.stub.Reset(validator_pb2.ResetRequest())
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise scanner_error.ConfigValidatorServerUnavailableError(e.message)
+                raise errors.ConfigValidatorServerUnavailableError(
+                    e.message)
             else:
-                raise scanner_error.ConfigValidatorResetError(e.message)
+                LOGGER.exception('ConfigValidatorResetError: %s', e.message)
+                raise errors.ConfigValidatorResetError(e.message)
 
 
 class BufferedCVDataSender(object):

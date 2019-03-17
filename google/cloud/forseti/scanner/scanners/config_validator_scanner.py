@@ -134,6 +134,9 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Runs the Config Validator Scanner."""
+        # Clean up the validator environment by doing a reset.
+        self.validator_client.reset()
+
         # Get all the data in Config Validator Asset format.
         cv_assets = self._retrieve()
 
