@@ -103,7 +103,7 @@ class ValidatorClient(object):
                 Unavailable Error.
         """
         try:
-            return self.stub.Audit(validator_pb2.AuditRequest())
+            return self.stub.Audit(validator_pb2.AuditRequest()).violations
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:

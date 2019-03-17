@@ -16,7 +16,8 @@
 *_pb2_grpc.py
 
 # Exclude compiled protobuf in the validator util folder
-!google/cloud/forseti/scanner/scanners/config_validator_util/*
+!google/cloud/forseti/scanner/scanners/config_validator_util/*_pb2.py
+!google/cloud/forseti/scanner/scanners/config_validator_util/*_pb2_grpc.py
 
 # Miscellaneous
 .DS_Store
