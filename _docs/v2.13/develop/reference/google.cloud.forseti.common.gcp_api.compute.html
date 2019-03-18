@@ -1,0 +1,1140 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.compute module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.compute">
+<span id="google-cloud-forseti-common-gcp-api-compute-module"></span><h1>google.cloud.forseti.common.gcp_api.compute module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.compute" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Compute API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient">
+<em class="property">class </em><code class="descname">ComputeClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute Client.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.ESTIMATED_API_COMPLETION_IN_SEC">
+<code class="descname">ESTIMATED_API_COMPLETION_IN_SEC</code><em class="property"> = 7</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.ESTIMATED_API_COMPLETION_IN_SEC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.delete_firewall_rule">
+<code class="descname">delete_firewall_rule</code><span class="sig-paren">(</span><em>project_id</em>, <em>rule</em>, <em>uuid=None</em>, <em>blocking=False</em>, <em>retry_count=0</em>, <em>timeout=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.delete_firewall_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.delete_firewall_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a firewall rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>rule</strong> (<em>dict</em>) – The firewall rule dict to delete.</li>
+<li><strong>uuid</strong> (<em>str</em>) – An optional UUID to identify this request. If the same
+request is resent to the API, it will ignore the additional
+requests. If uuid is not set, one will be generated for the
+request.</li>
+<li><strong>blocking</strong> (<em>bool</em>) – If true, don’t return until the async operation
+completes on the backend or timeout seconds pass.</li>
+<li><strong>retry_count</strong> (<em>int</em>) – If greater than 0, retry on operation timeout.</li>
+<li><strong>timeout</strong> (<em>float</em>) – If greater than 0 and blocking is True, then raise an
+exception if timeout seconds pass before the operation completes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_backend_services">
+<code class="descname">get_backend_services</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_backend_services"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_backend_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the backend services for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of backend services for this project.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_disks">
+<code class="descname">get_disks</code><span class="sig-paren">(</span><em>project_id</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_disks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_disks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the list of all disks in the project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>zone</strong> (<em>str</em>) – An optional zone to query, if not provided then all
+disks in all zones are returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of disk resources for this project.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_firewall_quota">
+<code class="descname">get_firewall_quota</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_firewall_quota"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_firewall_quota" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls get_quota to request the firewall quota
+:param project_id: The project id.
+:type project_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The quota of a requested metric in a dict.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p>An example return value:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“metric”: “FIREWALLS”,
+“limit”: 100.0,
+“usage”: 9.0</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code> – Metric was not a firewall resource.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_firewall_rules">
+<code class="descname">get_firewall_rules</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_firewall_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_firewall_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the firewall rules for a given project id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of firewall rules for this project id.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_forwarding_rules">
+<code class="descname">get_forwarding_rules</code><span class="sig-paren">(</span><em>project_id</em>, <em>region=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_forwarding_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_forwarding_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the forwarding rules for a project.</p>
+<p>If no region name is specified, use aggregatedList() to query for
+forwarding rules in all regions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>region</strong> (<em>str</em>) – The region name.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of forwarding rules for this project.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_global_operation">
+<code class="descname">get_global_operation</code><span class="sig-paren">(</span><em>project_id</em>, <em>operation_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_global_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_global_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Operations Status
+:param project_id: The project id.
+:type project_id: str
+:param operation_id: The operation id.
+:type operation_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiNotEnabledError</span></code> – Returns if the api is not enabled.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – Returns if the api is not executable.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_image">
+<code class="descname">get_image</code><span class="sig-paren">(</span><em>project_id</em>, <em>image_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an image from a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>image_name</strong> (<em>str</em>) – The image name to get.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Compute Image resource dict.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/images">https://cloud.google.com/compute/docs/reference/latest/images</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_images">
+<code class="descname">get_images</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all images created in a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of images for this project.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_group_instances">
+<code class="descname">get_instance_group_instances</code><span class="sig-paren">(</span><em>project_id</em>, <em>instance_group_name</em>, <em>region=None</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_instance_group_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_group_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instance groups for a project.</p>
+<p>One and only one of zone (for zonal instance groups) and region
+(for regional instance groups) must be specified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>instance_group_name</strong> (<em>str</em>) – The instance group’s name.</li>
+<li><strong>region</strong> (<em>str</em>) – The regional instance group’s region.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zonal instance group’s zone.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">instance URLs for this instance group.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – invalid combination of parameters</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_group_managers">
+<code class="descname">get_instance_group_managers</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_instance_group_managers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_group_managers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instance group managers for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of instance group managers for this project.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_groups">
+<code class="descname">get_instance_groups</code><span class="sig-paren">(</span><em>project_id</em>, <em>include_instance_urls=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_instance_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instance groups for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>include_instance_urls</strong> (<em>bool</em>) – If true, fetch instance urls for each
+instance group and include them in the resource dictionary.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of instance groups for this project.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_templates">
+<code class="descname">get_instance_templates</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_instance_templates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instance_templates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instance templates for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of instance templates for this project.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instances">
+<code class="descname">get_instances</code><span class="sig-paren">(</span><em>project_id</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instances for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zone to list the instances in.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of instances for this project.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_networks">
+<code class="descname">get_networks</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_networks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_networks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the networks list for a given project id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of networks for this project id.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_project">
+<code class="descname">get_project</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the specified Project resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A Compute Project resource dict.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/projects/get">https://cloud.google.com/compute/docs/reference/latest/projects/get</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_quota">
+<code class="descname">get_quota</code><span class="sig-paren">(</span><em>project_id</em>, <em>metric</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_quota"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_quota" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the quota for any metric</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>metric</strong> (<em>str</em>) – The metric name of the quota needed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The quota of a requested metric in a dict.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>An example return value:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“metric”: “FIREWALLS”,
+“limit”: 100.0,
+“usage”: 9.0</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code> – Metric was not found in the project.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_snapshots">
+<code class="descname">get_snapshots</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_snapshots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the list of all snapshots in the project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of snapshot resources for this project.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_subnetworks">
+<code class="descname">get_subnetworks</code><span class="sig-paren">(</span><em>project_id</em>, <em>region=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.get_subnetworks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.get_subnetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the list of all subnetworks in the project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>region</strong> (<em>str</em>) – An optional region to query, if not provided then all
+subnetworks in all regions are returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of subnetwork resources for this project.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.insert_firewall_rule">
+<code class="descname">insert_firewall_rule</code><span class="sig-paren">(</span><em>project_id</em>, <em>rule</em>, <em>uuid=None</em>, <em>blocking=False</em>, <em>retry_count=0</em>, <em>timeout=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.insert_firewall_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.insert_firewall_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a firewall rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>rule</strong> (<em>dict</em>) – The firewall rule dict to insert.</li>
+<li><strong>uuid</strong> (<em>str</em>) – An optional UUID to identify this request. If the same
+request is resent to the API, it will ignore the additional
+requests. If uuid is not set, one will be generated for the
+request.</li>
+<li><strong>blocking</strong> (<em>bool</em>) – If true, don’t return until the async operation
+completes on the backend or timeout seconds pass.</li>
+<li><strong>retry_count</strong> (<em>int</em>) – If greater than 0, retry on operation timeout.</li>
+<li><strong>timeout</strong> (<em>float</em>) – If greater than 0 and blocking is True, then raise an
+exception if timeout seconds pass before the operation completes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.is_api_enabled">
+<code class="descname">is_api_enabled</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.is_api_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.is_api_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the Compute API is enabled for the specified project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the API is enabled, else False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.patch_firewall_rule">
+<code class="descname">patch_firewall_rule</code><span class="sig-paren">(</span><em>project_id</em>, <em>rule</em>, <em>uuid=None</em>, <em>blocking=False</em>, <em>retry_count=0</em>, <em>timeout=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.patch_firewall_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.patch_firewall_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patch a firewall rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>rule</strong> (<em>dict</em>) – The firewall rule dict to patch, only fields defined in
+the dict will be modified. The ‘name’ key is a required field and
+must match an existing rule.</li>
+<li><strong>uuid</strong> (<em>str</em>) – An optional UUID to identify this request. If the same
+request is resent to the API, it will ignore the additional
+requests. If uuid is not set, one will be generated for the
+request.</li>
+<li><strong>blocking</strong> (<em>bool</em>) – If true, don’t return until the async operation
+completes on the backend or timeout seconds pass.</li>
+<li><strong>retry_count</strong> (<em>int</em>) – If greater than 0, retry on operation timeout.</li>
+<li><strong>timeout</strong> (<em>float</em>) – If greater than 0 and blocking is True, then raise an
+exception if timeout seconds pass before the operation completes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiNotEnabledError</span></code> – The api is not enabled.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – The api returned an error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code> – The ‘name’ key is missing from the rule dict.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.update_firewall_rule">
+<code class="descname">update_firewall_rule</code><span class="sig-paren">(</span><em>project_id</em>, <em>rule</em>, <em>uuid=None</em>, <em>blocking=False</em>, <em>retry_count=0</em>, <em>timeout=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.update_firewall_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.update_firewall_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a firewall rule.</p>
+<dl class="docutils">
+<dt><em>NOTE</em>: Update only works for INGRESS rules, do not use for EGRESS</dt>
+<dd>rules. Patch should be used for all rule updates.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>rule</strong> (<em>dict</em>) – The firewall rule dict to update. The ‘name’ key is a
+required field and must match an existing rule.</li>
+<li><strong>uuid</strong> (<em>str</em>) – An optional UUID to identify this request. If the same
+request is resent to the API, it will ignore the additional
+requests. If uuid is not set, one will be generated for the
+request.</li>
+<li><strong>blocking</strong> (<em>bool</em>) – If true, don’t return until the async operation
+completes on the backend or timeout seconds pass.</li>
+<li><strong>retry_count</strong> (<em>int</em>) – If greater than 0, retry on operation timeout.</li>
+<li><strong>timeout</strong> (<em>float</em>) – If greater than 0 and blocking is True, then raise an
+exception if timeout seconds pass before the operation completes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiNotEnabledError</span></code> – The api is not enabled.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – The api returned an error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code> – The ‘name’ key is missing from the rule dict.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeClient.wait_for_completion">
+<code class="descname">wait_for_completion</code><span class="sig-paren">(</span><em>project_id</em>, <em>operation</em>, <em>timeout=0</em>, <em>initial_delay=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeClient.wait_for_completion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeClient.wait_for_completion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for the operation to complete.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>operation</strong> (<em>dict</em>) – The global operation response from an API call.</li>
+<li><strong>timeout</strong> (<em>float</em>) – The maximum time to wait for the operation to
+complete.</li>
+<li><strong>initial_delay</strong> (<em>float</em>) – The time to wait before first checking if the
+API has completed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Global Operation status and info.
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/globalOperations/get">https://cloud.google.com/compute/docs/reference/latest/globalOperations/get</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient">
+<em class="property">class </em><code class="descname">ComputeRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=100.0</em>, <em>use_rate_limiter=True</em>, <em>read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#ComputeRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Compute API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.backend_services">
+<code class="descname">backend_services</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.backend_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeBackendServicesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.disks">
+<code class="descname">disks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.disks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeDisksRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.firewalls">
+<code class="descname">firewalls</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.firewalls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeFirewallsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.forwarding_rules">
+<code class="descname">forwarding_rules</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.forwarding_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeForwardingRulesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.global_operations">
+<code class="descname">global_operations</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.global_operations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeGlobalOperationsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.images">
+<code class="descname">images</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeImagesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_group_managers">
+<code class="descname">instance_group_managers</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_group_managers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeInstanceGroupManagersRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_groups">
+<code class="descname">instance_groups</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeInstanceGroupsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_templates">
+<code class="descname">instance_templates</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instance_templates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeInstanceTemplatesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instances">
+<code class="descname">instances</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeInstancesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.networks">
+<code class="descname">networks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.networks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeNetworksRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.projects">
+<code class="descname">projects</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeProjectsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.region_instance_groups">
+<code class="descname">region_instance_groups</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.region_instance_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeRegionInstanceGroupsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.snapshots">
+<code class="descname">snapshots</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.snapshots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeSnapshotsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.subnetworks">
+<code class="descname">subnetworks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute.ComputeRepositoryClient.subnetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ComputeSubnetworksRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeBackendServicesRepository">
+<em class="property">class </em><code class="descname">_ComputeBackendServicesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeBackendServicesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeBackendServicesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Backend Services repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeDisksRepository">
+<em class="property">class </em><code class="descname">_ComputeDisksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeDisksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeDisksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Disks repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeDisksRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>zone</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeDisksRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeDisksRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List disks by zone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zone of the instance group to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeFirewallsRepository">
+<em class="property">class </em><code class="descname">_ComputeFirewallsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeFirewallsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeFirewallsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.InsertResourceMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.InsertResourceMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.InsertResourceMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.UpdateResourceMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.UpdateResourceMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.UpdateResourceMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.DeleteResourceMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.DeleteResourceMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.DeleteResourceMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Firewall Rules repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeForwardingRulesRepository">
+<em class="property">class </em><code class="descname">_ComputeForwardingRulesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeForwardingRulesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeForwardingRulesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Forwarding Rules repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeForwardingRulesRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>region</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeForwardingRulesRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeForwardingRulesRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List instances by zone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>region</strong> (<em>str</em>) – The region of the forwarding rules to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeGlobalOperationsRepository">
+<em class="property">class </em><code class="descname">_ComputeGlobalOperationsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeGlobalOperationsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeGlobalOperationsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Global Operations repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeImagesRepository">
+<em class="property">class </em><code class="descname">_ComputeImagesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeImagesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeImagesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Images repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupManagersRepository">
+<em class="property">class </em><code class="descname">_ComputeInstanceGroupManagersRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstanceGroupManagersRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupManagersRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Instance Group Managers repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupsRepository">
+<em class="property">class </em><code class="descname">_ComputeInstanceGroupsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstanceGroupsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Instance Groups repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupsRepository.list_instances">
+<code class="descname">list_instances</code><span class="sig-paren">(</span><em>resource</em>, <em>instance_group</em>, <em>zone</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstanceGroupsRepository.list_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstanceGroupsRepository.list_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>List instances for instance group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>instance_group</strong> (<em>str</em>) – The name of the instance group to query.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zone of the instance group to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstanceTemplatesRepository">
+<em class="property">class </em><code class="descname">_ComputeInstanceTemplatesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstanceTemplatesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstanceTemplatesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Instance Templates repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstancesRepository">
+<em class="property">class </em><code class="descname">_ComputeInstancesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstancesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstancesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Instances repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeInstancesRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>zone</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeInstancesRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeInstancesRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List instances by zone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zone of the instance group to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeNetworksRepository">
+<em class="property">class </em><code class="descname">_ComputeNetworksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeNetworksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeNetworksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Networks repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeProjectsRepository">
+<em class="property">class </em><code class="descname">_ComputeProjectsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeProjectsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeProjectsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Projects repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeRegionInstanceGroupsRepository">
+<em class="property">class </em><code class="descname">_ComputeRegionInstanceGroupsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeRegionInstanceGroupsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeRegionInstanceGroupsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Region Instance Groups repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeRegionInstanceGroupsRepository.list_instances">
+<code class="descname">list_instances</code><span class="sig-paren">(</span><em>resource</em>, <em>instance_group</em>, <em>region</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeRegionInstanceGroupsRepository.list_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeRegionInstanceGroupsRepository.list_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>List instances for instance group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>instance_group</strong> (<em>str</em>) – The name of the instance group to query.</li>
+<li><strong>region</strong> (<em>str</em>) – The region of the instance group to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeSnapshotsRepository">
+<em class="property">class </em><code class="descname">_ComputeSnapshotsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeSnapshotsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeSnapshotsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Snapshots repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeSubnetworksRepository">
+<em class="property">class </em><code class="descname">_ComputeSubnetworksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeSubnetworksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeSubnetworksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.AggregatedListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Compute Subnetworks repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.compute._ComputeSubnetworksRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>region</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_ComputeSubnetworksRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._ComputeSubnetworksRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List subnetworks by region.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The project to query resources for.</li>
+<li><strong>region</strong> (<em>str</em>) – The region of the forwarding rules to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Additional args to pass through to the base method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.compute._api_not_enabled">
+<code class="descname">_api_not_enabled</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_api_not_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._api_not_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the error is due to the API not being enabled for project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> (<em>Exception</em>) – The error to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>(bool, str) True, API not enabled reason if API is not enabled</dt>
+<dd>or False, ‘’ if there is a different exception.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.compute._debug_operation_response_time">
+<code class="descname">_debug_operation_response_time</code><span class="sig-paren">(</span><em>project_id</em>, <em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_debug_operation_response_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._debug_operation_response_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log timing details for a running operation if debug logs enabled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id the operation was for.</li>
+<li><strong>operation</strong> (<em>dict</em>) – The last Operation resource returned from the
+API server.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.compute._flatten_aggregated_list_results">
+<code class="descname">_flatten_aggregated_list_results</code><span class="sig-paren">(</span><em>project_id</em>, <em>paged_results</em>, <em>item_key</em>, <em>sort_key='name'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_flatten_aggregated_list_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._flatten_aggregated_list_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten results and handle exceptions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id the results are for.</li>
+<li><strong>paged_results</strong> (<em>list</em>) – A list of paged API response objects.
+[{page 1 results}, {page 2 results}, {page 3 results}, …]</li>
+<li><strong>item_key</strong> (<em>str</em>) – The name of the key within the inner “items” lists
+containing the objects of interest.</li>
+<li><strong>sort_key</strong> (<em>str</em>) – The name of the key to sort the results by before
+returning.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A sorted list of items.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiNotEnabledError</span></code> – Raised if the API is not enabled for the project.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – Raised if there is another error while calling the
+API method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.compute._flatten_list_results">
+<code class="descname">_flatten_list_results</code><span class="sig-paren">(</span><em>project_id</em>, <em>paged_results</em>, <em>item_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/compute.html#_flatten_list_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.compute._flatten_list_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten results and handle exceptions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id the results are for.</li>
+<li><strong>paged_results</strong> (<em>list</em>) – A list of paged API response objects.
+[{page 1 results}, {page 2 results}, {page 3 results}, …]</li>
+<li><strong>item_key</strong> (<em>str</em>) – The name of the key within the inner “items” lists
+containing the objects of interest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of items.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiNotEnabledError</span></code> – Raised if the API is not enabled for the project.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – Raised if there is another error while calling the
+API method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

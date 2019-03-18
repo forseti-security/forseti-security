@@ -1,0 +1,7 @@
+google.cloud.forseti.notifier.notifiers.gcs\_violations module
+==============================================================
+
+.. automodule:: google.cloud.forseti.notifier.notifiers.gcs_violations
+    :members:
+    :undoc-members:
+    :show-inheritance:

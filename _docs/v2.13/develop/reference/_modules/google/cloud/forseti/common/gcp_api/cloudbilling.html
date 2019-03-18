@@ -1,0 +1,303 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloudbilling"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_api.cloudbilling</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper for Cloud Billing API client.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">httplib2</span> <span class="k">import</span> <span class="n">HttpLib2Error</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">_base_repository</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">api_helpers</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">repository_mixins</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">API_NAME</span> <span class="o">=</span> <span class="s1">&#39;cloudbilling&#39;</span>
+
+
+<div class="viewcode-block" id="CloudBillingRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">CloudBillingRepositoryClient</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Billing API Respository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">quota_max_calls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_period</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>
+                 <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            quota_max_calls (int): Allowed requests per &lt;quota_period&gt; for the</span>
+<span class="sd">                API.</span>
+<span class="sd">            quota_period (float): The time period to track requests over.</span>
+<span class="sd">            use_rate_limiter (bool): Set to false to disable the use of a rate</span>
+<span class="sd">                limiter for this service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
+            <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_billing_accounts</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CloudBillingRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">API_NAME</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1&#39;</span><span class="p">],</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">billing_accounts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudBillingBillingAccountsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_billing_accounts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_billing_accounts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudBillingBillingAccountsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_billing_accounts</span>
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudBillingProjectsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudBillingProjectsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span></div>
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+
+<div class="viewcode-block" id="_CloudBillingBillingAccountsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudBillingBillingAccountsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Billing BillingAccounts repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudBillingBillingAccountsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">list_key_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;billingAccounts&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_CloudBillingBillingAccountsRepository.get_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">account_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format&#39;s a billing account ID to pass to the API</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            account_id (str): The billing account id to query, either just the</span>
+<span class="sd">                id or the id prefixed with &#39;billingAccounts/&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The formatted resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">account_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">account_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;billingAccounts/&#39;</span><span class="p">):</span>
+            <span class="n">account_id</span> <span class="o">=</span> <span class="s1">&#39;billingAccounts/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">account_id</span></div></div>
+
+
+<div class="viewcode-block" id="_CloudBillingProjectsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudBillingProjectsRepository</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Billing Projects repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudBillingProjectsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_CloudBillingProjectsRepository.get_billing_info"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_billing_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_billing_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the billing information for a project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The project name to query in the format</span>
+<span class="sd">                projects/{project_id}.</span>
+<span class="sd">            fields (str): Fields to include in the response - partial response.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The response from the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                     <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+            <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;getBillingInfo&#39;</span><span class="p">,</span>
+            <span class="n">verb_arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="_CloudBillingProjectsRepository.get_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format&#39;s a project_id to pass in to .get().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project id to query, either just the</span>
+<span class="sd">                id or the id prefixed with &#39;projects/&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The formatted resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">project_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
+            <span class="n">project_id</span> <span class="o">=</span> <span class="s1">&#39;projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">project_id</span></div></div>
+
+
+<div class="viewcode-block" id="CloudBillingClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient">[docs]</a><span class="k">class</span> <span class="nc">CloudBillingClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Billing Client.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            **kwargs (dict): The kwargs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_calls</span><span class="p">,</span> <span class="n">quota_period</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_ratelimiter_config</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span> <span class="n">API_NAME</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">CloudBillingRepositoryClient</span><span class="p">(</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_rate_limiter&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CloudBillingClient.get_billing_info"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_billing_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the billing information for a project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (int): The project id for a GCP project.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A ProjectBillingInfo resource.</span>
+<span class="sd">            https://cloud.google.com/billing/reference/rest/v1/ProjectBillingInfo</span>
+
+<span class="sd">            {</span>
+<span class="sd">              &quot;name&quot;: string,</span>
+<span class="sd">              &quot;projectId&quot;: string,</span>
+<span class="sd">              &quot;billingAccountName&quot;: string,</span>
+<span class="sd">              &quot;billingEnabled&quot;: boolean,</span>
+<span class="sd">            }</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_billing_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the billing information for a project,&#39;</span>
+                         <span class="s1">&#39; project_id = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">)</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;billing_info&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="CloudBillingClient.get_billing_accounts"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_accounts">[docs]</a>    <span class="k">def</span> <span class="nf">get_billing_accounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master_account_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets all billing accounts the authenticated user has access to.</span>
+
+<span class="sd">        If no master account is specified, then all billing accounts the caller</span>
+<span class="sd">        has visibility to are returned. Otherwise retuns all subaccounts of the</span>
+<span class="sd">        specified master billing account.</span>
+
+
+<span class="sd">        Args:</span>
+<span class="sd">            master_account_id (str): If set, only return subaccounts under this</span>
+<span class="sd">                master billing account.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of BillingAccount resources.</span>
+<span class="sd">            https://cloud.google.com/billing/reference/rest/v1/billingAccounts</span>
+
+<span class="sd">            {</span>
+<span class="sd">              &quot;name&quot;: string,</span>
+<span class="sd">              &quot;open&quot;: boolean,</span>
+<span class="sd">              &quot;displayName&quot;: string,</span>
+<span class="sd">              &quot;masterBillingAccount&quot;: string,</span>
+<span class="sd">            }</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">master_account_id</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="s1">&#39;master_billing_account=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">billing_accounts</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">master_account_id</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">billing_accounts</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                <span class="nb">filter</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;billingAccounts&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting billing_accounts,&#39;</span>
+                         <span class="s1">&#39; master_account_id = </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">master_account_id</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span>
+                <span class="s1">&#39;billing_accounts&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s1">&#39;filter&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div>
+
+<div class="viewcode-block" id="CloudBillingClient.get_billing_acct_iam_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudbilling.html#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_acct_iam_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_billing_acct_iam_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">account_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the IAM policies for the given billing account.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            account_id (str): The billing account id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: An IAM Policy resource.</span>
+<span class="sd">            https://cloud.google.com/billing/reference/rest/v1/Policy</span>
+
+<span class="sd">            {</span>
+<span class="sd">              &quot;bindings&quot;: list,</span>
+<span class="sd">              &quot;auditConfigs&quot;: list,</span>
+<span class="sd">              &quot;etag&quot;: string,</span>
+<span class="sd">            }</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: ApiExecutionError is raised if the call to the</span>
+<span class="sd">                GCP API fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">billing_accounts</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">account_id</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">billing_accounts</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">include_body</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting IAM policies for a given billing account,&#39;</span>
+                         <span class="s1">&#39; account_id = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">account_id</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">api_exception</span> <span class="o">=</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">api_exception</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_exception</span></div></div>
+</pre></div>
