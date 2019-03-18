@@ -129,7 +129,7 @@ class InventoryImporter(object):
         self.membership_map = {}  # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
-        self.settings_groups_cache = {}
+        self.groups_settings_cache = set()
 
         self.found_root = False
 
@@ -484,8 +484,8 @@ class InventoryImporter(object):
 
         settings_dict = settings.get_resource_data()
         group_email = group_name(settings)
-        if not self.settings_groups_cache.get(group_email):
-            self.settings_groups_cache[group_email] = True
+        if group_email not in self.groups_settings_cache:
+            self.groups_settings_cache.add(group_email)
             settings_row = dict(group_name=group_email,
                                 settings=json.dumps(settings_dict,
                                                     sort_keys=True))
