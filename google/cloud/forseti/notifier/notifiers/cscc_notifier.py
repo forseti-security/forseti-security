@@ -282,9 +282,8 @@ class CsccNotifier(object):
                 finding = finding_list[1]
                 LOGGER.debug('Updating finding CSCC:\n%s.', finding)
                 try:
-                    client.update_finding(finding, finding_id,
-                                          finding['state'],
-                                          finding['event_time'],
+                    client.update_finding(finding,
+                                          finding_id,
                                           source_id=source_id)
                     LOGGER.debug('Successfully updated finding in CSCC:\n%s',
                                  finding)
