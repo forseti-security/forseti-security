@@ -209,6 +209,8 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: config_validator
+          enabled: false
         - name: enabled_apis
           enabled: false
         - name: firewall_rule

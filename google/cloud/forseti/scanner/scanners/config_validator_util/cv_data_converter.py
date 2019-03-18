@@ -82,7 +82,7 @@ def convert_data_to_cv_asset(resource, data_type):
 
     data = json.loads(resource.data)
 
-    asset_resource, asset_iam_policy = {}, {}
+    asset_resource, asset_iam_policy = Value(), Policy()
 
     if data_type == _IAM_POLICY:
         asset_iam_policy = json_format.ParseDict(data, Policy())
