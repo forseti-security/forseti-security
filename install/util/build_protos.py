@@ -21,6 +21,12 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
+# There are certain PB2 that are not generated during the setup process,
+# we will need to keep them instead of deleting them.
+PB2_TO_KEEP = ['validator_pb2.py', 'validator_pb2_grpc.py']
+
+
 def is_grpc_service_dir(files):
     """Returns true iff the directory hosts a gRPC service.
 
@@ -52,6 +58,8 @@ def clean(path):
                 root)
         for filename in files:
             full_filename = os.path.join(root, filename)
+            if filename in PB2_TO_KEEP:
+                continue
             if full_filename.endswith('_pb2.py') or full_filename.endswith(
                     '_pb2.pyc'):
                 os.unlink(full_filename)
