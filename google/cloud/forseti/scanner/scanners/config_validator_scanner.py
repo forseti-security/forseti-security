@@ -62,10 +62,10 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
         for violation in violations:
             resource_name_items = violation.resource.split('/')[0]
-            resource_type, resource_id = (
-                resource_name_items[-2], resource_name_items[-1])
-            full_name, resource_data = self.resource_lookup_table.get(
-                violation.resource, ('', ''))
+            resource_type, resource_id = (resource_name_items[-1])
+            full_name, resource_type, resource_data = (
+                self.resource_lookup_table.get(violation.resource,
+                                               ('', '', '')))
             yield {
                 'resource_id': resource_id,
                 'resource_type': resource_type,
@@ -84,13 +84,18 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
         Args:
             all_violations (List[RuleViolation]): A list of
-                Config Validator violations.
+                flattened Config Validator violations.
         """
-        all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _retrieve(self):
+    def _retrieve(self, iam_policy=False):
         """Retrieves the data for scanner.
+
+        If iam_policy is not set, it will retrieve all the resources
+        except iam policies.
+
+        Args:
+            iam_policy (bool): Retrieve iam policies only if set to true.
 
         Yields:
             Asset: Config Validator Asset.
@@ -101,10 +106,21 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
 
+        if not iam_policy:
+            resource_types = importer.GCP_TYPE_LIST
+            data_type = 'resource'
+        else:
+            resource_types = ['iam_policy']
+            data_type = 'iam_policy'
+
+        # Clean up the resource look up table to release memory and
+        # avoid confusion.
+        self.resource_lookup_table = {}
+
         with scoped_session as session:
-            # fetching GCP resources.
+            # fetching GCP resources based on their types.
             LOGGER.info('Retrieving GCP resource data.')
-            for resource_type in importer.GCP_TYPE_LIST:
+            for resource_type in resource_types:
                 for resource in data_access.scanner_iter(session,
                                                          resource_type):
                     if (not resource.cai_resource_name and
@@ -115,41 +131,58 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                                      resource.type)
                         break
                     self.resource_lookup_table[resource.cai_resource_name] = (
-                        resource.full_name, resource.data)
+                        resource.full_name,
+                        resource.cai_resource_type,
+                        resource.data)
                     yield cv_data_converter.convert_data_to_cv_asset(
-                        resource, 'resource')
+                        resource, data_type)
 
-            # fetching IAM policy.
-            LOGGER.info('Retrieving GCP iam data.')
-            for policy in data_access.scanner_iter(session, 'iam_policy'):
-                if (not policy.cai_resource_name and
-                        policy.type not in
-                        cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
-                    LOGGER.debug('IAM Policy type %s is not currently '
-                                 'supported in Config Validator scanner.',
-                                 policy.type)
-                    break
-                yield cv_data_converter.convert_data_to_cv_asset(
-                    policy, 'iam_policy')
+    def _retrieve_flattened_violations(self, iam_policy=False):
+        """Retrieve flattened violations by flattening the config validator
+        violations returned by the config validator client.
 
-    def run(self):
-        """Runs the Config Validator Scanner."""
-        # Clean up the validator environment by doing a reset.
+        If iam_policy is not set, it will retrieve violations from all resources
+        except iam policies.
+
+        Args:
+            iam_policy (bool): Retrieve flattened IAM policy violations.
+
+        Returns:
+            list: A list of flattened violations.
+        """
+        # Clean up the validator environment by doing a reset pre audit.
         self.validator_client.reset()
 
         # Get all the data in Config Validator Asset format.
-        cv_assets = self._retrieve()
+        cv_assets = self._retrieve(iam_policy=iam_policy)
 
-        # Add asset data to Config Validator.
-        for cv_asset in cv_assets:
-            self.validator_client.add_data_to_buffer(cv_asset)
-        self.validator_client.flush_buffer()
+        # Add asset data in bulk to Config Validator.
+        self.validator_client.add_data_in_bulk(cv_assets)
 
         # Find all violations.
         violations = self.validator_client.audit()
 
-        # Clean up Config Validator.
+        # Clean up the validator environment by doing a reset post audit.
         self.validator_client.reset()
 
-        # Output to db.
-        self._output_results(violations)
+        return self._flatten_violations(violations)
+
+    def run(self):
+        """Runs the Config Validator Scanner.
+
+        Note: Resources and iam policies audit are separated into 2 steps.
+        That's mainly because there is no good way of identifying from config
+        validator validation whether a violation is an iam policy violation or
+        a resource violation, the resource name for both will be the same and
+        it will be hard for Forseti to retrieve the right resource_data for the
+        corresponding violation types.
+        """
+        # Retrieving resource violations.
+        all_violations = self._retrieve_flattened_violations()
+
+        # Retrieving iam violations.
+        all_violations.extend(
+            self._retrieve_flattened_violations(iam_policy=True))
+
+        # Output all violations to db.
+        self._output_results(all_violations)

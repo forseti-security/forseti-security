@@ -75,17 +75,14 @@ class ValidatorClient(object):
                 LOGGER.exception('ConfigValidatorAddDataError: %s', e.message)
                 raise errors.ConfigValidatorAddDataError(e.message)
 
-    def add_data_to_buffer(self, asset):
+    def add_data_in_bulk(self, assets):
         """Add asset data to buffer, intended to manage sending data in bulk.
 
         Args:
-            asset (Asset): The asset data.
+            assets (list): A list of asset data.
         """
-        self.buffer_sender.add(asset)
-
-    def flush_buffer(self):
-        """Flush the buffer, sending all the data to
-        Config Validator and empty the buffer."""
+        for asset in assets:
+            self.buffer_sender.add(asset)
         self.buffer_sender.flush()
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
