@@ -49,9 +49,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         self._findings = None
 
         self.version = version
-        use_versioned_discovery_doc = False
-        if self.version == 'v1beta1':
-            use_versioned_discovery_doc = True
+        use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
             API_NAME, versions=[self.version],
