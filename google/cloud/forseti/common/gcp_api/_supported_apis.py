@@ -32,8 +32,8 @@ SUPPORTED_APIS = {
         'supported_versions': ['v2']
     },
     'cloudasset': {
-        'default_version': 'v1beta1',
-        'supported_versions': ['v1beta1'],
+        'default_version': 'v1',
+        'supported_versions': ['v1'],
     },
     'cloudbilling': {
         'default_version': 'v1',

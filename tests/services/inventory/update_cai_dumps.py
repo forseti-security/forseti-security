@@ -101,14 +101,14 @@ def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
 
 def organization(item):
     name = '//cloudresourcemanager.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.cloud.resourcemanager.Organization'
+    asset_type = 'cloudresourcemanager.googleapis.com/Organization'
     return _create_asset(name, asset_type, None, item.data(),
                          item.get_iam_policy())
 
 
 def folder(item):
     name = '//cloudresourcemanager.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.cloud.resourcemanager.Folder'
+    asset_type = 'cloudresourcemanager.googleapis.com/Folder'
     parent_name = '//cloudresourcemanager.googleapis.com/{}'.format(
         item['parent'])
     return _create_asset(name, asset_type, parent_name, item.data(),
@@ -117,7 +117,7 @@ def folder(item):
 def project(item):
     name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         item['projectNumber'])
-    asset_type = 'google.cloud.resourcemanager.Project'
+    asset_type = 'cloudresourcemanager.googleapis.com/Project'
     parent_name = '//cloudresourcemanager.googleapis.com/{}s/{}'.format(
         item['parent']['type'], item['parent']['id'])
     return _create_asset(name, asset_type, parent_name, item.data(),
@@ -126,7 +126,7 @@ def project(item):
 def appengine_app(item):
     parent = item.parent()
     name = '//appengine.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.appengine.Application'
+    asset_type = 'appengine.googleapis.com/Application'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
@@ -134,13 +134,13 @@ def appengine_app(item):
 
 def appengine_service(item):
     name = '//appengine.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.appengine.Service'
+    asset_type = 'appengine.googleapis.com/Service'
     return _create_asset(name, asset_type, None, item.data(), None)
 
 
 def appengine_version(item):
     name = '//appengine.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.appengine.Version'
+    asset_type = 'appengine.googleapis.com/Version'
     return _create_asset(name, asset_type, None, item.data(), None)
 
 
@@ -148,7 +148,7 @@ def bigquery_dataset(item):
     parent = item.parent()
     name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
         parent['projectNumber'], item['datasetReference']['datasetId'])
-    asset_type = 'google.cloud.bigquery.Dataset'
+    asset_type = 'bigquery.googleapis.com/Dataset'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
@@ -156,7 +156,7 @@ def bigquery_dataset(item):
 
 def billing_account(item):
     name = '//cloudbilling.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.cloud.billing.BillingAccount'
+    asset_type = 'cloudbilling.googleapis.com/BillingAccount'
     parent_name = ''
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
@@ -165,7 +165,7 @@ def billing_account(item):
 def bucket(item):
     parent = item.parent()
     name = '//storage.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.cloud.storage.Bucket'
+    asset_type = 'storage.googleapis.com/Bucket'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     data = item.data()
@@ -180,7 +180,7 @@ def cloudsqlinstance(item):
     parent = item.parent()
     name = '//cloudsql.googleapis.com/projects/{}/instances/{}'.format(
       parent['projectId'], item['name'])
-    asset_type = 'google.cloud.sql.Instance'
+    asset_type = 'sqladmin.googleapis.com/Instance'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
@@ -199,7 +199,7 @@ def role(item):
             parent['projectNumber'])
 
     name = '//iam.googleapis.com/{}'.format(item['name'])
-    asset_type = 'google.iam.Role'
+    asset_type = 'iam.googleapis.com/Role'
 
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
@@ -208,7 +208,7 @@ def serviceaccount(item):
     parent = item.parent()
     name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
         item['projectId'], item['uniqueId'])
-    asset_type = 'google.iam.ServiceAccount'
+    asset_type = 'iam.googleapis.com/ServiceAccount'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(),
@@ -221,7 +221,7 @@ def kubernetes_cluster(item):
             'clusters/{}'.format(parent['projectId'],
                                  item['zone'],
                                  item['name']))
-    asset_type = 'google.container.Cluster'
+    asset_type = 'container.googleapis.com/Cluster'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
@@ -237,55 +237,57 @@ def _create_compute_asset(item, asset_type):
 
 
 def backendservice(item):
-    return _create_compute_asset(item, 'google.compute.BackendService')
+    return _create_compute_asset(item, 'compute.googleapis.com/BackendService')
 
 
 def compute_project(item):
-    return _create_compute_asset(item, 'google.compute.Project')
+    return _create_compute_asset(item, 'compute.googleapis.com/Project')
 
 
 def disk(item):
-    return _create_compute_asset(item, 'google.compute.Disk')
+    return _create_compute_asset(item, 'compute.googleapis.com/Disk')
 
 
 def firewall(item):
-    return _create_compute_asset(item, 'google.compute.Firewall')
+    return _create_compute_asset(item, 'compute.googleapis.com/Firewall')
 
 
 def forwardingrule(item):
-    return _create_compute_asset(item, 'google.compute.ForwardingRule')
+    return _create_compute_asset(item, 'compute.googleapis.com/ForwardingRule')
 
 
 def image(item):
-    return _create_compute_asset(item, 'google.compute.Image')
+    return _create_compute_asset(item, 'compute.googleapis.com/Image')
 
 
 def instance(item):
-    return _create_compute_asset(item, 'google.compute.Instance')
+    return _create_compute_asset(item, 'compute.googleapis.com/Instance')
 
 
 def instancegroup(item):
-    return _create_compute_asset(item, 'google.compute.InstanceGroup')
+    return _create_compute_asset(item, 'compute.googleapis.com/InstanceGroup')
 
 
 def instancegroupmanager(item):
-    return _create_compute_asset(item, 'google.compute.InstanceGroupManager')
+    return _create_compute_asset(item,
+                                 'compute.googleapis.com/InstanceGroupManager')
 
 
 def instancetemplate(item):
-    return _create_compute_asset(item, 'google.compute.InstanceTemplate')
+    return _create_compute_asset(item,
+                                 'compute.googleapis.com/InstanceTemplate')
 
 
 def network(item):
-    return _create_compute_asset(item, 'google.compute.Network')
+    return _create_compute_asset(item, 'compute.googleapis.com/Network')
 
 
 def snapshot(item):
-    return _create_compute_asset(item, 'google.compute.Snapshot')
+    return _create_compute_asset(item, 'compute.googleapis.com/Snapshot')
 
 
 def subnetwork(item):
-    return _create_compute_asset(item, 'google.compute.Subnetwork')
+    return _create_compute_asset(item, 'compute.googleapis.com/Subnetwork')
 
 
 

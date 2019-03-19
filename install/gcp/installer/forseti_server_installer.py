@@ -36,6 +36,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     resource_root_id = None
     access_target = None
     target_id = None
+    composite_root_resources = []
     user_can_grant_roles = True
 
     firewall_rules_to_be_deleted = ['default-allow-icmp',
@@ -78,10 +79,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
             bool: Whether or not the deployment was successful.
             str: Deployment name.
         """
+        resources = []
+        if self.composite_root_resources:
+            resources = self.composite_root_resources
+        else:
+            resources = [self.resource_root_id]
+
         self.has_roles_script = gcloud.grant_server_svc_acct_roles(
             self.enable_write_access,
-            self.access_target,
-            self.target_id,
+            resources,
             self.project_id,
             self.gcp_service_acct_email,
             self.user_can_grant_roles)
@@ -204,6 +210,17 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 the forseti configuration file.
         """
         bucket_name = self.generate_bucket_name()
+
+        resource_root_id = ''
+        composite_root_resources = ''
+
+        if self.composite_root_resources:
+            composite_root_resources = '\n'
+            for resource in self.composite_root_resources:
+                composite_root_resources += '       - \"' + resource + '\"\n'
+        else:
+            resource_root_id = self.resource_root_id
+
         return {
             'CAI_ENABLED': 'organizations' in self.resource_root_id,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
@@ -212,7 +229,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'FORSETI_CAI_BUCKET': self._get_cai_bucket_name(),
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
-            'ROOT_RESOURCE_ID': self.resource_root_id,
+            'ROOT_RESOURCE_ID': resource_root_id,
+            'COMPOSITE_ROOT_RESOURCES': composite_root_resources,
         }
 
     def get_rule_default_values(self):
@@ -221,8 +239,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        organization_id = self.resource_root_id.split('/')[-1]
+        if self.composite_root_resources:
+            # split element 0 into type and id
+            rtype, rid = self.composite_root_resources[0].split('/')
+
+            organization_id = gcloud.lookup_organization(rid, rtype)
+        else:
+            organization_id = self.resource_root_id.split('/')[-1]
+
         domain = gcloud.get_domain_from_organization_id(organization_id)
+
         return {
             'ORGANIZATION_ID': organization_id,
             'DOMAIN': domain
@@ -236,8 +262,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         utils.print_banner('Forseti Installation Configuration')
 
-        self.access_target = constants.RESOURCE_TYPES[0]
-        self.target_id = self.organization_id
+        if self.composite_root_resources:
+            # split element 0 into type and id
+            rtype, rid = self.composite_root_resources[0].split('/')
+            self.access_target = rtype
+            self.target_id = rid
+        else:
+            self.access_target = constants.RESOURCE_TYPES[0]
+            self.target_id = self.organization_id
 
         while not self.target_id:
             if self.setup_explain:
@@ -259,15 +291,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             if choice_index and choice_index <= len(constants.RESOURCE_TYPES):
                 self.access_target = constants.RESOURCE_TYPES[choice_index-1]
-                if self.access_target == 'organization':
+                if self.access_target == 'organizations':
                     self.target_id = gcloud.choose_organization()
-                elif self.access_target == 'folder':
+                elif self.access_target == 'folders':
                     self.target_id = gcloud.choose_folder(self.organization_id)
                 else:
                     self.target_id = gcloud.choose_project()
 
         self.resource_root_id = utils.format_resource_id(
-            '%ss' % self.access_target, self.target_id)
+            self.access_target, self.target_id)
 
     def get_email_settings(self):
         """Ask user for specific install values."""
