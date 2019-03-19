@@ -174,10 +174,6 @@ class SecurityCenterClient(object):
         Returns:
             dict: An API response containing one page of results.
         """
-        # alpha api
-        if not source_id:
-            return {}
-
         # beta api
         try:
             LOGGER.debug('Updated finding with beta api.')
