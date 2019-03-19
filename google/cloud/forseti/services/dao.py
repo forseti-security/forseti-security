@@ -262,6 +262,16 @@ def define_model(model_name, dbengine, model_seed):
                primary_key=True),
     )
 
+    groups_settings = Table(
+        '{}_groups_settings'.format(model_name),
+        base.metadata,
+        Column('group_name',
+               ForeignKey('{}.name'.format(members_tablename)),
+               primary_key=True),
+        Column('settings',
+               Text(16777215)),
+    )
+
     def get_string_by_dialect(db_dialect, column_size):
         """Get Sqlalchemy String by dialect.
         Sqlite doesn't support collation type, need to define different
@@ -454,8 +464,8 @@ def define_model(model_name, dbengine, model_seed):
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
         """Data model facade, implement main API against database."""
-
         TBL_GROUP_IN_GROUP = GroupInGroup
+        TBL_GROUPS_SETTINGS = groups_settings
         TBL_BINDING = Binding
         TBL_MEMBER = Member
         TBL_PERMISSION = Permission
@@ -484,6 +494,7 @@ def define_model(model_name, dbengine, model_seed):
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
+            groups_settings.drop(engine)
 
             Binding.__table__.drop(engine)
             Permission.__table__.drop(engine)
