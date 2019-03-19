@@ -54,6 +54,19 @@ def get_gcloud_info():
     return project_id, authed_user, is_devshell
 
 
+def set_project_id(project_id):
+    """Set the project for the installation.
+    Args:
+        project_id (str): The GCP Project Id
+    """
+    print('Setting Project %s' % project_id)
+    return_code, out, err = utils.run_command(
+        ['gcloud', 'config', 'set', 'project', project_id])
+    if return_code:
+        print(out + '/' + err)
+        sys.exit(1)
+
+
 def set_network_host_project_id(self):
     """Get the host project."""
     if not self.config.vpc_host_project_id:
@@ -202,8 +215,7 @@ def grant_client_svc_acct_roles(project_id,
 
 
 def grant_server_svc_acct_roles(enable_write,
-                                access_target,
-                                target_id,
+                                resources,
                                 project_id,
                                 gcp_service_account,
                                 user_can_grant_roles):
@@ -219,8 +231,7 @@ def grant_server_svc_acct_roles(enable_write,
 
     Args:
         enable_write (bool): Whether or not to enable write access.
-        access_target (str): Access target, either org, folder or project.
-        target_id (str): Id of the access_target.
+        resources (list): List of resources, either org, folder or project.
         project_id (str): GCP Project Id.
         gcp_service_account (str): GCP service account email.
         user_can_grant_roles (bool): Whether or not user has
@@ -230,21 +241,31 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated.
     """
 
-    utils.print_banner('Assigning Roles To The GCP Service Account',
+    utils.print_banner('Assigning Roles To The GCP Service Account '
+                       'for the forseti project',
                        gcp_service_account)
-    access_target_roles = constants.GCP_READ_IAM_ROLES
-    if enable_write:
-        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
-
-    roles = {
-        '%ss' % access_target: access_target_roles,
-        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
-        'service_accounts': constants.SVC_ACCT_ROLES,
-    }
+    roles = {}
+    roles['forseti_project'] = constants.PROJECT_IAM_ROLES_SERVER
+    roles['service_accounts'] = constants.SVC_ACCT_ROLES
+    target_id = project_id
 
     has_role_script_rest = _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
+
+    for resource in resources:
+        utils.print_banner('Assigning Roles To The GCP Service Account '
+                           'for the resource[' + resource + ']',
+                           gcp_service_account)
+        access_target, target_id = resource.split('/')
+        access_target_roles = constants.GCP_READ_IAM_ROLES
+        if enable_write:
+            access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
+        roles = {}
+        roles[access_target] = access_target_roles
+        has_role_script_rest = _grant_svc_acct_roles(
+            target_id, project_id, gcp_service_account,
+            user_can_grant_roles, roles)
 
     return has_role_script_rest
 
@@ -565,11 +586,12 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
-def lookup_organization(project_id):
-    """Infer the organization from the project's parent.
+def lookup_organization(resource_id, rtype='projects'):
+    """Infer the organization from the resource's parent.
 
     Args:
-        project_id (str): GCP project id
+        resource_id (str): GCP resource id
+        rtype (str): GCP resource type
 
     Returns:
         str: GCP organization id
@@ -607,31 +629,40 @@ def lookup_organization(project_id):
                 _no_organization()
         return cur_id
 
-    return_code, out, err = utils.run_command(
-        ['gcloud', 'projects', 'describe',
-         project_id, '--format=json'])
-    if return_code:
-        print(err)
-        print('Error trying to find current organization from '
-              'project! Exiting.')
+    if rtype == 'organizations':
+        organization_id = resource_id
+    elif rtype == 'folders':
+        organization_id = _find_org_from_folder(resource_id)
+    elif rtype == 'projects':
+        return_code, out, err = utils.run_command(
+            ['gcloud', 'projects', 'describe',
+             resource_id, '--format=json'])
+        if return_code:
+            print(err)
+            print('Error trying to find current organization from '
+                  'project! Exiting.')
 
-    try:
-        project = json.loads(out)
-        project_parent = project.get('parent')
-        if not project_parent:
+        try:
+            project = json.loads(out)
+            project_parent = project.get('parent')
+            if not project_parent:
+                _no_organization()
+            parent_type = project_parent['type']
+            parent_id = project_parent['id']
+        except ValueError:
+            print('Error retrieving organization id')
             _no_organization()
-        parent_type = project_parent['type']
-        parent_id = project_parent['id']
-    except ValueError:
-        print('Error retrieving organization id')
-        _no_organization()
 
-    if parent_type == 'folder':
-        organization_id = _find_org_from_folder(parent_id)
-    elif parent_type == 'organization':
-        organization_id = parent_id
+        if parent_type == 'folder':
+            organization_id = _find_org_from_folder(parent_id)
+        elif parent_type == 'organization':
+            organization_id = parent_id
+        else:
+            _no_organization()
+
     else:
         _no_organization()
+
     if organization_id:
         print('Organization id: %s' % organization_id)
         return organization_id

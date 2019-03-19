@@ -76,6 +76,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
 
 class _SecurityCenterOrganizationsFindingsRepository(
         repository_mixins.CreateQueryMixin,
+        repository_mixins.ListQueryMixin,
         repository_mixins.PatchResourceMixin,
         _base_repository.GCPRepository):
     """Implementation of CSCC Organizations Findings repository."""
@@ -99,7 +100,10 @@ class _SecurityCenterOrganizationsFindingsRepository(
         # pylint: enable=protected-access
 
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-            key_field='name', component=component, **kwargs)
+            key_field='name',
+            component=component,
+            max_results_field="pageSize",
+            **kwargs)
 
 
 class SecurityCenterClient(object):
@@ -140,6 +144,8 @@ class SecurityCenterClient(object):
             # beta api
             try:
                 LOGGER.debug('Creating finding with beta api.')
+
+                # patch() will also create findings for new violations.
                 response = self.repository.findings.patch(
                     '{}/findings/{}'.format(source_id, finding_id),
                     finding
@@ -158,6 +164,7 @@ class SecurityCenterClient(object):
         # alpha api
         try:
             LOGGER.debug('Creating finding with alpha api.')
+
             response = self.repository.findings.create(
                 arguments={
                     'body': {'sourceFinding': finding},
@@ -174,3 +181,49 @@ class SecurityCenterClient(object):
                 finding.get('properties').get('violation_data')
                 .get('full_name'))
             raise api_errors.ApiExecutionError(full_name, e)
+
+    def list_findings(self, source_id):
+        """Lists all the findings in CSCC.
+
+          Args:
+              source_id (str): Unique ID assigned by CSCC, to the organization
+                  that the violations are originating from.
+
+          Returns:
+              object: An API response containing all the CSCC findings.
+        """
+        response = self.repository.findings.list(parent=source_id)
+        return response
+
+    def update_finding(self, finding, finding_id, source_id=None):
+        """Updates a finding in CSCC.
+
+        Args:
+            finding (dict): Forseti violation in CSCC format.
+            finding_id (str): id hash of the CSCC finding.
+            source_id (str): Unique ID assigned by CSCC, to the organization
+                that the violations are originating from.
+
+        Returns:
+            dict: An API response containing one page of results.
+        """
+        # alpha api
+        if not source_id:
+            return {}
+
+        # beta api
+        try:
+            LOGGER.debug('Updated finding with beta api.')
+
+            # patch() will set the state of outdated findings to INACTIVE
+            response = self.repository.findings.patch(
+                '{}/findings/{}'.format(source_id, finding_id),
+                finding, updateMask='state,event_time')
+
+            return response
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.exception(
+                'Unable to update CSCC finding: Resource: %s', finding)
+            violation_data = (
+                finding.get('source_properties').get('violation_data'))
+            raise api_errors.ApiExecutionError(violation_data, e)
