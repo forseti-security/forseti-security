@@ -114,7 +114,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
     def validate_data_in_table(self):
         """Validate there is actual data in the CAI table."""
         cai_name = '//cloudresourcemanager.googleapis.com/organizations/111222333'
-        cai_type = 'google.cloud.resourcemanager.Organization'
+        cai_type = 'cloudresourcemanager.googleapis.com/Organization'
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
             cai_type,
@@ -130,7 +130,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         self.assertEqual(expected_resource, resource)
 
         cai_name = '//cloudresourcemanager.googleapis.com/folders/1033'
-        cai_type = 'google.cloud.resourcemanager.Folder'
+        cai_type = 'cloudresourcemanager.googleapis.com/Folder'
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
@@ -148,7 +148,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         """Validate there is not data in the CAI table."""
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization',
+            'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/organizations/111222333',
             self.session)
         expected_resource = ({}, None)
@@ -156,7 +156,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Folder',
+            'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/folders/1033',
             self.session)
         expected_iam_policy = ({}, None)
@@ -242,7 +242,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                     '//cloudresourcemanager.googleapis.com/%s' % root_id)
                 resource = storage.CaiDataAccess.fetch_cai_asset(
                     content_type,
-                    'google.cloud.resourcemanager.Project',
+                    'cloudresourcemanager.googleapis.com/Project',
                     expected_resource_name,
                     self.session)
                 self.assertTrue(resource,
@@ -273,7 +273,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         expected_results = 1
         self.assertEqual(results, expected_results)
 
-        cai_type = 'google.spanner.Instance'
+        cai_type = 'spanner.googleapis.com/Instance'
         cai_name = '//spanner.googleapis.com/projects/project2/instances/test123'
 
         # Validate resource with short name is in database.

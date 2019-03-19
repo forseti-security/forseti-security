@@ -88,9 +88,9 @@ class ExplainerTest(ForsetiTestCase):
                                  'roles/editor',
                                  'roles/viewer',
                                  ])
-            actual_reply = client.explain.list_roles('')
+            actual_reply = set(r.role_name for r in client.explain.list_roles(''))
             self.assertEqual(expected_reply,
-                             set(actual_reply.role_names))
+                             actual_reply)
 
         setup.run(test)
 
@@ -106,7 +106,7 @@ class ExplainerTest(ForsetiTestCase):
             self.assertRaisesRegexp(
                 _Rendezvous,
                 'FAILED_PRECONDITION',
-                client.explain.list_roles,
+                lambda r: list(client.explain.list_roles('')),
                 '')
 
         setup.run(test)

@@ -528,9 +528,9 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
     def test_crawl_cai_data_with_asset_types(self):
         """Validate including asset_types in the CAI inventory config works."""
-        asset_types = ['google.cloud.resourcemanager.Folder',
-                       'google.cloud.resourcemanager.Organization',
-                       'google.cloud.resourcemanager.Project']
+        asset_types = ['cloudresourcemanager.googleapis.com/Folder',
+                       'cloudresourcemanager.googleapis.com/Organization',
+                       'cloudresourcemanager.googleapis.com/Project']
         inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                            '',
                                            {},

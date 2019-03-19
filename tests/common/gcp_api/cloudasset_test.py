@@ -83,7 +83,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         result = self.asset_api_client.export_assets(
             fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
             content_type='RESOURCE',
-            asset_types=['google.cloud.resourcemanager.Project'])
+            asset_types=['cloudresourcemanager.googleapis.com/Project'])
 
         self.assertEquals(
             json.loads(
@@ -128,7 +128,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             result = self.asset_api_client.export_assets(
                 fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
                 content_type='RESOURCE',
-                asset_types=['google.cloud.resourcemanager.Project'],
+                asset_types=['cloudresourcemanager.googleapis.com/Project'],
                 blocking=True)
 
         self.assertEquals(json.loads(
