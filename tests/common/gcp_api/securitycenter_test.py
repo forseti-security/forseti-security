@@ -42,15 +42,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         cls.project_id = 111111
         cls.source_id = 'organizations/111/sources/222'
 
-    @mock.patch.object(
-        google.auth, 'default',
-        return_value=(mock.Mock(spec_set=credentials.Credentials),
-                      'test-project'))
-    def test_no_quota(self, mock_google_credential):
-        """Verify no rate limiter is used if the configuration is missing."""
-        securitycenter_alpha_api_client = securitycenter.SecurityCenterClient()
-        self.assertEqual(None, securitycenter_alpha_api_client.repository._rate_limiter)
-
     def test_create_findings(self):
         """Test create cscc findings."""
         
