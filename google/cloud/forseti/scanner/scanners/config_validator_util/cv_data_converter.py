@@ -49,10 +49,11 @@ def generate_ancestry_path(full_name):
     full_name_items = full_name.split('/')
     for i in range(0, len(full_name_items)-1):
         if full_name_items[i] in supported_ancestors:
-            ancestry_path += full_name_items[i] + '/' + full_name_items[i+1]
-            i += 1
+            ancestry_path += (full_name_items[i] + '/'
+                              + full_name_items[i+1] + '/')
         else:
-            break
+            continue
+    return ancestry_path
 
 
 def convert_data_to_cv_asset(resource, data_type):
@@ -85,7 +86,8 @@ def convert_data_to_cv_asset(resource, data_type):
     asset_resource, asset_iam_policy = Value(), Policy()
 
     if data_type == _IAM_POLICY:
-        asset_iam_policy = json_format.ParseDict(data, Policy())
+        asset_iam_policy = json_format.ParseDict(data, Policy(),
+                                                 ignore_unknown_fields=True)
     else:
         asset_resource = json_format.ParseDict(data, Value())
 

@@ -61,8 +61,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         """
 
         for violation in violations:
-            resource_name_items = violation.resource.split('/')[0]
-            resource_type, resource_id = (resource_name_items[-1])
+            resource_id = violation.resource.split('/')[-1]
             full_name, resource_type, resource_data = (
                 self.resource_lookup_table.get(violation.resource,
                                                ('', '', '')))
@@ -74,7 +73,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'rule_index': 0,
                 'rule_name': violation.constraint,
                 'violation_type': ConfigValidatorScanner.violation_type,
-                'violation_data': violation.meta_data,
+                'violation_data': violation.metadata,
                 'resource_data': resource_data,
                 'violation_message': violation.message
             }
@@ -165,7 +164,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         # Clean up the validator environment by doing a reset post audit.
         self.validator_client.reset()
 
-        return self._flatten_violations(violations)
+        return list(self._flatten_violations(violations))
 
     def run(self):
         """Runs the Config Validator Scanner.
