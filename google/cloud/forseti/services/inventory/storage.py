@@ -519,8 +519,8 @@ class CaiTemporaryStore(object):
 
     # Assets with no parent resource.
     UNPARENTED_ASSETS = frozenset([
-        'google.cloud.resourcemanager.Organization',
-        'google.cloud.billing.BillingAccount',
+        'cloudresourcemanager.googleapis.com/Organization',
+        'cloudbilling.googleapis.com/BillingAccount',
     ])
 
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
@@ -657,7 +657,7 @@ class CaiTemporaryStore(object):
         if 'parent' in asset['resource']:
             return asset['resource']['parent']
 
-        if asset['asset_type'] == 'google.cloud.kms.KeyRing':
+        if asset['asset_type'] == 'cloudkms.googleapis.com/KeyRing':
             # KMS KeyRings are parented by a location under a project, but
             # the location is not directly discoverable without iterating all
             # locations, so instead this creates an artificial parent at the
@@ -668,7 +668,7 @@ class CaiTemporaryStore(object):
             # parent project.
             return '/'.join(asset['name'].split('/')[:-4])
 
-        elif asset['asset_type'] == 'google.cloud.dataproc.Cluster':
+        elif asset['asset_type'] == 'dataproc.googleapis.com/Cluster':
             # Dataproc Clusters are parented by a region under a project, but
             # the region is not directly discoverable without iterating all
             # regions, so instead this creates an artificial parent at the
@@ -679,11 +679,11 @@ class CaiTemporaryStore(object):
             # parent project.
             return '/'.join(asset['name'].split('/')[:-4])
 
-        elif (asset['asset_type'].startswith('google.appengine') or
-              asset['asset_type'].startswith('google.cloud.bigquery') or
-              asset['asset_type'].startswith('google.cloud.sql') or
-              asset['asset_type'].startswith('google.cloud.kms') or
-              asset['asset_type'].startswith('google.spanner')):
+        elif (asset['asset_type'].startswith('appengine.googleapis.com/') or
+              asset['asset_type'].startswith('bigquery.googleapis.com/') or
+              asset['asset_type'].startswith('cloudkms.googleapis.com/') or
+              asset['asset_type'].startswith('sqladmin.googleapis.com/') or
+              asset['asset_type'].startswith('spanner.googleapis.com/')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset['name'].split('/')[:-2])
 

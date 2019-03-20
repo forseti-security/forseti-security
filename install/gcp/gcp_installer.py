@@ -58,7 +58,8 @@ def run():
     install_required_packages()
     site.main() # Load up the package
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
@@ -69,6 +70,15 @@ def run():
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
+    parser.add_argument('--composite-root-resources',
+                        help='The resource ids to be inventoried.\n'
+                             'Without this flag, the entire org '
+                             'will be attempted.\n'
+                             'Resources must be comma-separated and '
+                             'in the form type/id,\nwhere type is '
+                        'one of organizations, folders, or projects.')
+    parser.add_argument('--project-id',
+                        help='The project id for the forseti installaltion.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
