@@ -221,6 +221,8 @@ scanner:
           enabled: false
         - name: group
           enabled: true
+        - name: groups_settings
+          enabled: true
         - name: iam_policy
           enabled: true
         - name: iap

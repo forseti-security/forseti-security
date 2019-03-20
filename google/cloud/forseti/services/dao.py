@@ -737,6 +737,12 @@ def define_model(model_name, dbengine, model_seed):
                 yield resource
 
         @classmethod
+        def scanner_fetch_groups_settings(cls, session):
+            query = (session.query(groups_settings).enable_eagerloads(True))
+            for resource in query.yield_per(PER_YIELD):
+                yield resource
+
+        @classmethod
         def explain_denied(cls, session, member_name, resource_type_names,
                            permission_names, role_names):
             """Explain why an access is denied
