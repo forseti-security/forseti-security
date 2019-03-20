@@ -41,12 +41,12 @@ FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
 CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external-dependencies/config-validator/ConfigValidatorRPCServer"
-CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/'"
-CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/'"
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/policies'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/policies/validator/lib'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 
 # Update the permission of the config validator.
-sudo chmod ug+x /home/ubuntu/forseti-security/external-dependencies/config-validator/ConfigValidatorRPCServer
+sudo chmod ugo+x /home/ubuntu/forseti-security/external-dependencies/config-validator/ConfigValidatorRPCServer
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
