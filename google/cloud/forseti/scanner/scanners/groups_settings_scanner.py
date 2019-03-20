@@ -14,6 +14,8 @@
 
 """Scanner for the GroupsSettings rules engine."""
 
+import json
+
 from google.cloud.forseti.common.gcp_type import groups_settings
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import groups_settings_rules_engine
@@ -76,7 +78,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
                 'resource_id': violation.group_email,
                 'full_name': violation.group_email,
                 'resource_name': violation.group_email,
-                'resource_data': str(resource_data),
+                'resource_data': json.dumps(resource_data, sort_keys=True),
                 'violation_data': violation.violation_reason,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,

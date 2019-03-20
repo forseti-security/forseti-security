@@ -66,11 +66,11 @@ class GroupsSettings(resource.Resource):
         settings = json.loads(settings)
         return cls(
             email=email, 
-            whoCanAdd=settings["whoCanAdd"], 
-            whoCanJoin=settings["whoCanJoin"],
-            whoCanViewMembership=settings["whoCanViewMembership"],
-            whoCanViewGroup=settings["whoCanViewGroup"],
-            whoCanInvite=settings["whoCanInvite"],
-            allowExternalMembers=settings["allowExternalMembers"],
-            whoCanLeaveGroup=settings["whoCanLeaveGroup"]
+            whoCanAdd=settings.get('whoCanAdd', 'N/A'), 
+            whoCanJoin=settings.get('whoCanJoin', 'N/A'),
+            whoCanViewMembership=settings.get('whoCanViewMembership', 'N/A'),
+            whoCanViewGroup=settings.get('whoCanViewGroup', 'N/A'),
+            whoCanInvite=settings.get('whoCanInvite', 'N/A'),
+            allowExternalMembers=settings.get('allowExternalMembers', 'N/A'),
+            whoCanLeaveGroup=settings.get('whoCanLeaveGroup', 'N/A')
             )

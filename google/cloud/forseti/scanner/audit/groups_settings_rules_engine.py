@@ -30,7 +30,6 @@ VIOLATION_TYPE = 'GSUITE_GROUPS_SETTINGS_VIOLATION'
 # Rule Modes.
 WHITELIST = 'whitelist'
 BLACKLIST = 'blacklist'
-REQUIRED = 'required'
 RULE_MODES = frozenset([BLACKLIST, WHITELIST])
 
 
