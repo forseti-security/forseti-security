@@ -17,7 +17,7 @@ import json
 
 from google.iam.v1.policy_pb2 import Policy
 from google.protobuf import json_format
-from google.protobuf.struct_pb2 import Value
+from google.protobuf.struct_pb2 import Value, NullValue
 
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     validator_pb2)
@@ -83,21 +83,40 @@ def convert_data_to_cv_asset(resource, data_type):
 
     data = json.loads(resource.data)
 
-    cleanup_dict(data)
+    cleanup_dict()
 
     asset_resource, asset_iam_policy = Value(), Policy()
 
     if data_type == _IAM_POLICY:
         asset_iam_policy = json_format.ParseDict(data, Policy(),
                                                  ignore_unknown_fields=True)
+        cleanup_dict(asset_iam_policy)
     else:
         asset_resource = json_format.ParseDict(data, Value())
+        cleanup_dict(asset_resource)
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
                                ancestry_path=ancestry_path,
                                resource=asset_resource,
                                iam_policy=asset_iam_policy)
+
+
+def cleanup_proto(proto):
+    """Clean up proto by filling Null values to all the empty fields.
+
+    Args:
+        proto (proto): proto to clean up.
+    """
+    for descriptor in proto.DESCRIPTOR.fields:
+        value = getattr(proto, descriptor.name)
+        if descriptor.type == descriptor.TYPE_MESSAGE:
+            if descriptor.label == descriptor.LABEL_REPEATED:
+                map(cleanup_proto, value)
+            else:
+                cleanup_proto(value)
+        elif not value:
+            setattr(proto, descriptor.name, NullValue)
 
 
 def cleanup_dict(raw_dict):
