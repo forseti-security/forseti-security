@@ -14,6 +14,8 @@
 
 """Config Validator Scanner."""
 
+from google.protobuf import json_format
+
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners.config_validator_util import cv_data_converter
@@ -73,7 +75,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'rule_index': 0,
                 'rule_name': violation.constraint,
                 'violation_type': ConfigValidatorScanner.violation_type,
-                'violation_data': violation.metadata,
+                'violation_data': json_format.MessageToJson(
+                    violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
                 'violation_message': violation.message
             }
