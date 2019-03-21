@@ -118,7 +118,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
         with scoped_session as session:
             # fetching GCP resources based on their types.
-            LOGGER.info('Retrieving GCP resource data.')
+            LOGGER.info('Retrieving GCP %s data.', data_type)
             for resource_type in resource_types:
                 for resource in data_access.scanner_iter(session,
                                                          resource_type):
