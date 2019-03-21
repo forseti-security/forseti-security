@@ -212,7 +212,7 @@ rules:
                 'full_name': 'organization/123456/project/def-project-2/role/forsetiBigqueryViewer/',
                 'rule_index': 0,
                 'rule_name': 'forsetiBigqueryViewer rule',
-                'violation_type': 'ROLE_VIOLATION',
+                'violation_type': 'CUSTOM_ROLE_VIOLATION',
                 'violation_data': '["bigquery.datasets.get", "bigquery.tables.list"]',
                 'resource_data': '{"name": "projects/def-project-2/roles/forsetiBigqueryViewer", "includedPermissions": ["bigquery.datasets.get", "bigquery.tables.list"]}'
             }]

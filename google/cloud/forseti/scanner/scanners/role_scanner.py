@@ -86,7 +86,7 @@ class RoleScanner(base_scanner.BaseScanner):
         """Find violations in the resources with role policies.
 
         Args:
-            resources (list): Contains all supported resource in role.
+            resources (list): List of custom roles.
 
         Returns:
             list: All violations.

@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Some Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,16 +49,16 @@ class RoleTest(ForsetiTestCase):
             r'{"description": "Access to view BigQuery datasets and tables, but not table contents", '
             r'"etag": "BwV1mM8N7WM=", "includedPermissions": ["bigquery.datasets.get", '
             r'"bigquery.tables.get", "bigquery.tables.list"], "name": '
-            r'"projects/proj-1/roles/forsetiBigqueryViewer", '
-            r'"title": "Forseti BigQuery Metadata Viewer"}')
+            r'"projects/proj-1/roles/someBigqueryViewer", '
+            r'"title": "some BigQuery Metadata Viewer"}')
 
         role = rl.Role.from_json(self.proj_1, json_string)
 
-        self.assertEqual('forsetiBigqueryViewer', role.id)
+        self.assertEqual('someBigqueryViewer', role.id)
         self.assertEqual('role', role.type)
-        self.assertEqual('projects/proj-1/roles/forsetiBigqueryViewer',
+        self.assertEqual('projects/proj-1/roles/someBigqueryViewer',
                          role.name)
-        self.assertEqual('organization/234/project/proj-1/role/forsetiBigqueryViewer/',
+        self.assertEqual('organization/234/project/proj-1/role/someBigqueryViewer/',
                          role.full_name)
         self.assertEqual(['bigquery.datasets.get',
                           'bigquery.tables.get',
@@ -71,16 +71,16 @@ class RoleTest(ForsetiTestCase):
             r'{"description": "Access to view BigQuery datasets and tables, but not table contents", '
             r'"etag": "BwV1mM8N7WM=", "includedPermissions": ["bigquery.datasets.get", '
             r'"bigquery.tables.get", "bigquery.tables.list"], "name": '
-            r'"projects/proj-1/roles/forsetiBigqueryViewer", '
-            r'"title": "Forseti BigQuery Metadata Viewer"}')
+            r'"projects/proj-1/roles/someBigqueryViewer", '
+            r'"title": "some BigQuery Metadata Viewer"}')
 
         role = rl.Role.from_json(None, json_string)
 
-        self.assertEqual('forsetiBigqueryViewer', role.id)
+        self.assertEqual('someBigqueryViewer', role.id)
         self.assertEqual('role', role.type)
-        self.assertEqual('projects/proj-1/roles/forsetiBigqueryViewer',
+        self.assertEqual('projects/proj-1/roles/someBigqueryViewer',
                          role.name)
-        self.assertEqual('role/forsetiBigqueryViewer/',
+        self.assertEqual('role/someBigqueryViewer/',
                          role.full_name)
         self.assertEqual(['bigquery.datasets.get',
                           'bigquery.tables.get',
@@ -89,7 +89,7 @@ class RoleTest(ForsetiTestCase):
 
     def test_get_res_id_with_invalid_input(self):
         """Tests function _get_res_id_from_role_id with invalid input."""
-        self.assertIsNone(rl._get_res_id_from_role_id('organization/234/project/proj-1/role/forsetiBigqueryViewer/'))
+        self.assertIsNone(rl._get_res_id_from_role_id('organization/234/project/proj-1/role/someBigqueryViewer/'))
 
 
 if __name__ == '__main__':

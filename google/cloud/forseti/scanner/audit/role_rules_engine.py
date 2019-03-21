@@ -26,7 +26,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATION_TYPE = 'ROLE_VIOLATION'
+VIOLATION_TYPE = 'CUSTOM_ROLE_VIOLATION'
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
@@ -173,17 +173,21 @@ class Rule(object):
         self.permissions = permissions[:]
         self.res_types = res[:]
 
-        for res_item in self.res_types:
+        for index, res_item in enumerate(res_types):
             if 'type' not in res_item:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource:type in rule {}'.format(rule_index))
+            if res_item['type'] not in ['organization', 'folder', 'project']:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Wrong resource:type in rule {}'.format(rule_index))
             if 'resource_ids' not in res_item:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource:resource_ids in rule {}'.format(
                         rule_index))
 
             if '*' in res_item['resource_ids']:
-                res_item = ['*']
+                res_types[index]['resource_ids'] = ['*']
+
 
     def generate_violation(self, role):
         """Generate a violation.
@@ -220,29 +224,29 @@ class Rule(object):
             ValueError: Raised if the resource type is bucket.
         """
 
+        def find_violations_in_role(self, role):
+            """Get a generator for violations.
+
+            Args:
+                role (role): Find violation from the role.
+            Returns:
+                RuleViolation: All violations of the role breaking the rule.
+            """
+            resource_ancestors = (relationship.find_ancestors(
+                role, role.full_name))
+
+            violations = itertools.chain()
+            for related_resources in resource_ancestors:
+                violations = itertools.chain(
+                    violations,
+                    self.find_violations_by_ancestor(related_resources, role))
+            return violations
+
         if res.type == 'role':
             return self.find_violations_in_role(res)
         raise ValueError(
             'only role is supported.'
         )
-
-    def find_violations_in_role(self, role):
-        """Get a generator for violations.
-
-        Args:
-            role (role): Find violation from the role.
-        Returns:
-            RuleViolation: All violations of the role breaking the rule.
-        """
-        resource_ancestors = (relationship.find_ancestors(
-            role, role.full_name))
-
-        violations = itertools.chain()
-        for related_resources in resource_ancestors:
-            violations = itertools.chain(
-                violations,
-                self.find_violations_by_ancestor(related_resources, role))
-        return violations
 
     def find_violations_by_ancestor(self, ancestor, role):
         """Get a generator on a given ancestor of the role.

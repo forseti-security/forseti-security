@@ -57,21 +57,6 @@ PROJECT3 = project.Project(
     data='fake_project_data_12344321',
 )
 
-def build_table_violations(table, rule_name):
-    data_str = table.data
-
-    return [rre.RuleViolation(
-        resource_name='bigquery_tables/'+table.id,
-        resource_id=table.id,
-        resource_type=table.type,
-        full_name=table.full_name,
-        rule_index=0,
-        rule_name=rule_name,
-        violation_type='RETENTION_VIOLATION',
-        violation_data=data_str,
-        resource_data=table.data,
-    )]
-
 class FakeRoleDataCreater():
     def __init__(self, name, permissions, parent):
         self._name = '%ss/%s/roles/%s'%(parent.type, parent.id, name)
