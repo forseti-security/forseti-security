@@ -111,6 +111,7 @@ def cleanup_dict(raw_dict):
             raw_dict.pop(key)
         elif isinstance(value, list):
             for i in value:
-                cleanup_dict(i)
+                if isinstance(i, dict):
+                    cleanup_dict(i)
         elif isinstance(value, dict):
             cleanup_dict(value)
