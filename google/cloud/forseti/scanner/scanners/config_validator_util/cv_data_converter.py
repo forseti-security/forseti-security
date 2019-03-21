@@ -83,17 +83,15 @@ def convert_data_to_cv_asset(resource, data_type):
 
     data = json.loads(resource.data)
 
-    cleanup_dict()
-
     asset_resource, asset_iam_policy = Value(), Policy()
 
     if data_type == _IAM_POLICY:
         asset_iam_policy = json_format.ParseDict(data, Policy(),
                                                  ignore_unknown_fields=True)
-        cleanup_dict(asset_iam_policy)
+        cleanup_proto(asset_iam_policy)
     else:
         asset_resource = json_format.ParseDict(data, Value())
-        cleanup_dict(asset_resource)
+        cleanup_proto(asset_resource)
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
