@@ -19,9 +19,11 @@ from google.iam.v1.policy_pb2 import Policy
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value, NullValue
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     validator_pb2)
 
+LOGGER = logger.get_logger(__name__)
 
 _IAM_POLICY = 'iam_policy'
 _RESOURCE = 'resource'
@@ -82,16 +84,15 @@ def convert_data_to_cv_asset(resource, data_type):
     ancestry_path = generate_ancestry_path(resource.full_name)
 
     data = json.loads(resource.data)
+    cleanup_dict(data)
 
-    asset_resource, asset_iam_policy = Value(), Policy()
+    asset_resource, asset_iam_policy = None, None
 
     if data_type == _IAM_POLICY:
         asset_iam_policy = json_format.ParseDict(data, Policy(),
                                                  ignore_unknown_fields=True)
-        cleanup_proto(asset_iam_policy)
     else:
         asset_resource = json_format.ParseDict(data, Value())
-        cleanup_proto(asset_resource)
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
@@ -100,32 +101,15 @@ def convert_data_to_cv_asset(resource, data_type):
                                iam_policy=asset_iam_policy)
 
 
-def cleanup_proto(proto):
-    """Clean up proto by filling Null values to all the empty fields.
-
-    Args:
-        proto (proto): proto to clean up.
-    """
-    for descriptor in proto.DESCRIPTOR.fields:
-        value = getattr(proto, descriptor.name)
-        if descriptor.type == descriptor.TYPE_MESSAGE:
-            if descriptor.label == descriptor.LABEL_REPEATED:
-                map(cleanup_proto, value)
-            else:
-                cleanup_proto(value)
-        elif not value:
-            setattr(proto, descriptor.name, NullValue)
-
-
 def cleanup_dict(raw_dict):
-    """Remove key with empty values in a dict.
+    """Replace empty value to None in dict.
 
     Args:
         raw_dict (dict): Dict to clean up.
     """
     for key, value in raw_dict.items():
-        if value == "" or not value:
-            raw_dict.pop(key)
+        if value == "" or value == {}:
+            raw_dict[key] = None
         elif isinstance(value, list):
             for i in value:
                 if isinstance(i, dict):

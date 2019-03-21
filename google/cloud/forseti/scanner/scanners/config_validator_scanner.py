@@ -180,8 +180,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         all_violations = self._retrieve_flattened_violations()
 
         # Retrieving iam violations.
-        # all_violations.extend(
-        #     self._retrieve_flattened_violations(iam_policy=True))
+        all_violations.extend(
+            self._retrieve_flattened_violations(iam_policy=True))
 
         # Output all violations to db.
         self._output_results(all_violations)

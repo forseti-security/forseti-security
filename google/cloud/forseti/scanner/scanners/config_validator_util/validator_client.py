@@ -83,12 +83,8 @@ class ValidatorClient(object):
             assets (list): A list of asset data.
         """
         for asset in assets:
-            # Add asset one by one instead, until config-validator
-            # resolved the problem of failing on some resources.
-            self.add_data([asset])
-            # TODO: uncomment the code below when conf validator bug is fixed.
-            # self.buffer_sender.add(asset)
-        # self.buffer_sender.flush()
+            self.buffer_sender.add(asset)
+        self.buffer_sender.flush()
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
