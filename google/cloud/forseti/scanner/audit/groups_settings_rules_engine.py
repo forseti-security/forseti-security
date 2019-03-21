@@ -381,8 +381,6 @@ class Rule(object):
             list: Returns a list of RuleViolation named tuples.
         """
         violations = []
-        if settings.id == 'data-scientists@henrychang.mygbiz.com':
-            print("found data scientists")
         if self.rule['mode'] == BLACKLIST:
             violation_reason = self.find_blacklist_violation(settings)
         elif self.rule['mode'] == WHITELIST:
