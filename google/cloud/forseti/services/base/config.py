@@ -315,8 +315,12 @@ class ServiceConfig(AbstractServiceConfig):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
+
+        # Enable pool_pre_ping to ensure that disconnected or errored
+        # connections are dropped and recreated before use.
         self.engine = create_engine(forseti_db_connect_string,
-                                    pool_recycle=3600)
+                                    pool_recycle=3600,
+                                    pool_pre_ping=True)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
