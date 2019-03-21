@@ -67,13 +67,14 @@ class ValidatorClient(object):
             self.stub.AddData(request)
         except grpc.RpcError as e:
             # pylint: disable=no-member
-            print (e.message)
             if e.code() == grpc.StatusCode.UNAVAILABLE:
                 raise errors.ConfigValidatorServerUnavailableError(
                     e.message)
             else:
-                LOGGER.exception('ConfigValidatorAddDataError: %s', e.message)
-                raise errors.ConfigValidatorAddDataError(e.message)
+                LOGGER.exception('Failed to add data: %s', assets[0])
+                # LOGGER.exception('ConfigValidatorAddDataError: %s', e.message)
+                # raise errors.ConfigValidatorAddDataError(e.message)
+                return
 
     def add_data_in_bulk(self, assets):
         """Add asset data to buffer, intended to manage sending data in bulk.
@@ -82,8 +83,12 @@ class ValidatorClient(object):
             assets (list): A list of asset data.
         """
         for asset in assets:
-            self.buffer_sender.add(asset)
-        self.buffer_sender.flush()
+            # Add asset one by one instead, until config-validator
+            # resolved the problem of failing on some resources.
+            self.add_data([asset])
+            # TODO: uncomment the code below when conf validator bug is fixed.
+            # self.buffer_sender.add(asset)
+        # self.buffer_sender.flush()
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
