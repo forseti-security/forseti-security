@@ -122,19 +122,23 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        settings_list = []
+        all_groups_settings = []
+        iam_groups_settings = []
 
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            for settings in data_access.scanner_fetch_groups_settings(session):
+            for settings in data_access.scanner_fetch_groups_settings(session, True):
                 email = settings[0].split('group/')[1]
-                settings_list.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
+                iam_groups_settings.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
+            for settings in data_access.scanner_fetch_groups_settings(session, False):
+                email = settings[0].split('group/')[1]
+                all_groups_settings.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
 
-        return settings_list
+        return (all_groups_settings, iam_groups_settings)
 
     def run(self):
         """Run, the entry point for this scanner."""
-        settings_list = self._retrieve()
+        settings_lists = self._retrieve()
         all_violations = self._find_violations(settings_list)
         self._output_results(all_violations)
