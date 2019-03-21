@@ -83,6 +83,8 @@ def convert_data_to_cv_asset(resource, data_type):
 
     data = json.loads(resource.data)
 
+    cleanup_dict(data)
+
     asset_resource, asset_iam_policy = Value(), Policy()
 
     if data_type == _IAM_POLICY:
@@ -96,3 +98,19 @@ def convert_data_to_cv_asset(resource, data_type):
                                ancestry_path=ancestry_path,
                                resource=asset_resource,
                                iam_policy=asset_iam_policy)
+
+
+def cleanup_dict(raw_dict):
+    """Remove key with empty values in a dict.
+
+    Args:
+        raw_dict (dict): Dict to clean up.
+    """
+    for key, value in raw_dict.items():
+        if value == "" or not value:
+            raw_dict.pop(key)
+        elif isinstance(value, list):
+            for i in value:
+                cleanup_dict(i)
+        elif isinstance(value, dict):
+            cleanup_dict(value)
