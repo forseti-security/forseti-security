@@ -147,6 +147,8 @@ REQUIRED_APIS = [
      'service': 'deploymentmanager.googleapis.com'},
     {'name': 'Google Cloud Storage JSON API',
      'service': 'storage-api.googleapis.com'},
+    {'name': 'Groups Settings API',
+     'service': 'groupssettings.googleapis.com'},
     {'name': 'IAM',
      'service': 'iam.googleapis.com'},
     {'name': 'Kubernetes Engine API',

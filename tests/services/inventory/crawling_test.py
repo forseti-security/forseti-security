@@ -52,6 +52,7 @@ GCP_API_RESOURCES = {
     'folder': {'iam_policy': 3, 'resource': 3},
     'forwardingrule': {'resource': 1},
     'gsuite_group': {'resource': 4},
+    'gsuite_groups_settings': {'resource': 4},
     'gsuite_group_member': {'resource': 1},
     'gsuite_user': {'resource': 4},
     'gsuite_user_member': {'resource': 3},
@@ -328,6 +329,7 @@ class CrawlerTest(CrawlerBase):
         expected_counts['organization'].pop('iam_policy')
         expected_counts['crm_org_policy']['resource'] -= 2
         expected_counts.pop('gsuite_group')
+        expected_counts.pop('gsuite_groups_settings')
         expected_counts.pop('gsuite_group_member')
         expected_counts.pop('gsuite_user')
         expected_counts.pop('gsuite_user_member')
@@ -609,6 +611,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
+            'gsuite_groups_settings': {'resource': 4},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
             'lien': {'resource': 1},
