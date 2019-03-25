@@ -178,7 +178,7 @@ class Rule(object):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource:type in rule {}'.format(rule_index))
             if res_item['type'] not in [
-                'organization', 'folder', 'project', 'role']:
+                    'organization', 'folder', 'project', 'role']:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Wrong resource:type {} in rule {}'.format(
                         res_item['type'], rule_index))
