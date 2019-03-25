@@ -106,3 +106,182 @@ rules:
 #     mode: whitelist
 #     values:
 #       - ["COS", "COS"]
+
+# Proof of concept CIS GCP benchmark rules below.
+
+  - name: 'CIS_GCP_7.1 Ensure Stackdriver Logging Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: loggingService
+    mode: whitelist
+    values:
+      - logging.googleapis.com
+
+  - name: 'CIS_GCP_7.2 Ensure Stackdriver Monitoring Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: monitoringService
+    mode: whitelist
+    values:
+      - monitoring.googleapis.com
+
+  - name: 'CIS_GCP_7.3 Ensure Legacy Authorization Disabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: legacyAbac.enabled
+    mode: whitelist
+    values:
+      - null
+
+  - name: 'CIS_GCP_7.4 Ensure Master Authorized Networks Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: masterAuthorizedNetworksConfig.enabled
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.5 Ensure Clusters Have Labels'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: resourceLabels
+    mode: blacklist
+    values:
+      - null
+
+  - name: 'CIS_GCP_7.6 Ensure Kubernetes Dashboard Disabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: addonsConfig.kubernetesDashboard.disabled
+    mode: whitelist
+    values:
+      - true
+      
+  - name: 'CIS_GCP_7.7 Ensure Automatic Node Repair Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) == length(nodePools[?management.autoRepair ==`true`])'
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.8 Ensure Automatic Node Upgrade Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) == length(nodePools[?management.autoUpgrade ==`true`])'
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.9 Ensure Container Optimized OS (cos) used for Node Images'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) == length(nodePools[?config.imageType ==`COS`])'
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.10 Ensure Basic Authorization Disabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: masterAuth.password
+    mode: whitelist
+    values:
+      - null
+
+  - name: 'CIS_GCP_7.11 Ensure Network Policy Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: networkPolicy.enabled
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.12 Ensure Client Certificate Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: masterAuth.clientKey
+    mode: blacklist
+    values:
+      - null
+
+  - name: 'CIS_GCP_7.13 Ensure Alias IP Ranges Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: ipAllocationPolicy.useIpAliases
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.14 Ensure PodSecurityPolicy Controller Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: podSecurityPolicyConfig.enabled
+    mode: whitelist
+    values:
+      - true
+
+  - name: 'CIS_GCP_7.15 Ensure Private Cluster Enabled'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: privateClusterConfig.enablePrivateNodes
+    mode: whitelist
+    values:
+      - true
+
+# TODO CIS_GCP_7.16 is skipped as the k8s cluster scanner dosen't cover subnets. Research needed.
+# Requires a second query on clusters subnetwork to check privateIpGoogleAccess
+# Possibly solve with the Open Policy Agent approach.
+      
+  - name: 'CIS_GCP_7.17 Ensure Default Service Account not used for Project Access'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: 'length(nodePools[?config.serviceAccount ==`default`]) >`0`'
+    mode: blacklist
+    values:
+      - true
+
+ # Just an example, modify scopes to your requirement
+ # Initially just checking only gke default scopes granted
+  - name: 'CIS_GCP_7.18 Ensure Limited Service Account Access'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) == length(nodePools[?config.oauthScopes == [`https://www.googleapis.com/auth/devstorage.read_only`, `https://www.googleapis.com/auth/logging.write`,`https://www.googleapis.com/auth/monitoring`,`https://www.googleapis.com/auth/servicecontrol`,`https://www.googleapis.com/auth/service.management.readonly`,`https://www.googleapis.com/auth/trace.append`]])'
+    mode: whitelist
+    values:
+       - true
+
