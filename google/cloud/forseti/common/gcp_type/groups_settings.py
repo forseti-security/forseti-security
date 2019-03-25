@@ -28,10 +28,10 @@ LOGGER = logger.get_logger(__name__)
 class GroupsSettings(resource.Resource):
     """Represents the GroupsSettings resource."""
 
-    # pylint: disable=too-many-instance-attributes, too-many-arguments, expression-not-assigned
+    # pylint: disable=expression-not-assigned, invalid-name
     def __init__(
-            self, email, whoCanAdd=None, whoCanJoin=None, whoCanViewMembership=None,
-            whoCanViewGroup=None, whoCanInvite=None, 
+            self, email, whoCanAdd=None, whoCanJoin=None,
+            whoCanViewMembership=None, whoCanViewGroup=None, whoCanInvite=None,
             allowExternalMembers=None, whoCanLeaveGroup=None):
         """Initialize.
 
@@ -42,7 +42,8 @@ class GroupsSettings(resource.Resource):
             whoCanViewMembership (str): Setting for who can view membership.
             whoCanViewGroup (str): Setting for who can view group.
             whoCanInvite (str): Setting for who can invite to group.
-            allowExternalMembers (str): Setting for are external members allowed.
+            allowExternalMembers (str): Setting for are external members
+            allowed.
             whoCanLeaveGroup (str): Setting for who can leave group.
         """
         super(GroupsSettings, self).__init__(
@@ -50,7 +51,6 @@ class GroupsSettings(resource.Resource):
             name=email,
             resource_type=resource.ResourceType.GROUPS_SETTINGS),
 
-        
         self.whoCanAdd = whoCanAdd
         self.whoCanJoin = whoCanJoin
         self.whoCanViewMembership = whoCanViewMembership
@@ -61,14 +61,22 @@ class GroupsSettings(resource.Resource):
 
     @classmethod
     def from_json(cls, email, settings):
+        """Returns a new GroupsSettingws object from a JSON object.
+
+        Args:
+            email (str): The unique Gsuite Group email.
+            settings(str): JSON string of a GroupsSettings Gsuites API response.
+
+        Returns:
+           GroupsSettings: A new GroupsSettings object.
+        """
         settings = json.loads(settings)
         return cls(
-            email=email, 
-            whoCanAdd=settings.get('whoCanAdd', 'N/A'), 
+            email=email,
+            whoCanAdd=settings.get('whoCanAdd', 'N/A'),
             whoCanJoin=settings.get('whoCanJoin', 'N/A'),
             whoCanViewMembership=settings.get('whoCanViewMembership', 'N/A'),
             whoCanViewGroup=settings.get('whoCanViewGroup', 'N/A'),
             whoCanInvite=settings.get('whoCanInvite', 'N/A'),
             allowExternalMembers=settings.get('allowExternalMembers', 'N/A'),
-            whoCanLeaveGroup=settings.get('whoCanLeaveGroup', 'N/A')
-            )
+            whoCanLeaveGroup=settings.get('whoCanLeaveGroup', 'N/A'))

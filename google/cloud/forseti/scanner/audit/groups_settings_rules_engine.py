@@ -14,12 +14,11 @@
 """Rules engine for checking crypto keys configuration."""
 
 from collections import namedtuple
-import datetime
 import threading
 
 from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import logger, date_time, string_formats
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
@@ -93,9 +92,8 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
     """The RuleBook for GroupsSettings rules."""
 
     supported_settings = frozenset([
-    'whoCanAdd', 'whoCanJoin', 
-    'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 
-    'allowExternalMembers', 'whoCanLeaveGroup'])
+        'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership', 'whoCanViewGroup',
+        'whoCanInvite', 'allowExternalMembers', 'whoCanLeaveGroup'])
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -165,10 +163,10 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         groups_emails = rule_def.get('groups_emails')
         only_iam_groups = rule_def.get('only_iam_groups')
 
-        if (settings is None or only_iam_groups is None or 
-              not groups_emails or mode not in RULE_MODES):
-            raise audit_errors.InvalidRulesSchemaError(
-                'Faulty rule {}'.format(rule_index))
+        if (settings is None or only_iam_groups is None or
+                not groups_emails or mode not in RULE_MODES):
+            raise audit_errors.InvalidRulesSchemaError('Faulty rule {}'
+                                                       .format(rule_index))
 
         for rule_setting in settings:
             if rule_setting not in self.supported_settings:
@@ -230,7 +228,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
             violations.extend(
                 resource_rules.find_violations(settings, iam_only))
 
-        wildcard_resource = resource_util.create_resource( 
+        wildcard_resource = resource_util.create_resource(
             resource_id='*', resource_type=settings.type)
 
         resource_rules = self.get_resource_rules(wildcard_resource)
@@ -333,19 +331,19 @@ class Rule(object):
     def rule_requirements(self):
         """Used to create violation reason.
 
-       Returns: 
+       Returns:
            str of property:value couples specified in rule,
            joined by AND.
         """
         rule_list = []
         for setting, value in self.rule['settings'].iteritems():
             rule_list.append('{}:{}'.format(setting, value))
-        return ' AND '.join(rule_list)        
+        return ' AND '.join(rule_list)
 
     def find_blacklist_violation(self, settings):
         """Finds violations in case that rule is blacklist.
         Args:
-            settings (GroupsSettings): 
+            settings (GroupsSettings):
         Returns:
             violation_reason (str): Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
@@ -359,14 +357,15 @@ class Rule(object):
             if getattr(settings, setting) != value:
                 violates_every_setting_in_rule = False
         if violates_every_setting_in_rule:
-            violation_reason = "rule specified ({}) together is not allowed".format(self.rule_requirements())
+            violation_reason = ("rule specified ({}) together is not allowed"
+                                .format(self.rule_requirements()))
 
         return violation_reason
 
     def find_whitelist_violation(self, settings):
         """Finds violations in case that rule is whitelist.
         Args:
-            settings (GroupsSettings): 
+            settings (GroupsSettings):
         Returns:
             violation_reason (str): Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
@@ -377,7 +376,8 @@ class Rule(object):
             if getattr(settings, setting) != value:
                 a_setting_doesnt_match = True
         if a_setting_doesnt_match:
-            violation_reason = "rule specified ({}) is required".format(self.rule_requirements())
+            violation_reason = ("rule specified ({}) is required"
+                                .format(self.rule_requirements()))
 
         return violation_reason
 
@@ -396,7 +396,7 @@ class Rule(object):
         elif self.rule['mode'] == WHITELIST:
             violation_reason = self.find_whitelist_violation(settings)
 
-        if violation_reason: 
+        if violation_reason:
             violations.append(RuleViolation(
                 group_email=settings.id,
                 resource_type=settings.type,
@@ -410,8 +410,7 @@ class Rule(object):
                 whoCanViewGroup=settings.whoCanViewGroup,
                 whoCanInvite=settings.whoCanInvite,
                 allowExternalMembers=settings.allowExternalMembers,
-                whoCanLeaveGroup=settings.whoCanLeaveGroup
-                ))
+                whoCanLeaveGroup=settings.whoCanLeaveGroup))
         return violations
 
     def __eq__(self, other):
@@ -465,8 +464,8 @@ class Rule(object):
 # allowExternalMembers: bool
 # whoCanLeaveGroup: string
 RuleViolation = namedtuple('RuleViolation',
-                           ['group_email', 'resource_type','rule_index', 
+                           ['group_email', 'resource_type', 'rule_index',
                             'rule_name', 'violation_type', 'violation_reason',
                             'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership',
-                            'whoCanViewGroup', 'whoCanInvite', 
+                            'whoCanViewGroup', 'whoCanInvite',
                             'allowExternalMembers', 'whoCanLeaveGroup'])

@@ -46,9 +46,10 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = groups_settings_rules_engine.GroupsSettingsRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine = (groups_settings_rules_engine.
+                             GroupsSettingsRulesEngine(
+                                 rules_file_path=self.rules,
+                                 snapshot_timestamp=self.snapshot_timestamp))
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
@@ -99,7 +100,11 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            settings_list (list): GroupsSettings list to find violations in.
+            all_groups_settings (list): GroupsSettings list to find violations
+            in.
+            iam_groups_settings (list): GroupsSettings list for only those
+            groups settings that have at least 1 iam policy, to find violations
+            in.
 
         Returns:
             list: All violations.
@@ -108,12 +113,14 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding groups settings violations...')
 
         for settings in all_groups_settings:
-            violations = self.rules_engine.find_violations(settings, iam_only=False)
+            violations = self.rules_engine.find_violations(settings,
+                                                           iam_only=False)
             LOGGER.debug(violations)
             all_violations.extend(violations)
 
         for settings in iam_groups_settings:
-            violations = self.rules_engine.find_violations(settings, iam_only=True)
+            violations = self.rules_engine.find_violations(settings,
+                                                           iam_only=True)
             LOGGER.debug(violations)
             all_violations.extend(violations)
 
@@ -133,17 +140,22 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            for settings in data_access.scanner_fetch_groups_settings(session, True):
+            for settings in data_access.scanner_fetch_groups_settings(session,
+                                                                      True):
                 email = settings[0].split('group/')[1]
-                iam_groups_settings.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
-            for settings in data_access.scanner_fetch_groups_settings(session, False):
+                iam_groups_settings.append(groups_settings.GroupsSettings
+                                           .from_json(email, settings[1]))
+            for settings in data_access.scanner_fetch_groups_settings(session,
+                                                                      False):
                 email = settings[0].split('group/')[1]
-                all_groups_settings.append(groups_settings.GroupsSettings.from_json(email, settings[1]))
+                all_groups_settings.append(groups_settings.GroupsSettings
+                                           .from_json(email, settings[1]))
 
         return (all_groups_settings, iam_groups_settings)
 
     def run(self):
         """Run, the entry point for this scanner."""
         all_groups_settings, iam_groups_settings = self._retrieve()
-        all_violations = self._find_violations(all_groups_settings, iam_groups_settings)
+        all_violations = self._find_violations(all_groups_settings,
+                                               iam_groups_settings)
         self._output_results(all_violations)
