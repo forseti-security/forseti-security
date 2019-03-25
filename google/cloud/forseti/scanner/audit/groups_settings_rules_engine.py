@@ -61,7 +61,7 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
             self.rule_book = GroupsSettingsRuleBook(
                 self._load_rule_definitions())
 
-    def find_violations(self, settings, force_rebuild=False):
+    def find_violations(self, settings, iam_only, force_rebuild=False):
         """Determine whether Groups Settings violates rules.
 
         Args:
@@ -75,7 +75,7 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
         res = self.rule_book is None or force_rebuild
         if res:
             self.build_rule_book()
-        violations = self.rule_book.find_violations(settings)
+        violations = self.rule_book.find_violations(settings, iam_only)
 
         return violations
 
@@ -163,8 +163,10 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         mode = rule_def.get('mode')
         settings = rule_def.get('settings')
         groups_emails = rule_def.get('groups_emails')
+        only_iam_groups = rule_def.get('only_iam_groups')
 
-        if settings is None or not groups_emails or mode not in RULE_MODES:
+        if (settings is None or only_iam_groups is None or 
+              not groups_emails or mode not in RULE_MODES):
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_index))
 
@@ -182,7 +184,8 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
 
             rule_def_resource = {
                 'settings': settings,
-                'mode': mode
+                'mode': mode,
+                'only_iam_groups': only_iam_groups
             }
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
@@ -191,10 +194,12 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
             resource_rules = self.resource_rules_map.setdefault(
                 gcp_resource, ResourceRules(resource=gcp_resource))
 
-            if not resource_rules:
-                self.resource_rules_map[rule_index] = rule
-            if rule not in resource_rules.rules:
-                resource_rules.rules.add(rule)
+            if only_iam_groups:
+                if rule not in resource_rules.iam_only_rules:
+                    resource_rules.iam_only_rules.add(rule)
+            else:
+                if rule not in resource_rules.not_iam_only_rules:
+                    resource_rules.not_iam_only_rules.add(rule)
 
     def get_resource_rules(self, resource):
         """Get all the resource rules for resource.
@@ -207,7 +212,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         """
         return self.resource_rules_map.get(resource)
 
-    def find_violations(self, settings):
+    def find_violations(self, settings, iam_only):
         """Find groups settings violations in the rule book.
 
         Args:
@@ -223,7 +228,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         resource_rules = self.get_resource_rules(settings)
         if resource_rules:
             violations.extend(
-                resource_rules.find_violations(settings))
+                resource_rules.find_violations(settings, iam_only))
 
         wildcard_resource = resource_util.create_resource( 
             resource_id='*', resource_type=settings.type)
@@ -231,7 +236,7 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
         resource_rules = self.get_resource_rules(wildcard_resource)
         if resource_rules:
             violations.extend(
-                resource_rules.find_violations(settings))
+                resource_rules.find_violations(settings, iam_only))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -242,19 +247,23 @@ class ResourceRules(object):
 
     def __init__(self,
                  resource=None,
-                 rules=None):
+                 iam_only_rules=None,
+                 not_iam_only_rules=None):
         """Initialize.
 
         Args:
             resource (Resource): The resource to associate with the rule.
             rules (set): rules to associate with the resource.
         """
-        if not isinstance(rules, set):
-            rules = set([])
+        if not isinstance(iam_only_rules, set):
+            iam_only_rules = set([])
+        if not isinstance(not_iam_only_rules, set):
+            not_iam_only_rules = set([])
         self.resource = resource
-        self.rules = rules
+        self.iam_only_rules = iam_only_rules
+        self.not_iam_only_rules = not_iam_only_rules
 
-    def find_violations(self, settings):
+    def find_violations(self, settings, iam_only):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -264,7 +273,8 @@ class ResourceRules(object):
             list: RuleViolation
         """
         violations = []
-        for rule in self.rules:
+        rules = self.iam_only_rules if iam_only else self.not_iam_only_rules
+        for rule in rules:
             rule_violations = rule.find_violations(settings)
             if rule_violations:
                 violations.extend(rule_violations)

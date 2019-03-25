@@ -95,7 +95,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, settings_list):
+    def _find_violations(self, all_groups_settings, iam_groups_settings):
         """Find violations in the policies.
 
         Args:
@@ -107,8 +107,13 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding groups settings violations...')
 
-        for settings in settings_list:
-            violations = self.rules_engine.find_violations(settings)
+        for settings in all_groups_settings:
+            violations = self.rules_engine.find_violations(settings, iam_only=False)
+            LOGGER.debug(violations)
+            all_violations.extend(violations)
+
+        for settings in iam_groups_settings:
+            violations = self.rules_engine.find_violations(settings, iam_only=True)
             LOGGER.debug(violations)
             all_violations.extend(violations)
 
@@ -139,6 +144,6 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Run, the entry point for this scanner."""
-        settings_lists = self._retrieve()
-        all_violations = self._find_violations(settings_list)
+        all_groups_settings, iam_groups_settings = self._retrieve()
+        all_violations = self._find_violations(all_groups_settings, iam_groups_settings)
         self._output_results(all_violations)

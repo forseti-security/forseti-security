@@ -33,14 +33,17 @@
 rules:
   - name: rule abc
     mode: whitelist
+    only_iam_groups: False
     groups_emails:
-      - '*'
+      - 'accountlink_bb-users-dp-gcp@henrychang.mygbiz.com'
+      - 'accountlink_tfe-inc@henrychang.mygbiz.com'
     settings:
       allowExternalMembers: False
-  # - name: rule xyz
-  #   mode: blacklist
-  #   groups_emails:
-  #     - '*'
-  #   settings:
-  #     whoCanAdd: "ALL_MANAGERS_CAN_ADD"
-  #     whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+  - name: rule xyz
+    mode: blacklist
+    only_iam_groups: False
+    groups_emails:
+      - 'accountlink_bb-users-dp-gcp@henrychang.mygbiz.com'
+      - 'accountlink_tfe-inc@henrychang.mygbiz.com'
+    settings:
+      whoCanJoin: "ALL_IN_DOMAIN_CAN_JOIN"

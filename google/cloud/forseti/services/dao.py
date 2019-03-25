@@ -739,7 +739,9 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):
             if only_iam_groups:
-                query = (session.query(groups_settings).join(Member).enable_eagerloads(True))
+                query = (session.query(groups_settings)
+                                .join(Member).join(binding_members)
+                                .distinct().enable_eagerloads(True))
             else:
                 query = (session.query(groups_settings).enable_eagerloads(True))
             for resource in query.yield_per(PER_YIELD):
