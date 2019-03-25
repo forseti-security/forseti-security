@@ -190,7 +190,6 @@ class Rule(object):
             if '*' in res_item['resource_ids']:
                 self.res_types[index]['resource_ids'] = ['*']
 
-
     def generate_violation(self, role):
         """Generate a violation.
 
