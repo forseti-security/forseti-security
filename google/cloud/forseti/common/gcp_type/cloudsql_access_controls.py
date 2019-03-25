@@ -64,7 +64,7 @@ class CloudSqlAccessControl(object):
             ipv4_enabled=acl.get('ipv4Enabled', False),
             authorized_networks=networks,
             require_ssl=acl.get('requireSsl', False),
-            raw_json=json.dumps(acl)
+            raw_json=json.dumps(acl, sort_keys=True)
         )
 
     @staticmethod

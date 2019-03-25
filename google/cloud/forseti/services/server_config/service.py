@@ -130,7 +130,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         forseti_config = self.service_config.get_forseti_config()
 
         return server_pb2.GetServerConfigurationReply(
-            configuration=json.dumps(forseti_config))
+            configuration=json.dumps(forseti_config, sort_keys=True))
 
 
 class GrpcServerConfigFactory(object):

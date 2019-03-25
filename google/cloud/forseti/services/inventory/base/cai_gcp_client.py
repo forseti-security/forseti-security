@@ -109,47 +109,61 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset IAM Policy.
         """
+        bigquery_name_fmt = '//bigquery.googleapis.com/projects/{}/datasets/{}'
+
+        # Try fetching with project id, if that returns nothing, fall back to
+        # project number.
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
+            'bigquery.googleapis.com/Dataset',
+            bigquery_name_fmt.format(project_id, dataset_id),
             self.session)
+
+        if not resource:
+            resource = self.dao.fetch_cai_asset(
+                ContentTypes.iam_policy,
+                'bigquery.googleapis.com/Dataset',
+                bigquery_name_fmt.format(project_number, dataset_id),
+                self.session)
+
         if resource:
             return resource
+
         return {}
 
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id, project_number,
+                                      dataset_id):
         """Dataset policy Iterator for a dataset from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
-            self.session)
+
+        resource = self.fetch_bigquery_iam_policy(
+            project_id, project_number, dataset_id)
+
         if resource:
             return iam_helpers.convert_iam_to_bigquery_policy(resource)
+
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
-            project_number, dataset_id)
+            project_id, project_number, dataset_id)
 
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from Cloud Asset data.
@@ -160,12 +174,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of datasets.
         """
+
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.bigquery.Dataset',
+            'bigquery.googleapis.com/Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
+
         for dataset in resources:
             yield dataset
 
@@ -180,7 +196,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.billing.BillingAccount',
+            'cloudbilling.googleapis.com/BillingAccount',
             '//cloudbilling.googleapis.com/{}'.format(account_id),
             self.session)
         if resource:
@@ -197,11 +213,38 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.billing.BillingAccount',
+            'cloudbilling.googleapis.com/BillingAccount',
             '',  # Billing accounts have no parent resource.
             self.session)
         for account in resources:
             yield account
+
+    def iter_cloudsql_instances(self, project_id, project_number):
+        """Iterate Cloud sql instances from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of cloudsql instances.
+        """
+        resources = list(self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'sqladmin.googleapis.com/Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session))
+        if not resources:
+            # CloudSQL instances may not have parent data from CAI.
+            resources = list(self.dao.iter_cai_assets(
+                ContentTypes.resource,
+                'sqladmin.googleapis.com/Instance',
+                '//cloudsql.googleapis.com/projects/{}'.format(project_id),
+                self.session))
+
+        for instance in resources:
+            yield instance
 
     def _iter_compute_resources(self, asset_type, project_number):
         """Iterate Compute resources from Cloud Asset data.
@@ -215,7 +258,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         return self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.compute.{}'.format(asset_type),
+            'compute.googleapis.com/{}'.format(asset_type),
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -259,6 +302,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'backend': 'backends',
             'healthCheck': 'healthChecks',
+            'resourceGroup': 'group'
         }
         resources = self._iter_compute_resources('BackendService',
                                                  project_number)
@@ -379,6 +423,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         cai_to_gcp_key_map = {
             'namedPort': 'namedPorts',
             'targetPool': 'targetPools',
+            'version': 'versions',
         }
         resources = self._iter_compute_resources('InstanceGroupManager',
                                                  project_number)
@@ -507,6 +552,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self._iter_compute_resources('Network', project_number)
         for network in resources:
             yield _fixup_resource_keys(network, cai_to_gcp_key_map)
+
+    def iter_compute_project(self, project_number):
+        """Iterate Project from Cloud Asset data.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        cai_to_gcp_key_map = {
+            'enabledFeature': 'enabledFeatures',
+        }
+        resources = self._iter_compute_resources('Project', project_number)
+        for project in resources:
+            yield _fixup_resource_keys(project, cai_to_gcp_key_map)
 
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from Cloud Asset data.
@@ -666,6 +730,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for targettcpproxy in resources:
             yield targettcpproxy
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of target tcp proxy resources.
+        """
+        cai_to_gcp_key_map = {
+            'forwardingRule': 'forwardingRules',
+            'tunnel': 'tunnels',
+        }
+        resources = self._iter_compute_resources('TargetVpnGateway',
+                                                 project_number)
+        for targetvpngateway in resources:
+            yield _fixup_resource_keys(targetvpngateway, cai_to_gcp_key_map)
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from Cloud Asset data.
 
@@ -690,6 +772,19 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
                                        only_fixup_lists=True)
 
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of vpn tunnel resources.
+        """
+        resources = self._iter_compute_resources('VpnTunnel', project_number)
+        for vpntunnel in resources:
+            yield vpntunnel
+
     def iter_container_clusters(self, project_number):
         """Iterate Kubernetes Engine Cluster from Cloud Asset data.
 
@@ -701,7 +796,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.container.Cluster',
+            'container.googleapis.com/Cluster',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -719,7 +814,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Folder',
+            'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.session)
         if resource:
@@ -738,7 +833,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Folder',
+            'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.session)
         if resource:
@@ -758,7 +853,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization',
+            'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.session)
         if resource:
@@ -777,7 +872,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Organization',
+            'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.session)
         if resource:
@@ -797,7 +892,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Project',
+            'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -817,7 +912,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Project',
+            'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -838,7 +933,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Folder',
+            'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(parent_id),
             self.session)
         for folder in resources:
@@ -856,12 +951,53 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Project',
+            'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/{}s/{}'.format(parent_type,
                                                                   parent_id),
             self.session)
         for project in resources:
             yield project
+
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+
+        Returns:
+            dict: Cluster IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'dataproc.googleapis.com/Cluster',
+            '//dataproc.googleapis.com/{}'.format(cluster),
+            self.session)
+        if resource:
+            return resource
+
+        # Clusters with no IAM policy return an empty dict.
+        return {}
+
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+
+        Yields:
+            dict: Generator of Cluster resources.
+        """
+        del region  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'dataproc.googleapis.com/Cluster',
+            '//dataproc.googleapis.com/projects/{}'.format(project_id),
+            self.session)
+        for cluster in resources:
+            yield cluster
 
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from Cloud Asset data.
@@ -874,7 +1010,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.dns.ManagedZone',
+            'dns.googleapis.com/ManagedZone',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -892,7 +1028,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.dns.Policy',
+            'dns.googleapis.com/Policy',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -910,7 +1046,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.appengine.Application',
+            'appengine.googleapis.com/Application',
             '//appengine.googleapis.com/apps/{}'.format(project_id),
             self.session)
         return resource
@@ -926,7 +1062,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.appengine.Service',
+            'appengine.googleapis.com/Service',
             '//appengine.googleapis.com/apps/{}'.format(project_id),
             self.session)
         for service in resources:
@@ -944,7 +1080,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.appengine.Version',
+            'appengine.googleapis.com/Version',
             '//appengine.googleapis.com/apps/{}/services/{}'.format(project_id,
                                                                     service_id),
             self.session)
@@ -970,7 +1106,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.iam.ServiceAccount',
+            'iam.googleapis.com/ServiceAccount',
             '//iam.googleapis.com/{}'.format(name),
             self.session)
         if resource:
@@ -990,7 +1126,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.iam.Role',
+            'iam.googleapis.com/Role',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.session)
         for role in resources:
@@ -1009,7 +1145,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         del project_id  # Used by API not CAI.
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.iam.Role',
+            'iam.googleapis.com/Role',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -1029,7 +1165,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         del project_id  # Used by API not CAI.
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.iam.ServiceAccount',
+            'iam.googleapis.com/ServiceAccount',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -1049,7 +1185,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.kms.CryptoKey',
+            'cloudkms.googleapis.com/CryptoKey',
             '//cloudkms.googleapis.com/{}'.format(cryptokey),
             self.session)
         if resource:
@@ -1070,7 +1206,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.kms.KeyRing',
+            'cloudkms.googleapis.com/KeyRing',
             '//cloudkms.googleapis.com/{}'.format(keyring),
             self.session)
         if resource:
@@ -1091,7 +1227,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.kms.CryptoKey',
+            'cloudkms.googleapis.com/CryptoKey',
             '//cloudkms.googleapis.com/{}'.format(parent),
             self.session)
         for cryptokey in resources:
@@ -1110,7 +1246,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.kms.CryptoKeyVersion',
+            'cloudkms.googleapis.com/CryptoKeyVersion',
             '//cloudkms.googleapis.com/{}'.format(parent),
             self.session)
         for cryptokeyversion in resources:
@@ -1130,11 +1266,32 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         del location  # Used by API not CAI.
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.kms.KeyRing',
+            'cloudkms.googleapis.com/KeyRing',
             '//cloudkms.googleapis.com/projects/{}'.format(project_id),
             self.session)
         for keyring in resources:
             yield keyring
+
+    def fetch_pubsub_subscription_iam_policy(self, name):
+        """PubSub Subscription IAM policy from Cloud Asset data.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}
+
+        Returns:
+            dict: PubSub Topic IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'pubsub.googleapis.com/Subscription',
+            '//pubsub.googleapis.com/{}'.format(name),
+            self.session)
+        if resource:
+            return resource
+
+        # Subscriptions with no IAM policy return an empty dict.
+        return {}
 
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from Cloud Asset data.
@@ -1148,7 +1305,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.pubsub.Topic',
+            'pubsub.googleapis.com/Topic',
             '//pubsub.googleapis.com/{}'.format(name),
             self.session)
         if resource:
@@ -1156,6 +1313,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         # Topics with no IAM policy return an empty dict.
         return {}
+
+    def iter_pubsub_subscriptions(self, project_id, project_number):
+        """Iterate PubSub subscriptions from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Pubsub Subscription resources
+        """
+        del project_id  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'pubsub.googleapis.com/Subscription',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for subscription in resources:
+            yield subscription
 
     def iter_pubsub_topics(self, project_id, project_number):
         """Iterate PubSub topics from Cloud Asset data.
@@ -1170,7 +1347,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         del project_id  # Used by API not CAI.
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.pubsub.Topic',
+            'pubsub.googleapis.com/Topic',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -1188,7 +1365,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.spanner.Instance',
+            'spanner.googleapis.com/Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
@@ -1206,7 +1383,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.spanner.Database',
+            'spanner.googleapis.com/Database',
             '//spanner.googleapis.com/{}'.format(parent),
             self.session)
         for spanner_database in resources:
@@ -1243,7 +1420,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.cloud.storage.Bucket',
+            'storage.googleapis.com/Bucket',
             '//storage.googleapis.com/{}'.format(bucket_id),
             self.session)
         if resource:
@@ -1263,7 +1440,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.storage.Bucket',
+            'storage.googleapis.com/Bucket',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
