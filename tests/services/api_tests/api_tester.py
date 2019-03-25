@@ -177,7 +177,9 @@ class ModelTestRunner(ApiTestRunner):
                 model_access.set_iam_policy(
                     session,
                     resource_name,
-                    {'bindings': bindings, 'etag': policy['etag']})
+                    {'bindings': bindings, 'etag': policy['etag']},
+                    update_members=True)
+            model_access.expand_special_members(session)
 
     def _get_model_name_deterministic(self):
         """Create deterministic sequence of names for models."""

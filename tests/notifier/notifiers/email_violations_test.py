@@ -21,7 +21,9 @@ import unittest
 
 from datetime import datetime
 
-from google.cloud.forseti.common.util.email import EmailUtil
+# pylint: disable=line-too-long
+from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
+from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import email_violations
@@ -78,53 +80,47 @@ class EmailViolationsTest(ForsetiTestCase):
                 evp.resource, evp.inventory_index_id, expected_timestamp),
             attachment.filename)
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
+    @mock.patch.object(EmailFactory, 'get_connector')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
-    def test_make_attachment_csv_correctness(self, mock_os, mock_mail_util):
+    def test_make_attachment_csv_correctness(self, mock_os, mock_get_connector):
         """Test the CSV file correctness."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
-        self.assertTrue(mail_util.create_attachment.called)
-        test = mail_util.create_attachment.call_args[1]['file_location']
+        self.assertTrue(connector.create_attachment.called)
+        test = connector.create_attachment.call_args[1]['file_location']
         self.assertTrue(
             filecmp.cmp(
-                mail_util.create_attachment.call_args[1]['file_location'],
+                connector.create_attachment.call_args[1]['file_location'],
                 self.expected_csv_attachment_path, shallow=False))
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
-    def test_make_attachment_json_no_temp_files_left(self, mock_mail_util):
+    @mock.patch.object(EmailFactory, 'get_connector')
+    def test_make_attachment_json_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_json() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_json()
-        self.assertTrue(mail_util.create_attachment.called)
+        self.assertTrue(connector.create_attachment.called)
         self.assertFalse(
             os.path.exists(
-                mail_util.create_attachment.call_args[1]['file_location']))
+                connector.create_attachment.call_args[1]['file_location']))
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
-    def test_make_attachment_csv_no_temp_files_left(self, mock_mail_util):
+    @mock.patch.object(EmailFactory, 'get_connector')
+    def test_make_attachment_csv_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_csv() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
-        self.assertTrue(mail_util.create_attachment.called)
+        self.assertTrue(connector.create_attachment.called)
         self.assertFalse(
             os.path.exists(
-                mail_util.create_attachment.call_args[1]['file_location']))
+                connector.create_attachment.call_args[1]['file_location']))
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
+        'google.cloud.forseti.notifier.notifiers.email_violations.email_factory',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
@@ -133,7 +129,7 @@ class EmailViolationsTest(ForsetiTestCase):
         """Test run() with invalid data format."""
         notifier_config = (
             fake_violations.NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT)
-        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        notification_config = notifier_config['email_connector']
         resource = 'policy_violations'
         cycle_timestamp = '2018-03-24T00:49:02.891287'
         mock_json_stringify.return_value = 'test123'
@@ -158,15 +154,15 @@ class EmailViolationsTest(ForsetiTestCase):
         self.assertFalse(mock_json_stringify.called)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
+        'google.cloud.forseti.notifier.notifiers.email_violations.email_factory',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
     def test_run_with_json_data_format(self, mock_write_csv,
-        mock_json_stringify, mock_mail_util):
+        mock_json_stringify, mock_email_factory):
         """Test run() with json data format."""
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_JSON
-        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        notification_config = notifier_config['email_connector']
         resource = 'policy_violations'
         inventory_index_id = 1514764800123456
         mock_json_stringify.return_value = 'test123'
@@ -191,18 +187,19 @@ class EmailViolationsTest(ForsetiTestCase):
         self.assertTrue(mock_json_stringify.called)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
+        'google.cloud.forseti.notifier.notifiers.email_violations.email_factory',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
     def test_run_with_csv_data_format(self, mock_write_csv,
-        mock_json_stringify, mock_mail_util):
+        mock_json_stringify, mock_email_factory):
         """Test run() with json data format."""
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_DEFAULT
-        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        notification_config = notifier_config['email_connector']
         resource = 'policy_violations'
         inventory_index_id = 1514764800123456
         mock_json_stringify.return_value = 'test123'
+
         evp = email_violations.EmailViolations(
             resource,
             inventory_index_id,

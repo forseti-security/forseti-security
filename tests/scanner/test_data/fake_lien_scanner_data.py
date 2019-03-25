@@ -45,7 +45,7 @@ _LIEN_JSON = """{
 }
 """
 
-LIEN = lien.Lien.from_json(PROJECT, 'l1', _LIEN_JSON)
+LIEN = lien.Lien.from_json(PROJECT, _LIEN_JSON)
 
 VIOLATIONS = [lien_rules_engine.RuleViolation(
     resource_id='p1',

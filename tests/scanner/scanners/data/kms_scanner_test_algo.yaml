@@ -1,0 +1,10 @@
+rules:
+  - name: Block google symmetric encryption algorithm for all crypto keys.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+       - algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION

@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import container
+from google.cloud.forseti.common.gcp_api import groups_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
@@ -41,19 +42,22 @@ class ApiClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
 
     @abc.abstractmethod
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
@@ -96,10 +100,11 @@ class ApiClient(object):
         """Iterate visible Billing Accounts in an organization from GCP API."""
 
     @abc.abstractmethod
-    def iter_cloudsql_instances(self, project_number):
+    def iter_cloudsql_instances(self, project_id, project_number):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
         """
 
@@ -263,6 +268,17 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
@@ -343,8 +359,24 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -467,6 +499,25 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from GCP API.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+        """
+
+    @abc.abstractmethod
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from GCP API.
 
@@ -523,6 +574,14 @@ class ApiClient(object):
 
         Args:
             group_key (str): key of the group to get.
+        """
+
+    @abc.abstractmethod
+    def fetch_gsuite_groups_settings(self, group_email):
+        """Fetch Gsuite groups settings from GCP API.
+
+        Args:
+            group_email (str): Gsuite group email.
         """
 
     @abc.abstractmethod
@@ -639,12 +698,30 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_pubsub_subscription_iam_policy(self, name):
+        """PubSub Subscription IAM policy from gcp API call.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}
+        """
+
+    @abc.abstractmethod
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
 
         Args:
             name (str): The pubsub topic to query, must be in the format
                 projects/{PROJECT_ID}/topics/{TOPIC_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_pubsub_subscriptions(self, project_id, project_number):
+        """Iterate PubSub subscriptions from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -846,6 +923,21 @@ class ApiClientImpl(ApiClient):
                                        'configuration.')
         return admin_directory.AdminDirectoryClient(self.config)
 
+    def _create_groups_settings(self):
+        """Create gsuite groups settings API client.
+
+        Returns:
+            object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
+        """
+        if is_api_disabled(self.config, groups_settings.API_NAME):
+            raise ResourceNotSupported('Groups Settings API disabled by server '
+                                       'configuration.')
+        return groups_settings.GroupsSettingsClient(self.config)
+
     def _create_appengine(self):
         """Create AppEngine API client.
 
@@ -1012,22 +1104,27 @@ class ApiClientImpl(ApiClient):
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
+        del project_id
+
         return self.bigquery.get_dataset_access(project_number, dataset_id)
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
@@ -1100,15 +1197,17 @@ class ApiClientImpl(ApiClient):
             yield account
 
     @create_lazy('cloudsql', _create_cloudsql)
-    def iter_cloudsql_instances(self, project_number):
+    def iter_cloudsql_instances(self, project_id, project_number):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of cloudsql instance.
         """
+        del project_id  # Not used by the API client
         for item in self.cloudsql.get_instances(project_number):
             yield item
 
@@ -1363,6 +1462,20 @@ class ApiClientImpl(ApiClient):
         for network in self.compute.get_networks(project_number):
             yield network
 
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        yield self.fetch_compute_project(project_number)
+
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
@@ -1485,6 +1598,18 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute TargetTcpProxies are not '
                                    'supported by this API client')
 
+    def iter_compute_targetvpngateways(self, project_number):
+        """Iterate Target VPN Gateways from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetVpnGateways are not '
+                                   'supported by this API client')
+
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from GCP API.
 
@@ -1496,6 +1621,18 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute UrlMaps are not supported by this '
                                    'API client')
+
+    def iter_compute_vpntunnels(self, project_number):
+        """Iterate VPN tunnels from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute VpnTunnels are not supported by '
+                                   'this API client')
 
     @create_lazy('container', _create_container)
     def fetch_container_serviceconfig(self, project_id, zone=None,
@@ -1686,6 +1823,33 @@ class ApiClientImpl(ApiClient):
             for project in page.get('projects', []):
                 yield project
 
+    def fetch_dataproc_cluster_iam_policy(self, cluster):
+        """Fetch Dataproc Cluster IAM Policy from GCP API.
+
+        Args:
+            cluster (str): The Dataproc cluster to query, must be in the format
+                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud Dataproc Clusters are not supported '
+                                   'by this API client')
+
+    def iter_dataproc_clusters(self, project_id, region=None):
+        """Iterate Dataproc clusters from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            region (str): The region to query. Not required when using Cloud
+                Asset API.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud Dataproc Clusters are not supported '
+                                   'by this API client')
+
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from GCP API.
 
@@ -1791,6 +1955,19 @@ class ApiClientImpl(ApiClient):
         result = self.ad.get_groups(gsuite_id)
         for group in result:
             yield group
+
+    @create_lazy('groups_settings', _create_groups_settings)
+    def fetch_gsuite_groups_settings(self, group_email):
+        """Retrieve Gsuite groups settings from GCP API.
+
+        Args:
+            group_email (str): Gsuite group email.
+
+        Returns:
+            dict: Dictionary of groups settings.
+        """
+        # pylint:disable=no-member
+        return self.groups_settings.get_groups_settings(group_email)
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_users(self, gsuite_id):
@@ -1955,6 +2132,19 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Key Management Service is not supported by '
                                    'this API client')
 
+    def fetch_pubsub_subscription_iam_policy(self, name):
+        """PubSub Subscription IAM policy from gcp API call.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('PubSub Subscriptions are not supported by '
+                                   'this API client')
+
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
 
@@ -1967,6 +2157,19 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('PubSub Topics are not supported by this '
                                    'API client')
+
+    def iter_pubsub_subscriptions(self, project_id, project_number):
+        """Iterate PubSub subscriptions from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('PubSub Subscriptions are not supported by '
+                                   'this API client')
 
     def iter_pubsub_topics(self, project_id, project_number):
         """Iterate PubSub topics from GCP API.

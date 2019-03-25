@@ -44,6 +44,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import reconstructor
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -157,7 +158,7 @@ class Model(MODEL_BASE):
         for new_item in new_desc:
             model_desc[new_item] = new_desc[new_item]
 
-        self.description = json.dumps(model_desc)
+        self.description = json.dumps(model_desc, sort_keys=True)
 
     def set_done(self, message=''):
         """Indicate a finished import.
@@ -259,6 +260,16 @@ def define_model(model_name, dbengine, model_seed):
         Column('members_name',
                ForeignKey('{}.name'.format(members_tablename)),
                primary_key=True),
+    )
+
+    groups_settings = Table(
+        '{}_groups_settings'.format(model_name),
+        base.metadata,
+        Column('group_name',
+               ForeignKey('{}.name'.format(members_tablename)),
+               primary_key=True),
+        Column('settings',
+               Text(16777215)),
     )
 
     def get_string_by_dialect(db_dialect, column_size):
@@ -453,14 +464,23 @@ def define_model(model_name, dbengine, model_seed):
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
         """Data model facade, implement main API against database."""
-
         TBL_GROUP_IN_GROUP = GroupInGroup
+        TBL_GROUPS_SETTINGS = groups_settings
         TBL_BINDING = Binding
         TBL_MEMBER = Member
         TBL_PERMISSION = Permission
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
         TBL_MEMBERSHIP = group_members
+
+        # Set of member binding types that expand like groups.
+        GROUP_TYPES = {'group',
+                       'projecteditor',
+                       'projectowner',
+                       'projectviewer'}
+
+        # Members that represent all users
+        ALL_USER_MEMBERS = ['allusers', 'allauthenticatedusers']
 
         @classmethod
         def delete_all(cls, engine):
@@ -474,6 +494,7 @@ def define_model(model_name, dbengine, model_seed):
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
+            groups_settings.drop(engine)
 
             Binding.__table__.drop(engine)
             Permission.__table__.drop(engine)
@@ -581,6 +602,47 @@ def define_model(model_name, dbengine, model_seed):
                     session.execute('UNLOCK TABLES')
                 session.commit()
             return iterations
+
+        @classmethod
+        def expand_special_members(cls, session):
+            """Create dynamic groups for project(Editor|Owner|Viewer).
+
+            Should be called after IAM bindings are added to the model.
+
+            Args:
+                session (object): Database session to use.
+            """
+            member_type_map = {
+                'projecteditor': 'roles/editor',
+                'projectowner': 'roles/owner',
+                'projectviewer': 'roles/viewer'}
+            for parent_member in cls.list_group_members(
+                    session, '', member_types=member_type_map.keys()):
+                member_type, project_id = parent_member.split('/')
+                role = member_type_map[member_type]
+                try:
+                    iam_policy = cls.get_iam_policy(
+                        session,
+                        'project/{}'.format(project_id),
+                        roles=[role])
+                    LOGGER.info('iam_policy: %s', iam_policy)
+                except NoResultFound:
+                    LOGGER.warning('Found a non-existent project, or project '
+                                   'outside of the organization, in an IAM '
+                                   'binding: %s', parent_member)
+                    continue
+                members = iam_policy.get('bindings', {}).get(role, [])
+                expanded_members = cls.expand_members(session, members)
+                for member in expanded_members:
+                    stmt = cls.TBL_MEMBERSHIP.insert(
+                        {'group_name': parent_member,
+                         'members_name': member.name})
+                    session.execute(stmt)
+                    if member.type == 'group' and member.name in members:
+                        session.add(cls.TBL_GROUP_IN_GROUP(
+                            parent=parent_member,
+                            member=member.name))
+            session.commit()
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
@@ -905,6 +967,8 @@ def define_model(model_name, dbengine, model_seed):
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
+                    .order_by(expanded_resources.name.asc(),
+                              Binding.role_name.asc())
                 )
             else:
                 qry = (
@@ -914,9 +978,8 @@ def define_model(model_name, dbengine, model_seed):
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
+                    .order_by(Resource.name.asc(), Binding.role_name.asc())
                 )
-
-            qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
 
             if expand_groups:
                 to_expand = set([m.name for _, _, m in
@@ -1024,7 +1087,11 @@ def define_model(model_name, dbengine, model_seed):
             return qry.all()
 
         @classmethod
-        def set_iam_policy(cls, session, resource_type_name, policy):
+        def set_iam_policy(cls,
+                           session,
+                           resource_type_name,
+                           policy,
+                           update_members=False):
             """Set IAM policy
 
             Sets an IAM policy for the resource, check the etag when setting
@@ -1035,6 +1102,11 @@ def define_model(model_name, dbengine, model_seed):
                 session (object): db session
                 resource_type_name (str): type_name of the resource
                 policy (dict): the policy to set on the resource
+                update_members (bool): If true, then add new members to Member
+                    table. This must be set when the call to set_iam_policy
+                    happens outside of the model InventoryImporter class. Tests
+                    or users that manually add an IAM policy need to mark this
+                    as true to ensure the model remains consistent.
 
             Raises:
                 Exception: Etag doesn't match
@@ -1113,6 +1185,20 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(Binding.role_name == role)
                     .all())
 
+                if update_members:
+                    for member in members:
+                        if not cls.get_member(session, member):
+                            try:
+                                # This is the default case, e.g. 'group/foobar'
+                                m_type, name = member.split('/', 1)
+                            except ValueError:
+                                # Special groups like 'allUsers'
+                                m_type, name = member, member
+                            session.add(cls.TBL_MEMBER(
+                                name=member,
+                                type=m_type,
+                                member_name=name))
+
                 for binding in existing_bindings:
                     if binding.role_name == role:
                         inserted = True
@@ -1134,12 +1220,13 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def get_iam_policy(cls, session, resource_type_name):
+        def get_iam_policy(cls, session, resource_type_name, roles=None):
             """Return the IAM policy for a resource.
 
             Args:
                 session (object): db session
                 resource_type_name (str): type_name of the resource to query
+                roles (list): An optional list of roles to limit the results to
 
             Returns:
                 dict: the IAM policy
@@ -1151,8 +1238,10 @@ def define_model(model_name, dbengine, model_seed):
                       'bindings': {},
                       'resource': resource.type_name}
             bindings = session.query(Binding).filter(
-                Binding.resource_type_name == resource_type_name).all()
-            for binding in bindings:
+                Binding.resource_type_name == resource_type_name)
+            if roles:
+                bindings = bindings.filter(Binding.role_name.in_(roles))
+            for binding in bindings.all():
                 role = binding.role_name
                 members = [m.name for m in binding.members]
                 policy['bindings'][role] = members
@@ -1273,19 +1362,27 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def list_group_members(cls, session, member_name_prefix):
+        def list_group_members(cls,
+                               session,
+                               member_name_prefix,
+                               member_types=None):
             """Returns members filtered by prefix.
 
             Args:
                 session (object): db session
                 member_name_prefix (str): the prefix of the member_name
+                member_types (list): an optional list of member types to filter
+                    the results by.
 
             Returns:
                 list: list of Members that match the query
             """
 
-            return [m.name for m in session.query(Member).filter(
-                Member.member_name.startswith(member_name_prefix)).all()]
+            qry = session.query(Member).filter(
+                Member.member_name.startswith(member_name_prefix))
+            if member_types:
+                qry = qry.filter(Member.type.in_(member_types))
+            return [m.name for m in qry.all()]
 
         @classmethod
         def iter_groups(cls, session):
@@ -1598,7 +1695,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 object: set if graph not requested, set and graph if requested
             """
-
+            member_names.extend(cls.ALL_USER_MEMBERS)
             members = session.query(Member).filter(
                 Member.name.in_(member_names)).all()
             membership_graph = collections.defaultdict(set)
@@ -1667,7 +1764,8 @@ def define_model(model_name, dbengine, model_seed):
                 groups = []
                 others = []
                 for name in member_names:
-                    if name.startswith('group/'):
+                    member_type = name.split('/')[0]
+                    if member_type in cls.GROUP_TYPES:
                         groups.append(name)
                     else:
                         others.append(name)
@@ -1757,7 +1855,7 @@ def define_model(model_name, dbengine, model_seed):
                 Returns:
                     bool: whether the member is a group
                 """
-                return member.type == 'group'
+                return member.type in cls.GROUP_TYPES
 
             group_set = set()
             non_group_set = set()
@@ -2242,9 +2340,13 @@ def create_engine(*args, **kwargs):
     if is_sqlite:
         engine = sqlalchemy_create_engine(*args, **forward_kwargs)
     else:
-        engine = sqlalchemy_create_engine(*args,
-                                          pool_size=50,
-                                          **forward_kwargs)
+        # Default connection timeout for mysql is 10 seconds which is
+        # not enough for a bigger dataset, increasing this to 1 hour instead.
+        engine = sqlalchemy_create_engine(
+            *args,
+            pool_size=50,
+            connect_args={'connect_timeout': 3600},
+            **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
         @event.listens_for(engine, 'connect')

@@ -386,17 +386,6 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
             with self.assertRaises(fe.InvalidFirewallRuleError):
                 self.firewall_rules._check_rule_before_adding(test_rule)
 
-    def test_missing_source_key(self):
-        """Rule missing source(Ranges|Tags) raises InvalidFirewallRuleError."""
-        self.test_rule.pop('sourceRanges')
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-            self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-        # Adding sourceTags makes the rule valid again
-        self.test_rule['sourceTags'] = 'test-tag'
-        self.assertTrue(
-            self.firewall_rules._check_rule_before_adding(self.test_rule))
-
     def test_missing_ip_protocol(self):
         """Rule missing IPProtocol in an allow predicate raises an exception."""
         self.test_rule['allowed'][0].pop('IPProtocol')
@@ -464,14 +453,6 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
       """Rule with direction set to EGRESS with sourceRanges raises
          exception."""
       self.test_rule['direction'] = 'EGRESS'
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_direction_egress_no_ranges(self):
-      """Rule with direction set to EGRESS with no IP ranges raises
-         exception."""
-      self.test_rule['direction'] = 'EGRESS'
-      self.test_rule.pop('sourceRanges')
       with self.assertRaises(fe.InvalidFirewallRuleError):
         self.firewall_rules._check_rule_before_adding(self.test_rule)
 
@@ -691,6 +672,8 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
                         'example.com:testing/global/networks/'
                         'test-net').format(fe.API_VERSION),
             'sourceRanges': [u'10.2.3.4/32'],
+            'logConfig': {'enable': False},
+            'disabled': False,
             'priority': 1000,
             'direction': u'INGRESS'
         }
@@ -978,7 +961,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         """Validate apply_change works with no errors."""
         delete_function = self.gce_api_client.delete_firewall_rule
         insert_function = self.gce_api_client.insert_firewall_rule
-        update_function = self.gce_api_client.update_firewall_rule
+        update_function = self.gce_api_client.patch_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
@@ -1125,12 +1108,12 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         self.assertTrue(mock_logger.exception.called)
 
     def test_apply_changes(self):
-        """Validate _apply_changes works with no errors.
+        """Validate _apply_change_set works with no errors.
 
         Setup:
           * Set current and expected rules to EXPECTED_FIREWALL_RULES.
           * Add one rule each to rules_to_(delete|insert|update).
-          * Run _apply_change_set.
+          * Run _apply_change_set with network set to None
 
         Expected Results:
           * _apply_change_set will return 3 for the number of rules changed.
@@ -1147,7 +1130,8 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
 
         delete_before_insert = False
 
-        changed_count = self.enforcer._apply_change_set(delete_before_insert)
+        changed_count = self.enforcer._apply_change_set(delete_before_insert,
+                                                        None)
 
         self.assertSameStructure([
             constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-1']
@@ -1161,6 +1145,60 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
             [constants.EXPECTED_FIREWALL_RULES['test-network-allow-public-0']],
             self.enforcer.get_updated_rules())
 
+    def test_apply_changes_single_network(self):
+        """Validate _apply_change_set works on a single network.
+
+        Setup:
+          * Set expected_policy to RAW_EXPECTED_JSON_POLICY.
+          * Set expected_rules to expected_policy for networks 'default' and
+            TEST_NETWORK.
+          * Set current_rules to expected_policy for networks 'default' and
+            TEST_NETWORK.
+          * Add one rule for each network to each of
+            rules_to_(delete|insert|update).
+          * Run _apply_change_set with network set to 'default'
+
+        Expected Results:
+          * Only rules on network 'default' are in the results for
+            get_(deleted|inserted|updated)_rules().
+        """
+        expected_policy = json.loads(constants.RAW_EXPECTED_JSON_POLICY)
+        self.expected_rules.add_rules(
+            expected_policy, network_name=constants.TEST_NETWORK)
+        self.expected_rules.add_rules(
+            expected_policy, network_name='default')
+        self.current_rules.add_rules(
+            expected_policy, network_name=constants.TEST_NETWORK)
+        self.current_rules.add_rules(
+            expected_policy, network_name='default')
+
+        self.enforcer._rules_to_delete = [
+            'test-network-allow-internal-1', 'default-allow-internal-1']
+        self.enforcer._rules_to_insert = [
+            'test-network-allow-internal-0', 'default-allow-internal-0']
+        self.enforcer._rules_to_update = [
+            'test-network-allow-public-0', 'default-allow-public-0']
+
+        delete_before_insert = False
+
+        changed_count = self.enforcer._apply_change_set(delete_before_insert,
+                                                        'default')
+        expected_changed_count = 3
+
+        self.assertEqual(expected_changed_count, changed_count)
+
+        self.assertSameStructure(
+            [self.expected_rules.rules['default-allow-internal-1']],
+            self.enforcer.get_deleted_rules())
+
+        self.assertSameStructure(
+            [self.expected_rules.rules['default-allow-internal-0']],
+            self.enforcer.get_inserted_rules())
+
+        self.assertSameStructure(
+            [self.expected_rules.rules['default-allow-public-0']],
+            self.enforcer.get_updated_rules())
+
     @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
     def test_apply_changes_operation_status_error(self, mock_logger):
         """Validate that an error on a change raises the expected exception.
@@ -1171,7 +1209,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
           * Set _create_dry_run_response to return an error response for all
             operations.
           * Run _apply_changes three times, once to delete, once to insert and
-            once to update.
+            once to update, with network set to None.
 
         Expected Results:
           * Each time it is run, _apply_changes should raise a
@@ -1197,20 +1235,20 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
                 }
             }
             with self.assertRaises(fe.FirewallEnforcementFailedError):
-                self.enforcer._apply_change_set(delete_before_insert)
+                self.enforcer._apply_change_set(delete_before_insert, None)
 
             self.assertEqual([], self.enforcer.get_deleted_rules())
             self.enforcer._rules_to_delete = []
 
             self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
             with self.assertRaises(fe.FirewallEnforcementFailedError):
-                self.enforcer._apply_change_set(delete_before_insert)
+                self.enforcer._apply_change_set(delete_before_insert, None)
             self.assertEqual([], self.enforcer.get_inserted_rules())
             self.enforcer._rules_to_insert = []
 
             self.enforcer._rules_to_update = ['test-network-allow-internal-0']
             with self.assertRaises(fe.FirewallEnforcementFailedError):
-                self.enforcer._apply_change_set(delete_before_insert)
+                self.enforcer._apply_change_set(delete_before_insert, None)
             self.assertEqual([], self.enforcer.get_updated_rules())
             self.enforcer._rules_to_update = []
 
@@ -1223,7 +1261,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         * Set current and expected rules to EXPECTED_CORP_FIREWALL_RULES
         * Add one rule each to rules_to_(delete|insert|update)
         * Set _delete_first to True
-        * Run _apply_change_set
+        * Run _apply_change_set with network set to None
 
       Expected Results:
         * _apply_change_set will return 3 for the number of rules changed
@@ -1240,7 +1278,8 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
       self.enforcer._rules_to_update = ['test-network-allow-public-0']
 
       delete_before_insert = True
-      changed_count = self.enforcer._apply_change_set(delete_before_insert)
+      changed_count = self.enforcer._apply_change_set(delete_before_insert,
+                                                      None)
 
       self.assertEqual(3, changed_count)
 

@@ -19,19 +19,19 @@ package explain;
 service Explain {
   rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc ListResources (ListResourcesRequest) returns (ListResourcesReply) {}
-  rpc ListGroupMembers (ListGroupMembersRequest) returns (ListGroupMembersReply) {}
-  rpc ListRoles (ListRolesRequest) returns (ListRolesReply) {}
+  rpc ListResources (ListResourcesRequest) returns (stream Resource) {}
+  rpc ListGroupMembers (ListGroupMembersRequest) returns (stream GroupMember) {}
+  rpc ListRoles (ListRolesRequest) returns (stream Role) {}
   rpc GetIamPolicy (GetIamPolicyRequest) returns (GetIamPolicyReply) {}
   rpc CheckIamPolicy (CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
 
   rpc GetAccessByPermissions(GetAccessByPermissionsRequest) returns (stream Access) {}
-  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
-  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
+  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (stream Access) {}
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (stream MemberAccess) {}
   rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
 
   rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
-  rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
+  rpc ExplainDenied(ExplainDeniedRequest) returns (stream BindingStrategy) {}
 
 
 }
@@ -47,24 +47,24 @@ message ListResourcesRequest {
   string prefix = 1;
 }
 
-message ListResourcesReply {
-  repeated string full_resource_names = 1;
+message Resource {
+  string full_resource_name = 1;
 }
 
 message ListGroupMembersRequest {
   string prefix = 1;
 }
 
-message ListGroupMembersReply {
-  repeated string member_names = 1;
+message GroupMember {
+  string member_name = 1;
 }
 
 message ListRolesRequest {
   string prefix = 1;
 }
 
-message ListRolesReply {
-  repeated string role_names = 1;
+message Role {
+  string role_name = 1;
 }
 
 message GetIamPolicyRequest {
@@ -127,10 +127,6 @@ message BindingStrategy {
   int32 overgranting = 2;
 }
 
-message ExplainDeniedReply {
-  repeated BindingStrategy strategies = 1;
-}
-
 message ExplainDeniedRequest {
   string member = 1;
   repeated string permissions = 2;
@@ -170,26 +166,14 @@ message GetAccessByResourcesRequest {
   bool expand_groups = 3;
 }
 
-message GetAccessByResourcesReply {
-  message Access {
-    repeated string members = 1;
-    string resource = 2;
-    string role = 3;
-  }
-  repeated Access accesses = 1;
-}
-
 message GetAccessByMembersRequest {
   string member_name = 1;
   repeated string permission_names = 2;
   bool expand_resources = 3;
 }
 
-message GetAccessByMembersReply {
-  message Access {
-    string member = 1;
-    repeated string resources = 2;
-    string role = 3;
-  }
-  repeated Access accesses = 1;
+message MemberAccess {
+  string member = 1;
+  repeated string resources = 2;
+  string role = 3;
 }

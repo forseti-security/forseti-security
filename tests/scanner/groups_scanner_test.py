@@ -14,7 +14,7 @@
 
 """Scanner runner script test."""
 
-import pickle
+import json
 import mock
 
 import anytree
@@ -40,9 +40,21 @@ class GroupsScannerTest(ForsetiTestCase):
         Returns:
             attr: String of the attribute to render.
         """
-        return anytree.RenderTree(
-            starting_node,
-            style=anytree.AsciiStyle()).by_attr(attr)
+        rows = []
+        for pre, fill, node in anytree.RenderTree(starting_node,
+                                                  style=anytree.AsciiStyle()):
+            value = getattr(node, attr, "")
+            if isinstance(value, (list, tuple)):
+                lines = value
+            else:
+                lines = str(value).split("\n")
+            rows.append(u"%s%s" % (pre,
+                                   json.dumps(lines[0], sort_keys=True)))
+            for line in lines[1:]:
+                rows.append(u"%s%s" % (fill,
+                                       json.dumps(line, sort_keys=True)))
+
+        return '\n'.join(rows)
 
     def _create_mock_service_config(self):
         mock_data_access = mock.MagicMock()

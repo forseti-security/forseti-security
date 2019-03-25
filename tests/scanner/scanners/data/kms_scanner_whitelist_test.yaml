@@ -1,0 +1,9 @@
+rules:
+  - name: All cryptographic keys should be rotated in 100 days
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+       - rotation_period: 100 #days

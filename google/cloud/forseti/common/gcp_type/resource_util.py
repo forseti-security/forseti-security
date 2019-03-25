@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import role
+from google.cloud.forseti.common.gcp_type import table
 from google.cloud.forseti.services import utils
 
 _RESOURCE_TYPE_MAP = {
@@ -84,6 +85,11 @@ _RESOURCE_TYPE_MAP = {
         'plural': 'Roles',
         'can_create_resource': True,
     },
+    resource.ResourceType.TABLE: {
+        'class': table.Table,
+        'plural': 'Tables',
+        'can_create_resource': True,
+    },
 }
 
 
@@ -107,6 +113,21 @@ def create_resource(resource_id, resource_type, **kwargs):
 
     return resource_type.get('class')(
         resource_id, **kwargs)
+
+
+def create_resource_from_db_row(row):
+    """Create a resource type from a database resource row.
+
+    Args:
+        row (Resource): the database resource row.
+
+    Returns:
+        Resource: the concrete resource type.
+    """
+    parent = (
+        create_resource_from_db_row(row.parent) if row.parent else None)
+
+    return create_resource_from_json(row.type, parent, row.data)
 
 
 def create_resource_from_json(resource_type, parent, json_string):

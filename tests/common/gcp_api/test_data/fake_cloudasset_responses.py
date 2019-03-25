@@ -14,12 +14,64 @@
 
 """Test data for CloudAsset API responses."""
 
+FOLDER = "folders/5678901234"
 PROJECT = "projects/1234567890"
 ORGANIZATION = "organizations/9876543210"
-PROJECT_OPERATION = "projects/1234567890/operations/ExportAssets/123456789098765"
-ORGANIZATION_OPERATION = "organizations/9876543210/operations/ExportAssets/567890987654321"
+FOLDER_OPERATION = "folders/5678901234/operations/ExportAssets/RESOURCE/123456789098765"
+PROJECT_OPERATION = "projects/1234567890/operations/ExportAssets/RESOURCE/123456789098765"
+ORGANIZATION_OPERATION = "organizations/9876543210/operations/ExportAssets/RESOURCE/567890987654321"
 
 DESTINATION = "gs://forseti-test-bucket/test-export.txt"
+
+ASSET_TYPES = ["cloudresourcemanager.googleapis.com/Project"]
+
+EXPORT_ASSETS_FOLDER_RESOURCES_OPERATION = """
+{
+  "name": "folders/5678901234/operations/ExportAssets/RESOURCE/123456789098765",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.asset.v1beta1.ExportAssetsRequest",
+    "parent": "folders/5678901234",
+    "assetTypes": [
+      "cloudresourcemanager.googleapis.com/Project"
+    ],
+    "contentType": "RESOURCE",
+    "outputConfig": {
+      "gcsDestination": {
+        "uri": "gs://forseti-test-bucket/test-export.txt"
+      }
+    }
+  }
+}
+"""
+
+EXPORT_ASSETS_FOLDER_RESOURCES_DONE = """
+{
+  "name": "folders/5678901234/operations/ExportAssets/RESOURCE/123456789098765",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.asset.v1beta1.ExportAssetsRequest",
+    "parent": "folders/5678901234",
+    "assetTypes": [
+      "cloudresourcemanager.googleapis.com/Project"
+    ],
+    "contentType": "RESOURCE",
+    "outputConfig": {
+      "gcsDestination": {
+        "uri": "gs://forseti-test-bucket/test-export.txt"
+      }
+    }
+  },
+  "done": true,
+  "response": {
+    "@type": "type.googleapis.com/google.cloud.asset.v1beta1.ExportAssetsResponse",
+    "readTime": "2018-09-14T01:48:44.507918774Z",
+    "outputConfig": {
+      "gcsDestination": {
+        "uri": "gs://forseti-test-bucket/test-export.txt"
+      }
+    }
+  }
+}
+"""
 
 EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION = """
 {
@@ -70,7 +122,7 @@ EXPORT_ASSETS_ORGANIZATION_RESOURCES_OPERATION = """
     "@type": "type.googleapis.com/google.cloud.asset.v1beta1.ExportAssetsRequest",
     "parent": "organizations/9876543210",
     "asset_types": [
-     "google.cloud.resourcemanager.Project"
+     "cloudresourcemanager.googleapis.com/Project"
     ],
     "contentType": "RESOURCE",
     "outputConfig": {
@@ -89,7 +141,7 @@ EXPORT_ASSETS_ORGANIZATION_RESOURCES_DONE = """
     "@type": "type.googleapis.com/google.cloud.asset.v1beta1.ExportAssetsRequest",
     "parent": "organizations/9876543210",
     "asset_types": [
-     "google.cloud.resourcemanager.Project"
+     "cloudresourcemanager.googleapis.com/Project"
     ],
     "contentType": "RESOURCE",
     "outputConfig": {

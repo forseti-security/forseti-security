@@ -76,7 +76,7 @@ def convert_to_timestamp(violations):
     return violations
 
 
-# pylint: disable=too-many-branches,too-many-statements
+# pylint: disable=too-many-branches
 def run(inventory_index_id,
         scanner_index_id,
         progress_queue,
@@ -155,7 +155,7 @@ def run(inventory_index_id,
                     notifiers.append(chosen_pipeline(
                         resource['resource'], inventory_index_id,
                         violation_map[resource['resource']], global_configs,
-                        notifier_configs, notifier['configuration']))
+                        notifier_configs, notifier.get('configuration')))
 
             # Run the notifiers.
             for notifier in notifiers:
@@ -166,25 +166,12 @@ def run(inventory_index_id,
             if violation_configs:
                 if violation_configs.get('cscc').get('enabled'):
                     source_id = violation_configs.get('cscc').get('source_id')
-                    if source_id:
-                        # beta mode
-                        LOGGER.debug(
-                            'Running CSCC notifier with beta API. source_id: '
-                            '%s', source_id)
-                        (cscc_notifier.CsccNotifier(inventory_index_id)
-                         .run(violations_as_dict, source_id=source_id))
-                    else:
-                        # alpha mode
-                        LOGGER.debug('Running CSCC notifier with alpha API.')
-                        gcs_path = (
-                            violation_configs.get('cscc').get('gcs_path'))
-                        mode = violation_configs.get('cscc').get('mode')
-                        organization_id = (
-                            violation_configs.get('cscc').get(
-                                'organization_id'))
-                        (cscc_notifier.CsccNotifier(inventory_index_id)
-                         .run(violations_as_dict, gcs_path, mode,
-                              organization_id))
+                    # beta mode
+                    LOGGER.debug(
+                        'Running CSCC notifier with beta API. source_id: '
+                        '%s', source_id)
+                    (cscc_notifier.CsccNotifier(inventory_index_id)
+                     .run(violations_as_dict, source_id=source_id))
 
         InventorySummary(service_config, inventory_index_id).run()
 
