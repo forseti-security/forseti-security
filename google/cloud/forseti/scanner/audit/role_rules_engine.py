@@ -173,20 +173,22 @@ class Rule(object):
         self.permissions = permissions[:]
         self.res_types = res[:]
 
-        for index, res_item in enumerate(res_types):
+        for index, res_item in enumerate(self.res_types):
             if 'type' not in res_item:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource:type in rule {}'.format(rule_index))
-            if res_item['type'] not in ['organization', 'folder', 'project']:
+            if res_item['type'] not in [
+                'organization', 'folder', 'project', 'role']:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Wrong resource:type in rule {}'.format(rule_index))
+                    'Wrong resource:type {} in rule {}'.format(
+                        res_item['type'], rule_index))
             if 'resource_ids' not in res_item:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource:resource_ids in rule {}'.format(
                         rule_index))
 
             if '*' in res_item['resource_ids']:
-                res_types[index]['resource_ids'] = ['*']
+                self.res_types[index]['resource_ids'] = ['*']
 
 
     def generate_violation(self, role):
@@ -224,7 +226,7 @@ class Rule(object):
             ValueError: Raised if the resource type is bucket.
         """
 
-        def find_violations_in_role(self, role):
+        def find_violations_in_role(role):
             """Get a generator for violations.
 
             Args:
@@ -243,7 +245,7 @@ class Rule(object):
             return violations
 
         if res.type == 'role':
-            return self.find_violations_in_role(res)
+            return find_violations_in_role(res)
         raise ValueError(
             'only role is supported.'
         )
