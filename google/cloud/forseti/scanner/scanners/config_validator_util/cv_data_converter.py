@@ -92,13 +92,32 @@ def convert_data_to_cv_asset(resource, data_type):
         asset_iam_policy = json_format.ParseDict(data, Policy(),
                                                  ignore_unknown_fields=True)
     else:
-        asset_resource = json_format.ParseDict(data, Value())
+        asset_resource = json_format.ParseDict(resource_wrapper(data),
+                                               Value())
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,
                                ancestry_path=ancestry_path,
                                resource=asset_resource,
                                iam_policy=asset_iam_policy)
+
+
+def resource_wrapper(data):
+    """Wrap the data with the resource wrapper used by CAI.
+
+    Args:
+        data (dict): The resource data.
+
+    Returns:
+        dict: Resource data wrapped by a resource wrapper."""
+    return {
+        "version": "1",
+        "discovery_document_uri": None,
+        "discovery_name": None,
+        "resource_url": None,
+        "parent": None,
+        "data": data
+    }
 
 
 def cleanup_dict(raw_dict):
