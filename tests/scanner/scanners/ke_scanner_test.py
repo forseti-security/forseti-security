@@ -62,8 +62,27 @@ FAKE_CLUSTER = '''
 
 FAKE_CLUSTER_ID = size_t_hash('fake-cluster.com')
 
+NO_NODE_POOLS = '''
+{
+    "name": "fake-cluster-no-node-pools",
+    "addonsConfig": {
+        "httpLoadBalancing": {},
+        "kubernetesDashboard": {
+            "disabled": true
+        },
+        "istioConfig": {
+            "auth": "AUTH_MUTUAL_TLS"
+        }
+    },
+    "selfLink": "fake-cluster-no-node-pools.com"
+}
+'''
+
+NO_NODE_POOLS_ID = size_t_hash('fake-cluster-no-node-pools.com')
+
 FAKE_CLUSTERS = {
     FAKE_CLUSTER_ID: FAKE_CLUSTER,
+    NO_NODE_POOLS_ID: NO_NODE_POOLS,
 }
 
 
@@ -92,20 +111,21 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
             project = data_access.add_resource(session, 'project/fake-project',
                                                organization)
 
-            ke_cluster = data_access.add_resource(
-                session,
-                'kubernetes_cluster/{}'.format(FAKE_CLUSTER_ID),
-                project,
-            )
+            for cluster_id, cluster in FAKE_CLUSTERS.items():
+                ke_cluster = data_access.add_resource(
+                    session,
+                    'kubernetes_cluster/{}'.format(cluster_id),
+                    project,
+                )
 
-            ke_cluster.data = FAKE_CLUSTER
+                ke_cluster.data = cluster
 
-            sc = data_access.add_resource(
-                session,
-                'kubernetes_service_config/{}'.format(FAKE_CLUSTER_ID),
-                ke_cluster,
-            )
-            sc.data = SERVER_CONFIG
+                sc = data_access.add_resource(
+                    session,
+                    'kubernetes_service_config/{}'.format(cluster_id),
+                    ke_cluster,
+                )
+                sc.data = SERVER_CONFIG
 
             session.commit()
 
