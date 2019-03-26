@@ -83,8 +83,9 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
         '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
-        settings = self.scanner._retrieve()
-        violations = self.scanner._find_violations(settings)
+        all_groups_settings, iam_groups_settings = self.scanner._retrieve()
+        violations = self.scanner._find_violations(all_groups_settings, 
+                                                   iam_groups_settings)
         self.assertEquals(1, mock_output_results.call_count)
         self.assertEquals(3, len(violations))
         self.assertEquals(json.loads(SETTINGS_1['settings'])['email'], 

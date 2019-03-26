@@ -15,12 +15,14 @@
 # Rule Keys:
 # name: The unique name describing the rule
 # mode: Depending on whether you want to allow or block in a given situation,
-#      whitelist: violates when any specified propery:value combination
-#                 doesn't match
-#      blacklist: violates when all specified propery:value combinations
-#                 match
+#      whitelist: violates when any specified property:value combination
+#                 doesn't match.  OR used on settings properties
+#      blacklist: violates when all specified property:value combinations
+#                 match.  AND used on settings properties
 # mode can be whitelist or blacklist
-# group_emails: unique emails matching gsuite groups
+# group_emails: unique emails matching gsuite groups. Essentially the same rule
+#               is created for each email listed here, or for all in case of 
+#               wildcard
 # settings: settings rules.  Supported settings are
 #           - whoCanAdd
 #           - whoCanJoin
