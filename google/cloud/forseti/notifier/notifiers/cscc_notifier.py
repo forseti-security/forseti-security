@@ -255,6 +255,8 @@ class CsccNotifier(object):
                 formated_findings_in_page = (
                     ast.literal_eval(json.dumps(page)))
                 findings_in_page = formated_findings_in_page.get('findings')
+                if not findings_in_page:
+                    continue
                 for finding_data in findings_in_page:
                     name = finding_data.get('name')
                     finding_id = name[-32:]
