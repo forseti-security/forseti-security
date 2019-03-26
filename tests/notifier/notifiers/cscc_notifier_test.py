@@ -19,6 +19,7 @@ import datetime
 import json
 import mock
 
+from google.cloud.forseti.common.gcp_api import securitycenter
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.services.scanner import dao as scanner_dao
@@ -277,3 +278,35 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                             FINDINGS_IN_CSCC)
 
         assert(len(inactive_findings)) == 0
+
+    @mock.patch('google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient')
+    def test_empty_list_api_response(self, mock_list):
+
+        source_id = 'organizations/123/sources/456'
+
+        violations = [{
+            'violation_hash': '311a372fcb0b4e70104dbd3e7f14ca563212040cf583f16adb6a71d2bc19a3e34b511e5eea768baccc1238df7b8beade64c46e27a4b2aef22fef0db90aef9a10',
+            'resource_name': 'readme1',
+            'resource_data': {u'ipv4Enabled': True,
+                              u'authorizedNetworks': [
+                                  {u'expirationTime': u'1970-01-01T00:00:00Z',
+                                   u'kind': u'sql#aclEntry',
+                                   u'value': u'0.0.0.0/0'}]},
+            'resource_id': 'readme1', 'violation_type': 'CLOUD_SQL_VIOLATION',
+            'created_at_datetime': '2019-03-26T04:37:51Z',
+            'scanner_index_id': 1553575067068833L,
+            'rule_name': 'Cloud SQL rule to search for publicly exposed instances',
+            'full_name': 'organization/660570133860/project/cicd-henry/cloudsqlinstance/5484995189365458175/',
+            'rule_index': 0L,
+            'violation_data': {u'instance_name': u'readme1',
+                               u'require_ssl': False,
+                               u'project_id': u'readme1',
+                               u'authorized_networks': [u'0.0.0.0/0'],
+                               u'full_name': u'organization/660570133860/project/cicd-henry/cloudsqlinstance/5484995189365458175/'},
+            'id': 99185L,
+            'resource_type': 'cloudsqlinstance'}]
+
+        mock_list.list_findings.return_value = {'readTime': '111'}
+        notifier = cscc_notifier.CsccNotifier('abc')
+        notifier._send_findings_to_cscc(violations, source_id)
+        self.assertFalse(mock_list.update_finding.called)
