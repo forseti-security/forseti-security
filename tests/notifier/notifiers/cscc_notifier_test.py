@@ -234,11 +234,9 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
         notifier.run(None, None, 'api', None, source_id='111')
-
         calls = notifier._send_findings_to_cscc.call_args_list
         call = calls[0]
         _, kwargs = call
-
         self.assertEquals('111', kwargs['source_id'])
 
     def test_outdated_findings_are_found(self):
