@@ -136,10 +136,14 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
             '', unittest_utils.get_datafile_path(
                 __file__, 'ke_scanner_test_data.yaml'))
 
+    @mock.patch(
+        'google.cloud.forseti.scanner.audit.ke_rules_engine.LOGGER',
+        autospsec=True,
+    )
     @mock.patch.object(
         ke_scanner.KeScanner,
         '_output_results_to_db', autospec=True)
-    def test_run_scanner(self, mock_output_results):
+    def test_run_scanner(self, mock_output_results, mock_logger):
         self.scanner.run()
         expected_violations = [
             {'rule_name': 'explicit whitelist, pass',
@@ -244,6 +248,14 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
 
         mock_output_results.assert_called_once_with(mock.ANY,
                                                     expected_violations)
+
+        # check that the "missing nodePool, should not generate
+        # violation" rule test case did in fact log
+        self.assertTrue(mock_logger.warning.called)
+        self.assertTrue(
+            'JMESPath error processing KE cluster %s:' in mock_logger.warning.call_args[0][0],
+        )
+        self.assertTrue(NO_NODE_POOLS_ID in mock_logger.warning.call_args[0][1])
 
 
 if __name__ == '__main__':
