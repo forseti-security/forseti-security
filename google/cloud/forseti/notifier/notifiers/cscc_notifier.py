@@ -257,7 +257,6 @@ class CsccNotifier(object):
                                       source_id=source_id)
                 LOGGER.debug('Successfully updated finding in CSCC:\n%s',
                              finding)
-
             except api_errors.ApiExecutionError:
                 LOGGER.exception('Encountered CSCC API error.')
                 continue
