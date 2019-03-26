@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""KMS Scanner Tests."""
+"""Groups Settings Scanner Tests."""
 
 import unittest
 import mock
@@ -44,7 +44,6 @@ class FakeServiceConfig(object):
 
     def __init__(self):
         engine = create_test_engine()
-        print(engine.url.database)
         self.model_manager = ModelManager(engine)
 
 
@@ -52,7 +51,6 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("setup class is run")
         cls.service_config = FakeServiceConfig()
         cls.model_name = cls.service_config.model_manager.create(
             name='groups-settings-scanner-test')
@@ -61,7 +59,6 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
             cls.service_config.model_manager.get(cls.model_name))
 
         def add_settings_to_test_db(settings_row):
-            # session.flush()
             data_access.add_member(session, settings_row['group_name'])
             stmt = data_access.TBL_GROUPS_SETTINGS.insert(settings_row)
             session.execute(stmt)

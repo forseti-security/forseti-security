@@ -97,7 +97,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         self._output_results_to_db(all_violations)
 
     def _find_violations(self, all_groups_settings, iam_groups_settings):
-        """Find violations in the policies.
+        """Find violations in the settings.
 
         Args:
             all_groups_settings (list): GroupsSettings list to find violations
@@ -130,7 +130,8 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
         """Runs the data collection.
 
         Returns:
-            list: GroupsSettings objects.
+            tupl: 2 lists of GroupsSettings objects, 1 only for settings that
+            have iam policies and 1 with all groups settings.
         Raises:
             ValueError: if resources have an unexpected type.
         """
