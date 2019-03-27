@@ -235,7 +235,8 @@ echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | s
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
-# Download the Config Validator constraints from GCS
+# Download the Newest Config Validator constraints from GCS
+rm -rf /home/ubuntu/config_validator_constraints
 gsutil cp -r gs://{scanner_bucket}/config_validator_constraints /home/ubuntu/
 
 # Start Forseti service depends on vars defined above.
