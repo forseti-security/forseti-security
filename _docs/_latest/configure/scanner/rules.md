@@ -531,6 +531,48 @@ documentation.
     #- member_email: "@bqdts.google.baggins"
 ```
 
+## Google Group Settings rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: default
+    mode: whitelist
+    only_iam_groups: True
+    groups_emails:
+      - '*'
+    settings:
+      allowExternalMembers: True
+      whoCanJoin: "INVITED_CAN_JOIN"
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+      whoCanAdd: "ALL_MANAGERS_CAN_ADD"
+      allowExternalMembers: False
+      whoCanLeaveGroup: "ALL_MANAGERS_CAN_LEAVE"
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: Either whitelist or blacklist.
+
+* `only_iam_groups`
+  * **Description**: Whether to only apply rule for groups with iam policies.
+  * **Valid values**: Boolean True or False.
+
+* `group_emails`
+  * **Description**: A list of one or more resource ids to match.
+  * **Valid values**: String, you can use `*` to match all.
+
+* `settings`
+  * **Description**: Describes what group settings are allowed.
+  * **Valid values**: Group setting/value pairs. Supported group settings are
+  whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite,
+  allowExternalMembers, and whoCanLeaveGroup
+
 ## Instance Network Interface rules
 
 ### Rule definition
