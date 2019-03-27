@@ -14,6 +14,8 @@
 
 """A GroupsSettings object.
 
+See:
+https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups
 """
 
 import json
@@ -50,7 +52,6 @@ class GroupsSettings(resource.Resource):
             resource_id=email,
             name=email,
             resource_type=resource.ResourceType.GROUPS_SETTINGS),
-
         self.whoCanAdd = whoCanAdd
         self.whoCanJoin = whoCanJoin
         self.whoCanViewMembership = whoCanViewMembership
@@ -73,10 +74,10 @@ class GroupsSettings(resource.Resource):
         settings = json.loads(settings)
         return cls(
             email=email,
-            whoCanAdd=settings.get('whoCanAdd', 'N/A'),
-            whoCanJoin=settings.get('whoCanJoin', 'N/A'),
-            whoCanViewMembership=settings.get('whoCanViewMembership', 'N/A'),
-            whoCanViewGroup=settings.get('whoCanViewGroup', 'N/A'),
-            whoCanInvite=settings.get('whoCanInvite', 'N/A'),
-            allowExternalMembers=settings.get('allowExternalMembers', 'N/A'),
-            whoCanLeaveGroup=settings.get('whoCanLeaveGroup', 'N/A'))
+            whoCanAdd=settings.get('whoCanAdd'),
+            whoCanJoin=settings.get('whoCanJoin'),
+            whoCanViewMembership=settings.get('whoCanViewMembership'),
+            whoCanViewGroup=settings.get('whoCanViewGroup'),
+            whoCanInvite=settings.get('whoCanInvite'),
+            allowExternalMembers=settings.get('allowExternalMembers'),
+            whoCanLeaveGroup=settings.get('whoCanLeaveGroup'))
