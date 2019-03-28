@@ -327,6 +327,9 @@ class Rule(object):
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rule = rule
+        self.blacklist_violation_reason = "rule specified ({}) together is \
+        not allowed"
+        self.whitelist_violation_reason = "rule specified ({}) is required"
 
     def rule_requirements(self):
         """Used to create violation reason.
@@ -348,7 +351,7 @@ class Rule(object):
             violation_reason (str): Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
         """
-        violation_reason = ''
+        has_violation = False
         if not self.rule['settings']:
             return violation_reason
 
@@ -357,10 +360,9 @@ class Rule(object):
             if getattr(settings, setting) != value:
                 violates_every_setting_in_rule = False
         if violates_every_setting_in_rule:
-            violation_reason = ("rule specified ({}) together is not allowed"
-                                .format(self.rule_requirements()))
+            has_violation = True
 
-        return violation_reason
+        return has_violation
 
     def find_whitelist_violation(self, settings):
         """Finds violations in case that rule is whitelist.
@@ -370,16 +372,15 @@ class Rule(object):
             violation_reason (str): Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
         """
-        violation_reason = ''
+        has_violation = False
         a_setting_doesnt_match = False
         for setting, value in self.rule['settings'].iteritems():
             if getattr(settings, setting) != value:
                 a_setting_doesnt_match = True
         if a_setting_doesnt_match:
-            violation_reason = ("rule specified ({}) is required"
-                                .format(self.rule_requirements()))
+            has_violation = True
 
-        return violation_reason
+        return has_violation
 
     def find_violations(self, settings):
         """Find GroupsSettings violations.
@@ -392,11 +393,15 @@ class Rule(object):
         """
         violations = []
         if self.rule['mode'] == BLACKLIST:
-            violation_reason = self.find_blacklist_violation(settings)
+            has_violation = self.find_blacklist_violation(settings)
+            violation_reason = self.blacklist_violation_reason.format(
+                self.rule_requirements())
         elif self.rule['mode'] == WHITELIST:
-            violation_reason = self.find_whitelist_violation(settings)
+            has_violation = self.find_whitelist_violation(settings)
+            violation_reason = self.whitelist_violation_reason.format(
+                self.rule_requirements())
 
-        if violation_reason:
+        if has_violation:
             violations.append(RuleViolation(
                 group_email=settings.id,
                 resource_type=settings.type,
