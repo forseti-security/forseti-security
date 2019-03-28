@@ -154,36 +154,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         self.assertEquals(expected_findings, finding_results)
 
-    @mock.patch('google.cloud.forseti.notifier.notifiers.cscc_notifier.LOGGER')
-    def test_modes_are_run_correctly(self, mock_logger):
-
-        # This whole test case is for alpha API, and can be deleted
-        # when CSCC alpha support is removed.
-
-        notifier = cscc_notifier.CsccNotifier(None)
-
-        notifier._send_findings_to_gcs = mock.MagicMock()
-        notifier._send_findings_to_cscc = mock.MagicMock()
-        notifier.LOGGER = mock.MagicMock()
-
-        self.assertEquals(0, notifier._send_findings_to_gcs.call_count)
-        notifier.run(None, None, None, None)
-        self.assertEquals(1, notifier._send_findings_to_gcs.call_count)
-
-        notifier.run(None, None, 'bucket', None)
-        self.assertEquals(2, notifier._send_findings_to_gcs.call_count)
-
-        # alpha api
-        self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
-        notifier.run(None, None, 'api', None)
-        self.assertEquals(1, notifier._send_findings_to_cscc.call_count)
-
-        self.assertEquals(3, mock_logger.info.call_count)
-        notifier.run(None, None, 'foo', None)
-        self.assertEquals(5, mock_logger.info.call_count)
-        self.assertTrue(
-            'not selected' in mock_logger.info.call_args_list[4][0][0])
-
     def test_beta_api_is_invoked_correctly(self):
 
         notifier = cscc_notifier.CsccNotifier(None)
@@ -192,7 +162,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         notifier.LOGGER = mock.MagicMock()
 
         self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
-        notifier.run(None, None, 'api', None, source_id='111')
+        notifier.run(None, source_id='111')
         
         calls = notifier._send_findings_to_cscc.call_args_list
         call = calls[0]
