@@ -192,7 +192,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         notifier.LOGGER = mock.MagicMock()
 
         self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
-        notifier.run(None, None, 'api', None, source_id='111')
         notifier.run(None, source_id='111')
         
         calls = notifier._send_findings_to_cscc.call_args_list
