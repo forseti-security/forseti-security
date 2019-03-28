@@ -327,8 +327,8 @@ class Rule(object):
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rule = rule
-        self.blacklist_violation_reason = "rule specified ({}) together is \
-        not allowed"
+        self.blacklist_violation_reason = (
+            "rule specified ({}) together is not allowed")
         self.whitelist_violation_reason = "rule specified ({}) is required"
 
     def rule_requirements(self):
