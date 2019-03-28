@@ -353,7 +353,7 @@ class Rule(object):
         """
         has_violation = False
         if not self.rule['settings']:
-            return violation_reason
+            return has_violation
 
         violates_every_setting_in_rule = True
         for setting, value in self.rule['settings'].iteritems():
