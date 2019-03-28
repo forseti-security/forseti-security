@@ -18,9 +18,11 @@ variable "gcp_project" {
 }
 variable "gcp_region" {
   description = "GCP region to create resources in"
+  default = "us-central1"
 }
-variable "gcp_zone"                         {
+variable "gcp_zone" {
   description = "GCP zone to create resources in"
+  default = "us-central1-f"
 }
 
 # Default variables.
