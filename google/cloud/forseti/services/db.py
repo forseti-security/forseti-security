@@ -138,7 +138,9 @@ def create_scoped_readonly_session(engine):
     Returns:
         object: Scoped session maker.
     """
-    session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
+    # Set session autocommit to true to ensure each query gets a new connection
+    # from the pool.
+    session = sessionmaker(bind=engine, autocommit=True, autoflush=False)()
 
     return ScopedSession(session, auto_commit=False, readonly=True)
 
@@ -152,6 +154,8 @@ def create_readonly_session(engine):
     Returns:
         object: Scoped session maker.
     """
-    session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
+    # Set session autocommit to true to ensure each query gets a new connection
+    # from the pool.
+    session = sessionmaker(bind=engine, autocommit=True, autoflush=False)()
     stub_out_flush_operation(session)
     return session
