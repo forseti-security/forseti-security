@@ -125,67 +125,38 @@ class CsccNotifier(object):
         findings = []
 
         # beta api
-        if source_id:
-            LOGGER.debug('Transforming findings with beta API. source_id: %s',
-                         source_id)
-            for violation in violations:
-                # CSCC can't accept the full hash, so this must be shortened.
-                finding_id = violation.get('violation_hash')[:32]
-                finding = {
-                    'name': '{0}/findings/{1}'.format(
-                        source_id, violation.get('violation_hash')[:32]),
-                    'parent': source_id,
-                    'resource_name': violation.get('full_name'),
-                    'state': 'ACTIVE',
-                    'category': violation.get('violation_type'),
-                    'event_time': violation.get('created_at_datetime'),
-                    'source_properties': {
-                        'source': 'FORSETI',
-                        'db_source': 'table:{}/id:{}'.format(
-                            'violations', violation.get('id')),
-                        'inventory_index_id': self.inv_index_id,
-                        'resource_data': (
-                            json.dumps(violation.get('resource_data'),
-                                       sort_keys=True)),
-                        'resource_id': violation.get('resource_id'),
-                        'resource_type': violation.get('resource_type'),
-                        'rule_index': violation.get('rule_index'),
-                        'rule_name': violation.get('rule_name'),
-                        'scanner_index_id': violation.get('scanner_index_id'),
-                        'violation_data': (
-                            json.dumps(violation.get('violation_data'),
-                                       sort_keys=True))
-                    },
-                }
-                findings.append([finding_id, finding])
-            return findings
-
-        # alpha api
         LOGGER.debug('Transforming findings with beta API. source_id: %s',
                      source_id)
         for violation in violations:
+            # CSCC can't accept the full hash, so this must be shortened.
+            finding_id = violation.get('violation_hash')[:32]
             finding = {
-                # CSCC can't accept the full hash, so this must be shortened.
-                'id': violation.get('violation_hash')[:32],
-                'assetIds': [
-                    violation.get('full_name')
-                ],
-                'eventTime': violation.get('created_at_datetime'),
-                'properties': {
+                'name': '{0}/findings/{1}'.format(
+                    source_id, violation.get('violation_hash')[:32]),
+                'parent': source_id,
+                'resource_name': violation.get('full_name'),
+                'state': 'ACTIVE',
+                'category': violation.get('violation_type'),
+                'event_time': violation.get('created_at_datetime'),
+                'source_properties': {
+                    'source': 'FORSETI',
                     'db_source': 'table:{}/id:{}'.format(
                         'violations', violation.get('id')),
                     'inventory_index_id': self.inv_index_id,
-                    'resource_data': violation.get('resource_data'),
+                    'resource_data': (
+                        json.dumps(violation.get('resource_data'),
+                                   sort_keys=True)),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
+                    'rule_name': violation.get('rule_name'),
                     'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data')
+                    'violation_data': (
+                        json.dumps(violation.get('violation_data'),
+                                   sort_keys=True))
                 },
-                'source_id': 'FORSETI',
-                'category': violation.get('rule_name')
             }
-            findings.append(finding)
+            findings.append([finding_id, finding])
         return findings
 
     @staticmethod
@@ -226,13 +197,11 @@ class CsccNotifier(object):
         return inactive_findings
 
     # pylint: disable=too-many-locals
-    def _send_findings_to_cscc(self, violations, organization_id=None,
-                               source_id=None):
+    def _send_findings_to_cscc(self, violations, source_id=None):
         """Send violations to CSCC directly via the CSCC API.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
-            organization_id (str): The id prefixed with 'organizations/'.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -255,6 +224,8 @@ class CsccNotifier(object):
                 formated_findings_in_page = (
                     ast.literal_eval(json.dumps(page)))
                 findings_in_page = formated_findings_in_page.get('findings')
+                if not findings_in_page:
+                    continue
                 for finding_data in findings_in_page:
                     name = finding_data.get('name')
                     finding_id = name[-32:]
@@ -293,31 +264,11 @@ class CsccNotifier(object):
 
             return
 
-        # alpha api
-        LOGGER.debug('Sending findings to CSCC with alpha API.')
-        findings = self._transform_for_api(violations)
-
-        client = securitycenter.SecurityCenterClient()
-
-        for finding in findings:
-            LOGGER.debug('Creating finding CSCC:\n%s.', finding)
-            try:
-                client.create_finding(finding, organization_id=organization_id)
-                LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                             finding)
-            except api_errors.ApiExecutionError:
-                LOGGER.exception('Encountered CSCC API error.')
-                continue
-
-    def run(self, violations, gcs_path=None, mode=None, organization_id=None,
-            source_id=None):
+    def run(self, violations, source_id=None):
         """Generate the temporary json file and upload to GCS.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
-            gcs_path (str): The GCS bucket to upload the findings.
-            mode (str): The mode in which to send the CSCC notification.
-            organization_id (str): The id of the organization.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -327,18 +278,6 @@ class CsccNotifier(object):
         # At this point, cscc notifier is already determined to be enabled.
 
         # beta api
-        if source_id:
-            LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
-            self._send_findings_to_cscc(violations, source_id=source_id)
-            return
-
-        # alpha api
-        LOGGER.debug('Running CSCC with alpha API.')
-        if mode is None or mode == 'bucket':
-            self._send_findings_to_gcs(violations, gcs_path)
-        elif mode == 'api':
-            self._send_findings_to_cscc(violations, organization_id)
-        else:
-            LOGGER.info(
-                'A valid mode for CSCC notification was not selected: %s. '
-                'Please use either "bucket" or "api" mode.', mode)
+        LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
+        self._send_findings_to_cscc(violations, source_id=source_id)
+        return
