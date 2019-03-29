@@ -225,6 +225,8 @@ class CsccNotifier(object):
                     ast.literal_eval(json.dumps(page)))
                 list_findings_result_paged = (
                     formated_findings_in_page.get('listFindingsResult'))
+                if not list_findings_result_paged:
+                    continue
                 for findings_in_page in list_findings_result_paged:
                     finding_data = findings_in_page.get('finding')
                     name = finding_data.get('name')

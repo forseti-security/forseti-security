@@ -65,8 +65,7 @@ SUPPORTED_APIS = {
     },
     'securitycenter': {
         'default_version': 'v1',
-        'supported_versions': ['v1'],
-        'is_private_api': True,
+        'supported_versions': ['v1']
     },
     'servicemanagement': {
         'default_version': 'v1',
