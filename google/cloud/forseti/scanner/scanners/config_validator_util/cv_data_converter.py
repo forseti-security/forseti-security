@@ -17,7 +17,7 @@ import json
 
 from google.iam.v1.policy_pb2 import Policy
 from google.protobuf import json_format
-from google.protobuf.struct_pb2 import Value, NullValue
+from google.cloud.asset_v1.proto.assets_pb2 import Resource
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
@@ -93,7 +93,7 @@ def convert_data_to_cv_asset(resource, data_type):
                                                  ignore_unknown_fields=True)
     else:
         asset_resource = json_format.ParseDict(resource_wrapper(data),
-                                               Value())
+                                               Resource())
 
     return validator_pb2.Asset(name=resource.cai_resource_name,
                                asset_type=resource.cai_resource_type,

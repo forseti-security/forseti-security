@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
+from google.cloud.asset.v1 import assets_pb2 as google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='validator',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0fvalidator.proto\x12\tvalidator\x1a\x1agoogle/iam/v1/policy.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xcc\x01\n\x05\x41sset\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n\nasset_type\x18\x02 \x01(\tR\nasset_type\x12$\n\rancestry_path\x18\x03 \x01(\tR\rancestry_path\x12\x32\n\x08resource\x18\x04 \x01(\x0b\x32\x16.google.protobuf.ValueR\x08resource\x12\x35\n\niam_policy\x18\x05 \x01(\x0b\x32\x15.google.iam.v1.PolicyR\niam_policy\"l\n\tViolation\x12\x12\n\nconstraint\x18\x01 \x01(\t\x12\x10\n\x08resource\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x08metadata\x18\x04 \x01(\x0b\x32\x16.google.protobuf.Value\"2\n\x0e\x41\x64\x64\x44\x61taRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\"\x11\n\x0f\x41\x64\x64\x44\x61taResponse\"\x0e\n\x0c\x41uditRequest\"9\n\rAuditResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation\"\x0e\n\x0cResetRequest\"\x0f\n\rResetResponse2\xcb\x01\n\tValidator\x12\x42\n\x07\x41\x64\x64\x44\x61ta\x12\x19.validator.AddDataRequest\x1a\x1a.validator.AddDataResponse\"\x00\x12<\n\x05\x41udit\x12\x17.validator.AuditRequest\x1a\x18.validator.AuditResponse\"\x00\x12<\n\x05Reset\x12\x17.validator.ResetRequest\x1a\x18.validator.ResetResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0fvalidator.proto\x12\tvalidator\x1a\x1agoogle/iam/v1/policy.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\"google/cloud/asset/v1/assets.proto\"\x9e\x01\n\x05\x41sset\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x12\n\nasset_type\x18\x02 \x01(\t\x12\x15\n\rancestry_path\x18\x03 \x01(\t\x12\x31\n\x08resource\x18\x04 \x01(\x0b\x32\x1f.google.cloud.asset.v1.Resource\x12)\n\niam_policy\x18\x05 \x01(\x0b\x32\x15.google.iam.v1.Policy\"l\n\tViolation\x12\x12\n\nconstraint\x18\x01 \x01(\t\x12\x10\n\x08resource\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x08metadata\x18\x04 \x01(\x0b\x32\x16.google.protobuf.Value\"2\n\x0e\x41\x64\x64\x44\x61taRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\"\x11\n\x0f\x41\x64\x64\x44\x61taResponse\"\x0e\n\x0c\x41uditRequest\"9\n\rAuditResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation\"\x0e\n\x0cResetRequest\"\x0f\n\rResetResponse2\xcb\x01\n\tValidator\x12\x42\n\x07\x41\x64\x64\x44\x61ta\x12\x19.validator.AddDataRequest\x1a\x1a.validator.AddDataResponse\"\x00\x12<\n\x05\x41udit\x12\x17.validator.AuditRequest\x1a\x18.validator.AuditResponse\"\x00\x12<\n\x05Reset\x12\x17.validator.ResetRequest\x1a\x18.validator.ResetResponse\"\x00\x62\x06proto3')
   ,
-  dependencies=[google_dot_iam_dot_v1_dot_policy__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_iam_dot_v1_dot_policy__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2.DESCRIPTOR,])
 
 
 
@@ -41,35 +42,35 @@ _ASSET = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, json_name='name', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='asset_type', full_name='validator.Asset.asset_type', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, json_name='asset_type', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='ancestry_path', full_name='validator.Asset.ancestry_path', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, json_name='ancestry_path', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='resource', full_name='validator.Asset.resource', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, json_name='resource', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='iam_policy', full_name='validator.Asset.iam_policy', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, json_name='iam_policy', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -82,8 +83,8 @@ _ASSET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=89,
-  serialized_end=293,
+  serialized_start=125,
+  serialized_end=283,
 )
 
 
@@ -134,8 +135,8 @@ _VIOLATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=295,
-  serialized_end=403,
+  serialized_start=285,
+  serialized_end=393,
 )
 
 
@@ -165,8 +166,8 @@ _ADDDATAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=405,
-  serialized_end=455,
+  serialized_start=395,
+  serialized_end=445,
 )
 
 
@@ -189,8 +190,8 @@ _ADDDATARESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=457,
-  serialized_end=474,
+  serialized_start=447,
+  serialized_end=464,
 )
 
 
@@ -213,8 +214,8 @@ _AUDITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=476,
-  serialized_end=490,
+  serialized_start=466,
+  serialized_end=480,
 )
 
 
@@ -244,8 +245,8 @@ _AUDITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=492,
-  serialized_end=549,
+  serialized_start=482,
+  serialized_end=539,
 )
 
 
@@ -268,8 +269,8 @@ _RESETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=551,
-  serialized_end=565,
+  serialized_start=541,
+  serialized_end=555,
 )
 
 
@@ -292,11 +293,11 @@ _RESETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=567,
-  serialized_end=582,
+  serialized_start=557,
+  serialized_end=572,
 )
 
-_ASSET.fields_by_name['resource'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
+_ASSET.fields_by_name['resource'].message_type = google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2._RESOURCE
 _ASSET.fields_by_name['iam_policy'].message_type = google_dot_iam_dot_v1_dot_policy__pb2._POLICY
 _VIOLATION.fields_by_name['metadata'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
 _ADDDATAREQUEST.fields_by_name['assets'].message_type = _ASSET
@@ -375,8 +376,8 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=585,
-  serialized_end=788,
+  serialized_start=575,
+  serialized_end=778,
   methods=[
   _descriptor.MethodDescriptor(
     name='AddData',
