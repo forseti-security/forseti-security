@@ -113,8 +113,8 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         expected_findings = [
             {'finding_id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
              'finding_summary': 'disallow_all_ports_111',
-             'finding_source_id': 'FORSETI', 
-             'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_111', 
+             'finding_source_id': 'FORSETI',
+             'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_111',
              'finding_asset_ids': 'full_name_111',
              'finding_time_event': '2010-08-28T10:20:30Z',
              'finding_callback_url': 'gs://foo_bucket',
@@ -153,7 +153,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         )
 
         self.assertEquals(expected_findings, finding_results)
-    
+
     def test_beta_api_is_invoked_correctly(self):
 
         notifier = cscc_notifier.CsccNotifier(None)
@@ -167,7 +167,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         calls = notifier._send_findings_to_cscc.call_args_list
         call = calls[0]
         _, kwargs = call
-        
         self.assertEquals('111', kwargs['source_id'])
 
     def test_outdated_findings_are_found(self):
@@ -277,3 +276,36 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                             FINDINGS_IN_CSCC)
 
         assert(len(inactive_findings)) == 0
+
+    @mock.patch('google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient')
+    def test_empty_list_api_response(self, mock_list):
+        source_id = 'organizations/123/sources/456'
+
+        violations = [{
+            'violation_hash': '311',
+            'resource_name': 'readme1',
+            'resource_data': {u'ipv4Enabled': True,
+                              u'authorizedNetworks': [
+                                  {
+                                      u'expirationTime': u'1970-01-01T00:00:00Z',
+                                      u'kind': u'sql#aclEntry',
+                                      u'value': u'0.0.0.0/0'}]},
+            'resource_id': 'readme1',
+            'violation_type': 'CLOUD_SQL_VIOLATION',
+            'created_at_datetime': '2018-03-26T04:37:51Z',
+            'scanner_index_id': 122,
+            'rule_name': 'Cloud SQL rule to search for publicly exposed instances',
+            'full_name': 'organization/123/project/cicd-henry/cloudsqlinstance/456/',
+            'rule_index': 0L,
+            'violation_data': {u'instance_name': u'readme1',
+                               u'require_ssl': False,
+                               u'project_id': u'readme1',
+                               u'authorized_networks': [u'0.0.0.0/0'],
+                               u'full_name': u'organization/123/project/cicd-henry/cloudsqlinstance/456/'},
+            'id': 99185L,
+            'resource_type': 'cloudsqlinstance'}]
+
+        mock_list.list_findings.return_value = {'readTime': '111'}
+        notifier = cscc_notifier.CsccNotifier('abc')
+        notifier._send_findings_to_cscc(violations, source_id)
+        self.assertFalse(mock_list.update_finding.called)
