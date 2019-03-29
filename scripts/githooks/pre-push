@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A git pre-commit hook to perform linter checks to catch errors locally
+# A git pre-push hook to perform unit tests to catch errors locally
 
 ../../install/scripts/docker_setup_forseti.sh
 ../../install/scripts/docker_run_forseti.sh
-../../install/scripts/docker_pystyle_forseti.sh
+../../install/scripts/docker_unittest_forseti.sh
