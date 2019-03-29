@@ -214,7 +214,7 @@ class CsccNotifier(object):
             new_findings = self._transform_for_api(violations,
                                                    source_id=source_id)
 
-            client = securitycenter.SecurityCenterClient(version='v1beta1')
+            client = securitycenter.SecurityCenterClient(version='v1')
 
             paged_findings_in_cscc = client.list_findings(source_id=source_id)
 
@@ -223,10 +223,10 @@ class CsccNotifier(object):
             for page in paged_findings_in_cscc:
                 formated_findings_in_page = (
                     ast.literal_eval(json.dumps(page)))
-                findings_in_page = formated_findings_in_page.get('findings')
-                if not findings_in_page:
-                    continue
-                for finding_data in findings_in_page:
+                list_findings_result_paged = (
+                    formated_findings_in_page.get('listFindingsResult'))
+                for findings_in_page in list_findings_result_paged:
+                    finding_data = findings_in_page.get('finding')
                     name = finding_data.get('name')
                     finding_id = name[-32:]
                     formatted_cscc_findings.append([finding_id, finding_data])
