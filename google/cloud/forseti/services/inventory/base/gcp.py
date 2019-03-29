@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import container
+from google.cloud.forseti.common.gcp_api import groups_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
@@ -605,6 +606,14 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_gsuite_groups_settings(self, group_email):
+        """Fetch Gsuite groups settings from GCP API.
+
+        Args:
+            group_email (str): Gsuite group email.
+        """
+
+    @abc.abstractmethod
     def iter_gsuite_groups(self, gsuite_id):
         """Iterate Gsuite groups from GCP API.
 
@@ -942,6 +951,21 @@ class ApiClientImpl(ApiClient):
             raise ResourceNotSupported('Admin API disabled by server '
                                        'configuration.')
         return admin_directory.AdminDirectoryClient(self.config)
+
+    def _create_groups_settings(self):
+        """Create gsuite groups settings API client.
+
+        Returns:
+            object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
+        """
+        if is_api_disabled(self.config, groups_settings.API_NAME):
+            raise ResourceNotSupported('Groups Settings API disabled by server '
+                                       'configuration.')
+        return groups_settings.GroupsSettingsClient(self.config)
 
     def _create_appengine(self):
         """Create AppEngine API client.
@@ -2013,6 +2037,19 @@ class ApiClientImpl(ApiClient):
         result = self.ad.get_groups(gsuite_id)
         for group in result:
             yield group, None
+
+    @create_lazy('groups_settings', _create_groups_settings)
+    def fetch_gsuite_groups_settings(self, group_email):
+        """Retrieve Gsuite groups settings from GCP API.
+
+        Args:
+            group_email (str): Gsuite group email.
+
+        Returns:
+            dict: Dictionary of groups settings.
+        """
+        # pylint:disable=no-member
+        return self.groups_settings.get_groups_settings(group_email)
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_users(self, gsuite_id):

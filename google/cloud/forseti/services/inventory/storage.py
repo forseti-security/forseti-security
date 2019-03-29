@@ -17,6 +17,7 @@
 import json
 import enum
 
+from retrying import retry
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import case
@@ -865,8 +866,12 @@ class CaiDataAccess(object):
         return num_rows
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def iter_cai_assets(content_type, asset_type, parent_name, session):
         """Iterate the objects in the cai temporary table.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.
@@ -893,8 +898,12 @@ class CaiDataAccess(object):
             yield row.extract_asset_data(content_type)
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def fetch_cai_asset(content_type, asset_type, name, session):
         """Returns a single resource from the cai temporary store.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.

@@ -907,10 +907,9 @@ def run_explainer(client, config, output, _):
         """
         if not any([config.roles, config.role_prefixes]):
             raise ValueError('please specify either a role or a role prefix')
-        for permission in (
-                client.query_permissions_by_roles(config.roles,
-                                                  config.role_prefixes)):
-            output.write(permission)
+        permissions = client.query_permissions_by_roles(config.roles,
+                                                        config.role_prefixes)
+        output.write(permissions)
 
     def do_get_policy():
         """Get access"""
@@ -925,12 +924,11 @@ def run_explainer(client, config, output, _):
 
     def do_why_granted():
         """Explain why a permission or role is granted."""
-        for binding in (
-                client.explain_granted(config.member,
-                                       config.resource,
-                                       config.role,
-                                       config.permission)):
-            output.write(binding)
+        bindings = client.explain_granted(config.member,
+                                          config.resource,
+                                          config.role,
+                                          config.permission)
+        output.write(bindings)
 
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
