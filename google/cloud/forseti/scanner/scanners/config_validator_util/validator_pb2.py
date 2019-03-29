@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-from google.cloud.asset.v1 import assets_pb2 as google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2
+from google.cloud.asset_v1.proto import assets_pb2 as google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
