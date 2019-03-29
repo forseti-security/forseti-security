@@ -41,8 +41,8 @@ FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
 CONFIG_VALIDATOR_COMMAND="/home/ubuntu/forseti-security/external-dependencies/config-validator/ConfigValidatorRPCServer"
-CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/config_validator_constraints/policies/policies'"
-CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/config_validator_constraints/policies/validator/lib'"
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='/home/ubuntu/policy-library/policies'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='/home/ubuntu/policy-library/lib'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 
 # Update the permission of the config validator.
