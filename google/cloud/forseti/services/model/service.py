@@ -102,16 +102,22 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             object: pb2 object of DeleteModelReply
         """
 
+        # Protobuf enums are not handled correctly by the no-member check.
+        # pylint: disable=no-member
         model_name = request.handle
+        if not model_name:
+            LOGGER.warn('No model name in request: %s', request)
+            status = model_pb2.DeleteModelReply.FAIL
+            return model_pb2.DeleteModelReply(status=status)
+
         try:
             self.modeller.delete_model(model_name)
-            # pylint: disable=no-member
-            status = model_pb2.DeleteModelReply.Status.Value('SUCCESS')
+            status = model_pb2.DeleteModelReply.SUCCESS
         except Exception:  # pylint: disable=broad-except
             LOGGER.exception('Unable to delete model: %s', model_name)
-            # pylint: disable=no-member
-            status = model_pb2.DeleteModelReply.Status.Value('FAIL')
+            status = model_pb2.DeleteModelReply.FAIL
         return model_pb2.DeleteModelReply(status=status)
+        # pylint: enable=no-member
 
     def ListModel(self, request, _):
         """List all models.

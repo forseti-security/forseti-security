@@ -83,6 +83,7 @@ class ForsetiInstaller(object):
     version = None
     project_id = None
     organization_id = None
+    composite_root_resources = []
     gcp_service_acct_email = None
     user_can_grant_roles = True
 
@@ -192,7 +193,11 @@ class ForsetiInstaller(object):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
         self.version = utils.infer_version()
+        self.composite_root_resources = self.config.composite_root_resources
         service_account_key_file = self.config.service_account_key_file
+        if self.config.project_id:
+            gcloud.set_project_id(self.config.project_id)
+
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
                                          authed_user,

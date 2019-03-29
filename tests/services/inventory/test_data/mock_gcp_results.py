@@ -121,6 +121,61 @@ AD_GET_GROUPS = {
     ]
 }
 
+AD_GROUP_SETTINGS_TEMPLATE = """
+{{
+  "allowExternalMembers": "True", 
+  "whoCanEnterFreeFormTags": "NONE", 
+  "whoCanMarkDuplicate": "NONE", 
+  "whoCanJoin": "ALL_IN_DOMAIN_CAN_JOIN", 
+  "whoCanModifyTagsAndCategories": "OWNERS_AND_MANAGERS", 
+  "whoCanMarkNoResponseNeeded": "NONE", 
+  "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE", 
+  "primaryLanguage": "en", 
+  "whoCanMarkFavoriteReplyOnOwnTopic": "NONE", 
+  "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW", 
+  "favoriteRepliesOnTop": "false",
+  "whoCanMarkFavoriteReplyOnAnyTopic": "NONE", 
+  "includeCustomFooter": "false",
+  "defaultMessageDenyNotificationText": "",
+  "includeInGlobalAddressList": "True",
+  "archiveOnly": "false",
+  "isArchived": "True",
+  "membersCanPostAsTheGroup": "false",
+  "allowWebPosting": "True",
+  "email": "{email}",
+  "whoCanAssignTopics": "NONE",
+  "sendMessageDenyNotification": "false",
+  "description": "value used in test case",
+  "whoCanUnassignTopic": "NONE",
+  "replyTo": "REPLY_TO_IGNORE",
+  "customReplyTo": "",
+  "messageModerationLevel": "MODERATE_NONE",
+  "whoCanContactOwner": "ALL_IN_DOMAIN_CAN_CONTACT",
+  "messageDisplayFont": "DEFAULT_FONT",
+  "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",
+  "whoCanAdd": "ALL_MANAGERS_CAN_ADD",
+  "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",
+  "whoCanTakeTopics": "NONE",
+  "name": "Test Name",
+  "kind": "groupsSettings",
+  "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+  "spamModerationLevel": "MODERATE",
+  "whoCanAddReferences": "ALL_MEMBERS",
+  "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",
+  "showInGroupDirectory": "True",
+  "maxMessageBytes": 26214400,
+  "customFooterText": "",
+  "allowGoogleCommunication": "True"
+}}
+"""
+
+AD_GET_GROUPS_SETTINGS = {
+  'a_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='a_grp@forseti.test')),
+  'b_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='b_grp@forseti.test')),
+  'c_grp@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='c_grp@forseti.test')),
+  'a_GRP@forseti.test': json.loads(AD_GROUP_SETTINGS_TEMPLATE.format(email='a_GRP@forseti.test')),
+}
+
 # Fields: id, email, type
 AD_GROUP_MEMBER_TEMPLATE = """
 {{

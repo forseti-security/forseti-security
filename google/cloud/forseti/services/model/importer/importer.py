@@ -129,6 +129,7 @@ class InventoryImporter(object):
         self.membership_map = {}  # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
+        self.groups_settings_cache = set()
 
         self.found_root = False
 
@@ -221,6 +222,10 @@ class InventoryImporter(object):
             'gsuite_group_member',
         ]
 
+        groups_settings_list = [
+            'gsuite_groups_settings',
+        ]
+
         autocommit = self.session.autocommit
         autoflush = self.session.autoflush
         try:
@@ -301,6 +306,11 @@ class InventoryImporter(object):
                     inventory.iter(member_type_list, with_parent=True),
                     self._store_gsuite_membership,
                     post_action=self._store_gsuite_membership_post
+                )
+
+                self.model_action_wrapper(
+                    inventory.iter(groups_settings_list),
+                    self._store_groups_settings
                 )
 
                 self.dao.denorm_group_in_group(self.session)
@@ -443,19 +453,6 @@ class InventoryImporter(object):
             return '{}/{}'.format(data['type'].lower(),
                                   data['email'].lower())
 
-        def group_name(parent):
-            """Create the type:name representation for a group.
-
-            Args:
-                parent (object): group to create representation from.
-
-            Returns:
-                str: group:name representation of the group.
-            """
-
-            data = parent.get_resource_data()
-            return 'group/{}'.format(data['email'].lower())
-
         # Gsuite group members don't have to be part
         # of this domain, so we might see them for
         # the first time here.
@@ -477,6 +474,23 @@ class InventoryImporter(object):
             self.membership_map[parent_group].add(member)
             self.membership_items.append(
                 dict(group_name=group_name(parent), members_name=member))
+
+    def _store_groups_settings(self, settings):
+        """Store gsuite settings.
+
+        Args:
+            settings (object): settings resource object.
+        """
+
+        settings_dict = settings.get_resource_data()
+        group_email = group_name(settings)
+        if group_email not in self.groups_settings_cache:
+            self.groups_settings_cache.add(group_email)
+            settings_row = dict(group_name=group_email,
+                                settings=json.dumps(settings_dict,
+                                                    sort_keys=True))
+            stmt = self.dao.TBL_GROUPS_SETTINGS.insert(settings_row)
+            self.session.execute(stmt)
 
     def _store_iam_policy(self, policy):
         """Store the iam policy of the resource.
@@ -1123,6 +1137,20 @@ class InventoryImporter(object):
         return to_type_name(
             resource.get_resource_type(),
             resource.get_resource_id())
+
+
+def group_name(group):
+    """Create the type:name representation for a group.
+
+    Args:
+        group (object): group to create representation from.
+
+    Returns:
+        str: group:name representation of the group.
+    """
+
+    data = group.get_resource_data()
+    return 'group/{}'.format(data['email'].lower())
 
 
 def by_source(source):

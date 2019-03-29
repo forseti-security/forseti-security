@@ -1349,6 +1349,11 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
         return True
 
 
+class GsuiteGroupsSettings(resource_class_factory(
+        'gsuite_groups_settings', 'email')):
+    """The Resource implementation for GSuite Settings."""
+
+
 class GsuiteUserMember(resource_class_factory('gsuite_user_member', 'id')):
     """The Resource implementation for GSuite User."""
 
@@ -2055,6 +2060,24 @@ class GsuiteUserIterator(ResourceIterator):
                 LOGGER.debug(e)
 
 
+class GsuiteGroupsSettingsIterator(ResourceIterator):
+    """The Resource iterator implementation for Gsuite Group Settings"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: GsuiteGroupsSettings created
+        """
+        gsuite = self.client
+        try:
+            data = gsuite.fetch_gsuite_groups_settings(self.resource['email'])
+            yield FACTORIES['gsuite_groups_settings'].create_new(data)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class IamOrganizationCuratedRoleIterator(resource_iter_class_factory(
         api_method_name='iter_iam_curated_roles',
         resource_name='iam_curated_role')):
@@ -2524,7 +2547,13 @@ FACTORIES = {
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,
+            GsuiteGroupsSettingsIterator,
         ]}),
+
+    'gsuite_groups_settings': ResourceFactory({
+        'dependsOn': ['gsuite_group'],
+        'cls': GsuiteGroupsSettings,
+        'contains': []}),
 
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],

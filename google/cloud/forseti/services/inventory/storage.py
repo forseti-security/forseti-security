@@ -17,6 +17,7 @@
 import json
 import enum
 
+from retrying import retry
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import case
@@ -519,8 +520,8 @@ class CaiTemporaryStore(object):
 
     # Assets with no parent resource.
     UNPARENTED_ASSETS = frozenset([
-        'google.cloud.resourcemanager.Organization',
-        'google.cloud.billing.BillingAccount',
+        'cloudresourcemanager.googleapis.com/Organization',
+        'cloudbilling.googleapis.com/BillingAccount',
     ])
 
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
@@ -657,7 +658,7 @@ class CaiTemporaryStore(object):
         if 'parent' in asset['resource']:
             return asset['resource']['parent']
 
-        if asset['asset_type'] == 'google.cloud.kms.KeyRing':
+        if asset['asset_type'] == 'cloudkms.googleapis.com/KeyRing':
             # KMS KeyRings are parented by a location under a project, but
             # the location is not directly discoverable without iterating all
             # locations, so instead this creates an artificial parent at the
@@ -668,7 +669,7 @@ class CaiTemporaryStore(object):
             # parent project.
             return '/'.join(asset['name'].split('/')[:-4])
 
-        elif asset['asset_type'] == 'google.cloud.dataproc.Cluster':
+        elif asset['asset_type'] == 'dataproc.googleapis.com/Cluster':
             # Dataproc Clusters are parented by a region under a project, but
             # the region is not directly discoverable without iterating all
             # regions, so instead this creates an artificial parent at the
@@ -679,11 +680,11 @@ class CaiTemporaryStore(object):
             # parent project.
             return '/'.join(asset['name'].split('/')[:-4])
 
-        elif (asset['asset_type'].startswith('google.appengine') or
-              asset['asset_type'].startswith('google.cloud.bigquery') or
-              asset['asset_type'].startswith('google.cloud.sql') or
-              asset['asset_type'].startswith('google.cloud.kms') or
-              asset['asset_type'].startswith('google.spanner')):
+        elif (asset['asset_type'].startswith('appengine.googleapis.com/') or
+              asset['asset_type'].startswith('bigquery.googleapis.com/') or
+              asset['asset_type'].startswith('cloudkms.googleapis.com/') or
+              asset['asset_type'].startswith('sqladmin.googleapis.com/') or
+              asset['asset_type'].startswith('spanner.googleapis.com/')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset['name'].split('/')[:-2])
 
@@ -803,8 +804,12 @@ class CaiDataAccess(object):
         return num_rows
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def iter_cai_assets(content_type, asset_type, parent_name, session):
         """Iterate the objects in the cai temporary table.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.
@@ -831,8 +836,12 @@ class CaiDataAccess(object):
             yield row.extract_asset_data(content_type)
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def fetch_cai_asset(content_type, asset_type, name, session):
         """Returns a single resource from the cai temporary store.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.
