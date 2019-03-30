@@ -108,7 +108,7 @@ class CsccNotifier(object):
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
                 storage_client.put_text_file(
-                    tmp_violations.namec, gcs_upload_path)
+                    tmp_violations.name, gcs_upload_path)
         return
 
     def _transform_for_api(self, violations, source_id=None):
