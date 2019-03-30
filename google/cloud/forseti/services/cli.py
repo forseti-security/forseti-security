@@ -886,18 +886,18 @@ def run_explainer(client, config, output, _):
 
     def do_list_resources():
         """List resources by prefix"""
-        result = client.list_resources(config.prefix)
-        output.write(result)
+        for resource in client.list_resources(config.prefix):
+            output.write(resource)
 
     def do_list_members():
         """List resources by prefix"""
-        result = client.list_members(config.prefix)
-        output.write(result)
+        for member in client.list_members(config.prefix):
+            output.write(member)
 
     def do_list_roles():
         """List roles by prefix"""
-        result = client.list_roles(config.prefix)
-        output.write(result)
+        for role in client.list_roles(config.prefix):
+            output.write(role)
 
     def do_list_permissions():
         """List permissions by roles or role prefixes.
@@ -907,14 +907,13 @@ def run_explainer(client, config, output, _):
         """
         if not any([config.roles, config.role_prefixes]):
             raise ValueError('please specify either a role or a role prefix')
-        result = client.query_permissions_by_roles(config.roles,
-                                                   config.role_prefixes)
-        output.write(result)
+        permissions = client.query_permissions_by_roles(config.roles,
+                                                        config.role_prefixes)
+        output.write(permissions)
 
     def do_get_policy():
         """Get access"""
-        result = client.get_iam_policy(config.resource)
-        output.write(result)
+        output.write(client.get_iam_policy(config.resource))
 
     def do_check_policy():
         """Check access"""
@@ -925,33 +924,36 @@ def run_explainer(client, config, output, _):
 
     def do_why_granted():
         """Explain why a permission or role is granted."""
-        result = client.explain_granted(config.member,
-                                        config.resource,
-                                        config.role,
-                                        config.permission)
-        output.write(result)
+        bindings = client.explain_granted(config.member,
+                                          config.resource,
+                                          config.role,
+                                          config.permission)
+        output.write(bindings)
 
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
-        result = client.explain_denied(config.member,
-                                       config.resources,
-                                       config.roles,
-                                       config.permissions)
-        output.write(result)
+        for binding in (
+                client.explain_denied(config.member,
+                                      config.resources,
+                                      config.roles,
+                                      config.permissions)):
+            output.write(binding)
 
     def do_query_access_by_member():
         """Query access by member and permissions"""
-        result = client.query_access_by_members(config.member,
-                                                config.permissions,
-                                                config.expand_resources)
-        output.write(result)
+        for access in (
+                client.query_access_by_members(config.member,
+                                               config.permissions,
+                                               config.expand_resources)):
+            output.write(access)
 
     def do_query_access_by_resource():
         """Query access by resource and permissions"""
-        result = client.query_access_by_resources(config.resource,
-                                                  config.permissions,
-                                                  config.expand_groups)
-        output.write(result)
+        for access in (
+                client.query_access_by_resources(config.resource,
+                                                 config.permissions,
+                                                 config.expand_groups)):
+            output.write(access)
 
     def do_query_access_by_authz():
         """Query access by role or permission

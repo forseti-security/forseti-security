@@ -111,3 +111,34 @@ rules:
     mode: whitelist
     values:
       - True
+
+  # If a cluster has no node pools, the nodePools field is not
+  # returned by the GKE API.  Thus scanner doesn't have enough
+  # information to get this test rule correct.  But still, scanner
+  # shouldn't raise an exception and fail.  So this is just ensuring
+  # the fix to #2665 fixes the crash.  See also the next rule.
+
+  - name: missing nodePool, should not generate violation
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) > `0`'
+    mode: whitelist
+    values:
+      - true
+
+  # This rule uses OR to handle clusters with no node pools.  Not only
+  # should this rule not produce an exception, it should actually
+  # detect the test cluster data with no node pools.  See also the
+  # previous rule.
+
+  - name: missing nodePool, should generate violation
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: 'length(nodePools || `[]`) > `0`'
+    mode: whitelist
+    values:
+      - true

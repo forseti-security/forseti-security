@@ -147,6 +147,8 @@ REQUIRED_APIS = [
      'service': 'deploymentmanager.googleapis.com'},
     {'name': 'Google Cloud Storage JSON API',
      'service': 'storage-api.googleapis.com'},
+    {'name': 'Groups Settings API',
+     'service': 'groupssettings.googleapis.com'},
     {'name': 'IAM',
      'service': 'iam.googleapis.com'},
     {'name': 'Kubernetes Engine API',
@@ -158,7 +160,7 @@ REQUIRED_APIS = [
 ]
 
 # Org Resource Types
-RESOURCE_TYPES = ['organization', 'folder', 'project']
+RESOURCE_TYPES = ['organizations', 'folders', 'projects']
 
 # Paths
 ROOT_DIR_PATH = os.path.dirname(
