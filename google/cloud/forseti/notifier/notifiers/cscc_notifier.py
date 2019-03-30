@@ -108,7 +108,7 @@ class CsccNotifier(object):
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
                 storage_client.put_text_file(
-                    tmp_violations.name, gcs_upload_path)
+                    tmp_violations.namec, gcs_upload_path)
         return
 
     def _transform_for_api(self, violations, source_id=None):
@@ -124,8 +124,8 @@ class CsccNotifier(object):
         """
         findings = []
 
-        # beta api
-        LOGGER.debug('Transforming findings with beta API. source_id: %s',
+        # GA api
+        LOGGER.debug('Transforming findings with GA API. source_id: %s',
                      source_id)
         for violation in violations:
             # CSCC can't accept the full hash, so this must be shortened.
@@ -206,10 +206,10 @@ class CsccNotifier(object):
                 that the violations are originating from.
         """
 
-        # beta api
+        # GA api
         if source_id:
             formatted_cscc_findings = []
-            LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
+            LOGGER.debug('Sending findings to CSCC with GA API. source_id: '
                          '%s', source_id)
             new_findings = self._transform_for_api(violations,
                                                    source_id=source_id)
@@ -279,7 +279,7 @@ class CsccNotifier(object):
 
         # At this point, cscc notifier is already determined to be enabled.
 
-        # beta api
-        LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
+        # GA API
+        LOGGER.debug('Running CSCC with GA API. source_id: %s', source_id)
         self._send_findings_to_cscc(violations, source_id=source_id)
         return

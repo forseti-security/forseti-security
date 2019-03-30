@@ -58,11 +58,11 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Test create cscc finding raises exception."""
         http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')
 
-        # beta api
-        fake_beta_finding = {'source_properties': {'violation_data': 'foo'}}
+        # ga_api
+        fake_finding = {'source_properties': {'violation_data': 'foo'}}
         with self.assertRaises(api_errors.ApiExecutionError):
             self.securitycenter_api_client.create_finding(
-                fake_beta_finding,
+                fake_finding,
                 source_id=self.source_id)
 
 

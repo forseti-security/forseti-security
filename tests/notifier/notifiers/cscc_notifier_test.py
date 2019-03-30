@@ -58,7 +58,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
     def test_can_transform_to_findings_in_api_mode(self):
 
-        expected_beta_findings = [
+        expected_findings = [
             ['539cfbdb1113a74ec18edf583eada77a',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_111',
               'resource_name': 'full_name_111',
@@ -103,7 +103,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                 violations_as_dict,
                 source_id='organizations/11111/sources/22222'))
 
-        self.assertEquals(expected_beta_findings,
+        self.assertEquals(expected_findings,
                           ast.literal_eval(json.dumps(finding_results)))
 
 
