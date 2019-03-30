@@ -38,7 +38,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'securitycenter': {'max_calls': 1, 'period': 1.1}}
-        cls.securitycenter_beta_api_client = securitycenter.SecurityCenterClient(version='v1beta1')
+        cls.securitycenter_api_client = securitycenter.SecurityCenterClient(version='v1')
         cls.project_id = 111111
         cls.source_id = 'organizations/111/sources/222'
 
@@ -48,7 +48,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(
             json.dumps(fake_cscc.EXPECTED_CREATE_FINDING_RESULT))
 
-        result = self.securitycenter_beta_api_client.create_finding(
+        result = self.securitycenter_api_client.create_finding(
             'fake finding',
             source_id=self.source_id
             )
@@ -61,7 +61,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         # beta api
         fake_beta_finding = {'source_properties': {'violation_data': 'foo'}}
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.securitycenter_beta_api_client.create_finding(
+            self.securitycenter_api_client.create_finding(
                 fake_beta_finding,
                 source_id=self.source_id)
 
