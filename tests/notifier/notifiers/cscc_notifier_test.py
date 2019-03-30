@@ -56,7 +56,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         return violations_as_dict
 
-    def test_can_transform_to_beta_findings_in_api_mode(self):
+    def test_can_transform_to_findings_in_api_mode(self):
 
         expected_beta_findings = [
             ['539cfbdb1113a74ec18edf583eada77a',
@@ -106,55 +106,8 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         self.assertEquals(expected_beta_findings,
                           ast.literal_eval(json.dumps(finding_results)))
 
-    @mock.patch('google.cloud.forseti.common.util.date_time.'
-                'get_utc_now_datetime')
-    def test_can_transform_to_findings_in_bucket_mode(self, mock_get_utc_now):
 
-        expected_findings = [
-            {'finding_id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
-             'finding_summary': 'disallow_all_ports_111',
-             'finding_source_id': 'FORSETI',
-             'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_111',
-             'finding_asset_ids': 'full_name_111',
-             'finding_time_event': '2010-08-28T10:20:30Z',
-             'finding_callback_url': 'gs://foo_bucket',
-             'finding_properties':
-                 {'db_source': 'table:violations/id:1',
-                  'inventory_index_id': 'iii',
-                  'resource_id': 'fake_firewall_111',
-                  'resource_data': 'inventory_data_111',
-                  'rule_index': 111,
-                  'scanner_index_id': 1282990830000000,
-                  'violation_data': '{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}', 'resource_type': u'firewall_rule'},
-             },
-           {'finding_id': '3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4db577d67c0b91c5914902d906bf1703d5bbba0ceaf29809ac90fef3bf6aa5417',
-            'finding_summary': 'disallow_all_ports_222',
-            'finding_source_id': 'FORSETI',
-            'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_222',
-            'finding_asset_ids': 'full_name_222',
-            'finding_time_event': '2010-08-28T10:20:30Z',
-            'finding_callback_url': 'gs://foo_bucket',
-            'finding_properties':
-                {'db_source': 'table:violations/id:2',
-                 'inventory_index_id': 'iii',
-                 'resource_id': 'fake_firewall_222',
-                 'resource_data': 'inventory_data_222',
-                 'rule_index': 222,
-                 'scanner_index_id': 1282990830000000,
-                 'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}', 'resource_type': u'firewall_rule'},
-            }
-        ]
-
-        violations_as_dict = self._populate_and_retrieve_violations()
-
-        finding_results = (
-            cscc_notifier.CsccNotifier('iii')._transform_for_gcs(
-                violations_as_dict, 'gs://foo_bucket')
-        )
-
-        self.assertEquals(expected_findings, finding_results)
-
-    def test_beta_api_is_invoked_correctly(self):
+    def test_api_is_invoked_correctly(self):
 
         notifier = cscc_notifier.CsccNotifier(None)
 
