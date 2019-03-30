@@ -180,7 +180,6 @@ class SecurityCenterClient(object):
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
-
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception(
