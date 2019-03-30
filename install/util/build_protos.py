@@ -24,7 +24,7 @@ LOGGER = logger.get_logger(__name__)
 
 # There are certain PB2 that are not generated during the setup process,
 # we will need to keep them instead of deleting them.
-PB2_TO_KEEP = ['validator_pb2.py', 'validator_pb2_grpc.py']
+PB2_TO_KEEP = ['validator_pb2.py', 'validator_pb2_grpc.py', 'assets_pb2.py']
 
 
 def is_grpc_service_dir(files):

@@ -17,7 +17,7 @@ import json
 
 from google.iam.v1.policy_pb2 import Policy
 from google.protobuf import json_format
-from google.cloud.asset_v1.proto.assets_pb2 import Resource
+from google.cloud.asset.v1.assets_pb2 import Resource
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
