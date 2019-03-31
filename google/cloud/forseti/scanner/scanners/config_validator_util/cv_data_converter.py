@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Config Validator Data Converter."""
+
 import json
 
 from google.iam.v1.policy_pb2 import Policy
@@ -29,7 +30,6 @@ _IAM_POLICY = 'iam_policy'
 _RESOURCE = 'resource'
 
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
-
 
 CAI_RESOURCE_TYPE_MAPPING = {
     # TODO: Support non cai resource type by creating a fake cai resource type.
@@ -49,10 +49,10 @@ def generate_ancestry_path(full_name):
     supported_ancestors = ['organization', 'folder', 'project']
     ancestry_path = ''
     full_name_items = full_name.split('/')
-    for i in range(0, len(full_name_items)-1):
+    for i in range(0, len(full_name_items) - 1):
         if full_name_items[i] in supported_ancestors:
-            ancestry_path += (full_name_items[i] + '/'
-                              + full_name_items[i+1] + '/')
+            ancestry_path += (full_name_items[i] + '/' +
+                              full_name_items[i + 1] + '/')
         else:
             continue
     return ancestry_path
@@ -73,12 +73,12 @@ def convert_data_to_cv_asset(resource, data_type):
         ValueError: if data_type is have an unexpected type.
     """
     if data_type not in SUPPORTED_DATA_TYPE:
-        raise ValueError("Data type %s not supported.", data_type)
+        raise ValueError('Data type {} not supported.'.format(data_type))
 
     if (not resource.cai_resource_name and
             resource.type not in CAI_RESOURCE_TYPE_MAPPING):
-        raise ValueError("Resource %s not supported to use Config"
-                         " Validator scanner.", resource.type)
+        raise ValueError('Resource {} not supported to use Config'
+                         ' Validator scanner.'.format(resource.type))
 
     # Generate ancestry path that ends at project as the lowest level.
     ancestry_path = generate_ancestry_path(resource.full_name)
@@ -109,14 +109,15 @@ def resource_wrapper(data):
         data (dict): The resource data.
 
     Returns:
-        dict: Resource data wrapped by a resource wrapper."""
+        dict: Resource data wrapped by a resource wrapper.
+    """
     return {
-        "version": "1",
-        "discovery_document_uri": None,
-        "discovery_name": None,
-        "resource_url": None,
-        "parent": None,
-        "data": data
+        'version': 'v1',
+        'discovery_document_uri': None,
+        'discovery_name': None,
+        'resource_url': None,
+        'parent': None,
+        'data': data
     }
 
 
@@ -127,7 +128,7 @@ def cleanup_dict(raw_dict):
         raw_dict (dict): Dict to clean up.
     """
     for key, value in raw_dict.items():
-        if value == "" or value == {}:
+        if not value:
             raw_dict[key] = None
         elif isinstance(value, list):
             for i in value:

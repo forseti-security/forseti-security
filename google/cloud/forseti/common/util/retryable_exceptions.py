@@ -34,8 +34,8 @@ RETRYABLE_EXCEPTIONS = (
     urllib2.URLError,  # include "no network connection"
 )
 
-CV_EXCEPTIONS = (
-    cv_errors.ConfigValidatorServerUnavailableError
+CONFIG_VALIDATOR_EXCEPTIONS = (
+    cv_errors.ConfigValidatorServerUnavailableError,
 )
 
 
@@ -61,4 +61,4 @@ def is_retryable_exception_cv(e):
         bool: True for exceptions to retry. False otherwise.
     """
 
-    return isinstance(e, CV_EXCEPTIONS)
+    return isinstance(e, CONFIG_VALIDATOR_EXCEPTIONS)
