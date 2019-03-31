@@ -1890,11 +1890,11 @@ class ComputeInstanceGroupIterator(ResourceIterator):
                     # instance groups.
                     try:
                         instance_urls, _ = gcp.fetch_compute_ig_instances(
-                                self.resource['projectNumber'],
-                                data['name'],
-                                zone=os.path.basename(data.get('zone', '')),
-                                region=os.path.basename(data.get('region', ''))
-                            )
+                            self.resource['projectNumber'],
+                            data['name'],
+                            zone=os.path.basename(data.get('zone', '')),
+                            region=os.path.basename(data.get('region', ''))
+                        )
                         data['instance_urls'] = instance_urls
                     except ResourceNotSupported as e:
                         # API client doesn't support this resource, ignore.

@@ -18,8 +18,10 @@ from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
-from google.cloud.forseti.scanner.scanners.config_validator_util import cv_data_converter
-from google.cloud.forseti.scanner.scanners.config_validator_util import validator_client
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    cv_data_converter)
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    validator_client)
 from google.cloud.forseti.services.model.importer import importer
 
 
