@@ -22,12 +22,9 @@ from retrying import retry
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    errors)
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    validator_pb2)
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    validator_pb2_grpc)
+from google.cloud.forseti.scanner.scanners.config_validator_util import errors
+from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2
+from google.cloud.forseti.scanner.scanners.config_validator_util import validator_pb2_grpc
 
 LOGGER = logger.get_logger(__name__)
 
