@@ -18,8 +18,11 @@ import httplib
 import socket
 import ssl
 import urllib2
-
 import httplib2
+
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    errors as cv_errors
+)
 
 
 RETRYABLE_EXCEPTIONS = (
@@ -29,6 +32,10 @@ RETRYABLE_EXCEPTIONS = (
     socket.error,
     ssl.SSLError,
     urllib2.URLError,  # include "no network connection"
+)
+
+CONFIG_VALIDATOR_EXCEPTIONS = (
+    cv_errors.ConfigValidatorServerUnavailableError,
 )
 
 
@@ -42,3 +49,16 @@ def is_retryable_exception(e):
         bool: True for exceptions to retry. False otherwise.
     """
     return isinstance(e, RETRYABLE_EXCEPTIONS)
+
+
+def is_retryable_exception_cv(e):
+    """Whether exception should be retried for Config Validator communications.
+
+    Args:
+        e (Exception): Exception object.
+
+    Returns:
+        bool: True for exceptions to retry. False otherwise.
+    """
+
+    return isinstance(e, CONFIG_VALIDATOR_EXCEPTIONS)

@@ -216,6 +216,8 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: config_validator
+          enabled: false
         - name: enabled_apis
           enabled: false
         - name: firewall_rule
@@ -334,6 +336,18 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: cloudsql_acl_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: config_validator_violations
           should_notify: true
           notifiers:
             # Email violations

@@ -294,6 +294,8 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
+        cai_resource_name = Column(String(4096))
+        cai_resource_type = Column(String(512))
         full_name = Column(String(2048), nullable=False)
         type_name = Column(get_string_by_dialect(dbengine.dialect.name, 512),
                            primary_key=True)

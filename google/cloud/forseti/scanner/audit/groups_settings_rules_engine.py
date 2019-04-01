@@ -65,6 +65,7 @@ class GroupsSettingsRulesEngine(bre.BaseRulesEngine):
 
         Args:
             settings (GroupsSettings): A GroupsSettings resource to check.
+            iam_only (bool): IAM only.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -190,31 +191,31 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
                         rule=rule_def_resource)
 
             resource_rules = self.resource_rules_map.setdefault(
-                gcp_resource, ResourceRules(resource=gcp_resource))
+                gcp_resource, ResourceRules(_resource=gcp_resource))
 
             if only_iam_groups:
                 if rule not in resource_rules.iam_only_rules:
                     resource_rules.iam_only_rules.add(rule)
-            else:
-                if rule not in resource_rules.not_iam_only_rules:
-                    resource_rules.not_iam_only_rules.add(rule)
+            elif rule not in resource_rules.not_iam_only_rules:
+                resource_rules.not_iam_only_rules.add(rule)
 
-    def get_resource_rules(self, resource):
+    def get_resource_rules(self, _resource):
         """Get all the resource rules for resource.
 
         Args:
-            resource (Resource): The gcp_type Resource find in the map.
+            _resource (Resource): The gcp_type Resource find in the map.
 
         Returns:
             ResourceRules: A ResourceRules object.
         """
-        return self.resource_rules_map.get(resource)
+        return self.resource_rules_map.get(_resource)
 
     def find_violations(self, settings, iam_only):
         """Find groups settings violations in the rule book.
 
         Args:
             settings (GroupsSettings): The GCP resource to check for violations.
+            iam_only (bool): IAM only.
 
         Returns:
             RuleViolation: resource groups settings rule violations.
@@ -244,20 +245,22 @@ class ResourceRules(object):
     """An association of a resource to rules."""
 
     def __init__(self,
-                 resource=None,
+                 _resource=None,
                  iam_only_rules=None,
                  not_iam_only_rules=None):
         """Initialize.
 
         Args:
-            resource (Resource): The resource to associate with the rule.
-            rules (set): rules to associate with the resource.
+            _resource (Resource): The resource to associate with the rule.
+            iam_only_rules (set): rules to associate with the resource,
+                iam only.
+            not_iam_only_rules (set): rules to associate with the resource.
         """
         if not isinstance(iam_only_rules, set):
             iam_only_rules = set([])
         if not isinstance(not_iam_only_rules, set):
             not_iam_only_rules = set([])
-        self.resource = resource
+        self.resource = _resource
         self.iam_only_rules = iam_only_rules
         self.not_iam_only_rules = not_iam_only_rules
 
@@ -266,6 +269,7 @@ class ResourceRules(object):
 
         Args:
             settings (GroupsSettings): groups settings resource.
+            iam_only (bool): IAM only.
 
         Returns:
             list: RuleViolation
@@ -290,7 +294,8 @@ class ResourceRules(object):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.resource == other.resource and
-                self.rules == other.rules)
+                self.iam_only_rules == other.iam_only_rules and
+                self.not_iam_only_rules == other.not_iam_only_rules)
 
     def __ne__(self, other):
         """Compare != with another object.
@@ -309,8 +314,10 @@ class ResourceRules(object):
         Returns:
             str: debug string
         """
-        return 'GroupsSettingsResourceRules<resource={}, rules={}>'.format(
-            self.resource, self.rules)
+        return ('GroupsSettingsResourceRules<resource={}, iam_only_rules={}, '
+                'not_iam_only_rules={}>').format(
+                    self.resource, self.iam_only_rules,
+                    self.not_iam_only_rules)
 
 
 class Rule(object):
@@ -328,15 +335,14 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
         self.blacklist_violation_reason = (
-            "rule specified ({}) together is not allowed")
-        self.whitelist_violation_reason = "rule specified ({}) is required"
+            'rule specified ({}) together is not allowed')
+        self.whitelist_violation_reason = 'rule specified ({}) is required'
 
     def rule_requirements(self):
         """Used to create violation reason.
 
        Returns:
-           str of property:value couples specified in rule,
-           joined by AND.
+           str: value couples specified in rule, joined by AND.
         """
         rule_list = []
         for setting, value in self.rule['settings'].iteritems():
@@ -345,10 +351,12 @@ class Rule(object):
 
     def find_blacklist_violation(self, settings):
         """Finds violations in case that rule is blacklist.
+
         Args:
-            settings (GroupsSettings):
+            settings (GroupsSettings): Groups Settings.
+
         Returns:
-            violation_reason (str): Statement of what the broken rule required,
+            str: Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
         """
         has_violation = False
@@ -366,10 +374,12 @@ class Rule(object):
 
     def find_whitelist_violation(self, settings):
         """Finds violations in case that rule is whitelist.
+
         Args:
-            settings (GroupsSettings):
+            settings (GroupsSettings): Groups settings.
+
         Returns:
-            violation_reason (str): Statement of what the broken rule required,
+             str: Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
         """
         has_violation = False
