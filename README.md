@@ -5,7 +5,7 @@ This branch (forsetisecurity.org) hosts the content used to build the
 
 ## License
 
-See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/LICENSE)
+See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/LICENSE)
 
 ### Third-party licenses
 
@@ -14,7 +14,7 @@ Third-party code and their respective licenses are in
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 ## Writing documentation on forsetisecurity.org
 
