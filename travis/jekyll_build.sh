@@ -17,7 +17,7 @@ trap 'return_code=$?' ERR
 
 # Write out the Python API documentation via Sphinx
 # TODO(drmorris): change branch from "stable" to "master" when after release
-./scripts/generate_sphinx_docs.sh "stable"
+./scripts/generate_sphinx_docs.sh "master"
 
 while sleep 1m; do echo "=====[  $SECONDS seconds, website still building...  ]====="; done &
 
