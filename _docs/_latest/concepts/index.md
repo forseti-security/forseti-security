@@ -29,3 +29,7 @@ complex security policies.
 
 Learn about the types of service accounts you can use with Forseti and the roles associated with
 using them.
+
+**[Forseti Real Time Enforcer]({% link _docs/latest/concepts/real-time-enforcer.md %})**
+
+Learn about the Forseti Real Time Enforcer.

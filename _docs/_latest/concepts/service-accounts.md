@@ -13,6 +13,7 @@ Following are the service accounts Forseti creates on your behalf.
 
  * **[Server service account](#the-server-service-account)**
  * **[Client service account](#the-client-service-account)**
+ * **[Real Time Enforcer service account](#the-real-time-enforcer-service-account) (optional)**
 
 ---
 
@@ -57,6 +58,18 @@ For Forseti to work properly, the `forseti-client-gcp` service account
 requires the following permissions:
 
 {% include docs/latest/forseti-client-gcp-required-roles.md %}
+
+## The Real Time Enforcer Service Account
+
+The `forseti-enforcer-gcp` service account has specific permissions used for Forseti Real Time Enforcer 
+and is used exclusively on the `forseti-enforcer-vm` virtual machine instance.
+
+### Permissions
+
+For Forseti Real Time Enforcer to work properly, the `forseti-enforcer-gcp` service account
+requires the following permissions:
+
+{% include docs/latest/forseti-enforcer-gcp-required-roles.md %}
 
 ## What's next
 
