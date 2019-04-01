@@ -739,7 +739,8 @@ def create_firewall_rule(rule_name,
                          direction,
                          priority,
                          vpc_host_network,
-                         source_ranges=None):
+                         source_ranges=None,
+                         vpc_host_project_id=None):
     """Create a firewall rule for a specific gcp service account.
 
     Args:
@@ -756,6 +757,8 @@ def create_firewall_rule(rule_name,
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
                              address blocks must be specified in CIDR format.
+        vpc_host_project_id (str): The project ID of the project which contains
+                                 the VPC host network.
     Raises:
         Exception: Not enough arguments to execute command
     """
@@ -771,6 +774,9 @@ def create_firewall_rule(rule_name,
                            '--network', vpc_host_network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
+
+    if vpc_host_project_id:
+        gcloud_command_args.extend(['--project', vpc_host_project_id])
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
