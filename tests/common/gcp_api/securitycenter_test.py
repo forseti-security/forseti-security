@@ -38,7 +38,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'securitycenter': {'max_calls': 1, 'period': 1.1}}
-        cls.securitycenter_api_client = securitycenter.SecurityCenterClient(version='v1')
+        cls.securitycenter = securitycenter.SecurityCenterClient(version='v1')
         cls.project_id = 111111
         cls.source_id = 'organizations/111/sources/222'
 
@@ -48,7 +48,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(
             json.dumps(fake_cscc.EXPECTED_CREATE_FINDING_RESULT))
 
-        result = self.securitycenter_api_client.create_finding(
+        result = self.securitycenter.create_finding(
             'fake finding',
             source_id=self.source_id
             )
@@ -58,10 +58,9 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Test create cscc finding raises exception."""
         http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')
 
-        # GA API
         fake_finding = {'source_properties': {'violation_data': 'foo'}}
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.securitycenter_api_client.create_finding(
+            self.securitycenter.create_finding(
                 fake_finding,
                 source_id=self.source_id)
 

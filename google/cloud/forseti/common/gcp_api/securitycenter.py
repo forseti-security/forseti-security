@@ -130,14 +130,14 @@ class SecurityCenterClient(object):
             dict: An API response containing one page of results.
         """
         try:
-            LOGGER.debug('Creating finding with GA API.')
+            LOGGER.debug('Creating finding.')
 
             # patch() will also create findings for new violations.
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding
             )
-            LOGGER.debug('Created finding response with CSCC GA API: %s',
+            LOGGER.debug('Created finding response: %s',
                          response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
@@ -172,14 +172,14 @@ class SecurityCenterClient(object):
         Returns:
             dict: An API response containing one page of results.
         """
-        # GA api
         try:
-            LOGGER.debug('Updated finding with GA API.')
+            LOGGER.debug('Updating finding.')
 
             # patch() will set the state of outdated findings to INACTIVE
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
+            LOGGER.debug('Updated finding.')
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception(
