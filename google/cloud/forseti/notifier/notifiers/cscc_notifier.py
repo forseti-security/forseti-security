@@ -207,59 +207,64 @@ class CsccNotifier(object):
         """
 
         # beta api
-        formatted_cscc_findings = []
-        LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
-                     '%s', source_id)
-        new_findings = self._transform_for_api(violations,
-                                               source_id=source_id)
+        if source_id:
+            formatted_cscc_findings = []
+            LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
+                         '%s', source_id)
+            new_findings = self._transform_for_api(violations,
+                                                   source_id=source_id)
 
-        client = securitycenter.SecurityCenterClient(version='v1beta1')
+            client = securitycenter.SecurityCenterClient(version='v1')
 
-        paged_findings_in_cscc = client.list_findings(source_id=source_id)
+            paged_findings_in_cscc = client.list_findings(source_id=source_id)
 
-        # No need to use the next page token, as the results here will
-        # return all the pages.
-        for page in paged_findings_in_cscc:
-            formated_findings_in_page = (
-                ast.literal_eval(json.dumps(page)))
-            findings_in_page = formated_findings_in_page.get('findings')
-            for finding_data in findings_in_page:
-                name = finding_data.get('name')
-                finding_id = name[-32:]
-                formatted_cscc_findings.append([finding_id, finding_data])
+            # No need to use the next page token, as the results here will
+            # return all the pages.
+            for page in paged_findings_in_cscc:
+                formated_findings_in_page = (
+                    ast.literal_eval(json.dumps(page)))
+                list_findings_result_paged = (
+                    formated_findings_in_page.get('listFindingsResult'))
+                if not list_findings_result_paged:
+                    continue
+                for findings_in_page in list_findings_result_paged:
+                    finding_data = findings_in_page.get('finding')
+                    name = finding_data.get('name')
+                    finding_id = name[-32:]
+                    formatted_cscc_findings.append([finding_id, finding_data])
 
-        inactive_findings = self.find_inactive_findings(
-            new_findings,
-            formatted_cscc_findings)
+            inactive_findings = self.find_inactive_findings(
+                new_findings,
+                formatted_cscc_findings)
 
-        for finding_list in new_findings:
-            finding_id = finding_list[0]
-            finding = finding_list[1]
-            LOGGER.debug('Creating finding CSCC:\n%s.', finding)
-            try:
-                client.create_finding(finding, source_id=source_id,
-                                      finding_id=finding_id)
-                LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                             finding)
-            except api_errors.ApiExecutionError:
-                LOGGER.exception('Encountered CSCC API error.')
-                continue
+            for finding_list in new_findings:
+                finding_id = finding_list[0]
+                finding = finding_list[1]
+                LOGGER.debug('Creating finding CSCC:\n%s.', finding)
+                try:
+                    client.create_finding(finding, source_id=source_id,
+                                          finding_id=finding_id)
+                    LOGGER.debug('Successfully created finding in CSCC:\n%s',
+                                 finding)
+                except api_errors.ApiExecutionError:
+                    LOGGER.exception('Encountered CSCC API error.')
+                    continue
 
-        for finding_list in inactive_findings:
-            finding_id = finding_list[0]
-            finding = finding_list[1]
-            LOGGER.debug('Updating finding CSCC:\n%s.', finding)
-            try:
-                client.update_finding(finding,
-                                      finding_id,
-                                      source_id=source_id)
-                LOGGER.debug('Successfully updated finding in CSCC:\n%s',
-                             finding)
-            except api_errors.ApiExecutionError:
-                LOGGER.exception('Encountered CSCC API error.')
-                continue
+            for finding_list in inactive_findings:
+                finding_id = finding_list[0]
+                finding = finding_list[1]
+                LOGGER.debug('Updating finding CSCC:\n%s.', finding)
+                try:
+                    client.update_finding(finding,
+                                          finding_id,
+                                          source_id=source_id)
+                    LOGGER.debug('Successfully updated finding in CSCC:\n%s',
+                                 finding)
+                except api_errors.ApiExecutionError:
+                    LOGGER.exception('Encountered CSCC API error.')
+                    continue
 
-        return
+            return
 
     def run(self, violations, source_id=None):
         """Generate the temporary json file and upload to GCS.
