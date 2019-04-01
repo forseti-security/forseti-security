@@ -179,6 +179,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         it will be hard for Forseti to retrieve the right resource_data for the
         corresponding violation types.
         """
+        # TODO: break up the _retrieve_flattened_violations method.
         # Retrieving resource violations.
         all_violations = self._retrieve_flattened_violations()
 

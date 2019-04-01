@@ -31,6 +31,7 @@ from google.cloud.forseti.services.utils import to_type_name
 
 LOGGER = logger.get_logger(__name__)
 
+# TODO: alpha sort ths list.
 GCP_TYPE_LIST = [
     'composite_root',
     'organization',
