@@ -223,6 +223,8 @@ scanner:
           enabled: false
         - name: group
           enabled: true
+        - name: groups_settings
+          enabled: true
         - name: iam_policy
           enabled: true
         - name: iap
@@ -271,6 +273,18 @@ notifier:
               configuration:
                 data_format: json  # slack only supports json
                 webhook_url: ''
+
+        - resource: groups_settings_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
     violation:
       cscc:

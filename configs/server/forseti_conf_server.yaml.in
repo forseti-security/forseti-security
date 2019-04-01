@@ -226,6 +226,8 @@ scanner:
           enabled: false
         - name: group
           enabled: true
+        - name: groups_settings
+          enabled: true
         - name: iam_policy
           enabled: true
         - name: iap
@@ -382,6 +384,18 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: forwarding_rule_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: groups_settings_violations
           should_notify: true
           notifiers:
             # Email violations
