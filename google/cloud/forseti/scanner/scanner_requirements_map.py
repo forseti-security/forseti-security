@@ -58,6 +58,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
+    'groups_settings':
+        {'module_name': 'groups_settings_scanner',
+         'class_name': 'GroupsSettingsScanner',
+         'rules_filename': 'groups_settings_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
