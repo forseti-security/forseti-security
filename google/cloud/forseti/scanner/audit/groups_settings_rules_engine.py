@@ -191,13 +191,13 @@ class GroupsSettingsRuleBook(bre.BaseRuleBook):
                         rule=rule_def_resource)
 
             resource_rules = self.resource_rules_map.setdefault(
-                gcp_resource, ResourceRules(resource=gcp_resource))
+                gcp_resource, ResourceRules(_resource=gcp_resource))
 
             if only_iam_groups:
                 if rule not in resource_rules.iam_only_rules:
                     resource_rules.iam_only_rules.add(rule)
             elif rule not in resource_rules.not_iam_only_rules:
-                    resource_rules.not_iam_only_rules.add(rule)
+                resource_rules.not_iam_only_rules.add(rule)
 
     def get_resource_rules(self, _resource):
         """Get all the resource rules for resource.
@@ -269,6 +269,7 @@ class ResourceRules(object):
 
         Args:
             settings (GroupsSettings): groups settings resource.
+            iam_only (bool): IAM only.
 
         Returns:
             list: RuleViolation
@@ -315,7 +316,8 @@ class ResourceRules(object):
         """
         return ('GroupsSettingsResourceRules<resource={}, iam_only_rules={}, '
                 'not_iam_only_rules={}>').format(
-            self.resource, self.iam_only_rules, self.not_iam_only_rules)
+                    self.resource, self.iam_only_rules,
+                    self.not_iam_only_rules)
 
 
 class Rule(object):
@@ -333,8 +335,8 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule = rule
         self.blacklist_violation_reason = (
-            "rule specified ({}) together is not allowed")
-        self.whitelist_violation_reason = "rule specified ({}) is required"
+            'rule specified ({}) together is not allowed')
+        self.whitelist_violation_reason = 'rule specified ({}) is required'
 
     def rule_requirements(self):
         """Used to create violation reason.
@@ -349,10 +351,12 @@ class Rule(object):
 
     def find_blacklist_violation(self, settings):
         """Finds violations in case that rule is blacklist.
+
         Args:
-            settings (GroupsSettings):
+            settings (GroupsSettings): Groups Settings.
+
         Returns:
-            violation_reason (str): Statement of what the broken rule required,
+            str: Statement of what the broken rule required,
                 or empty string in case that rule is not violated.
         """
         has_violation = False
