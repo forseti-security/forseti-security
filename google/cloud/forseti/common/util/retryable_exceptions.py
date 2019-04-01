@@ -20,8 +20,9 @@ import ssl
 import urllib2
 import httplib2
 
-import google.cloud.forseti.scanner.scanners.config_validator_util.errors as \
-    cv_errors
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    errors as cv_errors
+)
 
 
 RETRYABLE_EXCEPTIONS = (
@@ -33,8 +34,8 @@ RETRYABLE_EXCEPTIONS = (
     urllib2.URLError,  # include "no network connection"
 )
 
-RETRYABLE_CVEXCEPTIONS = (
-    cv_errors.ConfigValidatorServerUnavailableError
+CONFIG_VALIDATOR_EXCEPTIONS = (
+    cv_errors.ConfigValidatorServerUnavailableError,
 )
 
 
@@ -60,4 +61,4 @@ def is_retryable_exception_cv(e):
         bool: True for exceptions to retry. False otherwise.
     """
 
-    return isinstance(e, RETRYABLE_CVEXCEPTIONS)
+    return isinstance(e, CONFIG_VALIDATOR_EXCEPTIONS)

@@ -93,7 +93,7 @@ class _SecurityCenterOrganizationsFindingsRepository(
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
             key_field='name',
             component=component,
-            max_results_field="pageSize",
+            max_results_field='pageSize',
             **kwargs)
 
 

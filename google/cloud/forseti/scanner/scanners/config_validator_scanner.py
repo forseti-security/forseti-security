@@ -18,8 +18,10 @@ from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
-from google.cloud.forseti.scanner.scanners.config_validator_util import cv_data_converter
-from google.cloud.forseti.scanner.scanners.config_validator_util import validator_client
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    cv_data_converter)
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    validator_client)
 from google.cloud.forseti.services.model.importer import importer
 
 
@@ -29,7 +31,7 @@ LOGGER = logger.get_logger(__name__)
 class ConfigValidatorScanner(base_scanner.BaseScanner):
     """Config Validator Scanner."""
 
-    violation_type = 'CONFIG_VALIDATOR_VIOLATION'
+    VIOLATION_TYPE = 'CONFIG_VALIDATOR_VIOLATION'
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -74,7 +76,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'full_name': full_name,
                 'rule_index': 0,
                 'rule_name': violation.constraint,
-                'violation_type': ConfigValidatorScanner.violation_type,
+                'violation_type': self.VIOLATION_TYPE,
                 'violation_data': json_format.MessageToJson(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,

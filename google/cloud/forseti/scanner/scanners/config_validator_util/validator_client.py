@@ -22,8 +22,7 @@ from retrying import retry
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    errors)
+from google.cloud.forseti.scanner.scanners.config_validator_util import errors
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     validator_pb2)
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
@@ -41,14 +40,14 @@ class ValidatorClient(object):
         """Initialize
 
         Args:
-            channel (String): The default Validator endpoint.
+            endpoint (String): The Config Validator endpoint.
         """
         self.buffer_sender = BufferedCVDataSender(self)
         self.channel = grpc.insecure_channel(endpoint)
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
     def add_data(self, assets):
         """Add asset data.
@@ -63,7 +62,7 @@ class ValidatorClient(object):
         """
         try:
             request = validator_pb2.AddDataRequest()
-            request.assets.extend(assets)
+            request.assets.extend(assets)  # pylint: disable=no-member
             self.stub.AddData(request)
         except grpc.RpcError as e:
             # pylint: disable=no-member
@@ -87,7 +86,7 @@ class ValidatorClient(object):
         self.buffer_sender.flush()
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
     def audit(self):
         """Audit existing data in Config Validator.
@@ -112,7 +111,7 @@ class ValidatorClient(object):
                 raise errors.ConfigValidatorAuditError(e.message)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
     def reset(self):
         """Clears previously added data from Config Validator.

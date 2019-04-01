@@ -33,7 +33,7 @@ from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
 
-class AssetMetadata():
+class AssetMetadata(object):
     """Asset Metadata."""
     def __init__(self, cai_name='', cai_type=''):
         """Init.
@@ -49,6 +49,9 @@ class AssetMetadata():
 
         Args:
             other (AssetMetadata): other asset metadata.
+
+        Returns:
+            bool: if two asset metadata are the same.
         """
         return (self.cai_name == other.cai_name and
                 self.cai_type == other.cai_type)
@@ -59,8 +62,9 @@ class AssetMetadata():
         Returns:
             str: repr.
         """
-        return "cai_name: {}, cai_type: {}".format(
+        return 'cai_name: {}, cai_type: {}'.format(
             self.cai_name, self.cai_type)
+
 
 class ResourceNotSupported(Exception):
     """Exception raised for resources not supported by the API client."""
@@ -1276,8 +1280,8 @@ class ApiClientImpl(ApiClient):
             zone (str): The zonal instance group's zone.
 
         Returns:
-            Tuple[list, AssetMetadata]: instance URLs for this instance group and
-                asset metadata that defaults to None for all GCP clients.
+            Tuple[list, AssetMetadata]: instance URLs for this instance group
+                and asset metadata that defaults to None for all GCP clients.
         """
         return self.compute.get_instance_group_instances(project_number,
                                                          instance_group_name,

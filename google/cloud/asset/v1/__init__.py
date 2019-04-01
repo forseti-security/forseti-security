@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Config validator util folder."""
+"""Asset/v1 folder."""
