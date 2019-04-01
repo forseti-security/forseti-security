@@ -124,8 +124,7 @@ class CsccNotifier(object):
         """
         findings = []
 
-        # beta api
-        LOGGER.debug('Transforming findings with beta API. source_id: %s',
+        LOGGER.debug('Transforming findings. source_id: %s',
                      source_id)
         for violation in violations:
             # CSCC can't accept the full hash, so this must be shortened.
@@ -206,10 +205,9 @@ class CsccNotifier(object):
                 that the violations are originating from.
         """
 
-        # beta api
         if source_id:
             formatted_cscc_findings = []
-            LOGGER.debug('Sending findings to CSCC with beta API. source_id: '
+            LOGGER.debug('Sending findings to CSCC. source_id: '
                          '%s', source_id)
             new_findings = self._transform_for_api(violations,
                                                    source_id=source_id)
@@ -279,7 +277,6 @@ class CsccNotifier(object):
 
         # At this point, cscc notifier is already determined to be enabled.
 
-        # beta api
-        LOGGER.debug('Running CSCC with beta API. source_id: %s', source_id)
+        LOGGER.debug('Running CSCC. source_id: %s', source_id)
         self._send_findings_to_cscc(violations, source_id=source_id)
         return
