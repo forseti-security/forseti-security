@@ -36,6 +36,7 @@ class ResourceType(object):
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
+    GROUPS_SETTINGS = resources.GsuiteGroupsSettings.type()
 
     # IAM
     SERVICE_ACCOUNT = resources.IamServiceAccount.type()

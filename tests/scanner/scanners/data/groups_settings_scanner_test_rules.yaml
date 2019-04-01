@@ -1,0 +1,25 @@
+rules:
+  - name: cant allow external members with INVITED_CAN_JOIN
+    mode: blacklist
+    only_iam_groups: False
+    groups_emails:
+      - '*'
+    settings:
+      allowExternalMembers: True
+      whoCanJoin: INVITED_CAN_JOIN
+  - name: no ALL_IN_DOMAIN_CAN_VIEW for non_wildcard@test.com
+    mode: blacklist
+    only_iam_groups: False
+    groups_emails:
+      - 'non_wildcard@test.com'
+      - 'non_wildcard2@test.com'
+    settings:
+      whoCanViewGroup: "ALL_IN_DOMAIN_CAN_VIEW"
+  - name: needs ALL_MEMBERS_CAN_LEAVE and ALL_MANAGERS_CAN_INVITE
+    mode: whitelist
+    only_iam_groups: False
+    groups_emails:
+      - '*'
+    settings:
+      whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE"
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"

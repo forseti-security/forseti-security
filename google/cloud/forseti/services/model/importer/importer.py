@@ -31,6 +31,83 @@ from google.cloud.forseti.services.utils import to_type_name
 
 LOGGER = logger.get_logger(__name__)
 
+# TODO: alpha sort ths list.
+GCP_TYPE_LIST = [
+    'composite_root',
+    'organization',
+    'folder',
+    'project',
+    'appengine_app',
+    'appengine_service',
+    'appengine_version',
+    'appengine_instance',
+    'backendservice',
+    'billing_account',
+    'bucket',
+    'cloudsqlinstance',
+    'compute_autoscaler',
+    'compute_backendbucket',
+    'compute_healthcheck',
+    'compute_httphealthcheck',
+    'compute_httpshealthcheck',
+    'compute_license',
+    'compute_project',
+    'compute_router',
+    'compute_sslcertificate',
+    'compute_targethttpproxy',
+    'compute_targethttpsproxy',
+    'compute_targetinstance',
+    'compute_targetpool',
+    'compute_targetsslproxy',
+    'compute_targettcpproxy',
+    'compute_targetvpngateway',
+    'compute_urlmap',
+    'compute_vpntunnel',
+    'crm_org_policy',
+    'dataproc_cluster',
+    'dataset',
+    'disk',
+    'dns_managedzone',
+    'dns_policy',
+    'firewall',
+    'forwardingrule',
+    'image',
+    'instance',
+    'instancegroup',
+    'instancegroupmanager',
+    'instancetemplate',
+    'kms_cryptokey',
+    'kms_cryptokeyversion',
+    'kms_keyring',
+    'kubernetes_cluster',
+    'lien',
+    'network',
+    'pubsub_subscription',
+    'pubsub_topic',
+    'serviceaccount',
+    'serviceaccount_key',
+    'sink',
+    'snapshot',
+    'spanner_instance',
+    'spanner_database',
+    'subnetwork',
+    'bigquery_table',
+]
+
+GSUITE_TYPE_LIST = [
+    'gsuite_group',
+    'gsuite_user',
+]
+
+MEMBER_TYPE_LIST = [
+    'gsuite_user_member',
+    'gsuite_group_member',
+]
+
+GROUPS_SETTINGS_LIST = [
+    'gsuite_groups_settings',
+]
+
 
 class ResourceCache(dict):
     """Resource cache."""
@@ -150,82 +227,6 @@ class InventoryImporter(object):
             NotImplementedError: If the importer encounters an unknown
                 inventory type.
         """
-        gcp_type_list = [
-            'composite_root',
-            'organization',
-            'folder',
-            'project',
-            'appengine_app',
-            'appengine_service',
-            'appengine_version',
-            'appengine_instance',
-            'backendservice',
-            'billing_account',
-            'bucket',
-            'cloudsqlinstance',
-            'compute_autoscaler',
-            'compute_backendbucket',
-            'compute_healthcheck',
-            'compute_httphealthcheck',
-            'compute_httpshealthcheck',
-            'compute_license',
-            'compute_project',
-            'compute_router',
-            'compute_sslcertificate',
-            'compute_targethttpproxy',
-            'compute_targethttpsproxy',
-            'compute_targetinstance',
-            'compute_targetpool',
-            'compute_targetsslproxy',
-            'compute_targettcpproxy',
-            'compute_targetvpngateway',
-            'compute_urlmap',
-            'compute_vpntunnel',
-            'crm_org_policy',
-            'dataproc_cluster',
-            'dataset',
-            'disk',
-            'dns_managedzone',
-            'dns_policy',
-            'firewall',
-            'forwardingrule',
-            'image',
-            'instance',
-            'instancegroup',
-            'instancegroupmanager',
-            'instancetemplate',
-            'kms_cryptokey',
-            'kms_cryptokeyversion',
-            'kms_keyring',
-            'kubernetes_cluster',
-            'lien',
-            'network',
-            'pubsub_subscription',
-            'pubsub_topic',
-            'serviceaccount',
-            'serviceaccount_key',
-            'sink',
-            'snapshot',
-            'spanner_instance',
-            'spanner_database',
-            'subnetwork',
-            'bigquery_table',
-        ]
-
-        gsuite_type_list = [
-            'gsuite_group',
-            'gsuite_user',
-        ]
-
-        member_type_list = [
-            'gsuite_user_member',
-            'gsuite_group_member',
-        ]
-
-        groups_settings_list = [
-            'gsuite_groups_settings',
-        ]
-
         autocommit = self.session.autocommit
         autoflush = self.session.autoflush
         try:
@@ -254,7 +255,7 @@ class InventoryImporter(object):
 
                 item_counter = 0
                 LOGGER.debug('Start storing resources into models.')
-                for resource in inventory.iter(gcp_type_list):
+                for resource in inventory.iter(GCP_TYPE_LIST):
                     item_counter += 1
                     self._store_resource(resource)
                     if not item_counter % 1000:
@@ -275,48 +276,48 @@ class InventoryImporter(object):
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_dataset_policy=True),
                     self._convert_dataset_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_gcs_policy=True),
                     self._convert_gcs_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_service_config=True),
                     self._convert_service_config
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gsuite_type_list),
+                    inventory.iter(GSUITE_TYPE_LIST),
                     self._store_gsuite_principal
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list, fetch_enabled_apis=True),
+                    inventory.iter(GCP_TYPE_LIST, fetch_enabled_apis=True),
                     self._convert_enabled_apis
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(member_type_list, with_parent=True),
+                    inventory.iter(MEMBER_TYPE_LIST, with_parent=True),
                     self._store_gsuite_membership,
                     post_action=self._store_gsuite_membership_post
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(groups_settings_list),
+                    inventory.iter(GROUPS_SETTINGS_LIST),
                     self._store_groups_settings
                 )
 
                 self.dao.denorm_group_in_group(self.session)
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_iam_policy=True),
                     self._store_iam_policy
                 )
@@ -626,7 +627,7 @@ class InventoryImporter(object):
         """Convert resource to a database object.
 
         Args:
-            resource (dict): A resource to store.
+            resource (Resource): A resource to store.
             cached (bool): Set to true for resources that have child resources
                 or policies associated with them.
             display_key (str): The key in the resource dictionary to lookup to
@@ -642,6 +643,8 @@ class InventoryImporter(object):
             parent, full_res_name, type_name = self._full_resource_name(
                 resource)
         row = self.dao.TBL_RESOURCE(
+            cai_resource_name=resource.get_cai_resource_name(),
+            cai_resource_type=resource.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=resource.get_resource_id(),
@@ -865,6 +868,8 @@ class InventoryImporter(object):
                                  resource_identifier)
 
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=cloudsqlinstance.get_cai_resource_name(),
+            cai_resource_type=cloudsqlinstance.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=cloudsqlinstance.get_resource_id(),
@@ -890,6 +895,8 @@ class InventoryImporter(object):
             dataset_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=dataset_policy.get_cai_resource_name(),
+            cai_resource_type=dataset_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=dataset_policy.get_resource_id(),
@@ -911,6 +918,8 @@ class InventoryImporter(object):
             ':'.join(parent.type_name.split('/')))
         apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=enabled_apis.get_cai_resource_name(),
+            cai_resource_type=enabled_apis.get_cai_resource_type(),
             full_name=apis_res_name,
             type_name=apis_type_name,
             name=enabled_apis.get_resource_id(),
@@ -932,6 +941,8 @@ class InventoryImporter(object):
             gcs_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=gcs_policy.get_cai_resource_name(),
+            cai_resource_type=gcs_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=gcs_policy.get_resource_id(),
@@ -956,6 +967,8 @@ class InventoryImporter(object):
             full_res_name,
             iam_policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=iam_policy.get_cai_resource_name(),
+            cai_resource_type=iam_policy.get_cai_resource_type(),
             full_name=iam_policy_full_res_name,
             type_name=iam_policy_type_name,
             name=iam_policy.get_resource_id(),
@@ -1000,6 +1013,8 @@ class InventoryImporter(object):
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
             role_resource = self.dao.TBL_RESOURCE(
+                cai_resource_name=role.get_cai_resource_name(),
+                cai_resource_type=role.get_cai_resource_type(),
                 full_name=full_res_name,
                 type_name=type_name,
                 name=role.get_resource_id(),
@@ -1029,6 +1044,8 @@ class InventoryImporter(object):
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=service_config.get_cai_resource_name(),
+            cai_resource_type=service_config.get_cai_resource_type(),
             full_name=sc_res_name,
             type_name=sc_type_name,
             name=service_config.get_resource_id(),
