@@ -1,5 +1,5 @@
 **branch: dev** | **branch: master** | **branch: forsetisecurity.org**
-:------------ | :------------ | :------------ | :------------
+:------------ | :------------ | :------------
 [![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)
 [![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
 
