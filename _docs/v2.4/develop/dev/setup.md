@@ -32,7 +32,7 @@ To complete this guide, you will need:
 ### Ubuntu setup
 
 Install the necessary python dev tools and packages from
-[apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/dependencies/apt_packages.txt).
+[apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/install/dependencies/apt_packages.txt).
 
 ### Mac setup
 
@@ -80,7 +80,7 @@ Use the following command to create a virtualenv:
 ## Getting the source code
 
 Follow our
-[contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md)
+[contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)
 to create a fork of the Forseti code, and learn how to submit a pull request (PR).
 
 ## Installing build dependencies
