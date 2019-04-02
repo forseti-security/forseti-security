@@ -36,7 +36,7 @@ To link to the latest version of a page, simply:
 Both examples are valid. And for linking to a specific version, write out the version tag:
 
 ```
-{% link _docs/v1.5/just/an-example.md %}
+{% link _docs/v2.0/just/an-example.md %}
 ```
 
 ### Components
@@ -180,13 +180,6 @@ v2.0:
   href: docs/$$VERSION$$/develop/
 - title: FAQ
   href: docs/$$VERSION$$/faq/
-v1.1:
-- href: docs/$$VERSION$$/quickstarts/
-  title: Quickstarts
-- href: docs/$$VERSION$$/howto/
-  title: Howtos
-- href: docs/$$VERSION$$/guides/
-  title: Guides
 ```
 
 when a new version is generated for say `v2.1` it will become:
@@ -211,13 +204,6 @@ v2.0:
   href: docs/$$VERSION$$/develop/
 - title: FAQ
   href: docs/$$VERSION$$/faq/
-v1.1:
-- href: docs/$$VERSION$$/quickstarts/
-  title: Quickstarts
-- href: docs/$$VERSION$$/howto/
-  title: Howtos
-- href: docs/$$VERSION$$/guides/
-  title: Guides
 ```
 
 Furthermore, if the categories are changed then they must be updated in the `_config.yml` as well such that the defaults are set properly. When creating a new version, the `./scripts/create_new_version_from_latest.sh` pulls the version config defaults from `./scripts/data/version_config_defaults.yml` and adds them to `_config.yml`.
