@@ -22,7 +22,6 @@ organization Cloud IAM policy.
   Forseti 1.0 installed in it.
 * Enable billing on the project.
 
-
 ## Setting up Forseti Security
 
 The installer automatically determines setup information, generates a deployment
@@ -78,6 +77,13 @@ steps below:
      ```bash
      python install/gcp_installer.py --type=server
      ```
+
+     Installing Forseti on multiple roots by specifying the roots using `--composite-root-resources` flag. 
+     ```bash
+     # Example command to have forseti running on project a and folder b
+     python install/gcp_installer.py --composite-root-resources "projects/a,folders/b"
+     ```
+     You can read more about the composite root resources [here]({% link _docs/latest/configure/general/non-org-root.md %}).
 
      To see additional configurations for the setup, run the following:
 
