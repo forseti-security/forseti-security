@@ -9,11 +9,6 @@ This guide explains how to use the Forseti installation tool.
 
 ---
 
-### Terraform installation
-
-Starting from Forseti v2.11.0, users will be able to install Forseti using 
-Terraform. Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google)
-
 ## Before you begin
 
 Before you run the setup wizard, you will need:
@@ -32,6 +27,8 @@ organization Cloud IAM policy.
 
 The installer automatically determines setup information, generates a deployment
 template, and creates a Forseti deployment.
+
+### Terraform installation
 
 Starting from Forseti v2.11.0, users will be able to install Forseti using Terraform.
 Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google).
@@ -59,7 +56,7 @@ steps below:
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.13.0.`:
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.14.0.`:
       ```bash
       # Make sure you are in the forseti-security folder.
       cd forseti-security
@@ -67,7 +64,7 @@ steps below:
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v2.13.0
+      git checkout tags/v2.14.0
       ```
 
   1. Install both client and server by running the installer:
