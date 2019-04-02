@@ -137,23 +137,6 @@ defaults:
     values:
       category: Google Cloud Platform Resource Coverage
   - scope:
-      path: _docs/v1.1
-    values:
-      category: Overview (v1.1)
-      layout: docs
-  - scope:
-      path: _docs/v1.1/quickstarts
-    values:
-      category: Quickstarts (v1.1)
-  - scope:
-      path: _docs/v1.1/howto
-    values:
-      category: Howtos (v1.1)
-  - scope:
-      path: _docs/v1.1/guides
-    values:
-      category: Guides (v1.1)
-  - scope:
       path: _docs/v2.0
     values:
       category: Overview (v2.0)
