@@ -62,3 +62,14 @@
 #       - 'DATA_READ'
 #       - 'DATA_WRITE'
 
+# CIS example
+#  - name: 'CIS_GCP_2.1 Ensure Cloud Audit Logging Configured'
+#    resource:
+#      - type: project
+#        resource_ids:
+#          - '*'
+#    service: 'allServices'
+#    log_types:
+#      - 'ADMIN_READ'
+#      - 'DATA_READ'
+#      - 'DATA_WRITE'
