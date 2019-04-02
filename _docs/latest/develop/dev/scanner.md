@@ -18,7 +18,7 @@ for the following resources:
 * Cloud SQL authorized networks
 
 For examples, see the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/rules)
 directory.
 
 ---
