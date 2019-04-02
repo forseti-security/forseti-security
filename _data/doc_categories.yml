@@ -13,13 +13,6 @@ latest:
   href: docs/$$VERSION$$/develop/
 - title: FAQ
   href: docs/$$VERSION$$/faq/
-v1.1:
-- href: docs/$$VERSION$$/quickstarts/
-  title: Quickstarts
-- href: docs/$$VERSION$$/howto/
-  title: Howtos
-- href: docs/$$VERSION$$/guides/
-  title: Guides
 v2.0:
 - title: Concepts
   href: docs/$$VERSION$$/concepts/
