@@ -113,3 +113,16 @@ rules:
 #      - role: roles/*admin
 #        members:
 #          - serviceAccount:*@*.iam.gserviceaccount.com
+
+#  - name: 'CIS_GCP_1.5 Ensure that IAM users are not assigned Service Account User role at project level'
+#    mode: blacklist
+#    resource:
+#      - type: project
+#        applies_to: self
+#        resource_ids:
+#          - '*'
+#    inherit_from_parents: true
+#    bindings:
+#      - role: roles/iam.serviceAccountUser
+#        members:
+#          - user:*
