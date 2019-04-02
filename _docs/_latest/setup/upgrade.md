@@ -1244,9 +1244,19 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-9` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
    **Scanner & Notifier**
-   - Update the `scanner` and `notifier` section to include support for `config validator scanner` 
-    and `groups settings scanner`.
+   - Update the `scanner` and `notifier` section to include support for `config validator scanner`.
+    and `groups settings scanner`. Remove CSCC alpha and beta reference since we are moving to GA.
       ```
+        inventory:
+            ...
+            api_quota:
+                 ...
+                 groupssettings: 
+                   max_calls: 5 
+                   period: 1.1 
+                   disable_polling: False 
+            ...
+        ##################################################
         scanner:
             ...
             scanners:
@@ -1269,7 +1279,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                       configuration:
                         data_format: csv
                         # gcs_path should begin with "gs://"
-                        gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+                        gcs_path: gs://<FORSETI_SERVER_BUCKET>/scanner_violations
                 - resource: groups_settings_violations
                   should_notify: true
                   notifiers:
@@ -1280,8 +1290,15 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                       configuration:
                         data_format: csv
                         # gcs_path should begin with "gs://"
-                        gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+                        gcs_path: gs://<FORSETI_SERVER_BUCKET>/scanner_violations
                 ...
+            violation:
+              cscc:
+                enabled: true
+                # Cloud SCC Beta API uses a new source_id.  It is unique per
+                # organization and must be generated via a self-registration process.
+                # The format is: organizations/ORG_ID/sources/SOURCE_ID
+                source_id: <YOUR_SOURCE_ID>
        ```
 
 1. Rule files updates:
