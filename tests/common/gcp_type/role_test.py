@@ -19,7 +19,6 @@ import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import role as rl
-from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 

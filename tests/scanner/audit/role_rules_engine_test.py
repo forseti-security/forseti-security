@@ -14,31 +14,18 @@
 
 """Tests the RoleRulesEngine."""
 
-import copy
-import itertools
-import json
 import mock
 import tempfile
 import unittest
 import yaml
 
-from datetime import datetime, timedelta
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
-from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.forseti.scanner.audit import base_rules_engine as bre
-from google.cloud.forseti.scanner.audit import errors as audit_errors
 from google.cloud.forseti.scanner.audit import role_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import role_scanner as rrs
 from tests.scanner.test_data import fake_role_scanner_data as frsd
 from tests.unittest_utils import get_datafile_path
 from tests.unittest_utils import ForsetiTestCase
 
-
-import collections
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.scanner.scanners import retention_scanner
 
 def get_rules_engine_with_rule(rule):
     """Create a rule engine based on a yaml file string"""

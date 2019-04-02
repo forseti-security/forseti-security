@@ -19,11 +19,6 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
-ROLE_ID_PARENT_TYPE_INDEX = 0
-ROLE_ID_PARENT_ID_INDEX = 1
-ROLE_ID_TYPE_INDEX = 2
-ROLE_ID_NAME_INDEX = 3
-
 
 def _get_res_id_from_role_id(role_id):
     """Get role's ID from its given GCP ID.

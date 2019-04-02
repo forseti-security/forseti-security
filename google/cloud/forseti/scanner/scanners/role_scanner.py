@@ -105,7 +105,7 @@ class RoleScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: a list of Roles.
+            list: a list of custom Roles, no curated roles.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)

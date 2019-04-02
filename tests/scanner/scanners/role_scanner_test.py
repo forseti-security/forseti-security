@@ -14,18 +14,11 @@
 
 """Tests for RoleScanner."""
 
-import collections
-import json
-import unittest
 import mock
 import tempfile
 
 from tests.scanner.test_data import fake_role_scanner_data as frsd
 from tests.unittest_utils import ForsetiTestCase
-from tests.unittest_utils import get_datafile_path
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
-from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.scanner.audit import role_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import role_scanner
 
