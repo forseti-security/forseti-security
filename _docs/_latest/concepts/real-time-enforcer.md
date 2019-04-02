@@ -5,10 +5,8 @@ order: 005
 
 # {{ page.title }}
 
-|  ** This is a *beta* release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
-and is not subject to any SLA or deprecation policy.  | | --- |
-
----
+> _This is a beta release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
+and is not subject to any SLA or deprecation policy._
 
 ## Overview
 
@@ -17,7 +15,7 @@ automatically remediates non-compliant configurations in targeted Google Cloud P
 
 Forseti Real Time Enforcer uses a [Stackdriver log export](https://cloud.google.com/logging/docs/export/) 
 that filters for AuditLog entries that create or update resources, and sends those log entries to a 
-[Pub/Sub topic](https://cloud.google.com/pubsub/docs/overview). The `forseti-real-time-enforcer` service account 
+[Pub/Sub topic](https://cloud.google.com/pubsub/docs/overview). The `forseti-enforcer-gcp` service account 
 is subscribed to that topic and evaluates each incoming log message and attempts to map it to a recognized resource. 
 If it is recognized, Forseti Real Time Enforcer will evaluate the resource against 
 an [Open Policy Agent (OPA)](https://www.openpolicyagent.org/docs/) instance and remediate based on defined 
@@ -26,23 +24,23 @@ policies stored in a Cloud storage bucket.
 Logs are written to Stackdriver in the same project that Forseti Real Time Enforcer is running on, and can be found 
 using the `Global` resource filter.
 
-### `cloud-foundation-forseti` Service Account
+## The `cloud-foundation-forseti` Service Account
 
 The `cloud-foundation-forseti` service account is used to set up the Real Time Enforcer Terraform module.
 
-#### Permissions
+### Permissions
 
 For Forseti Real Time Enforcer to work properly, the `cloud-foundation-forseti` service account 
 requires the following permissions:
 
 {% include docs/latest/cloud-foundation-forseti-enforcer-required-roles.md %}
 
-### `forseti-enforcer-gcp` Service Account
+## The `forseti-enforcer-gcp` Service Account
 
 The `forseti-enforcer-gcp` service account gives Real Time Enforcer application access to subscribe to the 
 Pub/Sub subscription for messages, and access to modify resources for policy enforcement.
 
-#### Permissions
+### Permissions
 
 The `forseti-enforcer-gcp` service account requires the following permissions:
 

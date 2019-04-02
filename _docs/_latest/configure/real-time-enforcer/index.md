@@ -5,9 +5,11 @@ order: 500
 
 # {{ page.title }}
 
-This quickstart describes how to get started with Forseti Real Time Enforcer. Forseti Real Time Enforcer uses the 
-Open Policy Agent (OPA) engine to evaluate policy against resources using an OPA server, and remediation is 
-implemented in OPA’s policy language Rego.
+> _This is a beta release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
+and is not subject to any SLA or deprecation policy._
+
+Forseti Real Time Enforcer uses the Open Policy Agent (OPA) engine to evaluate policy against resources using an 
+OPA server, and remediation is implemented in OPA’s policy language, Rego.
 
 ---
 

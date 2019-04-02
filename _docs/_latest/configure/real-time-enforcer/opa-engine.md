@@ -1,5 +1,5 @@
 ---
-title: Resources and Policies
+title: Open Policy Agent
 order: 503
 ---
 
@@ -7,12 +7,14 @@ order: 503
 
 The [Open Policy Agent (OPA)](https://www.openpolicyagent.org/docs/) engine evaluates policy against resources 
 using an OPA server. Policies need to be namespaced properly for the OPA Engine to locate them, and 
-evaluate policy properly. 
+evaluate policy properly. All remediation is implemented in OPA's policy language, Rego.
 
-Note: This won't work in cases where policy enforcement is more complicated than minor edits to the body of the 
-resource. All remediation is implemented in OPA's policy language, Rego.
+OPA policies are pulled from Cloud Storage and loaded into OPA when the `forseti-enforcer` VM boots.
 
-The policies should be namespaced as `<resource.type()>.policy.<policy_name>`. 
+## For Developers
+
+OPA policies should be namespaced as `<resource.type()>.policy.<policy_name>`. 
+
 For example, the `gcp.GcpSqlInstance` resource has a type of `gcp.sqladmin.instances`, so a policy requiring backups 
 to be enabled might be namespaced `gcp.sqladmin.instances.policy.backups`. 
 
@@ -20,7 +22,7 @@ The policy should implement the following rules:
 
 `valid`: Returns true if the provided resource adheres to the policy
 
-`remediate`: Returns the input resource altered to adhere to policy
+`remediate`: Returns the input resource altered to adhere to the policy
 
 For each `resource.type()` you also need to define a policies rule and a violations rule. 
 This allows the OPA engine to query all violations for a given resource type in a single API call. 

@@ -5,18 +5,20 @@ order: 005
 
 # {{ page.title }}
 
-|  ** This is a *beta* release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
-and is not subject to any SLA or deprecation policy.  | | --- |
+> _This is a beta release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
+and is not subject to any SLA or deprecation policy._
 
 This guide explains how to setup Forseti Real Time Enforcer using Terraform.
 
-Get the latest version of the Forseti Terraform module [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google). 
+Get the latest version of the Forseti Terraform 
+module [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google). 
 
 ## Setting up Forseti Real Time Enforcer
 
 In your `main.tf` file, include the following Forseti Real Time Enforcer specific modules in the order provided:
 1. `real_time_enforcer_roles` creates and assigns the custom roles required for Real Time Enforcer to access and remediate resources.
-1. `real_time_enforcer_organization_sink` creates and sets up an organization level [logging sink](https://cloud.google.com/logging/docs/api/tasks/exporting-logs) 
+1. `real_time_enforcer_organization_sink` creates and sets up an organization 
+level [logging sink](https://cloud.google.com/logging/docs/api/tasks/exporting-logs) 
 and a [Pub/Sub topic](https://cloud.google.com/pubsub/docs/overview) to publish to.
 1. `real_time_enforcer` creates and sets up the necessary resources to run Forseti Real Time Enforcer that are not covered by the first two modules, which include:
     * Real Time Enforcer VM running [Container Optimized OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits)
@@ -67,10 +69,10 @@ module "real_time_enforcer_organization_sink" {
 1.  Run `terraform init` to get the modules and plugins.
     * If you have already installed Forseti using Terraform previously, you can skip step 3 and add the following 
     roles to your `cloud-foundation-forseti` service account:
-        * On the organization:
+        * **On the organization:**
             * `roles/iam.organizationRoleAdmin`
             * `roles/logging.configWriter`
-        * On the project:
+        * **On the project:**
             * `roles/pubsub.admin`
 1. Run `./helpers/setup.sh -p <project_id> -o <org_name> -e` to create a service account called 
 `cloud-foundation-forseti`, give it the proper roles, and download it to your current directory. 
@@ -78,12 +80,12 @@ module "real_time_enforcer_organization_sink" {
     service accounts at both the organization and project levels. This script will also activate necessary APIs 
     required for Terraform to run.
 1. Ensure that you have the following additional roles assigned to the newly created service account:
-    * On the organization:
+    * **On the organization:**
         * `roles/resourcemanager.organizationAdmin`
         * `roles/securityReviewer`
-    * On the project:
+    * **On the project:**
         * `roles/owner`
-    * On the host project (when using shared VPC):
+    * **On the host project (when using shared VPC):**
         * `roles/compute.securityAdmin`
         * `roles/compute.networkAdmin`
 1. Run `terraform plan` to see the infrastructure plan.

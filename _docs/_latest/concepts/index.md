@@ -32,4 +32,5 @@ using them.
 
 **[Forseti Real Time Enforcer]({% link _docs/latest/concepts/real-time-enforcer.md %})**
 
-Learn about the Forseti Real Time Enforcer.
+Learn about automatically remediating non-compliant configurations in Google Cloud Platform (GCP) resources using 
+Forseti Real Time Enforcer.

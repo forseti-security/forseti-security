@@ -33,4 +33,4 @@ Proof-of-Concept of Forseti running on Kubernetes.
 
 **[Deploy Forseti Real Time Enforcer]({% link _docs/latest/setup/real-time-enforcer.md %})**
 
-_Beta:_ Deploy Forseti Real Time Enforcer on GCP.
+Deploy Forseti Real Time Enforcer on GCP (**BETA**).
