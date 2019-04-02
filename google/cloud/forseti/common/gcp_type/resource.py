@@ -36,6 +36,7 @@ class ResourceType(object):
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
+    GROUPS_SETTINGS = resources.GsuiteGroupsSettings.type()
 
     # IAM
     ROLE = resources.IamRole.type()
