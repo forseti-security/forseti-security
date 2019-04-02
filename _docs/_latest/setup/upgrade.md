@@ -1284,20 +1284,19 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
        ```
 
 1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/kms_rules.yaml)
+  - Update [KE scanner rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
   - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 ### Steps to upgrade using Terraform
 
 1. Update the `version` inside `main.tf` file to `1.4.0`.
+1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/kms_rules.yaml)
+  - Update [KE scanner rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
-  - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
-    under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.13.0 to 2.14.0" content=upgrading_2_13_0_to_2_14_0 uid=15 %}
