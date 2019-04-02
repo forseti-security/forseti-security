@@ -1290,7 +1290,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
     under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 ### Steps to upgrade using Terraform
 
-1. Update the `version` inside `main.tf` file to `1.2.0`.
+1. Update the `version` inside `main.tf` file to `1.4.0`.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 1. Rule files updates:
