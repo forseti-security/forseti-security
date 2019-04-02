@@ -474,7 +474,7 @@ Firewall Scanner rules can be `blacklist`, `whitelist`, `required`, or `matches`
 ### Example rule
 ```yaml
 rules:
-  - rule_id: 'prevent_allow_all_ingress_linux'
+  - rule_id: 'prevent_allow_all_ingress'
     description: 'Detect allow tcp and udp ingress from anywhere to all instances'
     mode: 'blacklist'
     match_policies:
@@ -498,11 +498,11 @@ rules:
 rule_groups:
   - group_id: 'default_rules'
     rule_ids:
-      - 'prevent_allow_all_ingress_linux'
+      - 'prevent_allow_all_ingress'
 
 # (...)
 
-# Bind your rules or rule groups to resources
+# Bind your rules or rule_groups to resources
 org_policy:
   resources:
     - type: organization
@@ -512,7 +512,7 @@ org_policy:
         group_ids:
           - 'default_rules'
         rule_ids:
-          - 'prevent_allow_all_ingress_linux'
+          - 'prevent_allow_all_ingress'
 ```
 
 ### Rule definition 
