@@ -1225,8 +1225,8 @@ You can upgrade from 2.13.0 to 2.14.0 using Deployment Manager or Terraform.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command 
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml
-deployment-templates/deploy-forseti-server-xxxxx-2-12-0.yaml`.
-1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-12-0.yaml` for edit.
+deployment-templates/deploy-forseti-server-xxxxx-2-14-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-14-0.yaml` for edit.
   1. Update the `forseti-version` inside the deployment template to `tags/v2.14.0`.
   
 1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-14-0.yaml` back to the GCS bucket
@@ -1294,9 +1294,10 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
-    under `rules/` in your Forseti server GCS bucket to be able to use the four
-    new use cases that have been added.
+  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/kms_rules.yaml)
+    under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
+  - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
+    under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.13.0 to 2.14.0" content=upgrading_2_13_0_to_2_14_0 uid=15 %}
