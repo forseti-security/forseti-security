@@ -82,3 +82,34 @@ rules:
   #    - role: roles/owner
   #      members:
   #        - user:*@{DOMAIN}
+
+# Example CIS benchmarks as a Proof of Concept
+ 
+#  - name: 'CIS_GCP_1.1 Ensure Corporate Login Credentials Used'
+#    mode: whitelist
+#    resource:
+#      - type: organization
+#        applies_to: self_and_children
+#        resource_ids:
+#          - '*'
+#    inherit_from_parents: true
+#    bindings:
+#      - role: roles/*
+#        members:
+#          - user:*@{DOMAIN}
+#          - group:*@{DOMAIN}
+#          - serviceAccount:*@*.gserviceaccount.com
+#          - domain:{DOMAIN}
+
+#  - name: 'CIS_GCP_1.4 Ensure Service Accounts Have No Admin Roles'
+#    mode: blacklist
+#    resource:
+#      - type: organization
+#        applies_to: self_and_children
+#        resource_ids:
+#          - '*'
+#    inherit_from_parents: true
+#    bindings:
+#      - role: roles/*admin
+#        members:
+#          - serviceAccount:*@*.iam.gserviceaccount.com
