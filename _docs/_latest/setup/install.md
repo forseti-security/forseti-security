@@ -80,7 +80,7 @@ steps below:
 
      Installing Forseti on multiple roots by specifying the roots using `--composite-root-resources` flag. 
      ```bash
-     # Example command to have forseti running on project a and folder b
+     # Example command to have forseti running on project a and folder b.
      python install/gcp_installer.py --composite-root-resources "projects/a,folders/b"
      ```
      You can read more about the composite root resources [here]({% link _docs/latest/configure/general/non-org-root.md %}).
