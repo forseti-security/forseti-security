@@ -13,7 +13,8 @@ Following are the service accounts Forseti creates on your behalf.
 
  * **[Server service account](#the-server-service-account)**
  * **[Client service account](#the-client-service-account)**
- * **[Real Time Enforcer service account](#the-real-time-enforcer-service-account) (optional)**
+ * **[Cloud Foundation service account](#the-cloud-foundation-service-account) (Terraform)**
+ * **[Real-Time Enforcer service account](#the-real-time-enforcer-service-account) (optional)**
 
 ---
 
@@ -59,14 +60,25 @@ requires the following permissions:
 
 {% include docs/latest/forseti-client-gcp-required-roles.md %}
 
-## The Real Time Enforcer Service Account
+## The Cloud Foundation Service Account
 
-The `forseti-enforcer-gcp` service account has specific permissions used for Forseti Real Time Enforcer 
+The `cloud-foundation-forseti` service account is used to install Forseti through Terraform.
+
+### Permissions
+
+In order to install Forseti using Terraform, the `cloud-foundation-forseti` service account
+requires the following permissions:
+
+{% include docs/latest/cloud-foundation-forseti-required-roles.md %}
+
+## The Real-Time Enforcer Service Account
+
+The `forseti-enforcer-gcp` service account has specific permissions used for Real-Time Enforcer 
 and is used exclusively on the `forseti-enforcer-vm` virtual machine instance.
 
 ### Permissions
 
-For Forseti Real Time Enforcer to work properly, the `forseti-enforcer-gcp` service account
+For Real-Time Enforcer to work properly, the `forseti-enforcer-gcp` service account
 requires the following permissions:
 
 {% include docs/latest/forseti-enforcer-gcp-required-roles.md %}

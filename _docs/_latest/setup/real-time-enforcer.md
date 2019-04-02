@@ -1,32 +1,31 @@
 ---
-title: Deploy Forseti Real Time Enforcer on GCP
+title: Deploy Real-Time Enforcer on GCP
 order: 005
 ---
 
 # {{ page.title }}
 
-> _This is a beta release of Forseti Real Time Enforcer. This product might be changed in backward-incompatible ways 
-and is not subject to any SLA or deprecation policy._
+{% include docs/latest/beta-release-feature.md %}
 
-This guide explains how to setup Forseti Real Time Enforcer using Terraform.
+This guide explains how to setup Real-Time Enforcer using Terraform.
 
 Get the latest version of the Forseti Terraform 
 module [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google). 
 
-## Setting up Forseti Real Time Enforcer
+## Setting up Real-Time Enforcer
 
-In your `main.tf` file, include the following Forseti Real Time Enforcer specific modules in the order provided:
-1. `real_time_enforcer_roles` creates and assigns the custom roles required for Real Time Enforcer to access and remediate resources.
+In your `main.tf` file, include the following Real-Time Enforcer specific modules in the order provided:
+1. `real_time_enforcer_roles` creates and assigns the custom roles required for Real-Time Enforcer to access and remediate resources.
 1. `real_time_enforcer_organization_sink` creates and sets up an organization 
 level [logging sink](https://cloud.google.com/logging/docs/api/tasks/exporting-logs) 
 and a [Pub/Sub topic](https://cloud.google.com/pubsub/docs/overview) to publish to.
-1. `real_time_enforcer` creates and sets up the necessary resources to run Forseti Real Time Enforcer that are not covered by the first two modules, which include:
-    * Real Time Enforcer VM running [Container Optimized OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits)
-    * Real Time Enforcer Service account
-    * GCS bucket with Real Time Enforcer policy files
+1. `real_time_enforcer` creates and sets up the necessary resources to run Real-Time Enforcer that are not covered by the first two modules, which include:
+    * Real-Time Enforcer VM running [Container Optimized OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits)
+    * Real-Time Enforcer Service account
+    * GCS bucket with Real-Time Enforcer policy files
     * Pub/Sub subscription
     * Forseti specific firewall rules
-    * Real Time Enforcer application Docker image
+    * Real-Time Enforcer application Docker image
     * Open Policy Agent server Docker image
 
 ```

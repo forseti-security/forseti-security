@@ -34,9 +34,9 @@ from Inventory to regularly compare role-based access policies for your resource
 Configure Notifier to dispatch a variety of messages through various channels and varying formats
 alerting you to events in your environment.
 
-**[Configuring Real Time Enforcer]({% link _docs/latest/configure/real-time-enforcer/index.md %})**
+**[Configuring Real-Time Enforcer]({% link _docs/latest/configure/real-time-enforcer/index.md %})**
 
-Configure Real Time Enforcer to automatically remediate non-compliant configurations in targeted 
+Configure Real-Time Enforcer to automatically remediate non-compliant configurations in targeted 
 Google Cloud Platform (GCP) resources.
 
 **[Enabling G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})**

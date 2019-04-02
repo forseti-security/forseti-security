@@ -5,9 +5,9 @@ order: 502
 
 # {{ page.title }}
 
-Forseti Real Time Enforcer comes with default policies for specific Google Cloud Platform (GCP) resources. 
+Real-Time Enforcer comes with default policies for specific Google Cloud Platform (GCP) resources. 
 
-This page lists the current resources and policies that are provided by Forseti Real Time Enforcer.
+This page lists the current resources and policies that are provided by Real-Time Enforcer.
 
 ---
 
