@@ -138,7 +138,7 @@ class _ServiceManagementServicesRepository(
             self._get_key_field: resource,
         }
 
-        if configId:
+        if config_id:
             arguments['configId'] = config_id
         if view:
             arguments['view'] = view
