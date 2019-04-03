@@ -1243,9 +1243,8 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-9` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-   **Scanner & Notifier**
-   - Update the `scanner` and `notifier` section to include support for `config validator scanner`.
-    and `groups settings scanner`. Remove CSCC alpha and beta reference since we are moving to GA.
+   **Inventory**
+   - Add api quota for groups settings.
       ```
         inventory:
             ...
@@ -1256,7 +1255,10 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                    period: 1.1 
                    disable_polling: False 
             ...
-        ##################################################
+      ```
+   **Scanner**
+   - Add config validator and groups settings scanners.
+      ```
         scanner:
             ...
             scanners:
@@ -1265,7 +1267,11 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                 - name: groups_settings
                   enabled: true
             ...
-        ##################################################
+      ```
+   **Notifier**
+   - Add config validator and groups settings notification settings.
+   - Remove CSCC alpha/beta reference as Forseti is now using the GA API.
+      ```
         notifier:
             ...
             resources:
