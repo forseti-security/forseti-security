@@ -258,31 +258,31 @@ CONFIG_PERMISSION_DENIED = """
 
 GET_FULL_API_CONFIG_RESPONSE = """
 {
-  "apis": [
+ "apis": [
+  {
+   "methods": [
     {
-      "methods": [
-        {
-          "requestTypeUrl": "type.googleapis.com/google.example.foo.v1.BarRequest",
-          "name": "Bar",
-          "options": [
-            {
-              "name": "google.api.http",
-            }
-          ],
-          "responseTypeUrl": "type.googleapis.com/google.example.foo.v1.Baz"
-        }
-      ]
-    }
-  ],
-  "documentation": {
-    "summary": "A test API.",
-    "rules": [
+     "requestTypeUrl": "type.googleapis.com/google.example.foo.v1.BarRequest",
+     "name": "Bar",
+     "options": [
       {
-        "description": "Some test entity.",
-        "selector": "google.example.test.v1.Baz",
+       "name": "google.api.http"
       }
-    ]
+     ],
+     "responseTypeUrl": "type.googleapis.com/google.example.foo.v1.Baz"
+    }
+   ]
   }
+ ],
+ "documentation": {
+  "summary": "A test API.",
+  "rules": [
+   {
+    "description": "Some test entity.",
+    "selector": "google.example.test.v1.Baz"
+   }
+  ]
+ }
 }
 """
 

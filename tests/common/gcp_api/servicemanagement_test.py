@@ -120,23 +120,24 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.sm_api_client.get_api_iam_policy(fake_sm.FAKE_SERVICE_NAME)
 
-    def test_get_full_api_config(self):
+    def test_get_full_api_configuration(self):
         """Tests that get_api_config returns expected result."""
-        http_mocks.mock_http_response(fake_sm.GET_API_CONFIG_RESPONSE)
+        http_mocks.mock_http_response(fake_sm.GET_FULL_API_CONFIG_RESPONSE)
 
-        return_value = self.sm_api_client.get_full_api_config(
+        return_value = self.sm_api_client.get_full_api_configuration(
             fake_sm.FAKE_SERVICE_NAME)
 
         self.assertTrue('apis' in return_value)
         self.assertEquals(fake_sm.EXPECTED_APIS_COUNT,
                           len(return_value['apis']))
 
-    def test_get_full_api_config_raises(self):
+    def test_get_full_api_configuration_raises(self):
         """Tests get_api_config for an api missing required permissions."""
         http_mocks.mock_http_response(fake_sm.CONFIG_PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.sm_api_client.get_full_api_config(fake_sm.FAKE_SERVICE_NAME)
+            self.sm_api_client.get_full_api_configuration(
+                fake_sm.FAKE_SERVICE_NAME)
 
 
 if __name__ == '__main__':
