@@ -119,12 +119,12 @@ class _ServiceManagementServicesRepository(
             service_name = 'services/{}'.format(service_name)
         return service_name
 
-    def get_config(self, resource, configId=None, view=None, verb='getConfig'):
+    def get_config(self, resource, config_id=None, view=None, verb='getConfig'):
         """Gets the Service Configuration associated with a Service.
 
         Args:
             resource (str): Name of the service
-            configId (str): The ID of the Service Configuration to fetch
+            config_id (str): The ID of the Service Configuration to fetch
             view (ConfigView): Specifies which portion of the Service
                 Configuration should be returned.
                 https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/ConfigView
@@ -139,7 +139,7 @@ class _ServiceManagementServicesRepository(
         }
 
         if configId:
-            arguments['configId'] = configId
+            arguments['configId'] = config_id
         if view:
             arguments['view'] = view
 
