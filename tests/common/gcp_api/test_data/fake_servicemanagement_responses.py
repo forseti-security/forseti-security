@@ -19,7 +19,7 @@
 
 # list()-related test data
 
-FAKE_PROJECT_ID = 'project1'
+FAKE_PROJECT_ID = "project1"
 
 LIST_SERVICES_PAGE1 = """
 {
@@ -198,7 +198,7 @@ EXPECTED_ALL_SERVICES_COUNT = 30
 
 # IAM Policy test data
 
-FAKE_SERVICE_NAME = 'foo.googleapis.com'
+FAKE_SERVICE_NAME = "foo.googleapis.com"
 
 GET_API_IAM_POLICY_RESPONSE = """
 {
@@ -242,3 +242,48 @@ IAM_PERMISSION_DENIED = """
  }
 }
 """
+
+
+# Config test data
+
+CONFIG_PERMISSION_DENIED = """
+{
+ "error": {
+  "code": 403,
+  "message": "No access to resource: services/foo.googleapis.com"
+  "status": "PERMISSION_DENIED"
+ }
+}
+"""
+
+GET_FULL_API_CONFIG_RESPONSE = """
+{
+  "apis": [
+    {
+      "methods": [
+        {
+          "requestTypeUrl": "type.googleapis.com/google.example.foo.v1.BarRequest",
+          "name": "Bar",
+          "options": [
+            {
+              "name": "google.api.http",
+            }
+          ],
+          "responseTypeUrl": "type.googleapis.com/google.example.foo.v1.Baz"
+        }
+      ]
+    }
+  ],
+  "documentation": {
+    "summary": "A test API.",
+    "rules": [
+      {
+        "description": "Some test entity.",
+        "selector": "google.example.test.v1.Baz",
+      }
+    ]
+  }
+}
+"""
+
+EXPECTED_APIS_COUNT = 1
