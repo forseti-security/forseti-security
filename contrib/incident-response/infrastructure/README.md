@@ -1,3 +1,7 @@
+**Note**: This is an early (alpha) release and the deployment is not fully polished yet. You are welcome to test it out and if you have any questions on how to use the tools please reach out to the official mailing lists.
+
+**Note**: This setup will add billing costs to your project.
+
 ## Installing Terraform
 
 Please follow [these

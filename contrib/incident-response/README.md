@@ -1,8 +1,11 @@
 # Open Source Incident Response Tools
 
-This directory contains Terraform deployment scripts for a set of Open Source incident response and digital forensics tools. The first tool to be released is Timesketch and in the near future GRR (GRR Rapid Response) and Turbinia will made available as well.
+This directory contains the ALPHA release of Terraform deployment scripts for open source incident response and digital forensics tools.
+The first tool to be released is Timesketch.
 
-Note that these tools are primarily expert tools. If you have any questions on how to use the tools please reach out to the official mailing lists.
+**Note**: This is an early (alpha) release and the deployment is not fully polished yet. You are welcome to test it out and if you have any questions on how to use the tools please reach out to the official mailing lists as noted below.
+
+**Note**: This setup will add billing costs to your project.
 
 ## Timesketch
 
