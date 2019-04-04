@@ -14,6 +14,9 @@
 # Compiled protobuf
 *_pb2.py
 *_pb2_grpc.py
+!google/cloud/asset/v1/*_pb2.py
+!google/cloud/forseti/scanner/scanners/config_validator_util/*_pb2.py
+!google/cloud/forseti/scanner/scanners/config_validator_util/*_pb2_grpc.py
 
 # Miscellaneous
 .DS_Store

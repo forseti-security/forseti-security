@@ -294,6 +294,8 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
+        cai_resource_name = Column(String(4096))
+        cai_resource_type = Column(String(512))
         full_name = Column(String(2048), nullable=False)
         type_name = Column(get_string_by_dialect(dbengine.dialect.name, 512),
                            primary_key=True)
@@ -734,6 +736,28 @@ def define_model(model_name, dbengine, model_seed):
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
 
             for resource in qry.yield_per(PER_YIELD):
+                yield resource
+
+        @classmethod
+        def scanner_fetch_groups_settings(cls, session, only_iam_groups):
+            """Fetch Groups Settings.
+
+            Args:
+                session (object): Database session.
+                only_iam_groups (bool): boolean indicating whether we want to
+                only fetch groups settings for which there is at least 1 iam
+                policy
+
+            Yields:
+                Resource: resource that match the query
+            """
+            if only_iam_groups:
+                query = (session.query(groups_settings)
+                         .join(Member).join(binding_members)
+                         .distinct().enable_eagerloads(True))
+            else:
+                query = (session.query(groups_settings).enable_eagerloads(True))
+            for resource in query.yield_per(PER_YIELD):
                 yield resource
 
         @classmethod
