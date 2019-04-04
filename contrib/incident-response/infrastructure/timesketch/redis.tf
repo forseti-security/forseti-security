@@ -12,10 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Enable Google Cloud Resource Manager API for the project.
+resource "google_project_service" "cloud-resource-service-api" {
+  project   = "${var.gcp_project}"
+  service   = "cloudresourcemanager.googleapis.com"
+}
+
 # Enable Google Cloud Memorystore for Redis API for the project.
 resource "google_project_service" "redis-service-api" {
-  project   = "${var.gcp_project}"
-  service   = "redis.googleapis.com"
+  project     = "${var.gcp_project}"
+  service     = "redis.googleapis.com"
+  depends_on  = ["google_project_service.cloud-resource-service-api"]
 }
 
 # Redis is used as the task queue backend for importing data into Timesketch.

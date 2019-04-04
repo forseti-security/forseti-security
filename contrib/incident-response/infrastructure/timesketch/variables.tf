@@ -50,5 +50,5 @@ variable "elasticsearch_disk_size_gb" {
   default = 200
 }
 variable "elasticsearch_node_count" {
-  default = 2
+  default = 1
 }

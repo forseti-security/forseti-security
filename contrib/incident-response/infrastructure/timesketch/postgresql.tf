@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Enable Google Cloud SQL admin API for the project.
+resource "google_project_service" "sql-admin-service-api" {
+  project   = "${var.gcp_project}"
+  service   = "sqladmin.googleapis.com"
+}
+
 resource "google_sql_database" "timesketch-db" {
   name     = "timesketch-db"
   instance = "${google_sql_database_instance.timesketch-db-instance.name}"
@@ -32,12 +38,14 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
   name              = "timesketch-db-instance-${random_id.infrastructure-random-id.hex}"
   region            = "${var.gcp_region}"
   database_version  = "POSTGRES_9_6"
+  depends_on        = ["google_project_service.sql-admin-service-api"]
 
   settings {
     tier = "db-f1-micro"
 
     ip_configuration {
       ipv4_enabled = true
+      require_ssl  = false
       authorized_networks = {
         name  = "timesketch-server"
         value = "${google_compute_address.timesketch-server-address.address}"

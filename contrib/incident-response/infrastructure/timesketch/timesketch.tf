@@ -13,7 +13,7 @@
 # limitations under the License.
 
 data "template_file" "timesketch-server-startup-script" {
-  template = "${file("${path.module}/scripts/install-timesketch.sh")}"
+  template = "${file("${path.module}/templates/scripts/install-timesketch.sh.tpl")}"
   vars {
     timesketch_admin_username = "${var.timesketch_admin_username}"
     timesketch_admin_password = "${random_string.timesketch-admin-password.result}"
@@ -34,6 +34,17 @@ resource "random_string" "timesketch-admin-password" {
 
 resource "google_compute_address" "timesketch-server-address" {
   name = "timesketch-server-address"
+}
+
+resource "google_compute_firewall" "allow-external-timesketch-server" {
+  name    = "allow-external-timesketch-https-server"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports    = ["443"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["timesketch-https-server"]
 }
 
 resource "google_compute_instance" "timesketch-server" {
@@ -62,20 +73,20 @@ resource "google_compute_instance" "timesketch-server" {
   }
 
   # Allow HTTPS traffic
-  tags = ["https-server"]
+  tags = ["timesketch-https-server", "https-server"]
 
   # Provision the machine with a script.
   metadata_startup_script = "${data.template_file.timesketch-server-startup-script.rendered}"
 }
 
-output "Server URL" {
+output "Timesketch server URL" {
   value = "https://${google_compute_address.timesketch-server-address.address}/"
 }
 
-output "Admin username" {
+output "Timesketch admin username" {
   value = "${var.timesketch_admin_username}"
 }
 
-output "Admin password" {
+output "Timesketch admin password" {
   value = "${random_string.timesketch-admin-password.result}"
 }

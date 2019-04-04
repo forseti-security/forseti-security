@@ -16,6 +16,22 @@ install Terraform binary on your machine.
 1.  Enable billing for the project
     ([link](https://support.google.com/cloud/answer/6293499#enable-billing)).
 
+## Instrumenting Terraform with credentials
+
+1.  In Cloud Platform Console, navigate to the [Create service account
+    key](https://console.cloud.google.com/apis/credentials/serviceaccountkey)
+    page.
+1.  From the Service account dropdown, select Compute Engine default service
+    account, and leave JSON selected as the key type.
+1.  Click Create, which downloads your credentials as a file named
+    `[PROJECT_ID]-[UNIQUE_ID].json`.
+1.  In the same shell where you're going to run Terraform (see below), run the
+    following:
+
+```bash
+export GCLOUD_KEYFILE_JSON=/absolute/path/to/downloaded-file.json
+```
+
 ## Running Terraform
 
 `cd` to the folder with Terraform configuration files (and where this README

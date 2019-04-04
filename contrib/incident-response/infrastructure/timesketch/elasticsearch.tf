@@ -13,7 +13,7 @@
 # limitations under the License.
 
 data "template_file" "elasticsearch-startup-script" {
-  template = "${file("${path.module}/scripts/install-elasticsearch.sh")}"
+  template = "${file("${path.module}/templates/scripts/install-elasticsearch.sh.tpl")}"
 
   vars {
     cluster_name  = "${var.elasticsearch_cluster_name}"
