@@ -137,6 +137,8 @@ REQUIRED_APIS = [
      'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
+    {'name': 'Cloud Security Command Center',
+     'service': 'securitycenter.googleapis.com'},
     {'name': 'Cloud SQL',
      'service': 'sql-component.googleapis.com'},
     {'name': 'Cloud SQL Admin',
