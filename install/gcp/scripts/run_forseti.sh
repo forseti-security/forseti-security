@@ -27,7 +27,7 @@ sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
 # Download the Newest Config Validator constraints from GCS.
 sudo rm -rf ${FORSETI_HOME}/policy-library
-sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${FORSETI_HOME}/policy-library
+sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${FORSETI_HOME}/
 
 # Restart the config validator service to pick up the latest policy.
 sudo systemctl restart config-validator
