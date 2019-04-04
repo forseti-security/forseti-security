@@ -49,10 +49,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         self._findings = None
 
         self.version = version
-        use_versioned_discovery_doc = False
-        if self.version == 'v1beta1':
-            use_versioned_discovery_doc = True
-            # alpha would use the discovery_doc without version in the name
+        use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
             API_NAME, versions=[self.version],
@@ -91,18 +88,12 @@ class _SecurityCenterOrganizationsFindingsRepository(
         LOGGER.debug(
             'Creating _SecurityCenterOrganizationsFindingsRepositoryClient')
 
-        # pylint: disable=protected-access
-        if kwargs.get('gcp_service')._resourceDesc.get('version') == 'v1beta1':
-            component = 'organizations.sources.findings'
-        else:
-            # alpha api
-            component = 'organizations.findings'
-        # pylint: enable=protected-access
+        component = 'organizations.sources.findings'
 
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
             key_field='name',
             component=component,
-            max_results_field="pageSize",
+            max_results_field='pageSize',
             **kwargs)
 
 
@@ -126,13 +117,11 @@ class SecurityCenterClient(object):
                      version)
         self.repository = SecurityCenterRepositoryClient(version=version)
 
-    def create_finding(self, finding, organization_id=None, source_id=None,
-                       finding_id=None):
+    def create_finding(self, finding, source_id=None, finding_id=None):
         """Creates a finding in CSCC.
 
         Args:
             finding (dict): Forseti violation in CSCC format.
-            organization_id (str): The id prefixed with 'organizations/'.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
             finding_id (str): id hash of the CSCC finding
@@ -140,47 +129,23 @@ class SecurityCenterClient(object):
         Returns:
             dict: An API response containing one page of results.
         """
-        if source_id:
-            # beta api
-            try:
-                LOGGER.debug('Creating finding with beta api.')
-
-                # patch() will also create findings for new violations.
-                response = self.repository.findings.patch(
-                    '{}/findings/{}'.format(source_id, finding_id),
-                    finding
-                )
-                LOGGER.debug('Created finding response with CSCC beta api: %s',
-                             response)
-                return response
-            # handle 409, finding exists
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.exception(
-                    'Unable to create CSCC finding: Resource: %s', finding)
-                violation_data = (
-                    finding.get('source_properties').get('violation_data'))
-                raise api_errors.ApiExecutionError(violation_data, e)
-
-        # alpha api
         try:
-            LOGGER.debug('Creating finding with alpha api.')
+            LOGGER.debug('Creating finding.')
 
-            response = self.repository.findings.create(
-                arguments={
-                    'body': {'sourceFinding': finding},
-                    'orgName': organization_id
-                }
+            # patch() will also create findings for new violations.
+            response = self.repository.findings.patch(
+                '{}/findings/{}'.format(source_id, finding_id),
+                finding
             )
-            LOGGER.debug('Created finding response with CSCC alpha: %s',
+            LOGGER.debug('Created finding response: %s',
                          response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception(
                 'Unable to create CSCC finding: Resource: %s', finding)
-            full_name = (
-                finding.get('properties').get('violation_data')
-                .get('full_name'))
-            raise api_errors.ApiExecutionError(full_name, e)
+            violation_data = (
+                finding.get('source_properties').get('violation_data'))
+            raise api_errors.ApiExecutionError(violation_data, e)
 
     def list_findings(self, source_id):
         """Lists all the findings in CSCC.
@@ -207,19 +172,14 @@ class SecurityCenterClient(object):
         Returns:
             dict: An API response containing one page of results.
         """
-        # alpha api
-        if not source_id:
-            return {}
-
-        # beta api
         try:
-            LOGGER.debug('Updated finding with beta api.')
+            LOGGER.debug('Updating finding.')
 
             # patch() will set the state of outdated findings to INACTIVE
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
-
+            LOGGER.debug('Updated finding.')
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception(

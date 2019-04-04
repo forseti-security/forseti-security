@@ -34,6 +34,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',
          'rules_filename': 'bucket_rules.yaml'},
+    'config_validator':
+        {'module_name': 'config_validator_scanner',
+         'class_name': 'ConfigValidatorScanner',
+         'rule_filename': ''},
     'cloudsql_acl':
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
@@ -58,6 +62,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
+    'groups_settings':
+        {'module_name': 'groups_settings_scanner',
+         'class_name': 'GroupsSettingsScanner',
+         'rules_filename': 'groups_settings_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',

@@ -23,6 +23,7 @@ from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 
 
@@ -441,6 +442,16 @@ class ExplainerTest(ForsetiTestCase):
                 ]))
         self.setup.run(test)
 
+    def test_model_delete_empty_handle(self):
+        """Verify model delete with no handle returns FAIL status."""
+
+        def test(client):
+            """Test implementation with API client."""
+            response = client.model.delete_model('')
+            self.assertEqual(response.status,
+                             model_pb2.DeleteModelReply.FAIL)
+
+        self.setup.run(test)
 
 if __name__ == '__main__':
     unittest.main()

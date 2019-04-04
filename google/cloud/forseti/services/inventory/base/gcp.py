@@ -33,6 +33,39 @@ from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
 
+class AssetMetadata(object):
+    """Asset Metadata."""
+    def __init__(self, cai_name='', cai_type=''):
+        """Init.
+        Args:
+            cai_name (str): CAI resource name.
+            cai_type (str): CAI resource type.
+        """
+        self.cai_name = cai_name
+        self.cai_type = cai_type
+
+    def __eq__(self, other):
+        """Equals.
+
+        Args:
+            other (AssetMetadata): other asset metadata.
+
+        Returns:
+            bool: if two asset metadata are the same.
+        """
+        return (self.cai_name == other.cai_name and
+                self.cai_type == other.cai_type)
+
+    def __repr__(self):
+        """Repr.
+
+        Returns:
+            str: repr.
+        """
+        return 'cai_name: {}, cai_type: {}'.format(
+            self.cai_name, self.cai_type)
+
+
 class ResourceNotSupported(Exception):
     """Exception raised for resources not supported by the API client."""
 
@@ -1114,11 +1147,13 @@ class ApiClientImpl(ApiClient):
             dataset_id (str): id of the dataset to query.
 
         Returns:
-            dict: Dataset Policy.
+            Tuple[dict, AssetMetadata]: Dataset Policy and asset
+                metadata that defaults to None for all GCP clients.
         """
         del project_id
 
-        return self.bigquery.get_dataset_access(project_number, dataset_id)
+        return self.bigquery.get_dataset_access(
+            project_number, dataset_id), None
 
     def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
@@ -1142,10 +1177,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of datasets.
+            Tuple[dict, AssetMetadata]: Generator of datasets and asset
+                metadata that defaults to None for all GCP clients.
         """
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
-            yield dataset
+            yield dataset, None
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_tables(self, dataset_reference):
@@ -1156,11 +1192,12 @@ class ApiClientImpl(ApiClient):
                                       bigquery tables.
 
         Yields:
-            dict: Generator of tables.
+            Tuple[dict, AssetMetadata]: Generator of tables and asset
+                metadata that defaults to None for all GCP clients.
         """
         for table in self.bigquery.get_tables(dataset_reference['projectId'],
                                               dataset_reference['datasetId']):
-            yield table
+            yield table, None
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_account_iam_policy(self, account_id):
@@ -1170,9 +1207,11 @@ class ApiClientImpl(ApiClient):
             account_id (str): id of the billing account to get policy.
 
         Returns:
-            dict: Billing Account IAM policy.
+            Tuple[dict, AssetMetadata]: Billing Account IAM policy and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.cloudbilling.get_billing_acct_iam_policies(account_id)
+        return (
+            self.cloudbilling.get_billing_acct_iam_policies(account_id), None)
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_project_info(self, project_number):
@@ -1182,19 +1221,21 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            dict: Project Billing Info resource.
+            Tuple[dict, AssetMetadata]: Project Billing Info resource and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.cloudbilling.get_billing_info(project_number)
+        return self.cloudbilling.get_billing_info(project_number), None
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def iter_billing_accounts(self):
         """Iterate visible Billing Accounts in an organization from GCP API.
 
         Yields:
-            dict: Generator of billing accounts.
+            Tuple[dict, AssetMetadata]: Generator of billing accounts and asset
+                metadata that defaults to None for all GCP clients.
         """
         for account in self.cloudbilling.get_billing_accounts():
-            yield account
+            yield account, None
 
     @create_lazy('cloudsql', _create_cloudsql)
     def iter_cloudsql_instances(self, project_id, project_number):
@@ -1205,11 +1246,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of cloudsql instance.
+            Tuple[dict, AssetMetadata]: Generator of cloudsql instance and
+                asset metadata that defaults to None for all GCP clients.
         """
         del project_id  # Not used by the API client
         for item in self.cloudsql.get_instances(project_number):
-            yield item
+            yield item, None
 
     @create_lazy('compute', _create_compute)
     def is_compute_api_enabled(self, project_number):
@@ -1238,12 +1280,13 @@ class ApiClientImpl(ApiClient):
             zone (str): The zonal instance group's zone.
 
         Returns:
-            list: instance URLs for this instance group.
+            Tuple[list, AssetMetadata]: instance URLs for this instance group
+                and asset metadata that defaults to None for all GCP clients.
         """
         return self.compute.get_instance_group_instances(project_number,
                                                          instance_group_name,
                                                          region,
-                                                         zone)
+                                                         zone), None
 
     @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, project_number):
@@ -1253,9 +1296,10 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            dict: Compute project metadata resource.
+            Tuple[dict, AssetMetadata]: Compute project metadata resource and
+                asset metadata that defaults to None for all GCP clients.
         """
-        return self.compute.get_project(project_number)
+        return self.compute.get_project(project_number), None
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.
@@ -1289,10 +1333,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of backend service.
+            Tuple[dict, AssetMetadata]: Generator of backend service and
+                asset metadata that defaults to None for all GCP clients.
         """
         for backendservice in self.compute.get_backend_services(project_number):
-            yield backendservice
+            yield backendservice, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_disks(self, project_number):
@@ -1302,10 +1347,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Compute Disk.
+            Tuple[dict, AssetMetadata]: Generator of compute disk and
+                asset metadata that defaults to None for all GCP clients.
         """
         for disk in self.compute.get_disks(project_number):
-            yield disk
+            yield disk, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_firewalls(self, project_number):
@@ -1315,10 +1361,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Compute Engine Firewall.
+            Tuple[dict, AssetMetadata]: Generator of Compute Engine Firewall
+                and asset metadata that defaults to None for all GCP clients.
         """
         for rule in self.compute.get_firewall_rules(project_number):
-            yield rule
+            yield rule, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_forwardingrules(self, project_number):
@@ -1328,10 +1375,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of forwarding rule resources.
+            Tuple[dict, AssetMetadata]: Generator of forwarding rule resources
+                and asset metadata that defaults to None for all GCP clients.
         """
         for forwardingrule in self.compute.get_forwarding_rules(project_number):
-            yield forwardingrule
+            yield forwardingrule, None
 
     def iter_compute_healthchecks(self, project_number):
         """Iterate Health checks from GCP API.
@@ -1377,11 +1425,13 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of instance group manager resources.
+            Tuple[dict, AssetMetadata]: Generator of instance group manager
+                resources and asset metadata that defaults to None for
+                all GCP clients.
         """
         for igmanager in self.compute.get_instance_group_managers(
                 project_number):
-            yield igmanager
+            yield igmanager, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_images(self, project_number):
@@ -1391,10 +1441,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of image resources.
+            Tuple[dict, AssetMetadata]: Generator of image resources resources
+                and asset metadata that defaults to None for all GCP clients.
         """
         for image in self.compute.get_images(project_number):
-            yield image
+            yield image, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_instancegroups(self, project_number):
@@ -1404,11 +1455,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Compute Instance group.
+            Tuple[dict, AssetMetadata]: Generator of Compute Instance group
+                and asset metadata that defaults to None for all GCP clients.
         """
         for instancegroup in self.compute.get_instance_groups(
                 project_number, include_instance_urls=False):
-            yield instancegroup
+            yield instancegroup, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_instances(self, project_number):
@@ -1418,10 +1470,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Compute Engine Instance.
+            Tuple[dict, AssetMetadata]: Generator of Compute Engine Instance
+                and asset metadata that defaults to None for all GCP clients.
         """
         for instance in self.compute.get_instances(project_number):
-            yield instance
+            yield instance, None
 
     @create_lazy('compute', _create_compute)
     def iter_compute_instancetemplates(self, project_number):
@@ -1431,11 +1484,13 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of instance template resources.
+            Tuple[dict, AssetMetadata]: Generator of instance template
+                resources and asset metadata that defaults to None
+                for all GCP clients.
         """
         for instancetemplate in self.compute.get_instance_templates(
                 project_number):
-            yield instancetemplate
+            yield instancetemplate, None
 
     def iter_compute_licenses(self, project_number):
         """Iterate Licenses from GCP API.
@@ -1457,10 +1512,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of network resources.
+            Tuple[dict, AssetMetadata]: Generator of network resources
+                and asset metadata that defaults to None for all GCP clients.
         """
         for network in self.compute.get_networks(project_number):
-            yield network
+            yield network, None
 
     def iter_compute_project(self, project_number):
         """Iterate Project from GCP API.
@@ -1472,7 +1528,8 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of compute project resources.
+            Tuple[dict, AssetMetadata]: Generator of compute project resources
+                and asset metadata that defaults to None for all GCP clients.
         """
         yield self.fetch_compute_project(project_number)
 
@@ -1496,10 +1553,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Compute Snapshots.
+            Tuple[dict, AssetMetadata]: Generator of Compute Snapshots
+                and asset metadata that defaults to None for all GCP clients.
         """
         for snapshot in self.compute.get_snapshots(project_number):
-            yield snapshot
+            yield snapshot, None
 
     def iter_compute_sslcertificates(self, project_number):
         """Iterate SSL Certificates from GCP API.
@@ -1521,10 +1579,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of subnetwork resources.
+            Tuple[dict, AssetMetadata]: Generator of subnetwork resources
+                and asset metadata that defaults to None for all GCP clients.
         """
         for subnetwork in self.compute.get_subnetworks(project_number):
-            yield subnetwork
+            yield subnetwork, None
 
     def iter_compute_targethttpproxies(self, project_number):
         """Iterate Target HTTP proxies from GCP API.
@@ -1645,10 +1704,12 @@ class ApiClientImpl(ApiClient):
             location (str): location of the Kubernetes Engine.
 
         Returns:
-            dict: Generator of Kubernetes Engine Cluster resources.
+            Tuple[dict, AssetMetadata]: Generator of Kubernetes Engine Cluster
+                resources and asset metadata that defaults to None for all
+                GCP clients.
         """
         return self.container.get_serverconfig(project_id, zone=zone,
-                                               location=location)
+                                               location=location), None
 
     @create_lazy('container', _create_container)
     def iter_container_clusters(self, project_number):
@@ -1658,7 +1719,9 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Kubernetes Engine Cluster resources.
+            Tuple[dict, AssetMetadata]: Generator of Kubernetes Engine Cluster
+                resources and asset metadata that defaults to None for all
+                GCP clients.
         """
         for cluster in self.container.get_clusters(project_number):
 
@@ -1668,7 +1731,7 @@ class ApiClientImpl(ApiClient):
                     k: '[redacted]'
                     for k in cluster['masterAuth'].keys()}
 
-            yield cluster
+            yield cluster, None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_folder(self, folder_id):
@@ -1678,9 +1741,10 @@ class ApiClientImpl(ApiClient):
             folder_id (str): id of the folder to query.
 
         Returns:
-            dict: Generator of folder.
+            Tuple[dict, AssetMetadata]: Folder resource and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_folder(folder_id)
+        return self.crm.get_folder(folder_id), None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_folder_iam_policy(self, folder_id):
@@ -1690,9 +1754,10 @@ class ApiClientImpl(ApiClient):
             folder_id (str): id of the folder to get policy.
 
         Returns:
-            dict: Folder IAM policy.
+            Tuple[dict, AssetMetadata]: Folder IAM policy and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_folder_iam_policies(folder_id)
+        return self.crm.get_folder_iam_policies(folder_id), None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_organization(self, org_id):
@@ -1702,9 +1767,10 @@ class ApiClientImpl(ApiClient):
             org_id (str): id of the organization to get.
 
         Returns:
-            dict: Generator of organization.
+            Tuple[dict, AssetMetadata]: Organization resource and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_organization(org_id)
+        return self.crm.get_organization(org_id), None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_organization_iam_policy(self, org_id):
@@ -1714,9 +1780,10 @@ class ApiClientImpl(ApiClient):
             org_id (str): id of the organization to get policy.
 
         Returns:
-            dict: Organization IAM policy.
+           Tuple[dict, AssetMetadata]: Organization IAM policy and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_org_iam_policies(org_id)
+        return self.crm.get_org_iam_policies(org_id), None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_project(self, project_number):
@@ -1726,9 +1793,10 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            dict: Generator of project.
+            Tuple[dict, AssetMetadata]: Project resource and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_project(project_number)
+        return self.crm.get_project(project_number), None
 
     @create_lazy('crm', _create_crm)
     def fetch_crm_project_iam_policy(self, project_number):
@@ -1738,9 +1806,10 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            dict: Project IAM Policy.
+            Tuple[dict, AssetMetadata]: Project IAM policy and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.crm.get_project_iam_policies(project_number)
+        return self.crm.get_project_iam_policies(project_number), None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_folder_org_policies(self, folder_id):
@@ -1750,10 +1819,11 @@ class ApiClientImpl(ApiClient):
             folder_id (str): id of the folder to get policy.
 
         Yields:
-            dict: Generator of org policies.
+            Tuple[dict, AssetMetadata]: Generator of org policies and asset
+                metadata that defaults to None for all GCP clients.
         """
         for org_policy in self.crm.get_folder_org_policies(folder_id):
-            yield org_policy
+            yield org_policy, None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_folders(self, parent_id):
@@ -1763,10 +1833,11 @@ class ApiClientImpl(ApiClient):
             parent_id (str): id of the parent of the folder.
 
         Yields:
-            dict: Generator of folders.
+            Tuple[dict, AssetMetadata]: Generator of folders and asset
+                metadata that defaults to None for all GCP clients.
         """
         for folder in self.crm.get_folders(parent_id):
-            yield folder
+            yield folder, None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_organization_org_policies(self, org_id):
@@ -1776,10 +1847,11 @@ class ApiClientImpl(ApiClient):
             org_id (str): id of the organization to get policy.
 
         Yields:
-            dict: Generator of org policies.
+            Tuple[dict, AssetMetadata]: Generator of org policies and asset
+                metadata that defaults to None for all GCP clients.
         """
         for org_policy in self.crm.get_org_org_policies(org_id):
-            yield org_policy
+            yield org_policy, None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_project_liens(self, project_number):
@@ -1789,10 +1861,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the parent project of the lien.
 
         Yields:
-            dict: Generator of liens.
+            Tuple[dict, AssetMetadata]: Generator of liens and asset
+                metadata that defaults to None for all GCP clients.
         """
         for lien in self.crm.get_project_liens(project_number):
-            yield lien
+            yield lien, None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_project_org_policies(self, project_number):
@@ -1802,10 +1875,11 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the parent project of the policy.
 
         Yields:
-            dict: Generator of org policies.
+            Tuple[dict, AssetMetadata]: Generator of org policies and asset
+                metadata that defaults to None for all GCP clients.
         """
         for org_policy in self.crm.get_project_org_policies(project_number):
-            yield org_policy
+            yield org_policy, None
 
     @create_lazy('crm', _create_crm)
     def iter_crm_projects(self, parent_type, parent_id):
@@ -1816,12 +1890,13 @@ class ApiClientImpl(ApiClient):
             parent_id (str): id of the parent of the folder.
 
         Yields:
-            dict: Generator of projects.
+            Tuple[dict, AssetMetadata]: Generator of projects and asset
+                metadata that defaults to None for all GCP clients.
         """
         for page in self.crm.get_projects(parent_id=parent_id,
                                           parent_type=parent_type):
             for project in page.get('projects', []):
-                yield project
+                yield project, None
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from GCP API.
@@ -1882,9 +1957,10 @@ class ApiClientImpl(ApiClient):
             project_id (str): id of the project to query.
 
         Returns:
-            dict: AppEngine App resource.
+            Tuple[dict, AssetMetadata]: AppEngine App resource and asset
+                metadata that defaults to None for all GCP clients.
         """
-        return self.appengine.get_app(project_id)
+        return self.appengine.get_app(project_id), None
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_instances(self, project_id, service_id, version_id):
@@ -1896,11 +1972,13 @@ class ApiClientImpl(ApiClient):
             version_id (str): version id of the appengine.
 
         Yields:
-            dict: Generator of AppEngine Instance resources.
+            Tuple[dict, AssetMetadata]:Generator of AppEngine Instance
+                resources and asset metadata that defaults to None for
+                all GCP clients.
         """
         for instance in self.appengine.list_instances(
                 project_id, service_id, version_id):
-            yield instance
+            yield instance, None
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_services(self, project_id):
@@ -1910,10 +1988,12 @@ class ApiClientImpl(ApiClient):
             project_id (str): id of the project to query.
 
         Yields:
-            dict: Generator of AppEngine Service resources.
+            Tuple[dict, AssetMetadata]: Generator of AppEngine Service
+                resources and asset metadata that defaults to None for
+                all GCP clients.
         """
         for service in self.appengine.list_services(project_id):
-            yield service
+            yield service, None
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_versions(self, project_id, service_id):
@@ -1924,10 +2004,12 @@ class ApiClientImpl(ApiClient):
             service_id (str): id of the appengine service.
 
         Yields:
-            dict: Generator of AppEngine Version resources.
+            Tuple[dict, AssetMetadata]: Generator of AppEngine Version
+                resources and asset metadata that defaults to None for
+                all GCP clients.
         """
         for version in self.appengine.list_versions(project_id, service_id):
-            yield version
+            yield version, None
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_group_members(self, group_key):
@@ -1937,10 +2019,12 @@ class ApiClientImpl(ApiClient):
             group_key (str): key of the group to get.
 
         Yields:
-            dict: Generator of group_member
+            Tuple[dict, AssetMetadata]: Generator of group_member
+                and asset metadata that defaults to None for
+                all GCP clients.
         """
         for member in self.ad.get_group_members(group_key):
-            yield member
+            yield member, None
 
     @create_lazy('ad', _create_ad)
     def iter_gsuite_groups(self, gsuite_id):
@@ -1950,11 +2034,13 @@ class ApiClientImpl(ApiClient):
             gsuite_id (str): Gsuite id.
 
         Yields:
-            dict: Generator of groups.
+            Tuple[dict, AssetMetadata]: Generator of groups
+                and asset metadata that defaults to None for
+                all GCP clients.
         """
         result = self.ad.get_groups(gsuite_id)
         for group in result:
-            yield group
+            yield group, None
 
     @create_lazy('groups_settings', _create_groups_settings)
     def fetch_gsuite_groups_settings(self, group_email):
@@ -1977,10 +2063,12 @@ class ApiClientImpl(ApiClient):
             gsuite_id (str): Gsuite id.
 
         Yields:
-            dict: Generator of user.
+            Tuple[dict, AssetMetadata]: Generator of users
+                and asset metadata that defaults to None for
+                all GCP clients.
         """
         for user in self.ad.get_users(gsuite_id):
-            yield user
+            yield user, None
 
     @create_lazy('iam', _create_iam)
     def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
@@ -1992,20 +2080,22 @@ class ApiClientImpl(ApiClient):
             unique_id (str): The unique id of the service account.
 
         Returns:
-            dict: Service Account IAM policy.
+            Tuple[dict, AssetMetadata]: Service Account IAM policy and asset
+                metadata that defaults to None for all GCP clients.
         """
         del unique_id  # Used by CAI, not the API.
-        return self.iam.get_service_account_iam_policy(name)
+        return self.iam.get_service_account_iam_policy(name), None
 
     @create_lazy('iam', _create_iam)
     def iter_iam_curated_roles(self):
         """Iterate Curated roles in an organization from GCP API.
 
         Yields:
-            dict: Generator of curated roles.
+            Tuple[dict, AssetMetadata]:Generator of curated roles and asset
+                metadata that defaults to None for all GCP clients.
         """
         for role in self.iam.get_curated_roles():
-            yield role
+            yield role, None
 
     @create_lazy('iam', _create_iam)
     def iter_iam_organization_roles(self, org_id):
@@ -2015,10 +2105,11 @@ class ApiClientImpl(ApiClient):
             org_id (str): id of the organization to get.
 
         Yields:
-            dict: Generator of organization role.
+            Tuple[dict, AssetMetadata]:Generator of organization roles and
+                asset metadata that defaults to None for all GCP clients.
         """
         for role in self.iam.get_organization_roles(org_id):
-            yield role
+            yield role, None
 
     @create_lazy('iam', _create_iam)
     def iter_iam_project_roles(self, project_id, project_number):
@@ -2029,11 +2120,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of project roles.
+            Tuple[dict, AssetMetadata]:Generator of project roles and
+                asset metadata that defaults to None for all GCP clients.
         """
         del project_number  # Used by CAI, not the API.
         for role in self.iam.get_project_roles(project_id):
-            yield role
+            yield role, None
 
     @create_lazy('iam', _create_iam)
     def iter_iam_serviceaccount_exported_keys(self, name):
@@ -2043,11 +2135,13 @@ class ApiClientImpl(ApiClient):
             name (str): name of the service account.
 
         Yields:
-            dict: Generator of service account user managed (exported) keys
+            Tuple[dict, AssetMetadata]: Generator of service account user
+                managed (exported) keys and asset metadata that defaults to
+                None for all GCP clients.
         """
         for key in self.iam.get_service_account_keys(
                 name, key_type=iam.IAMClient.USER_MANAGED):
-            yield key
+            yield key, None
 
     @create_lazy('iam', _create_iam)
     def iter_iam_serviceaccounts(self, project_id, project_number):
@@ -2058,11 +2152,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of service account.
+            Tuple[dict, AssetMetadata]: Generator of service account and
+                asset metadata that defaults to None for all GCP clients.
         """
         del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
-            yield serviceaccount
+            yield serviceaccount, None
 
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from GCP API.
@@ -2192,9 +2287,10 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            list: A list of ManagedService resource dicts.
+            Tuple[list, AssetMetadata]:A list of ManagedService resource dicts
+                and asset metadata that defaults to None for all GCP clients.
         """
-        return self.servicemanagement.get_enabled_apis(project_number)
+        return self.servicemanagement.get_enabled_apis(project_number), None
 
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.
@@ -2228,10 +2324,12 @@ class ApiClientImpl(ApiClient):
             acct_id (str): id of the billing account to query.
 
         Yields:
-            dict: Generator of billing account logging sinks.
+            Tuple[dict, AssetMetadata]:Generator of billing account logging
+                sinks and asset metadata that defaults to None for all
+                GCP clients.
         """
         for sink in self.stackdriver_logging.get_billing_account_sinks(acct_id):
-            yield sink
+            yield sink, None
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_stackdriver_folder_sinks(self, folder_id):
@@ -2241,10 +2339,12 @@ class ApiClientImpl(ApiClient):
             folder_id (str): id of the folder to query.
 
         Yields:
-            dict: Generator of folder logging sinks.
+            Tuple[dict, AssetMetadata]:Generator of folder logging
+                sinks and asset metadata that defaults to None for all
+                GCP clients.
         """
         for sink in self.stackdriver_logging.get_folder_sinks(folder_id):
-            yield sink
+            yield sink, None
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_stackdriver_organization_sinks(self, org_id):
@@ -2254,10 +2354,12 @@ class ApiClientImpl(ApiClient):
             org_id (str): id of the organization to query.
 
         Yields:
-            dict: Generator of organization logging sinks.
+            Tuple[dict, AssetMetadata]:Generator of organization logging
+                sinks and asset metadata that defaults to None for all
+                GCP clients.
         """
         for sink in self.stackdriver_logging.get_organization_sinks(org_id):
-            yield sink
+            yield sink, None
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_stackdriver_project_sinks(self, project_number):
@@ -2267,10 +2369,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of project logging sinks.
+            Tuple[dict, AssetMetadata]:Generator of project logging
+                sinks and asset metadata that defaults to None for all
+                GCP clients.
         """
         for sink in self.stackdriver_logging.get_project_sinks(project_number):
-            yield sink
+            yield sink, None
 
     @create_lazy('storage', _create_storage)
     def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
@@ -2282,10 +2386,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            list: Bucket Access Controls.
+            Tuple[list, AssetMetadata]: Bucket Access Controls
+                and asset metadata that defaults to None for all
+                GCP clients.
         """
         del project_id, project_number
-        return self.storage.get_bucket_acls(bucket_id)
+        return self.storage.get_bucket_acls(bucket_id), None
 
     @create_lazy('storage', _create_storage)
     def fetch_storage_bucket_iam_policy(self, bucket_id):
@@ -2295,9 +2401,11 @@ class ApiClientImpl(ApiClient):
             bucket_id (str): id of the bucket to query.
 
         Returns:
-            dict: Bucket IAM policy.
+            Tuple[dict, AssetMetadata]: Bucket IAM policy
+                and asset metadata that defaults to None for all
+                GCP clients.
         """
-        return self.storage.get_bucket_iam_policy(bucket_id)
+        return self.storage.get_bucket_iam_policy(bucket_id), None
 
     @create_lazy('storage', _create_storage)
     def fetch_storage_object_iam_policy(self, bucket_name, object_name):
@@ -2308,10 +2416,12 @@ class ApiClientImpl(ApiClient):
             object_name (str): name of the object.
 
         Returns:
-            dict: Object IAM policy.
+            Tuple[dict, AssetMetadata]: Object IAM policy
+                and asset metadata that defaults to None for all
+                GCP clients.
         """
         return self.storage.get_storage_object_iam_policy(bucket_name,
-                                                          object_name)
+                                                          object_name), None
 
     @create_lazy('storage', _create_storage)
     def iter_storage_buckets(self, project_number):
@@ -2321,10 +2431,12 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of buckets.
+            Tuple[dict, AssetMetadata]: Generator of buckets
+                and asset metadata that defaults to None for all
+                GCP clients.
         """
         for bucket in self.storage.get_buckets(project_number):
-            yield bucket
+            yield bucket, None
 
     @create_lazy('storage', _create_storage)
     def iter_storage_objects(self, bucket_id):
@@ -2334,7 +2446,9 @@ class ApiClientImpl(ApiClient):
             bucket_id (str): id of the bucket to get.
 
         Yields:
-            dict: Generator of objects.
+            Tuple[dict, AssetMetadata]: Generator of objects
+                and asset metadata that defaults to None for all
+                GCP clients.
         """
         for gcs_object in self.storage.get_objects(bucket_name=bucket_id):
-            yield gcs_object
+            yield gcs_object, None

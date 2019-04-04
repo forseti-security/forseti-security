@@ -94,8 +94,6 @@ def _create_service_api(credentials, service_name, version, is_private_api,
 
         if use_versioned_discovery_doc:
             service_json = '{}_{}.json'.format(service_name, version)
-        else:
-            service_json = '{}.json'.format(service_name)
 
         service_path = os.path.join(DISCOVERY_DOCS_BASE_DIR, service_json)
         return _build_service_from_document(
