@@ -73,10 +73,8 @@ service to evaluate violations with policies written in Rego. With this scanner
 in place, users are now able to define customized policies easily without writing 
 a new scanner.
 
-Read more about the Forseti Config Validator efforts [here]().
-
-Learn more about how to define customized policies for the Config Validator [here]().
-
+Read more about the Forseti Config Validator efforts and how to define customized 
+policies for the Config Validator scanner [here](https://github.com/forseti-security/config-validator/blob/master/docs/user_guide.md).
 
 ## Enabled APIs scanner
 
