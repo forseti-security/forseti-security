@@ -1,0 +1,190 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.config_validator_util.validator_client"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.config_validator_util.validator_client</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Config Validator Validator Client.&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">grpc</span>
+<span class="kn">from</span> <span class="nn">retrying</span> <span class="k">import</span> <span class="n">retry</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">retryable_exceptions</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners.config_validator_util</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners.config_validator_util</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">validator_pb2</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners.config_validator_util</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">validator_pb2_grpc</span><span class="p">)</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ValidatorClient"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient">[docs]</a><span class="k">class</span> <span class="nc">ValidatorClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validator client.&quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_ENDPOINT</span> <span class="o">=</span> <span class="s1">&#39;localhost:50052&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">DEFAULT_ENDPOINT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            endpoint (String): The Config Validator endpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer_sender</span> <span class="o">=</span> <span class="n">BufferedCVDataSender</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">validator_pb2_grpc</span><span class="o">.</span><span class="n">ValidatorStub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ValidatorClient.add_data"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data">[docs]</a>    <span class="nd">@retry</span><span class="p">(</span><span class="n">retry_on_exception</span><span class="o">=</span><span class="n">retryable_exceptions</span><span class="o">.</span><span class="n">is_retryable_exception_cv</span><span class="p">,</span>
+           <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+           <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            assets (list): A list of asset data.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigValidatorAddDataError: Config Validator Add Data Error.</span>
+<span class="sd">            ConfigValidatorServerUnavailableError: Config Validator</span>
+<span class="sd">                Server Unavailable Error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">validator_pb2</span><span class="o">.</span><span class="n">AddDataRequest</span><span class="p">()</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">assets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">assets</span><span class="p">)</span>  <span class="c1"># pylint: disable=no-member</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">AddData</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">RpcError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># pylint: disable=no-member</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">()</span> <span class="o">==</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">UNAVAILABLE</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ConfigValidatorServerUnavailableError</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Failed to add data: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">assets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># LOGGER.exception(&#39;ConfigValidatorAddDataError: %s&#39;, e.message)</span>
+                <span class="c1"># raise errors.ConfigValidatorAddDataError(e.message)</span>
+                <span class="k">return</span></div>
+
+<div class="viewcode-block" id="ValidatorClient.add_data_in_bulk"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data_in_bulk">[docs]</a>    <span class="k">def</span> <span class="nf">add_data_in_bulk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add asset data to buffer, intended to manage sending data in bulk.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            assets (list): A list of asset data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="n">assets</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer_sender</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer_sender</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ValidatorClient.audit"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.audit">[docs]</a>    <span class="nd">@retry</span><span class="p">(</span><span class="n">retry_on_exception</span><span class="o">=</span><span class="n">retryable_exceptions</span><span class="o">.</span><span class="n">is_retryable_exception_cv</span><span class="p">,</span>
+           <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+           <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">audit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Audit existing data in Config Validator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of violations.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigValidatorAuditError: Config Validator Audit Error.</span>
+<span class="sd">            ConfigValidatorServerUnavailableError: Config Validator Server</span>
+<span class="sd">                Unavailable Error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Audit</span><span class="p">(</span><span class="n">validator_pb2</span><span class="o">.</span><span class="n">AuditRequest</span><span class="p">())</span><span class="o">.</span><span class="n">violations</span>
+        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">RpcError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># pylint: disable=no-member</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">()</span> <span class="o">==</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">UNAVAILABLE</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ConfigValidatorServerUnavailableError</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;ConfigValidatorAuditError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ConfigValidatorAuditError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ValidatorClient.reset"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.reset">[docs]</a>    <span class="nd">@retry</span><span class="p">(</span><span class="n">retry_on_exception</span><span class="o">=</span><span class="n">retryable_exceptions</span><span class="o">.</span><span class="n">is_retryable_exception_cv</span><span class="p">,</span>
+           <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+           <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears previously added data from Config Validator.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigValidatorResetError: Config Validator Reset Error.</span>
+<span class="sd">            ConfigValidatorServerUnavailableError: Config Validator Server</span>
+<span class="sd">                Unavailable Error.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Reset</span><span class="p">(</span><span class="n">validator_pb2</span><span class="o">.</span><span class="n">ResetRequest</span><span class="p">())</span>
+        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">RpcError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># pylint: disable=no-member</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">()</span> <span class="o">==</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">UNAVAILABLE</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ConfigValidatorServerUnavailableError</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;ConfigValidatorResetError: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ConfigValidatorResetError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BufferedCVDataSender"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender">[docs]</a><span class="k">class</span> <span class="nc">BufferedCVDataSender</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Buffered Config Validator data sender.&quot;&quot;&quot;</span>
+
+    <span class="n">MAX_ALLOWED_PACKET</span> <span class="o">=</span> <span class="mi">4000000</span>  <span class="c1"># Default grpc message size limit is 4MB.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">validator_client</span><span class="p">,</span>
+                 <span class="n">max_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                 <span class="n">max_packet_size</span><span class="o">=</span><span class="n">MAX_ALLOWED_PACKET</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validator_client (ValidatorClient): The validator client.</span>
+<span class="sd">            max_size (int): max size of buffer.</span>
+<span class="sd">            max_packet_size (int): max size of a packet to send to Config</span>
+<span class="sd">                Validator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator_client</span> <span class="o">=</span> <span class="n">validator_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="n">max_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_packet_size</span> <span class="o">=</span> <span class="n">max_packet_size</span>
+
+<div class="viewcode-block" id="BufferedCVDataSender.add"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add an Asset to the buffer to send to Config Validator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            asset (Asset): Asset to send to Config Validator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+        <span class="n">asset_size</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_size</span> <span class="o">+</span> <span class="n">asset_size</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_packet_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_size</span> <span class="o">+=</span> <span class="n">asset_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BufferedCVDataSender.flush"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.html#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flush all pending objects to the database.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator_client</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_size</span> <span class="o">=</span> <span class="mi">0</span></div></div>
+</pre></div>
