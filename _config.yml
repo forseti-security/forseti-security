@@ -543,3 +543,32 @@ defaults:
       path: _docs/v2.13/faq
     values:
       category: FAQ (v2.13)
+  - scope:
+      path: _docs/v2.14
+    values:
+      category: Overview (v2.14)
+      layout: docs
+  - scope:
+      path: _docs/v2.14/concepts
+    values:
+      category: Concepts (v2.14)
+  - scope:
+      path: _docs/v2.14/setup
+    values:
+      category: Setup (v2.14)
+  - scope:
+      path: _docs/v2.14/use
+    values:
+      category: Use (v2.14)
+  - scope:
+      path: _docs/v2.14/configure
+    values:
+      category: Configure (v2.14)
+  - scope:
+      path: _docs/v2.14/develop
+    values:
+      category: Develop (v2.14)
+  - scope:
+      path: _docs/v2.14/faq
+    values:
+      category: FAQ (v2.14)
