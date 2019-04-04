@@ -66,6 +66,16 @@ the
 [`cloudsql_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/cloudsql_rules.yaml)
 rule file.
 
+## Config Validator scanner
+
+The Config Validator scanner uses the [Forseti Config Validator](https://github.com/forseti-security/config-validator) 
+service to evaluate violations with policies written in Rego. With this scanner 
+in place, users are now able to define customized policies easily without writing 
+a new scanner.
+
+Read more about the Forseti Config Validator efforts and how to define customized 
+policies for the Config Validator scanner [here](https://github.com/forseti-security/config-validator/blob/master/docs/user_guide.md).
+
 ## Enabled APIs scanner
 
 The Enabled APIs scanner detects if a project has appropriate APIs enabled. It
