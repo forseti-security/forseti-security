@@ -15,7 +15,7 @@
  */
 
 terraform {
-  # Use local state storafe by default. For production environments please
+  # Use local state storage by default. For production environments please
   # consider  using a more robust backend.
   backend "local" {
     path = "terraform.tfstate"
