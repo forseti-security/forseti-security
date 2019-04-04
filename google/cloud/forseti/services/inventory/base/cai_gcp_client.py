@@ -823,6 +823,9 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for vpntunnel in resources:
             yield vpntunnel
 
+    # Disabling pulling ke data from CAI since it's missing nodepools
+    # attribute in the returned data. We can re-enable this once that
+    # problem is resolved.
     # def iter_container_clusters(self, project_number):
     #     """Iterate Kubernetes Engine Cluster from Cloud Asset data.
     #
