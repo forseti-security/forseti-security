@@ -74,8 +74,6 @@ CONFIG_VALIDATOR_SERVICE="$(cat << EOF
 Description=Config Validator API Server
 [Service]
 User=ubuntu
-Restart=always
-RestartSec=3
 ExecStart=$CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target
