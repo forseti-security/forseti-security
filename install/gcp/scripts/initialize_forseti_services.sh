@@ -49,7 +49,7 @@ CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 sudo chmod ugo+x ${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
-SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
+SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT} -ip_address_types=PRIVATE"
 
 # Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
