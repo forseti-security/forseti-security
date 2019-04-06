@@ -47,6 +47,7 @@ page.
 
 ### Enable the service account in your G Suite admin control panel.
 
+1. Following the instructions [here](https://developers.google.com/admin-sdk/groups-settings/prerequisites) to enable GSuite API access.
 1. Go to your Google Admin
 [Manage API client access](https://admin.google.com/ManageOauthClients) Security
 settings.

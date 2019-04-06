@@ -1313,6 +1313,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
    - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
      under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 1. GSuite scope updates:
+   - Following the instructions [here](https://developers.google.com/admin-sdk/groups-settings/prerequisites) to enable GSuite API access.
    - Add GSuite scope `https://www.googleapis.com/auth/apps.groups.settings` to your Forseti server service 
      account to allow it to obtain GSuite groups settings data during the inventory process. If you haven't setup your 
      GSuite access, you can follow the instructions [here]({% link _docs/latest/configure/inventory/gsuite.md }) to do it.
