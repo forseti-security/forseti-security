@@ -1312,6 +1312,11 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
     under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
   - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
+1. GSuite scope updates:
+  - Add GSuite scope `https://www.googleapis.com/auth/apps.groups.settings` to your Forseti server service 
+  account to allow it to obtain GSuite groups settings data during the inventory process. If you haven't setup your 
+  GSuite access, you can follow the instructions [here]({% link _docs/v2.14/configure/inventory/gsuite.md }) to do it.
+
 ### Steps to upgrade using Terraform
 
 1. Update the `version` inside `main.tf` file to `1.4.0`.
