@@ -5,7 +5,8 @@ pagination:
   enabled: true
 ---
 <h1>News</h1>
-{% for post in paginator.posts %}
+{% assign sorted_posts = paginator.posts | sort: "date" %}
+{% for post in sorted.posts reversed %}
   <hr />
   {% include site/news/news_item.html post=post %}
 {% endfor %}
