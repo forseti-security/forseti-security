@@ -61,7 +61,7 @@ pagination:
   enabled: true
   collection: news
   permalink: /page/:num/
-  per_page: 10
+  per_page: 5
 
 # Responsive image templates and resizing configuration
 responsive_image:
