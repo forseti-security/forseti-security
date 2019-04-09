@@ -342,16 +342,6 @@ class FirewallRule(object):
                     'targetTags cannot be set when source/targetServiceAccounts'
                     ' are set')
 
-        max_1_value_keys = [
-            ('sourceServiceAccount', self.source_service_accounts),
-            ('targetServiceAccount', self.target_service_accounts),
-        ]
-        for key, value in max_1_value_keys:
-            if value and len(value) > 1:
-                raise InvalidFirewallRuleError(
-                    'Rule entry "%s" may contain at most 1 value: "%s".'
-                    % (key, value))
-
     def _validate_direction(self):
         """Checks that the direction and associated fields are valid.
 
