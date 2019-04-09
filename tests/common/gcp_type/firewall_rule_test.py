@@ -276,6 +276,25 @@ class FirewallRuleTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
         (
             {
+                'firewall_rule_name': 'n'*63,
+                'firewall_rule_network': 'n2',
+                'firewall_rule_source_ranges': json.dumps(
+                    ['1.1.1.%s' % i for i in range(256)]),
+                'firewall_rule_direction': 'INGRESS',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+                'firewall_rule_source_service_accounts': json.dumps(
+                    ['sa1', 'sa2']),
+            },
+        ),
+    ])
+    def test_validate(self, rule_dict):
+        rule = firewall_rule.FirewallRule(**rule_dict)
+        rule.validate()
+
+    @parameterized.parameterized.expand([
+        (
+            {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_source_tags': None,
                 'firewall_rule_direction': 'INGRESS',
@@ -580,21 +599,6 @@ class FirewallRuleTest(ForsetiTestCase):
             },
             firewall_rule.InvalidFirewallRuleError,
             'Rule entry "targetTags" must contain 256 or fewer values',
-        ),
-        (
-            {
-                'firewall_rule_name': 'n'*63,
-                'firewall_rule_network': 'n2',
-                'firewall_rule_source_ranges': json.dumps(
-                    ['1.1.1.%s' % i for i in range(256)]),
-                'firewall_rule_direction': 'INGRESS',
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
-                'firewall_rule_source_service_accounts': json.dumps(
-                    ['sa1', 'sa2']),
-            },
-            firewall_rule.InvalidFirewallRuleError,
-            'Rule entry "sourceServiceAccount" may contain at most 1 value',
         ),
         (
             {
