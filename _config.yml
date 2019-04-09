@@ -62,6 +62,8 @@ pagination:
   collection: news
   permalink: /page/:num/
   per_page: 10
+  sort_reverse: true
+  sort_field: date
 
 # Responsive image templates and resizing configuration
 responsive_image:
