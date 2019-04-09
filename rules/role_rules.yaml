@@ -1,0 +1,40 @@
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# rules:
+#   - name: "The role BigqueryViewer contains exactly the following 3 permissions"
+#     role_name: "BigqueryViewer"
+#     permissions:
+#     - "bigquery.datasets.get"
+#     - "bigquery.tables.get"
+#     - "bigquery.tables.list"
+#     resource:
+#     - type: project
+#       resource_ids: ['*']
+#   - name: "CloudsqlViewer on def-project-1 contains exactly the following 2 backupruns permissions"
+#     role_name: "CloudsqlViewer"
+#     permissions:
+#     - "cloudsql.backupRuns.get"
+#     - "cloudsql.backupRuns.list"
+#     resource:
+#     - type: project
+#       resource_ids: ['def-project-1']
+#   - name: "CloudsqlViewer on def-project-2 contains exactly the following 2 databases permissions"
+#     role_name: "CloudsqlViewer"
+#     permissions:
+#     - "cloudsql.databases.get"
+#     - "cloudsql.databases.list"
+#     resource:
+#     - type: project
+#       resource_ids: ['def-project-2']
