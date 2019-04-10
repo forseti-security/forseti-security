@@ -8,7 +8,7 @@ to protect against misconfigurations in Google Cloud Platform environments. This
 developers to move quickly, and gives security and governance teams the ability to 
 enforce security at scale.
 
-**How it works**  
+**How It Works**  
 - Cloud admins write security and governance constraints (as YAML files) once, and store them 
 within their company’s dedicated Git repo as a central source of truth  
 - Forseti ingests constraints and uses them as a new scanner to monitor for violations  
@@ -20,7 +20,7 @@ Cloud admins can get started putting constraints in place by checking out the
 
 {% responsive_image path: images/news/2019-04-10-config-validator.png alt: "Forseti Validator Work Flow" %}
 
-**Sample customer story**  
+**Sample Customer Story**  
 Chili Oregano is an online eCommerce retailer. An admin from chili-oregano.com can set a Domain 
 Restriction constraint on their IAM policies, which ensures that anyone outside of the 
 chili-oregano.com domain will not be given access to resources that belong to the Chili Oregano 
@@ -33,14 +33,14 @@ Additionally Forseti will monitor the IAM policies in the entire organization on
 If it detects policies with members outside of chili-oregano.com it will flag it for security 
 admins to review.  
 
-**For developers**  
+**For Developers**  
 Contributing developers may now build customized scanning policies by creating constraint
 templates, where the business logic is written in Rego, and open-source policy language. The
 constraint template includes the business logic for what is a violation. Cloud admins will only
 need to provide inputs into YAMLs in order to instantiate the constraint templates as a new
 constraint. 
 
-**Get started today**  
+**Get Started Today**  
 - Install or upgrade to Forseti v2.14
 - Enable config validator scanner by
  - (Terraform) Set config_validator_enabled inside of the Forseti module to true.
