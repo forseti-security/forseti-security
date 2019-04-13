@@ -725,7 +725,7 @@ class ClientComposition(object):
         """
         self.gigabyte = 1024 ** 3
         self.channel = grpc.insecure_channel(endpoint, options=[
-          ('grpc.max_receive_message_length', self.gigabyte)])
+            ('grpc.max_receive_message_length', self.gigabyte)])
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)
