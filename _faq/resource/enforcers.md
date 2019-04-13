@@ -15,4 +15,6 @@ For details about each of the enforcers, see the
 | Enforcer                                |
 | --------------------------------------- |
 | Firewalls |
-
+| Cloud Storage|
+| Cloud SQL |
+| BigQuery |
