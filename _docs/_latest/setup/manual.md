@@ -133,7 +133,7 @@ see the [Cloud SQL template](https://github.com/GoogleCloudPlatform/forseti-secu
 
 ## Deploy a client VM
 
-### Create a Forseti client service account.
+### Create a Forseti client service account
 
 Create a client service account by running the following command:
 
