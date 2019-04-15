@@ -39,7 +39,7 @@ REQUIRED_PACKAGES = [
     'google-api-python-client==1.7.7',
     'google-auth==1.6.2',
     'google-auth-httplib2==0.0.3',
-    'Jinja2==2.10',
+    'Jinja2==2.10.1',
     'jmespath==0.9.3',
     'MySQL-python==1.2.5',
     'netaddr==0.7.19',
