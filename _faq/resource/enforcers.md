@@ -15,6 +15,10 @@ For details about each of the enforcers, see the
 | Enforcer                                |
 | --------------------------------------- |
 | Firewalls |
+
+{: .table .table-striped}
+| Real-time Enforcer                                |
+| --------------------------------------- |
 | Cloud Storage|
 | Cloud SQL |
 | BigQuery |
