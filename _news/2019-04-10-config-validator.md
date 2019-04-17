@@ -49,7 +49,7 @@ constraint.
 - Configure your first constraint
 - And you are good to go!
 
-Read the details in our [User Guide](https://www.google.com/url?q=https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
+Read the details in our [User Guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
 
 Please note that the [Forseti Config Validator](https://github.com/forseti-security/config-validator) and 
 [Policy Library](https://github.com/forseti-security/policy-library) repositories are hosted at our new 
