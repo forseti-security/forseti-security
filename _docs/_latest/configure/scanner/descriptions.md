@@ -74,7 +74,7 @@ in place, users are now able to define customized policies easily without writin
 a new scanner.
 
 Read more about the Forseti Config Validator efforts and how to define customized 
-policies for the Config Validator scanner [here](https://github.com/forseti-security/config-validator/blob/master/docs/user_guide.md).
+policies for the Config Validator scanner [here](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
 
 ## Enabled APIs scanner
 
