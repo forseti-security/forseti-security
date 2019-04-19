@@ -1068,8 +1068,8 @@ rules:
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
-    * **Valid values**: One of `bucket`, `cloud_sql_instance`, `dataset`, 
-      `instance`or `ke_cluster`.
+    * **Valid values**: One of `bucket`, `cloudsqlinstance`, `dataset`, 
+      `instance`or `kubernetes_cluster`.
     
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
