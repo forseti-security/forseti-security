@@ -15,14 +15,15 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
 import json
 import os.path
 import re
 import sys
 
-import constants
-import installer_errors
-import utils
+from . import constants
+from . import installer_errors
+from . import utils
 
 
 def get_gcloud_info():

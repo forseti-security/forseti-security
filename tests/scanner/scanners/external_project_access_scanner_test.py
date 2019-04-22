@@ -183,7 +183,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
                                                     self.rules)
         flattened_iter = scanner._flatten_violations([violation1])
 
-        flat_violation = flattened_iter.next()
+        flat_violation = next(flattened_iter)
         self.assertEqual(flat_violation['resource_id'], '12345')
         self.assertEqual(
             flat_violation['resource_type'], resource_mod.ResourceType.PROJECT)
@@ -193,7 +193,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             flat_violation['violation_data']['member'], 'user1@example.com')
 
         with self.assertRaises(StopIteration):
-            flat_violation = flattened_iter.next()
+            flat_violation = next(flattened_iter)
 
     def tearDown(self):
         epas.get_user_emails = self.stash_email_method

@@ -18,6 +18,7 @@ This has been tested with python 2.7.
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 import re
@@ -26,7 +27,7 @@ import subprocess
 import threading
 import time
 
-import constants
+from . import constants
 
 
 def id_from_name(name):

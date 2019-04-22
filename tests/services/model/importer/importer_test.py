@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
+from __future__ import print_function
 
 import mock
 import os

@@ -136,10 +136,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'inventory_index_id': 789,
                                                    'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
                                                    'db_source': 'table:violations/id:94953',
-                                                   'rule_index': 0L,
+                                                   'rule_index': 0,
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
-                                                   'scanner_index_id': 1551913369403591L,
+                                                   'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
         FINDINGS_IN_CSCC = [['ffe',
@@ -154,10 +154,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'inventory_index_id': 789,
                                                    'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
                                                    'db_source': 'table:violations/id:94953',
-                                                   'rule_index': 0L,
+                                                   'rule_index': 0,
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
-                                                   'scanner_index_id': 1551913369403591L,
+                                                   'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
         EXPECTED_INACTIVE_FINDINGS = [['ffe',
@@ -172,10 +172,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'inventory_index_id': 789,
                                                    'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
                                                    'db_source': 'table:violations/id:94953',
-                                                   'rule_index': 0L,
+                                                   'rule_index': 0,
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
-                                                   'scanner_index_id': 1551913369403591L,
+                                                   'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
         notifier = cscc_notifier.CsccNotifier('123')
@@ -199,10 +199,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'inventory_index_id': 789,
                                                    'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
                                                    'db_source': 'table:violations/id:94953',
-                                                   'rule_index': 0L,
+                                                   'rule_index': 0,
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
-                                                   'scanner_index_id': 1551913369403591L,
+                                                   'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
         FINDINGS_IN_CSCC = [['abc',
@@ -217,10 +217,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'inventory_index_id': 789,
                                                    'resource_data': '{"bucket": "isthispublic", "entity": "allUsers", "id": "isthispublic/allUsers", "role": "READER"}',
                                                    'db_source': 'table:violations/id:94953',
-                                                   'rule_index': 0L,
+                                                   'rule_index': 0,
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner-henry", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
-                                                   'scanner_index_id': 1551913369403591L,
+                                                   'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
         notifier = cscc_notifier.CsccNotifier('123')
@@ -249,13 +249,13 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
             'scanner_index_id': 122,
             'rule_name': 'Cloud SQL rule to search for publicly exposed instances',
             'full_name': 'organization/123/project/cicd-henry/cloudsqlinstance/456/',
-            'rule_index': 0L,
+            'rule_index': 0,
             'violation_data': {u'instance_name': u'readme1',
                                u'require_ssl': False,
                                u'project_id': u'readme1',
                                u'authorized_networks': [u'0.0.0.0/0'],
                                u'full_name': u'organization/123/project/cicd-henry/cloudsqlinstance/456/'},
-            'id': 99185L,
+            'id': 99185,
             'resource_type': 'cloudsqlinstance'}]
 
         mock_list.list_findings.return_value = {'readTime': '111'}

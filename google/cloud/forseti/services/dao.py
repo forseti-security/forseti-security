@@ -832,7 +832,7 @@ def define_model(model_name, dbengine, model_seed):
                 chain = [root]
                 cur = root
                 while len(resource_hierarchy[cur]) == 1:
-                    cur = iter(resource_hierarchy[cur]).next()
+                    cur = next(iter(resource_hierarchy[cur]))
                     chain.append(cur)
                 return chain
 

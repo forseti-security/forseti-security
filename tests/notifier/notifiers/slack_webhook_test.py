@@ -39,9 +39,9 @@ class SlackWebhooknotifierTest(ForsetiTestCase):
         violation = {'violation_data': json.loads(violation_data),
                      'resource_id': '123',
                      'rule_name': 'Public buckets (allUsers)',
-                     'rule_index': 0L,
+                     'rule_index': 0,
                      'violation_type': 'BUCKET_VIOLATION',
-                     'id': 1L, 'resource_type': 'bucket'}
+                     'id': 1, 'resource_type': 'bucket'}
 
         with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
             slack_notifier = slack_webhook.SlackWebhook()

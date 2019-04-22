@@ -16,7 +16,8 @@
 
 A stub to call install/gcp/gcp_installer.py which installs into GCP.
 """
-from gcp import gcp_installer
+from __future__ import absolute_import
+from .gcp import gcp_installer
 
 
 if __name__ == '__main__':

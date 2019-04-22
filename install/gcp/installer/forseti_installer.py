@@ -15,16 +15,17 @@
 """ Forseti Installer."""
 
 from __future__ import print_function
+from __future__ import absolute_import
 from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
 
-from util import constants
-from util import files
-from util import gcloud
-from util import installer_errors
-from util import utils
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import installer_errors
+from .util import utils
 
 
 class ForsetiInstructions(object):
