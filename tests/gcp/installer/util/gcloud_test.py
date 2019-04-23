@@ -14,10 +14,13 @@
 
 """Tests for install/gcp/installer/util/gcloud.py."""
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import json
 import sys
 import unittest
-from StringIO import StringIO
+from io import StringIO
 from contextlib import contextmanager
 
 import mock

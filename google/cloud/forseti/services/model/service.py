@@ -14,6 +14,7 @@
 
 """Forseti Server model gRPC service."""
 
+from builtins import object
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc

@@ -14,6 +14,7 @@
 
 """Tests the LienRulesEngine."""
 
+from builtins import object
 import copy
 import itertools
 import json
@@ -122,7 +123,7 @@ class LienRulesEngineTest(ForsetiTestCase):
 
         liens = []
 
-        for lid, restrictions in id_to_restrictions.iteritems():
+        for lid, restrictions in id_to_restrictions.items():
             lien_dict = {
                 'name': 'liens/' + lid,
                 'parent': 'projects/p1',

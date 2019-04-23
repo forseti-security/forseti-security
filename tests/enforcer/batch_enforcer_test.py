@@ -45,7 +45,7 @@ class BatchFirewallEnforcerTest(constants.EnforcerTestCase):
                 timestamp_end_msec=constants.MOCK_MICROTIMESTAMP))
 
         self.expected_rules = copy.deepcopy(
-            constants.EXPECTED_FIREWALL_RULES.values())
+            list(constants.EXPECTED_FIREWALL_RULES.values()))
 
         self.addCleanup(mock.patch.stopall)
 

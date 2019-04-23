@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for LogSinkScanner."""
 
+from builtins import range
 import json
 import unittest
 import mock

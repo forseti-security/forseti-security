@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for BigqueryScanner."""
 
+from builtins import range
 import collections
 import json
 import unittest
@@ -106,7 +107,7 @@ class BigqueryScannerTest(ForsetiTestCase):
 
         self.assertEqual(2, len(bq_acl_data))
 
-        for i in xrange(2):
+        for i in range(2):
             self.assertEqual(expected_projects[i],
                              bq_acl_data[i].parent_project.full_name)
 

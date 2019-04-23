@@ -14,6 +14,7 @@
 
 """Forwarding Rules Rule Scanner Test"""
 
+from builtins import object
 import mock
 
 from tests.unittest_utils import ForsetiTestCase

@@ -15,6 +15,7 @@
 """Forseti CLI."""
 from __future__ import print_function
 
+from builtins import object
 from argparse import ArgumentParser
 import json
 import os
@@ -1056,7 +1057,7 @@ class DefaultConfig(dict):
         self.DEFAULT['endpoint'] = self.get_default_endpoint()
 
         # Initialize default values
-        for key, value in self.DEFAULT.iteritems():
+        for key, value in self.DEFAULT.items():
             if key not in self:
                 self[key] = value
 

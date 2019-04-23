@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Resources."""
+from builtins import object
 import collections
 
 from google.cloud.forseti.common.util import logger

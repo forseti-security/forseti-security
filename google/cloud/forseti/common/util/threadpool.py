@@ -14,7 +14,11 @@
 
 """ Thread pool implementation for async job distribution. """
 
-from Queue import Queue
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import object
+from queue import Queue
 from threading import Thread
 from threading import Lock
 

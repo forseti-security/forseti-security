@@ -14,6 +14,7 @@
 
 """Wrapper for Compute API client."""
 # pylint: disable=too-many-lines
+from builtins import object
 import json
 import logging
 import os

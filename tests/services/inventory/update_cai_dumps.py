@@ -20,6 +20,7 @@ From the top forseti-security dir, run:
 
 PYTHONPATH=. python tests/services/inventory/update_cai_dumps.py
 """
+from builtins import object
 import json
 import os
 
@@ -352,7 +353,7 @@ def main():
                         progresser,
                         config,
                         parallel=False)
-            for item in storage.mem.values():
+            for item in list(storage.mem.values()):
                 (resource, iam_policy) = convert_item_to_assets(item)
                 if resource:
                     resources.append(resource)

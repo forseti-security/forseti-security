@@ -14,6 +14,7 @@
 
 """Database session handling for Forseti Server."""
 
+from builtins import object
 from sqlalchemy.orm import sessionmaker
 from google.cloud.forseti.common.util import logger
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Slack webhook notifier to perform notifications."""
 
+from builtins import str
 import requests
 
 from google.cloud.forseti.common.util import logger

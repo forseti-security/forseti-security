@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from builtins import zip
 import mock
 import json
 import unittest
@@ -1032,7 +1033,7 @@ class RuleTest(ForsetiTestCase):
         sorted(violations, key=lambda k: k.resource_id)
         self.assertTrue(len(expected) == len(violations))
         for expected_dict, violation in zip(expected, violations):
-            self.assertItemsEqual(expected_dict.values(), list(violation))
+            self.assertItemsEqual(list(expected_dict.values()), list(violation))
 
 
 class RuleBookTest(ForsetiTestCase):

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Unit Tests: Forseti Server."""
 
+from builtins import object
 import argparse
 import unittest
 import mock

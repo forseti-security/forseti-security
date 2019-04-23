@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for Resource Manager API client."""
+from builtins import object
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -320,7 +321,7 @@ class CloudResourceManagerClient(object):
         """
         filters = []
 
-        for key, value in filterargs.items():
+        for key, value in list(filterargs.items()):
             filters.append('{}:{}'.format(key, value))
 
         if parent_id:

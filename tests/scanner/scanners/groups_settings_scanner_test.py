@@ -14,6 +14,7 @@
 
 """Groups Settings Scanner Tests."""
 
+from builtins import object
 import unittest
 import mock
 import json

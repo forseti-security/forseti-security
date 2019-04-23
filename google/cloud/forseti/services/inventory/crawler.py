@@ -14,8 +14,12 @@
 
 """Crawler implementation."""
 
-from Queue import Empty
-from Queue import Queue
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from queue import Empty
+from queue import Queue
 import threading
 import time
 
@@ -200,7 +204,7 @@ class ParallelCrawler(Crawler):
     def _start_workers(self):
         """Start a pool of worker threads for processing the dispatch queue."""
         self._shutdown_event.clear()
-        for _ in xrange(self.config.threads):
+        for _ in range(self.config.threads):
             worker = threading.Thread(target=self._process_queue)
             worker.daemon = True
             worker.start()

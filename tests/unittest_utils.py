@@ -14,6 +14,8 @@
 
 """Test Utils for Forseti unit tests."""
 
+from builtins import range
+from past.builtins import basestring
 import collections
 import contextlib
 import json
@@ -100,7 +102,7 @@ class ForsetiTestCase(unittest.TestCase):
                 failure_message += (': ' + msg)
             self.fail(failure_message)
 
-_INT_TYPES = (int, long)  # Sadly there is no types.IntTypes defined for us.
+_INT_TYPES = (int, int)  # Sadly there is no types.IntTypes defined for us.
 
 
 def _WalkStructureForProblems(a, b, aname, bname, problem_list):
@@ -129,13 +131,13 @@ def _WalkStructureForProblems(a, b, aname, bname, problem_list):
   # Strings are Sequences but we'll just do those with regular !=
   elif isinstance(a, collections.Sequence) and not isinstance(a, basestring):
     minlen = min(len(a), len(b))
-    for i in xrange(minlen):
+    for i in range(minlen):
       _WalkStructureForProblems(a[i], b[i],
                                 '%s[%d]' % (aname, i), '%s[%d]' % (bname, i),
                                 problem_list)
-    for i in xrange(minlen, len(a)):
+    for i in range(minlen, len(a)):
       problem_list.append('%s has [%i] but %s does not' % (aname, i, bname))
-    for i in xrange(minlen, len(b)):
+    for i in range(minlen, len(b)):
       problem_list.append('%s lacks [%i] but %s has it' % (aname, i, bname))
 
   else:

@@ -14,6 +14,7 @@
 
 """Blacklist Scanner Test"""
 
+from builtins import zip
 import mock
 from mock import patch, Mock
 from tests.unittest_utils import ForsetiTestCase

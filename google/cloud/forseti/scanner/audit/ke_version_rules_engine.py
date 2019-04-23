@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules engine for verifying KE Versions are allowed."""
 
+from builtins import object
 from collections import namedtuple
 import operator as op
 import threading

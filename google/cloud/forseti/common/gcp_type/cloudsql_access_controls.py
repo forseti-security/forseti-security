@@ -14,6 +14,7 @@
 
 """A CloudSQL ACL Resource."""
 
+from builtins import object
 import json
 
 

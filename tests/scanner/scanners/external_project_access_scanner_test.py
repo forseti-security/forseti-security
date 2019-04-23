@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for ExternalProjectAccessScanner."""
 # pylint: disable=line-too-long
+from builtins import next
 from datetime import datetime
 import json
 # pylint says unittest goes before mock
@@ -113,7 +114,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 
         user_ancestries = scanner._retrieve()
 
-        self.assertIn('user1@example.com', user_ancestries.keys())
+        self.assertIn('user1@example.com', list(user_ancestries.keys()))
         self.assertTrue(isinstance(user_ancestries['user1@example.com'], list))
         self.assertTrue(
             isinstance(user_ancestries['user1@example.com'][0], list))

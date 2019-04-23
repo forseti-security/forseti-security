@@ -423,9 +423,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(itertools.chain(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -487,9 +487,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(itertools.chain(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -526,9 +526,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(itertools.chain(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -602,9 +602,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps(policy)
         self.mock_project2_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(itertools.chain(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -701,9 +701,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_org_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(itertools.chain(
             rules_engine.find_violations(
                 self.org789, self.mock_org_policy_resource, rule_bindings),
@@ -742,9 +742,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
 
         project_policy = {
             'bindings': [
@@ -757,9 +757,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        project_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project_policy.get('bindings')])
+            for b in project_policy.get('bindings')] if _f]
 
         self.mock_org_policy_resource.data = json.dumps(org_policy)
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
@@ -851,9 +851,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
 
         project_policy = {
             'bindings': [
@@ -866,9 +866,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        project_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project_policy.get('bindings')])
+            for b in project_policy.get('bindings')] if _f]
 
         self.mock_org_policy_resource.data = json.dumps(org_policy)
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
@@ -950,9 +950,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -995,9 +995,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1060,9 +1060,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1125,9 +1125,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1168,9 +1168,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
 
         project_policy = {
             'bindings': [
@@ -1182,9 +1182,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        project_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project_policy.get('bindings')])
+            for b in project_policy.get('bindings')] if _f]
 
         self.mock_org_policy_resource.data = json.dumps(org_policy)
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
@@ -1251,9 +1251,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1312,9 +1312,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1382,9 +1382,9 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
 
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(
             rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
@@ -1449,9 +1449,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        folder_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_policy.get('bindings')])
+            for b in folder_policy.get('bindings')] if _f]
 
         project_policy = {
             'bindings': [
@@ -1463,9 +1463,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        project_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project_policy.get('bindings')])
+            for b in project_policy.get('bindings')] if _f]
 
         self.mock_folder1_policy_resource.data = json.dumps(folder_policy)
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
@@ -1524,9 +1524,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 },
             ]
         }
-        project1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project1_policy.get('bindings')])
+            for b in project1_policy.get('bindings')] if _f]
 
         project2_policy = {
             'bindings': [
@@ -1538,9 +1538,9 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }
             ]
         }
-        project2_bindings = filter(None, [ # pylint: disable=bad-builtin
+        project2_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in project2_policy.get('bindings')])
+            for b in project2_policy.get('bindings')] if _f]
 
         self.mock_project1_policy_resource.data = json.dumps(project1_policy)
         self.mock_project2_policy_resource.data = json.dumps(project2_policy)
@@ -1600,9 +1600,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
@@ -1637,9 +1637,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
@@ -1671,9 +1671,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
@@ -1726,9 +1726,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.mock_project1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
@@ -1784,9 +1784,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.bucket_2_1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.bucket_2_1, self.bucket_2_1_policy_resource, rule_bindings))
 
@@ -1826,9 +1826,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         }
 
         self.bucket_2_1_policy_resource.data = json.dumps(policy)
-        rule_bindings = filter(None, [ # pylint: disable=bad-builtin
+        rule_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings')])
+            for b in policy.get('bindings')] if _f]
         actual_violations = set(rules_engine.find_violations(
             self.bucket_2_1, self.bucket_2_1_policy_resource, rule_bindings))
 

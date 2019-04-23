@@ -14,6 +14,7 @@
 
 """Tests the CloudSqlRulesEngine."""
 # pylint: disable=line-too-long
+from builtins import str
 import unittest
 import mock
 
@@ -87,7 +88,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
         rules_engine = engine_module.ExternalProjectAccessRulesEngine(
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
-        for user, ancestry in self.TEST_ANCESTRIES.iteritems():
+        for user, ancestry in self.TEST_ANCESTRIES.items():
             violations = rules_engine.find_violations(
                 user, ancestry, True)
             all_violations.extend(violations)
@@ -101,7 +102,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
         rules_engine = engine_module.ExternalProjectAccessRulesEngine(
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
-        for user, ancestry in self.TEST_ANCESTRIES_SIMPLE.iteritems():
+        for user, ancestry in self.TEST_ANCESTRIES_SIMPLE.items():
             violations = rules_engine.find_violations(
                 user, ancestry, True)
             all_violations.extend(violations)
@@ -115,7 +116,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
         rules_engine = engine_module.ExternalProjectAccessRulesEngine(
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
-        for user, ancestry in self.TEST_ANCESTRIES_VIOLATIONS.iteritems():
+        for user, ancestry in self.TEST_ANCESTRIES_VIOLATIONS.items():
             violations = rules_engine.find_violations(user, 
                                                              ancestry, 
                                                              True)

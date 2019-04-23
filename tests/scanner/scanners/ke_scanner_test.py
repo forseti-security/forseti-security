@@ -14,6 +14,7 @@
 
 """KE Rule Scanner Tests."""
 
+from builtins import object
 import unittest
 import mock
 
@@ -111,7 +112,7 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
             project = data_access.add_resource(session, 'project/fake-project',
                                                organization)
 
-            for cluster_id, cluster in FAKE_CLUSTERS.items():
+            for cluster_id, cluster in list(FAKE_CLUSTERS.items()):
                 ke_cluster = data_access.add_resource(
                     session,
                     'kubernetes_cluster/{}'.format(cluster_id),

@@ -18,6 +18,7 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroups
 """
 
+from builtins import object
 import json
 import os
 
@@ -112,7 +113,7 @@ class InstanceGroup(object):
             'zone': self.zone}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
+        resource_dict = dict((k, v) for k, v in list(resource_dict.items()) if v)
         return json.dumps(resource_dict, sort_keys=True)
 
     @property

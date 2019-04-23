@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 
+from builtins import object
 import sys
 
 # Importing migrate.changeset adds some new methods to existing SQLAlchemy
@@ -115,7 +116,7 @@ def migrate_schema(base, dao_classes):
         # schema_update will require the Table object.
         table = tables.get(dao_class.__tablename__)
         schema_update_actions = get_schema_update_actions()
-        for column_action, columns in schema_update_actions.iteritems():
+        for column_action, columns in schema_update_actions.items():
             if column_action in [ColumnAction.CREATE, ColumnAction.DROP]:
                 _create_or_drop_columns(column_action, columns, table)
             elif column_action in [ColumnAction.ALTER]:
@@ -133,7 +134,7 @@ def _alter_columns(column_action, columns, table):
         table (sqlalchemy.schema.Table): The sql alchemy table object.
     """
     column_action = column_action.upper()
-    for old_column, new_column in columns.iteritems():
+    for old_column, new_column in columns.items():
         try:
             COLUMN_ACTION_MAPPING.get(column_action)(table,
                                                      old_column,
@@ -217,6 +218,6 @@ if __name__ == '__main__':
         scanner_dao.BASE: SCANNER_DAO_CLASSES,
         inventory_dao.BASE: INVENTORY_DAO_CLASSES}
 
-    for declaritive_base, classes in DECLARITIVE_BASE_MAPPING.iteritems():
+    for declaritive_base, classes in DECLARITIVE_BASE_MAPPING.items():
         declaritive_base.metadata.bind = SQL_ENGINE
         migrate_schema(declaritive_base, classes)

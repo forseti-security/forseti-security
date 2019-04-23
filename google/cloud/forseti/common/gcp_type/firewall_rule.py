@@ -17,6 +17,9 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+from builtins import str
+from builtins import range
+from builtins import object
 import json
 import netaddr
 
@@ -786,7 +789,7 @@ class FirewallAction(object):
         """
         return (self.action == other.action and
                 (self.any_value or other.any_value or
-                 self.expanded_rules.keys() == other.expanded_rules.keys() and
+                 list(self.expanded_rules.keys()) == list(other.expanded_rules.keys()) and
                  all([
                      self.ports_are_equal(
                          self.expanded_rules.get(protocol, []),
@@ -932,7 +935,7 @@ def expand_port_range(port_range):
       list: A list of string integers from number_1 to number_2.
     """
     start, end = port_range.split('-')
-    return [str(i) for i in xrange(int(start), int(end) + 1)]
+    return [str(i) for i in range(int(start), int(end) + 1)]
 
 
 def expand_ports(ports):

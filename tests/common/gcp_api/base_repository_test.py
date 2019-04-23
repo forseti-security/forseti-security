@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the base repository classes."""
+from builtins import range
 import datetime
 import threading
 import unittest
@@ -76,7 +77,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         """Verify set user agent sets the user agent only once."""
         http_mock = http.HttpMock()
         h = base.http_helpers.build_http(http=http_mock)
-        for _ in xrange(5):
+        for _ in range(5):
             h = base.http_helpers.build_http(http=h)
 
         _ = h.request('http://test.foo', 'GET')
@@ -110,7 +111,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
               version as the supported API.
         """
 
-        api_name = _supported_apis.SUPPORTED_APIS.keys()[0]
+        api_name = list(_supported_apis.SUPPORTED_APIS.keys())[0]
         supported_api = _supported_apis.SUPPORTED_APIS[api_name]
         mock_credentials = mock.MagicMock()
 

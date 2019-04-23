@@ -14,6 +14,7 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from builtins import object
 from collections import defaultdict
 import hashlib
 import json

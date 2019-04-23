@@ -13,6 +13,7 @@
 # limitations under the License.
 """IAP scanner test."""
 
+from builtins import object
 from datetime import datetime
 import json
 import unittest
@@ -388,30 +389,30 @@ class IapScannerTest(ForsetiTestCase):
                 session, 'organization/12345', '', True)
             project = data_access.add_resource(session, 'project/foo',
                                                organization)
-            for backend_service in BACKEND_SERVICES.values():
+            for backend_service in list(BACKEND_SERVICES.values()):
                 bs = data_access.add_resource(
                     session, 'backendservice/%s' % backend_service.name,
                     project)
                 bs.data = backend_service.json
-            for firewall in FIREWALL_RULES.values():
+            for firewall in list(FIREWALL_RULES.values()):
                 fw = data_access.add_resource(
                     session, 'firewall/%s' % firewall.name, project)
                 fw.data = firewall.as_json()
-            for instance in INSTANCES.values():
+            for instance in list(INSTANCES.values()):
                 i = data_access.add_resource(
                     session, 'instance/%s' % instance.name, project)
                 i.data = instance.json
-            for instance_group in INSTANCE_GROUPS.values():
+            for instance_group in list(INSTANCE_GROUPS.values()):
                 ig = data_access.add_resource(
                     session, 'instancegroup/%s' % instance_group.name, project)
                 ig.data = instance_group.json
-            for instance_group_manager in INSTANCE_GROUP_MANAGERS.values():
+            for instance_group_manager in list(INSTANCE_GROUP_MANAGERS.values()):
                 igm = data_access.add_resource(
                     session,
                     'instancegroupmanager/%s' % instance_group_manager.name,
                     project)
                 igm.data = instance_group_manager.json
-            for instance_template in INSTANCE_TEMPLATES.values():
+            for instance_template in list(INSTANCE_TEMPLATES.values()):
                 it = data_access.add_resource(
                     session, 'instancetemplate/%s' % instance_template.name,
                     project)
@@ -436,12 +437,12 @@ class IapScannerTest(ForsetiTestCase):
             '', get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
 
         self.data = iap_scanner._RunData(
-            BACKEND_SERVICES.values(),
-            FIREWALL_RULES.values(),
-            INSTANCES.values(),
-            INSTANCE_GROUPS.values(),
-            INSTANCE_GROUP_MANAGERS.values(),
-            INSTANCE_TEMPLATES.values(),
+            list(BACKEND_SERVICES.values()),
+            list(FIREWALL_RULES.values()),
+            list(INSTANCES.values()),
+            list(INSTANCE_GROUPS.values()),
+            list(INSTANCE_GROUP_MANAGERS.values()),
+            list(INSTANCE_TEMPLATES.values()),
         )
 
     def test_instance_template_map(self):
@@ -520,7 +521,7 @@ class IapScannerTest(ForsetiTestCase):
 
         self.maxDiff = None
         self.assertEquals(
-            set([bs.key for bs in BACKEND_SERVICES.values()]),
+            set([bs.key for bs in list(BACKEND_SERVICES.values())]),
             set(iap_resources.keys()))
 
         self.assertEquals(

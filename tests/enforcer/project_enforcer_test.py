@@ -15,6 +15,7 @@
 
 """Tests for google.cloud.forseti.enforcer.project_enforcer."""
 
+from builtins import range
 import copy
 from datetime import datetime
 import json
@@ -45,7 +46,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
             project_id=self.project)
 
         self.expected_rules = copy.deepcopy(
-            constants.EXPECTED_FIREWALL_RULES.values())
+            list(constants.EXPECTED_FIREWALL_RULES.values()))
 
         response_403 = httplib2.Response({
             'status': '403',

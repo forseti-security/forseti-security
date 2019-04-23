@@ -15,8 +15,11 @@
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import hashlib
-import httplib
+import http.client
 import json
 import operator
 import socket
@@ -38,7 +41,7 @@ API_VERSION = 'v1'
 LOGGER = logger.get_logger(__name__)
 
 # What transient exceptions should be retried.
-RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,
+RETRY_EXCEPTIONS = (http.client.ResponseNotReady, http.client.IncompleteRead,
                     httplib2.ServerNotFoundError, socket.error, ssl.SSLError,)
 
 # Allowed items in a firewall rule.
@@ -261,7 +264,7 @@ class FirewallRules(object):
         for rule in firewall_rules:
             # Only include keys in the ALLOWED_RULE_ITEMS set.
             scrubbed_rule = dict(
-                [(k, v) for k, v in rule.items() if k in ALLOWED_RULE_ITEMS])
+                [(k, v) for k, v in list(rule.items()) if k in ALLOWED_RULE_ITEMS])
             self.add_rule(scrubbed_rule)
 
     def add_rules(self, rules, network_name=None):
@@ -374,7 +377,7 @@ class FirewallRules(object):
             return self.rules
 
         filtered_rules = {}
-        for rule_name, rule in self.rules.items():
+        for rule_name, rule in list(self.rules.items()):
             if get_network_name_from_url(rule['network']) in networks:
                 filtered_rules[rule_name] = rule
 
@@ -392,7 +395,7 @@ class FirewallRules(object):
                 name.
         """
         rules = sorted(
-            self.rules.values(), key=operator.itemgetter('network', 'name'))
+            list(self.rules.values()), key=operator.itemgetter('network', 'name'))
         return json.dumps(rules, sort_keys=True)
 
     def add_rules_from_json(self, json_rules):
@@ -445,7 +448,7 @@ class FirewallRules(object):
             dict: A new rule dictionary with the lists sorted
         """
         sorted_rule = {}
-        for key, value in unsorted_rule.items():
+        for key, value in list(unsorted_rule.items()):
             if isinstance(value, list):
                 if value and isinstance(value[0], dict):  # List of dictionaries
                     for i, entry in enumerate(value):

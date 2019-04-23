@@ -14,7 +14,10 @@
 
 """ Scanner gRPC service. """
 
-from Queue import Queue
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+from queue import Queue
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner

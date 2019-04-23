@@ -17,7 +17,11 @@
 Keys can be converted to and from URLs.
 """
 
-import urlparse
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+import urllib.parse
 
 
 class Key(object):
@@ -49,7 +53,7 @@ class Key(object):
         # Turn all None into empty string. Otherwise it's too easy for
         # two keys to compare as unequal because one has zone=None while
         # the other has zone='', the two are semantically equivalent.
-        for (key, val) in self._object_path.iteritems():
+        for (key, val) in self._object_path.items():
             if val is None:
                 self._object_path[key] = ''
 
@@ -101,10 +105,10 @@ class Key(object):
         """
         # The first two components identify the API name and version,
         # e.g. ('compute', 'v1'). Ignore those.
-        path_components = urlparse.urlparse(url)[2].split('/')[3:]
+        path_components = urllib.parse.urlparse(url)[2].split('/')[3:]
 
         key_name = None
-        object_path = dict((key, None) for key in path_component_map.values())
+        object_path = dict((key, None) for key in list(path_component_map.values()))
         if defaults:
             object_path.update(defaults)
         for path_component in path_components:

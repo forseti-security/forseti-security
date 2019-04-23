@@ -392,7 +392,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             expected_firewall2.get('full_name')
         ]
         retrieved_names = []
-        for _, fws in results[0].items():
+        for _, fws in list(results[0].items()):
           for fw in fws:
             retrieved_names.append(fw.full_name)
         self.assertItemsEqual(expected_names, retrieved_names)

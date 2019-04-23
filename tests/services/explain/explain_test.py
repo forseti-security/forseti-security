@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests the Forseti Server explain service."""
 
+from builtins import object
 import unittest
 
 from grpc._channel import _Rendezvous

@@ -45,7 +45,7 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
         dict: A resource dict with all bad keys replaced with good keys.
     """
     fixed_resource = {}
-    for key, value in resource.items():
+    for key, value in list(resource.items()):
         if isinstance(value, dict):
             # Recursively fix keys in sub dictionaries.
             value = _fixup_resource_keys(value, key_map)

@@ -19,8 +19,10 @@
 # pylint: disable=no-member,useless-suppression
 
 
+from future import standard_library
+standard_library.install_aliases()
 import base64
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import sendgrid
 from sendgrid.helpers import mail
@@ -130,7 +132,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
 
         try:
             response = self._execute_send(email)
-        except urllib2.HTTPError as e:
+        except urllib.error.HTTPError as e:
             LOGGER.exception('Unable to send email: %s %s',
                              e.code, e.reason)
             raise util_errors.EmailSendError

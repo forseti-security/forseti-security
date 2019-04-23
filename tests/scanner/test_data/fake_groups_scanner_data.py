@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from builtins import object
 from MySQLdb.constants.REFRESH import STATUS
 
 """Test data for groups scanner tests.
@@ -37,7 +38,7 @@ group: ddddd@mycompany.com
   member: bbbbb@mycompany.com
 """
 
-class FakeGroup:
+class FakeGroup(object):
     def __init__(self, name, member_name, type):
         self.name = name
         self.member_name = member_name
@@ -52,7 +53,7 @@ ALL_GROUPS = (
 )
 
 
-class FakeMember:
+class FakeMember(object):
     def __init__(self, name, member_name, type, starting_node):
         self.name = name
         self.member_name = member_name

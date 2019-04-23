@@ -18,6 +18,7 @@ from __future__ import print_function
 # pylint: disable=no-self-use
 
 
+from builtins import object
 class Progresser(object):
     """Progress state Interface"""
     def __init__(self):

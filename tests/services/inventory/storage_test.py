@@ -14,10 +14,12 @@
 """Unit Tests: Inventory storage for Forseti Server."""
 
 
+from future import standard_library
+standard_library.install_aliases()
 from datetime import datetime
 import mock
 import os
-from StringIO import StringIO
+from io import StringIO
 import unittest
 from sqlalchemy.orm import sessionmaker
 

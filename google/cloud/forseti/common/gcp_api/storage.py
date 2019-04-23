@@ -13,9 +13,12 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import json
-import StringIO
-import urlparse
+import io
+import urllib.parse
 from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
@@ -47,7 +50,7 @@ def get_bucket_and_path_from(full_path):
             does not look like a GCS bucket URL.
     """
     try:
-        parsed = urlparse.urlparse(full_path)
+        parsed = urllib.parse.urlparse(full_path)
     except AttributeError as e:
         LOGGER.warn('Could not parse path %s: %s', full_path, e)
         parsed = None
@@ -301,7 +304,7 @@ class _StorageObjectsRepository(
         media_request.http = self.http
 
         file_content = ''
-        out_stream = StringIO.StringIO()
+        out_stream = io.StringIO()
         try:
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
