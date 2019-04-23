@@ -37,9 +37,14 @@ forseti scanner run
 ```
 
 The external project access scanner is not part of the regular running scanners, as it may take hours to run. 
-Therefore, we now make this scanner accessible manually through the CLI:
+You might also need to create the inventory and model if it is not already
+created. Therefore, we now make this scanner accessible manually through the CLI:
 ```bash
+MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+forseti inventory create --import_as ${MODEL_ID}
+forseti model use ${MODEL_ID}
 forseti scanner run --scanner external_project_access_scanner
+forseti notifier run
 ```
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
