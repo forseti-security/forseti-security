@@ -37,8 +37,9 @@ forseti scanner run
 ```
 
 The external project access scanner is not part of the regular running scanners, as it may take hours to run. 
-You might also need to create the inventory and model if it is not already
-created. Therefore, we now make this scanner accessible manually through the CLI:
+Therefore, we now make this scanner accessible manually through the CLI:
+**Note:** You will need to create an inventory and model if it is not already
+created. 
 ```bash
 MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
 forseti inventory create --import_as ${MODEL_ID}
