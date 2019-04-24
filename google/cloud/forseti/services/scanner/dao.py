@@ -171,7 +171,7 @@ class Violation(BASE):
     scanner_index_id = Column(BigInteger)
     violation_data = Column(Text)
     violation_hash = Column(String(256))
-    violation_message = Text()
+    violation_message = Column(Text())
     violation_type = Column(String(256), nullable=False)
 
     def __repr__(self):
