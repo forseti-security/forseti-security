@@ -200,8 +200,8 @@ notifier:
 Forseti Security can configured to send violations to
 [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
-Cloud SCC API is now Generally Available (GA). Alpha and Beta APIs have been 
-deprecated. Please see the steps below to setup and configure.
+Cloud SCC API is now Generally Available (GA). Please see the steps below to 
+setup and configure.
 
 #### Prerequisites
 1. [Install]({% link _docs/latest/setup/install.md %})
