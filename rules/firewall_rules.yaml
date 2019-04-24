@@ -53,3 +53,32 @@ org_policy:
       rules:
         group_ids:
           - 'default_rules'
+          
+# CIS Proof of Concept examples
+#  - rule_id: 'CIS_GCP_3.6'
+#    description: Don't allow allow SSH from 0.0.0.0/0
+#    mode: blacklist
+#    match_policies:
+#      - direction: ingress
+#        allowed: ['*']
+#        sourceRanges:
+#          - '0.0.0.0/0'
+#    verify_policies:
+#      - allowed:
+#        - IPProtocol: 'tcp'
+#          ports:
+#            - '22'
+
+#  - rule_id: 'CIS_GCP_3.7'
+#    description: Don't allow allow RDP from 0.0.0.0/0
+#    mode: blacklist
+#    match_policies:
+#      - direction: ingress
+#        allowed: ['*']
+#        sourceRanges:
+#          - '0.0.0.0/0'
+#    verify_policies:
+#      - allowed:
+#        - IPProtocol: 'tcp'
+#          ports:
+#            - '3389'
