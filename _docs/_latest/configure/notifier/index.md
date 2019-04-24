@@ -200,12 +200,12 @@ notifier:
 Forseti Security can configured to send violations to
 [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
-Cloud SCC API is now in public beta. Please see the steps below to setup
-and configure. The previous alpha API will no longer be supported for setup.
+Cloud SCC API is now Generally Available (GA). Alpha and Beta APIs have been 
+deprecated. Please see the steps below to setup and configure.
 
 #### Prerequisites
 1. [Install]({% link _docs/latest/setup/install.md %})
-or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.8+. 
+or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14. 
 1. The person performing the onboarding needs the following org-level IAM roles:
 - `Organization Admin`
 - `Security Center Admin`
@@ -245,15 +245,6 @@ in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml
   * `enabled:`
     * **Description**: Whether to send notification to Cloud SCC.
     * **Valid values**: one of valid `true` or `false`
-  
-  * `mode:`
-    * **Description**: How to send the violations to Cloud SCC.
-    * **Valid values**: `api`
-  
-  * `organization_id:`
-    * **Description**: The organization id.
-    * **Valid values**: String
-    * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
   
   * `source_id`
     * **Description**: ID from the Cloud SCC beta on-boarding. **This must be added**
