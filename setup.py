@@ -61,7 +61,7 @@ REQUIRED_PACKAGES = [
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
     'pylint==1.9.4',
-    'pylint-quotes==0.2.1',
+    'pylint-quotes',
     'SQLAlchemy==1.2.16',
     'sqlalchemy-migrate==0.11.0'
 ]
