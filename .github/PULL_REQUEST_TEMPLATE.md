@@ -9,4 +9,4 @@ Here's a handy checklist to ensure your PR goes smoothly.
 - [ ] All of the [unit-tests](https://forsetisecurity.org/docs/latest/develop/dev/testing.html) still pass.
 - [ ] Running `pylint --rcfile=pylintrc` passes.
 
-These guidelines and more can be found in our [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+These guidelines and more can be found in our [contributing guidelines](https://github.com/forseti-security/forseti-security/blob/dev/.github/CONTRIBUTING.md).
