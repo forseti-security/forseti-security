@@ -256,6 +256,11 @@ def forwardingrule(item):
     return _create_compute_asset(item, 'compute.googleapis.com/ForwardingRule')
 
 
+def globalforwardingrule(item):
+    return _create_compute_asset(item,
+                                 'compute.googleapis.com/GlobalForwardingRule')
+
+
 def image(item):
     return _create_compute_asset(item, 'compute.googleapis.com/Image')
 
@@ -307,6 +312,7 @@ CAI_TYPE_MAP = {
     'disk': disk,
     'firewall': firewall,
     'forwardingrule': forwardingrule,
+    'globalforwardingrule': globalforwardingrule,
     'image': image,
     'instance': instance,
     'instancegroup': instancegroup,

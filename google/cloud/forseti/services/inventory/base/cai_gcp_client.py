@@ -15,6 +15,7 @@
 
 # pylint: disable=too-many-lines
 
+import itertools
 import threading
 
 from google.cloud.forseti.common.util import logger
@@ -372,8 +373,16 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'ipAddress': 'IPAddress',
             'ipProtocol': 'IPProtocol',
         }
-        resources = self._iter_compute_resources('ForwardingRule',
-                                                 project_number)
+
+        forwardingrule_resources = self._iter_compute_resources(
+            'ForwardingRule', project_number)
+
+        global_forwardingrule_resources = self._iter_compute_resources(
+            'GlobalForwardingRule', project_number)
+
+        resources = itertools.chain(forwardingrule_resources,
+                                    global_forwardingrule_resources)
+
         for forwarding_rule, metadata in resources:
             yield (
                 _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map),
