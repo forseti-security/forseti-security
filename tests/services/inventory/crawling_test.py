@@ -290,7 +290,7 @@ class CrawlerTest(CrawlerBase):
             'disk': {'resource': 3},
             'firewall': {'resource': 3},
             'folder': {'iam_policy': 2, 'resource': 2},
-            'forwardingrule': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'instance': {'resource': 3},
             'instancegroup': {'resource': 2},
             'instancegroupmanager': {'resource': 2},
@@ -490,7 +490,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
-            'compute_targethttpsproxy': {'resource': 1},
             'compute_targetinstance': {'resource': 1},
             'compute_targetpool': {'resource': 1},
             'compute_targetsslproxy': {'resource': 1},
@@ -624,6 +623,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()
