@@ -150,7 +150,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 }
 
                 yield {
-                    'resource_name': '%s/%s'.format(violation.resource_type,
+                    'resource_name': '{}/{}'.format(violation.resource_type,
                                                     violation.resource_id),
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
