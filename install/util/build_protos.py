@@ -101,7 +101,7 @@ def make_proto(path):
 
             subprocess.check_call(
                 [
-                    'python',
+                    'python3',
                     '-m',
                     'grpc_tools.protoc',
                     '-I.',

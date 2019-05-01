@@ -35,16 +35,15 @@ NAMESPACE_PACKAGES = [
 REQUIRED_PACKAGES = [
     # Installation related.
     'anytree==2.4.3',
-    'futures==3.2.0',
     'google-api-python-client==1.7.7',
     'google-auth==1.6.2',
     'google-auth-httplib2==0.0.3',
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
-    'MySQL-python==1.2.5',
+    'mysqlclient==1.4.2.post1',
     'netaddr==0.7.19',
     'pyyaml==4.2b4',
-    'pygraph==0.2.1',
+    'python-graph-core==1.8.2',
     'python-dateutil==2.7.5',
     'ratelimiter==1.2.0.post0',
     'retrying==1.3.3',
@@ -55,22 +54,19 @@ REQUIRED_PACKAGES = [
     # Setup related.
     'grpcio==1.18.0',
     'grpcio-tools==1.18.0',
-    'protobuf==3.6.1',
+    'protobuf==3.7.1',
     # Testing related.
     'mock==2.0.0',
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
     'pylint==1.9.4',
     'pylint-quotes==0.2.1',
-    'SQLAlchemy==1.2.16',
+    'SQLAlchemy==1.3.3',
     'sqlalchemy-migrate==0.11.0'
 ]
 
-if sys.version_info < (2, 7):
-    sys.exit('Sorry, Python < 2.7 is not supported.')
-
-if sys.version_info.major > 2:
-    sys.exit('Sorry, Python 3 is not supported.')
+if sys.version_info.major < 3:
+    sys.exit('Sorry, Python 2 is not supported.')
 
 
 def build_forseti_protos(clean_only=False):
@@ -113,7 +109,7 @@ setup(
     description='Forseti Security tools',
     author='Google LLC.',
     author_email='opensource@google.com',
-    url='https://github.com/GoogleCloudPlatform/forseti-security',
+    url='https://github.com/forseti-security/forseti-security',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

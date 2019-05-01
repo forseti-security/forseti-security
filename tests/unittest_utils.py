@@ -15,7 +15,6 @@
 """Test Utils for Forseti unit tests."""
 
 from builtins import range
-from past.builtins import basestring
 import collections
 import contextlib
 import json
@@ -129,7 +128,7 @@ def _WalkStructureForProblems(a, b, aname, bname, problem_list):
         problem_list.append('%s lacks [%r] but %s has it' % (aname, k, bname))
 
   # Strings are Sequences but we'll just do those with regular !=
-  elif isinstance(a, collections.Sequence) and not isinstance(a, basestring):
+  elif isinstance(a, collections.Sequence) and not isinstance(a, str):
     minlen = min(len(a), len(b))
     for i in range(minlen):
       _WalkStructureForProblems(a[i], b[i],

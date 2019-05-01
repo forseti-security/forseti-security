@@ -261,7 +261,7 @@ run_k8s_cron_job(){
     echo "Finished running Forseti inventory."
     sleep 5s
 
-    GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+    GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python3 -c \"import sys, json; print json.load(sys.stdin)['status']\""
     MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
     if [[ "$MODEL_STATUS" == "BROKEN" ]]
