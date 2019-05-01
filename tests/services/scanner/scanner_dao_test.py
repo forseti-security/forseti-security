@@ -127,6 +127,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
+             'violation_message': u'',
              'rule_index': 111,
              'rule_name': u'disallow_all_ports_111',
              'violation_data': (
@@ -143,6 +144,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',
+             'violation_message': u'',
              'rule_index': 222,
              'rule_name': u'disallow_all_ports_222',
              'violation_data': (
