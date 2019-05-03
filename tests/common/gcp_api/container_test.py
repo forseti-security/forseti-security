@@ -61,7 +61,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
         result = self.container_client.get_serverconfig(
             self.project_id, zone=self.zone)
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(fake_container.FAKE_GET_SERVERCONFIG_RESPONSE), result)
 
     def test_get_serverconfig_by_location(self):
@@ -72,7 +72,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
         result = self.container_client.get_serverconfig(
             self.project_id, location=fake_container.FAKE_LOCATION)
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(fake_container.FAKE_GET_SERVERCONFIG_RESPONSE), result)
 
     def test_get_serverconfig_by_location_and_zone(self):
@@ -84,7 +84,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
             self.project_id, zone=self.zone,
             location=fake_container.FAKE_LOCATION)
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(fake_container.FAKE_GET_SERVERCONFIG_RESPONSE), result)
 
     def test_get_serverconfig_missing_location_and_zone(self):
@@ -108,7 +108,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
             fake_container.FAKE_GET_CLUSTERS_RESPONSE)
 
         results = self.container_client.get_clusters(self.project_id)
-        self.assertEquals(fake_container.EXPECTED_CLUSTER_NAMES,
+        self.assertEqual(fake_container.EXPECTED_CLUSTER_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_clusters_error(self):
