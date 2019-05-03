@@ -204,7 +204,7 @@ class CloudBillingClient(object):
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+                LOGGER.warning(e)
                 return {}
             api_exception = api_errors.ApiExecutionError(
                 'billing_info', e, 'project_id', project_id)

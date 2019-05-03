@@ -57,7 +57,7 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
 
         result = self.billing_api_client.get_billing_info(self.project_id)
 
-        self.assertEquals(self.project_id, result['projectId'])
+        self.assertEqual(self.project_id, result['projectId'])
 
     def test_get_billing_info_raises(self):
         """Test get project billing info raises on exception."""
@@ -73,7 +73,7 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
                                       '404')
         result = self.billing_api_client.get_billing_info(self.project_id)
 
-        self.assertEquals({}, result)
+        self.assertEqual({}, result)
 
     def test_get_billing_accounts(self):
         """Test get billing accounts without specifying master account."""
@@ -81,13 +81,13 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
 
         result = self.billing_api_client.get_billing_accounts()
 
-        self.assertEquals(2, len(result))
-        self.assertEquals('billingAccounts/000000-111111-222222',
+        self.assertEqual(2, len(result))
+        self.assertEqual('billingAccounts/000000-111111-222222',
                           result[0]['name'])
-        self.assertEquals('billingAccounts/001122-AABBCC-DDEEFF',
+        self.assertEqual('billingAccounts/001122-AABBCC-DDEEFF',
                           result[0]['masterBillingAccount'])
 
-        self.assertEquals('billingAccounts/001122-AABBCC-DDEEFF',
+        self.assertEqual('billingAccounts/001122-AABBCC-DDEEFF',
                           result[1]['name'])
 
     def test_get_billing_subaccounts(self):
@@ -97,10 +97,10 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
         result = self.billing_api_client.get_billing_accounts(
             master_account_id='billingAccounts/001122-AABBCC-DDEEFF')
 
-        self.assertEquals(1, len(result))
-        self.assertEquals('billingAccounts/000000-111111-222222',
+        self.assertEqual(1, len(result))
+        self.assertEqual('billingAccounts/000000-111111-222222',
                           result[0]['name'])
-        self.assertEquals('billingAccounts/001122-AABBCC-DDEEFF',
+        self.assertEqual('billingAccounts/001122-AABBCC-DDEEFF',
                           result[0]['masterBillingAccount'])
 
     def test_get_billing_iam_policies(self):
@@ -110,9 +110,9 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
         result = self.billing_api_client.get_billing_acct_iam_policies(
             '001122-AABBCC-DDEEFF')
 
-        self.assertEquals(2, len(result['bindings']))
-        self.assertEquals('roles/billing.admin', result['bindings'][0]['role'])
-        self.assertEquals('user:foo@example.com',
+        self.assertEqual(2, len(result['bindings']))
+        self.assertEqual('roles/billing.admin', result['bindings'][0]['role'])
+        self.assertEqual('user:foo@example.com',
                           result['bindings'][0]['members'][0])
 
 if __name__ == '__main__':
