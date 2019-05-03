@@ -52,7 +52,7 @@ steps:
 
 # Uncomment below to include optional unit tests in the build process
 #- name: 'gcr.io/cloud-builders/docker'
-#  args: ['run', 'gcr.io/$PROJECT_ID/forseti', 'python', '-m', 'unittest', 'discover', '--verbose', '-s', '.', '-p', '*_test.py']
+#  args: ['run', 'gcr.io/$PROJECT_ID/forseti', 'python3', '-m', 'unittest', 'discover', '--verbose', '-s', '.', '-p', '*_test.py']
 #  waitFor: ['forseti']
 #  id: unittest
 
