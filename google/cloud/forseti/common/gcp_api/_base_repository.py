@@ -523,6 +523,9 @@ class GCPRepository(object):
         Returns:
             dict: The response from the API.
         """
+        if hasattr(self.http, 'data'):
+            if isinstance(self.http.data, str):
+                self.http.data = self.http.data.encode()
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
             # interface the code has to be duplicated to handle the case where

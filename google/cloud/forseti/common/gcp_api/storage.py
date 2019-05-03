@@ -301,10 +301,15 @@ class _StorageObjectsRepository(
             'object': object_name}
 
         media_request = self._build_request('get_media', verb_arguments)
+
+        if hasattr(self.http, 'data'):
+            if not isinstance(self.http.data, bytes):
+                self.http.data = self.http.data.encode()
+
         media_request.http = self.http
 
         file_content = ''
-        out_stream = io.StringIO()
+        out_stream = io.BytesIO()
         try:
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
@@ -331,6 +336,11 @@ class _StorageObjectsRepository(
             'object': object_name}
 
         media_request = self._build_request('get_media', verb_arguments)
+
+        if hasattr(self.http, 'data'):
+            if not isinstance(self.http.data, bytes):
+                self.http.data = self.http.data.encode()
+
         media_request.http = self.http
 
         downloader = http.MediaIoBaseDownload(output_file, media_request)
