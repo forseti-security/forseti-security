@@ -60,7 +60,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             content_type='RESOURCE',
             asset_types=fake_cloudasset.ASSET_TYPES)
 
-        self.assertEquals(json.loads(
+        self.assertEqual(json.loads(
             fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_OPERATION), result)
 
     def test_export_assets_project(self):
@@ -72,7 +72,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
             content_type='RESOURCE')
 
-        self.assertEquals(json.loads(
+        self.assertEqual(json.loads(
             fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION), result)
 
     def test_export_assets_organization(self):
@@ -85,7 +85,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             content_type='RESOURCE',
             asset_types=['cloudresourcemanager.googleapis.com/Project'])
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(
                 fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_OPERATION),
             result)
@@ -109,7 +109,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                 asset_types=fake_cloudasset.ASSET_TYPES,
                 blocking=True)
 
-        self.assertEquals(json.loads(
+        self.assertEqual(json.loads(
             fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_DONE), result)
 
     def test_export_assets_project_blocking(self):
@@ -131,7 +131,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                 asset_types=['cloudresourcemanager.googleapis.com/Project'],
                 blocking=True)
 
-        self.assertEquals(json.loads(
+        self.assertEqual(json.loads(
             fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_DONE), result)
 
     def test_export_assets_organization_blocking(self):
@@ -151,7 +151,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                 fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
                 content_type='RESOURCE', blocking=True)
 
-        self.assertEquals(json.loads(
+        self.assertEqual(json.loads(
             fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_DONE), result)
 
     def test_export_assets_project_blocking_timeout(self):
