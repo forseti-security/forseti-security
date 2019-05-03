@@ -56,7 +56,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '404',
             'content-type': 'application/json'})
         response.reason = 'Not Found'
-        error = errors.HttpError(response, fae.APP_NOT_FOUND, uri='')
+        error = errors.HttpError(response, fae.APP_NOT_FOUND.encode(), uri='')
         self.assertTrue(ae._is_status_not_found(error))
 
     def test_is_status_not_found_403(self):
@@ -64,7 +64,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '403',
             'content-type': 'application/json'})
         response.reason = 'Permission Denied'
-        error = errors.HttpError(response, fae.PERMISSION_DENIED, uri='')
+        error = errors.HttpError(response, fae.PERMISSION_DENIED.encode(), uri='')
         self.assertFalse(ae._is_status_not_found(error))
 
     def test_get_app(self):
