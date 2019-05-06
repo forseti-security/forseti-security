@@ -42,11 +42,11 @@ class SendgridConnectorTest(ForsetiTestCase):
             email_connector_config)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
-        self.assertEquals(1, len(new_email.personalizations))
+        self.assertEqual(1, len(new_email.personalizations))
 
         added_recipients = new_email.personalizations[0].tos
-        self.assertEquals(1, len(added_recipients))
-        self.assertEquals('foo@company.com', added_recipients[0].get('email'))
+        self.assertEqual(1, len(added_recipients))
+        self.assertEqual('foo@company.com', added_recipients[0].get('email'))
 
     def test_can_send_email_to_multiple_recipients(self):
         """Test can send email to multiple recipients."""
@@ -63,12 +63,12 @@ class SendgridConnectorTest(ForsetiTestCase):
             email_connector_config)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
-        self.assertEquals(1, len(new_email.personalizations))
+        self.assertEqual(1, len(new_email.personalizations))
 
         added_recipients = new_email.personalizations[0].tos
-        self.assertEquals(2, len(added_recipients))
-        self.assertEquals('foo@company.com', added_recipients[0].get('email'))
-        self.assertEquals('bar@company.com', added_recipients[1].get('email'))
+        self.assertEqual(2, len(added_recipients))
+        self.assertEqual('foo@company.com', added_recipients[0].get('email'))
+        self.assertEqual('bar@company.com', added_recipients[1].get('email'))
 
     @mock.patch('sendgrid.helpers.mail.Mail', autospec=True)
     def test_no_sender_recip_no_email(self, mock_mail):
