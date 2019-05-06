@@ -134,7 +134,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_from_json_error(self, json_dict, expected_error, regexp):
       json_string = json.dumps(json_dict)
-      with self.assertRaisesRegexp(expected_error, regexp):
+      with self.assertRaisesRegex(expected_error, regexp):
           rule = firewall_rule.FirewallRule.from_json(json_string)
 
     def test_from_dict(self):
@@ -246,7 +246,7 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
     ])
     def test_from_dict_error(self, firewall_dict, expected_error, regexp):
-      with self.assertRaisesRegexp(expected_error, regexp):
+      with self.assertRaisesRegex(expected_error, regexp):
           rule = firewall_rule.FirewallRule.from_dict(
               firewall_dict, validate=True)
 
@@ -331,7 +331,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_validate_priority_error(self, rule_dict, expected_regex):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaisesRegexp(firewall_rule.InvalidFirewallRuleError,
+        with self.assertRaisesRegex(firewall_rule.InvalidFirewallRuleError,
                                      expected_regex):
             rule._validate_priority()
 
@@ -393,7 +393,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_validate_direction_error(self, rule_dict, expected_regex):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaisesRegexp(firewall_rule.InvalidFirewallRuleError,
+        with self.assertRaisesRegex(firewall_rule.InvalidFirewallRuleError,
                                expected_regex):
             rule._validate_direction()
 
@@ -439,7 +439,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_validate_errors(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaisesRegexp(expected_error, regexp):
+        with self.assertRaisesRegex(expected_error, regexp):
             rule.validate()
 
     @parameterized.parameterized.expand([
@@ -484,7 +484,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_as_json_error(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaisesRegexp(expected_error, regexp):
+        with self.assertRaisesRegex(expected_error, regexp):
             rule.as_json()
 
     @parameterized.parameterized.expand([
@@ -621,7 +621,7 @@ class FirewallRuleTest(ForsetiTestCase):
     ])
     def test_validate_keys_error(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaisesRegexp(expected_error, regexp):
+        with self.assertRaisesRegex(expected_error, regexp):
             rule.validate()
 
     @parameterized.parameterized.expand([
@@ -1127,8 +1127,10 @@ class FirewallRuleTest(ForsetiTestCase):
                         'selfLink']:
                 expected.pop(key)
             unicode_expected = json.loads(json.dumps(expected))
-            unicode_expected['allowed'] = sorted(unicode_expected['allowed'])
-            dict_rule['allowed'] = sorted(dict_rule['allowed'])
+            unicode_expected['allowed'] = sorted(unicode_expected['allowed'],
+                                                 key=lambda x: x['IPProtocol'])
+            dict_rule['allowed'] = sorted(dict_rule['allowed'],
+                                          key=lambda x: x['IPProtocol'])
             self.maxDiff = None
             self.assertDictEqual(unicode_expected, dict_rule)
 
@@ -1190,7 +1192,7 @@ class FirewallActionTest(ForsetiTestCase):
     ])
     def test_validate_errors(self, action_1_dict, error_regexp):
         action = firewall_rule.FirewallAction(**action_1_dict)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             firewall_rule.InvalidFirewallActionError, error_regexp):
           action.validate()
 
@@ -1211,7 +1213,7 @@ class FirewallActionTest(ForsetiTestCase):
     ])
     def test_json_dict_errors(self, action_dict, error_regexp):
         action = firewall_rule.FirewallAction(**action_dict)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             firewall_rule.InvalidFirewallActionError, error_regexp):
           action.json_dict()
 
