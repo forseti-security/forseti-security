@@ -143,9 +143,12 @@ def _debug_operation_response_time(project_id, operation):
         operation (dict): The last Operation resource returned from the
             API server.
     """
-    if LOGGER.getEffectiveLevel() > logging.DEBUG:
-        # Don't compute times if DEBUG logging is not enabled.
-        return
+    try:
+        if LOGGER.getEffectiveLevel() > logging.DEBUG:
+            # Don't compute times if DEBUG logging is not enabled.
+            return
+    except Exception as e:
+        LOGGER.debug('DEBUG logging exception: %s' % e)
 
     try:
         op_insert_timestamp = date_time.get_unix_timestamp_from_string(
@@ -774,7 +777,7 @@ class ComputeClient(object):
             else:
                 err = api_errors.ApiExecutionError(project_id, e)
 
-            LOGGER.warn(err)
+            LOGGER.warning(err)
             raise err
 
     def get_firewall_rules(self, project_id):
@@ -835,7 +838,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout deleting firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -890,7 +893,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout inserting firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -950,7 +953,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout patching firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -1012,7 +1015,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout updating firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1

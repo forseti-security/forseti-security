@@ -59,7 +59,7 @@ class StackdriverLoggingTest(unittest_utils.ForsetiTestCase):
 
         results = self.logging_api_client.get_organization_sinks(
             fake_sd_logging.FAKE_ORG_ID)
-        self.assertEquals(fake_sd_logging.EXPECTED_SINK_NAMES,
+        self.assertEqual(fake_sd_logging.EXPECTED_SINK_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_organization_sinks_raises(self):
@@ -79,7 +79,7 @@ class StackdriverLoggingTest(unittest_utils.ForsetiTestCase):
 
         results = self.logging_api_client.get_folder_sinks(
             fake_sd_logging.FAKE_FOLDER_ID)
-        self.assertEquals(fake_sd_logging.EXPECTED_SINK_NAMES,
+        self.assertEqual(fake_sd_logging.EXPECTED_SINK_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_folder_sinks_raises(self):
@@ -99,7 +99,7 @@ class StackdriverLoggingTest(unittest_utils.ForsetiTestCase):
 
         results = self.logging_api_client.get_billing_account_sinks(
             fake_sd_logging.FAKE_BILLING_ACCOUNT_ID)
-        self.assertEquals(fake_sd_logging.EXPECTED_SINK_NAMES,
+        self.assertEqual(fake_sd_logging.EXPECTED_SINK_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_billing_account_sinks_raises(self):
@@ -119,7 +119,7 @@ class StackdriverLoggingTest(unittest_utils.ForsetiTestCase):
 
         results = self.logging_api_client.get_project_sinks(
             fake_sd_logging.FAKE_PROJECT_ID)
-        self.assertEquals(fake_sd_logging.EXPECTED_SINK_NAMES,
+        self.assertEqual(fake_sd_logging.EXPECTED_SINK_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_project_sinks_raises(self):

@@ -158,7 +158,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         self.assertEqual((api_name, [provided_version]),
                          (repo_client.name, repo_client.versions))
 
-        mock_logger.warn.assert_called_with(
+        mock_logger.warning.assert_called_with(
             mock.ANY, api_name, provided_version)
 
     @mock.patch.object(discovery, 'build', autospec=True)
@@ -194,7 +194,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         expected_repr = 'API: name=zoo, versions=[\'v1\', \'v2\']'
         self.assertEqual(expected_repr, '%s' % repo_client)
 
-        mock_logger.warn.assert_called_with(
+        mock_logger.warning.assert_called_with(
             mock.ANY, api_name)
 
     @mock.patch.object(discovery, 'build', autospec=True)

@@ -60,7 +60,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         return_value = self.sm_api_client.get_enabled_apis(
             fake_sm.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_sm.EXPECTED_CONSUMER_SERVICES_COUNT,
+        self.assertEqual(fake_sm.EXPECTED_CONSUMER_SERVICES_COUNT,
                           len(return_value))
 
     def test_get_enabled_apis_raises(self):
@@ -80,7 +80,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         return_value = self.sm_api_client.get_produced_apis(
             fake_sm.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_sm.EXPECTED_PRODUCER_SERVICES_COUNT,
+        self.assertEqual(fake_sm.EXPECTED_PRODUCER_SERVICES_COUNT,
                           len(return_value))
 
     def test_get_produced_apis_raises(self):
@@ -99,7 +99,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
 
         return_value = self.sm_api_client.get_all_apis()
 
-        self.assertEquals(fake_sm.EXPECTED_ALL_SERVICES_COUNT,
+        self.assertEqual(fake_sm.EXPECTED_ALL_SERVICES_COUNT,
                           len(return_value))
 
     def test_get_api_iam_policy(self):
@@ -110,7 +110,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
             fake_sm.FAKE_SERVICE_NAME)
 
         self.assertTrue('bindings' in return_value)
-        self.assertEquals(fake_sm.EXPECTED_IAM_POLICY_BINDINGS_COUNT,
+        self.assertEqual(fake_sm.EXPECTED_IAM_POLICY_BINDINGS_COUNT,
                           len(return_value['bindings']))
 
     def test_get_api_iam_policy_raises(self):
