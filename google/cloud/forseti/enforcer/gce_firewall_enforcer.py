@@ -159,7 +159,7 @@ def _is_successful(operation):
                 #     disappeared out from under us.
                 if err.get('code') in ['RESOURCE_ALREADY_EXISTS',
                                        'INVALID_FIELD_VALUE']:
-                    LOGGER.warn('Ignoring error: %s', err)
+                    LOGGER.warning('Ignoring error: %s', err)
                 else:
                     LOGGER.error('Operation has error: %s', err)
                     success = False
@@ -255,7 +255,7 @@ class FirewallRules(object):
             InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Can not import rules from the API into a FirewallRules '
                 'object with rules already added')
             return
@@ -419,7 +419,7 @@ class FirewallRules(object):
             InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
-            LOGGER.warn('Can not import from JSON into a FirewallRules object '
+            LOGGER.warning('Can not import from JSON into a FirewallRules object '
                         'with rules already added')
             return
 
@@ -454,7 +454,7 @@ class FirewallRules(object):
                     for i, entry in enumerate(value):
                         value[i] = self._order_lists_in_rule(entry)
 
-                sorted_rule[key] = sorted(value)
+                sorted_rule[key] = sorted(value, key=sorted)
             elif isinstance(value, dict):
                 sorted_rule[key] = self._order_lists_in_rule(value)
             else:
@@ -621,7 +621,7 @@ class FirewallEnforcer(object):
 
         self.project_sema = project_sema
         if operation_sema:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Operation semaphore is deprecated. Argument ignored.')
         self.operation_sema = None
 
@@ -719,7 +719,7 @@ class FirewallEnforcer(object):
             if not prechange_callback(self.project, self._rules_to_delete,
                                       self._rules_to_insert,
                                       self._rules_to_update):
-                LOGGER.warn(
+                LOGGER.warning(
                     'The Prechange Callback returned False for project %s, '
                     'changes will not be applied.', self.project)
                 return 0
@@ -882,7 +882,7 @@ class FirewallEnforcer(object):
                                 'for project %s.', self.project)
                     delete_before_insert = True
         else:
-            LOGGER.warn('Unknown firewall quota, switching to "delete first" '
+            LOGGER.warning('Unknown firewall quota, switching to "delete first" '
                         'rule update order for project %s.', self.project)
             delete_before_insert = True
 

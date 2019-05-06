@@ -44,7 +44,7 @@ class NotifierTest(ForsetiTestCase):
         for i in violations_with_converted_timestamp:
             converted_timestamps.append(i['created_at_datetime'])
 
-        self.assertEquals(expected_timestamps,
+        self.assertEqual(expected_timestamps,
                           converted_timestamps)
 
     @mock.patch(
@@ -105,17 +105,17 @@ class NotifierTest(ForsetiTestCase):
 
         # The notifiers were only run once i.e. for 'policy_violations'
         self.assertTrue(mock_find_notifiers.called)
-        self.assertEquals(1, mock_email_violations_cls.call_count)
-        self.assertEquals(
+        self.assertEqual(1, mock_email_violations_cls.call_count)
+        self.assertEqual(
             'iam_policy_violations',
             mock_email_violations_cls.call_args[0][0])
-        self.assertEquals(1, mock_email_violations.run.call_count)
+        self.assertEqual(1, mock_email_violations.run.call_count)
 
-        self.assertEquals(1, mock_gcs_violations_cls.call_count)
-        self.assertEquals(
+        self.assertEqual(1, mock_gcs_violations_cls.call_count)
+        self.assertEqual(
             'iam_policy_violations',
             mock_gcs_violations_cls.call_args[0][0])
-        self.assertEquals(1, mock_gcs_violations.run.call_count)
+        self.assertEqual(1, mock_gcs_violations.run.call_count)
 
     @mock.patch(
         ('google.cloud.forseti.notifier.notifiers.email_violations'

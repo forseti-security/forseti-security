@@ -13,3 +13,4 @@ google-cloud-asset==0.2.0
 codecov==2.0.15
 pylint==1.9.4
 flake8==3.6.0
+future==0.17.1

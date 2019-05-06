@@ -35,7 +35,7 @@ class ModelManagerTest(ForsetiTestCase):
 
     def test_create_get_delete_one_model(self):
         """Start with no models, create one, delete it again."""
-        self.assertEquals(0, len(self.model_manager.models()),
+        self.assertEqual(0, len(self.model_manager.models()),
                           'Expecting no models to exist')
         handle = self.model_manager.create(name='test_model')
         self.assertEqual([handle],

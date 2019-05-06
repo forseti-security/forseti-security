@@ -327,8 +327,8 @@ def define_model(model_name, dbengine, model_seed):
             """
             serialized_ctr = struct.pack('>I', self.policy_update_counter)
             msg = binascii.hexlify(serialized_ctr)
-            msg += self.full_name
-            return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
+            msg += self.full_name.encode()
+            return hmac.new(model_seed, msg).hexdigest()
 
         def __repr__(self):
             """String representation.
