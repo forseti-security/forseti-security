@@ -15,8 +15,7 @@
 """Blacklist Scanner Test"""
 
 from builtins import zip
-import unittest.mock as mock
-from mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.scanner.scanners import blacklist_scanner
@@ -35,8 +34,8 @@ def create_list_of_instence_network_interface_obj_from_data():
 
 class BlacklistScannerTest(ForsetiTestCase):
 
-    @patch('google.cloud.forseti.scanner.audit.' + \
-           'blacklist_rules_engine.urllib2.urlopen')
+    @patch('google.cloud.forseti.scanner.audit.' +
+           'blacklist_rules_engine.urllib.request.urlopen')
     def test_get_blacklist_url(self, mock_urlopen):
         a = Mock()
         a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1]
@@ -47,8 +46,8 @@ class BlacklistScannerTest(ForsetiTestCase):
         self.assertEqual(sorted(fbsd.EXPECTED_BLACKLIST_1), sorted(output))
         return output
 
-    @patch('google.cloud.forseti.scanner.audit.' + \
-           'blacklist_rules_engine.urllib2.urlopen')
+    @patch('google.cloud.forseti.scanner.audit.' +
+           'blacklist_rules_engine.urllib.request.urlopen')
     def test_build_rule_book_from_local_yaml_file_works(self, mock_urlopen):
         """Test that a RuleBook is built correctly with a yaml file."""
         a = Mock()
@@ -63,8 +62,8 @@ class BlacklistScannerTest(ForsetiTestCase):
         self.assertEqual('http://threatintel.localdomain/verybadips.txt',
                           rules_engine.rule_book.rule_defs['rules'][0]['url'])
 
-    @patch('google.cloud.forseti.scanner.audit.' + \
-           'blacklist_rules_engine.urllib2.urlopen')
+    @patch('google.cloud.forseti.scanner.audit.' +
+           'blacklist_rules_engine.urllib.request.urlopen')
     def test_blacklist_scanner_all_match(self, mock_urlopen):
         a = Mock()
         a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1,
@@ -73,7 +72,7 @@ class BlacklistScannerTest(ForsetiTestCase):
 
         rules_local_path = get_datafile_path(__file__, 'blacklist_test_rule.yaml')
         scanner = blacklist_scanner.BlacklistScanner(
-            {}, {}, mock.MagicMock(), '', '', rules_local_path)
+            {}, {}, MagicMock(), '', '', rules_local_path)
         netifs = create_list_of_instence_network_interface_obj_from_data()
 
         for netif, expected_violation in zip(netifs, fbsd.EXPECTED_VIOLATIONS):
