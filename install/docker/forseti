@@ -31,7 +31,7 @@ RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 ADD . /forseti-security/
 
 # Install Forseti Security.
-RUN python setup.py install 1> /dev/null
+RUN python setup.py install
 
 # Make entrypoint script executable
 RUN chmod +x /forseti-security/install/scripts/docker_entrypoint.sh
