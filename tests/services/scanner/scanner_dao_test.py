@@ -169,9 +169,9 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         """Test _create_violation_hash."""
         test_hash = hashlib.new('sha512')
         test_hash.update(
-            json.dumps(self.test_violation_full_name) +
-            json.dumps(self.test_inventory_data) +
-            json.dumps(self.test_violation_data)
+            json.dumps(self.test_violation_full_name).encode() +
+            json.dumps(self.test_inventory_data).encode() +
+            json.dumps(self.test_violation_data).encode()
         )
         expected_hash = test_hash.hexdigest()
 

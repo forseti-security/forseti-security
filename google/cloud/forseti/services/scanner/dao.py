@@ -381,9 +381,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
     try:
         # Group resources do not have full name.  Issue #1072
         violation_hash.update(
-            json.dumps(violation_full_name) +
-            json.dumps(resource_data, sort_keys=True) +
-            json.dumps(violation_data, sort_keys=True)
+            json.dumps(violation_full_name).encode() +
+            json.dumps(resource_data, sort_keys=True).encode() +
+            json.dumps(violation_data, sort_keys=True).encode()
         )
     except TypeError:
         LOGGER.exception('Cannot create hash for a violation: %s',
