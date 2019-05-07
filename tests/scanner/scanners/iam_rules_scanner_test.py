@@ -185,7 +185,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         expected = string_formats.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
         actual = self.scanner.get_output_filename(self.fake_utcnow)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,

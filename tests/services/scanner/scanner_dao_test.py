@@ -75,7 +75,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                     expected_key_value = fake.get(key)
                 saved_key_value = getattr(saved, key)
                 if key == 'violation_data':
-                    self.assertEquals(
+                    self.assertEqual(
                         expected_key_value,
                         json.loads(saved_key_value),
                         'The key value of "%s" differs:\nExpected: %s'
@@ -97,7 +97,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                                               type(saved_key_value))
                     )
                 else:
-                    self.assertEquals(
+                    self.assertEqual(
                         expected_key_value, saved_key_value,
                         'The key value of "%s" differs:\nExpected: %s'
                         '\nFound: %s' % (key, expected_key_value,
@@ -217,7 +217,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
             self.test_violation_data)
-        self.assertEquals(expected_hash, returned_hash)
+        self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
         expected_hash = ('f8813c34ab225002fb2c04ee392691b4e37c9a0eee1a08b277c36'
@@ -227,7 +227,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             None,
             self.test_inventory_data,
             self.test_violation_data)
-        self.assertEquals(expected_hash, returned_hash)
+        self.assertEqual(expected_hash, returned_hash)
 
     def test_get_latest_scanner_index_id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
@@ -250,7 +250,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.session.add(index2)
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
-        self.assertEquals(
+        self.assertEqual(
             expected_id, scanner_dao.get_latest_scanner_index_id(
                 self.session, expected_id))
 
@@ -271,7 +271,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
-        self.assertEquals(
+        self.assertEqual(
             expected_id,
             scanner_dao.get_latest_scanner_index_id(
                 self.session, expected_id, IndexState.FAILURE))
@@ -300,8 +300,8 @@ class ScannerIndexTest(ForsetiTestCase):
         mock_date_time.return_value = utc_now
         expected_id = date_time.get_utc_now_microtimestamp(utc_now)
         db_row = scanner_dao.ScannerIndex.create(expected_id)
-        self.assertEquals(expected_id, db_row.id)
-        self.assertEquals(utc_now, db_row.created_at_datetime)
+        self.assertEqual(expected_id, db_row.id)
+        self.assertEqual(utc_now, db_row.created_at_datetime)
         self.assertEquals(IndexState.CREATED, db_row.scanner_status)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')

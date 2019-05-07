@@ -81,23 +81,23 @@ class GroupsScannerTest(ForsetiTestCase):
         scanner = groups_scanner.GroupsScanner(
             {}, {}, mock_service_config, '', '', '')
         root = scanner._build_group_tree()
-        self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root, 'member_email'))
 
         # test rules will be associated to the correct nodes
         with open('tests/scanner/test_data/fake_group_rules.yaml', 'r') as f:
             rules = yaml.load(f)
         root_with_rules = scanner._apply_all_rules(root, rules)
-        self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root_with_rules, 'member_email'))
-        self.assertEquals(fake_data.EXPECTED_RULES_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_RULES_IN_TREE,
                           self._render_ascii(root_with_rules, 'rules'))
 
         # test violations are found correctly
         all_violations = scanner._find_violations(root_with_rules)
-        self.assertEquals(3, len(all_violations))
+        self.assertEqual(3, len(all_violations))
         for violation in all_violations:
-            self.assertEquals('christy@yahoo.com', violation.member_email)
+            self.assertEqual('christy@yahoo.com', violation.member_email)
 
 
 if __name__ == '__main__':

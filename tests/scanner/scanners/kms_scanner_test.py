@@ -138,10 +138,10 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
             state = violation.primary_version.get('state')
-            self.assertEquals(state, 'ENABLED')
-            self.assertEquals(violation.resource_type, 'kms_cryptokey')
-            self.assertEquals(violation.violation_type, VIOLATION_TYPE)
-        self.assertEquals(1, mock_output_results.call_count)
+            self.assertEqual(state, 'ENABLED')
+            self.assertEqual(violation.resource_type, 'kms_cryptokey')
+            self.assertEqual(violation.violation_type, VIOLATION_TYPE)
+        self.assertEqual(1, mock_output_results.call_count)
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
@@ -157,9 +157,9 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
-            self.assertEquals(violation.algorithm,
+            self.assertEqual(violation.algorithm,
                               'GOOGLE_SYMMETRIC_ENCRYPTION')
-        self.assertEquals(1, mock_output_results.call_count)
+        self.assertEqual(1, mock_output_results.call_count)
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
@@ -174,8 +174,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
-            self.assertEquals(violation.state, 'ENABLED')
-        self.assertEquals(1, mock_output_results.call_count)
+            self.assertEqual(violation.state, 'ENABLED')
+        self.assertEqual(1, mock_output_results.call_count)
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
@@ -191,8 +191,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
-            self.assertEquals(violation.protection_level, 'SOFTWARE')
-        self.assertEquals(1, mock_output_results.call_count)
+            self.assertEqual(violation.protection_level, 'SOFTWARE')
+        self.assertEqual(1, mock_output_results.call_count)
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
@@ -208,8 +208,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
         for violation in violations:
-            self.assertEquals(violation.purpose, 'ENCRYPT_DECRYPT')
-        self.assertEquals(1, mock_output_results.call_count)
+            self.assertEqual(violation.purpose, 'ENCRYPT_DECRYPT')
+        self.assertEqual(1, mock_output_results.call_count)
 
     @mock.patch.object(
         kms_scanner.KMSScanner,
@@ -225,8 +225,8 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.run()
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
-        self.assertEquals(1, len(violations))
-        self.assertEquals(1, mock_output_results.call_count)
+        self.assertEqual(1, len(violations))
+        self.assertEqual(1, mock_output_results.call_count)
 
 
 if __name__ == '__main__':

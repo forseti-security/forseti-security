@@ -120,23 +120,23 @@ class EnabledApisRulesEngineTest(ForsetiTestCase):
         violations = rules_engine.find_violations(
             self.proj_3,
             ['foo.googleapis.com', 'bar.googleapis.com', 'baz.googleapis.com'])
-        self.assertEquals(0, len(list(violations)))
+        self.assertEqual(0, len(list(violations)))
 
         # Non-whitelisted APIs.
         violations = list(rules_engine.find_violations(
             self.proj_3,
             ['alpha.googleapis.com', 'bar.googleapis.com', 'other-api.com']))
-        self.assertEquals(1, len(violations))
-        self.assertEquals(eare.VIOLATION_TYPE, violations[0].violation_type)
-        self.assertEquals(('alpha.googleapis.com', 'other-api.com'),
+        self.assertEqual(1, len(violations))
+        self.assertEqual(eare.VIOLATION_TYPE, violations[0].violation_type)
+        self.assertEqual(('alpha.googleapis.com', 'other-api.com'),
                           violations[0].apis)
 
         # API is whitelisted for Organization, but not globally (wildcard).
         violations = list(rules_engine.find_violations(
             self.proj_1, ['qux.googleapis.com']))
-        self.assertEquals(1, len(violations))
-        self.assertEquals(eare.VIOLATION_TYPE, violations[0].violation_type)
-        self.assertEquals(('qux.googleapis.com',), violations[0].apis)
+        self.assertEqual(1, len(violations))
+        self.assertEqual(eare.VIOLATION_TYPE, violations[0].violation_type)
+        self.assertEqual(('qux.googleapis.com',), violations[0].apis)
 
     def test_find_blacklist_violation(self):
         """Test blacklist rules."""
@@ -150,15 +150,15 @@ class EnabledApisRulesEngineTest(ForsetiTestCase):
         # Everything is allowed.
         violations = rules_engine.find_violations(
             self.proj_1, ['foo.googleapis.com', 'baz.googleapis.com'])
-        self.assertEquals(0, len(list(violations)))
+        self.assertEqual(0, len(list(violations)))
 
         # Blacklisted APIs.
         violations = list(rules_engine.find_violations(
             self.proj_1,
             ['foo.googleapis.com', 'bar.googleapis.com', 'baz.googleapis.com']))
-        self.assertEquals(1, len(violations))
-        self.assertEquals(eare.VIOLATION_TYPE, violations[0].violation_type)
-        self.assertEquals(('bar.googleapis.com',), violations[0].apis)
+        self.assertEqual(1, len(violations))
+        self.assertEqual(eare.VIOLATION_TYPE, violations[0].violation_type)
+        self.assertEqual(('bar.googleapis.com',), violations[0].apis)
 
     def test_find_required_violation(self):
         """Test required api rules."""
@@ -172,19 +172,19 @@ class EnabledApisRulesEngineTest(ForsetiTestCase):
         # Required API is included.
         violations = rules_engine.find_violations(
             self.proj_3, ['foo.googleapis.com', 'bar.googleapis.com'])
-        self.assertEquals(0, len(list(violations)))
+        self.assertEqual(0, len(list(violations)))
 
         # Required API is missing.
         violations = list(rules_engine.find_violations(
             self.proj_3, ['foo.googleapis.com']))
-        self.assertEquals(1, len(violations))
-        self.assertEquals(eare.VIOLATION_TYPE, violations[0].violation_type)
-        self.assertEquals(('bar.googleapis.com',), violations[0].apis)
+        self.assertEqual(1, len(violations))
+        self.assertEqual(eare.VIOLATION_TYPE, violations[0].violation_type)
+        self.assertEqual(('bar.googleapis.com',), violations[0].apis)
 
         # Required rule doesn't apply to project.
         violations = rules_engine.find_violations(
             self.proj_2, ['foo.googleapis.com'])
-        self.assertEquals(0, len(list(violations)))
+        self.assertEqual(0, len(list(violations)))
 
 
 if __name__ == '__main__':

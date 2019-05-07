@@ -56,7 +56,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.iam_api_client.get_curated_roles()
-        self.assertEquals(fake_iam.EXPECTED_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_curated_roles_raises(self):
@@ -74,7 +74,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         results = self.iam_api_client.get_organization_roles(
             fake_iam.FAKE_ORG_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_ORGANIZATION_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_ORGANIZATION_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_organization_roles_raises(self):
@@ -91,7 +91,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         results = self.iam_api_client.get_project_roles(
             fake_iam.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_PROJECT_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_PROJECT_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_project_roles_raises(self):
@@ -108,7 +108,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         result = self.iam_api_client.get_service_accounts(
             fake_iam.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNTS, result)
+        self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNTS, result)
 
     def test_get_service_accounts_raises(self):
         """Test get iam project service accounts permission denied."""
@@ -125,7 +125,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         result = self.iam_api_client.get_service_account_keys(
             fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
-        self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+        self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
     def test_get_service_account_keys_key_type(self):
         """Test get iam project service accounts."""
@@ -136,7 +136,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
             result = self.iam_api_client.get_service_account_keys(
                 fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type=key_type)
 
-            self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+            self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
     def test_get_service_account_keys_invalid_key_type(self):
         """Test get iam project service accounts with invalid key_type."""

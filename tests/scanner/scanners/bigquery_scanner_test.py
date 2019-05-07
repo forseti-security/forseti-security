@@ -130,7 +130,7 @@ class BigqueryScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(d.parent_project, d.bigquery_acl) for d in bq_acl_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
 
 if __name__ == '__main__':

@@ -84,13 +84,13 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
         all_groups_settings, iam_groups_settings = self.scanner._retrieve()
         violations = self.scanner._find_violations(all_groups_settings, 
                                                    iam_groups_settings)
-        self.assertEquals(1, mock_output_results.call_count)
-        self.assertEquals(3, len(violations))
-        self.assertEquals(json.loads(SETTINGS_1['settings'])['email'], 
+        self.assertEqual(1, mock_output_results.call_count)
+        self.assertEqual(3, len(violations))
+        self.assertEqual(json.loads(SETTINGS_1['settings'])['email'],
                           violations[0].group_email)
-        self.assertEquals(json.loads(SETTINGS_3['settings'])['email'], 
+        self.assertEqual(json.loads(SETTINGS_3['settings'])['email'],
                           violations[1].group_email)
-        self.assertEquals(json.loads(SETTINGS_5['settings'])['email'], 
+        self.assertEqual(json.loads(SETTINGS_5['settings'])['email'],
                           violations[2].group_email)
 
 

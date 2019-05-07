@@ -101,7 +101,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls.from_dict(
             'test-project', 'fake_inventory_data', acl_dict)
         violation = all_users_rule.find_violations(acl)
-        self.assertEquals(0, len(list(violation)))
+        self.assertEqual(0, len(list(violation)))
 
         # Exposed to everyone in the world.
         acl_dict = json.loads(
@@ -109,7 +109,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls.from_dict(
             'test-project', 'fake_inventory_data', acl_dict)
         violation = all_users_rule.find_violations(acl)
-        self.assertEquals(1, len(list(violation)))
+        self.assertEqual(1, len(list(violation)))
 
         # Exposed to all google-authenticated users in the world.
         acl_dict = json.loads(
@@ -117,7 +117,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls.from_dict(
             'test-project', 'fake_inventory_data', acl_dict)
         violation = all_authenticated_users_rule.find_violations(acl)
-        self.assertEquals(1, len(list(violation)))
+        self.assertEqual(1, len(list(violation)))
 
 BUCKET_ACL_TEMPLATE = """
 {{

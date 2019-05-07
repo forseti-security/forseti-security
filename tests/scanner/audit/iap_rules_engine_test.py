@@ -139,7 +139,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             iap_enabled=True)
         results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
-        self.assertEquals([], results)
+        self.assertEqual([], results)
 
     def test_enabled_violation(self):
         rule = ire.Rule('my rule', 0, [], [], '^True')
@@ -172,7 +172,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 iap_enabled_violation=True,
                 resource_data='{"full_name": "fake_full_name111", "id": "None", "name": "bs1"}'),
         ]
-        self.assertEquals(expected_violations, results)
+        self.assertEqual(expected_violations, results)
 
     def test_alternate_service_violation(self):
         rule = ire.Rule('my rule', 0, [], [], '^True')
@@ -208,7 +208,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 iap_enabled_violation=False,
                 resource_data='{"full_name": "fake_full_name111", "id": "None", "name": "bs1"}'),
         ]
-        self.assertEquals(expected_violations, results)
+        self.assertEqual(expected_violations, results)
 
     def test_direct_access_violation(self):
         rule = ire.Rule('my rule', 0, [], [], '^.*')
@@ -242,7 +242,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 iap_enabled_violation=False,
                 resource_data='{"full_name": "fake_full_name111", "id": "None", "name": "bs1"}'),
         ]
-        self.assertEquals(expected_violations, results)
+        self.assertEqual(expected_violations, results)
 
     def test_violations_iap_disabled(self):
         """If IAP is disabled, don't report other violations."""
@@ -266,7 +266,7 @@ class IapRulesEngineTest(ForsetiTestCase):
         results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         expected_violations = []
-        self.assertEquals(expected_violations, results)
+        self.assertEqual(expected_violations, results)
 
 
 if __name__ == '__main__':
