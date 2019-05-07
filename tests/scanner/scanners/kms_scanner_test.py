@@ -225,7 +225,7 @@ class KMSScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.run()
         crypto_key = self.scanner._retrieve()
         violations = self.scanner._find_violations(crypto_key)
-        self.assertEqual(1, len(violations))
+        self.assertEqual(6, len(violations))
         self.assertEqual(1, mock_output_results.call_count)
 
 
