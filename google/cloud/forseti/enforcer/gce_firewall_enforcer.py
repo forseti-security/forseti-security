@@ -341,7 +341,7 @@ class FirewallRules(object):
                         # could start with a number, so we prepend hn-
                         # (hashed network) to the name.
                         network_name = 'hn-' + hashlib.md5(
-                            network_name).hexdigest()
+                            network_name.encode()).hexdigest()
                         new_name = '%s-%s' % (
                             network_name[:(62 - len(new_rule['name']))],
                             new_rule['name'])

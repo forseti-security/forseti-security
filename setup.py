@@ -56,12 +56,11 @@ REQUIRED_PACKAGES = [
     'grpcio-tools==1.18.0',
     'protobuf==3.7.1',
     # Testing related.
-    'mock==2.0.0',
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
     'pylint==1.9.4',
     'pylint-quotes==0.2.1',
-    'SQLAlchemy==1.3.3',
+    'SQLAlchemy==1.2.18',
     'sqlalchemy-migrate==0.11.0'
 ]
 
