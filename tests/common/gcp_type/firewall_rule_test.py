@@ -16,7 +16,7 @@
 from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import parameterized
 
 from tests.common.gcp_type.test_data import fake_firewall_rules

@@ -17,7 +17,7 @@ from builtins import range
 import collections
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.scanner.test_data import fake_bigquery_scanner_data as fbsd
 from tests.unittest_utils import ForsetiTestCase

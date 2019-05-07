@@ -21,7 +21,7 @@ import copy
 import json
 import threading
 import unittest
-import mock
+import unittest.mock as mock
 
 from googleapiclient import errors
 import parameterized

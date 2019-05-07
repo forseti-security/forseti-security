@@ -21,7 +21,7 @@ import hashlib
 import json
 import os
 import unittest
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.scanner import scanner_base_db

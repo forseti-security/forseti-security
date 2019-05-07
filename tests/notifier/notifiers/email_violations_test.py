@@ -15,7 +15,7 @@
 """Tests the Email Violations upload notifier."""
 
 import filecmp
-import mock
+import unittest.mock as mock
 import os
 import unittest
 

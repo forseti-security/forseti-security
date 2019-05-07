@@ -16,7 +16,7 @@
 from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_enabled_apis_scanner_data as feasd

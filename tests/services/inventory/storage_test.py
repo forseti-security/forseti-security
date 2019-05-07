@@ -17,7 +17,7 @@
 from future import standard_library
 standard_library.install_aliases()
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import os
 from io import StringIO
 import unittest

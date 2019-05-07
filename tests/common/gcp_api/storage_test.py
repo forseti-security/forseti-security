@@ -16,7 +16,7 @@
 from future import standard_library
 standard_library.install_aliases()
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 import io

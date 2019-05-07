@@ -14,7 +14,7 @@
 """Scanner runner script test."""
 
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.common.util import string_formats

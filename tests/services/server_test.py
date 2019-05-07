@@ -16,7 +16,7 @@
 from builtins import object
 import argparse
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services import server

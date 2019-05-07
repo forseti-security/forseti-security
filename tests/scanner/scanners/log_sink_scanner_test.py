@@ -16,7 +16,7 @@
 from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.scanner.test_data import fake_log_sink_scanner_data as flsd
 from tests.unittest_utils import ForsetiTestCase

@@ -16,7 +16,7 @@
 import json
 import unittest
 import uuid
-import mock
+import unittest.mock as mock
 import parameterized
 import google.auth
 from google.oauth2 import credentials

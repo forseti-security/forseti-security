@@ -14,7 +14,7 @@
 
 """Test BaseRulesEngine and associated modules."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase

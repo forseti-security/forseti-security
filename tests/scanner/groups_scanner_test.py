@@ -16,7 +16,7 @@
 
 from builtins import str
 import json
-import mock
+import unittest.mock as mock
 
 import anytree
 import unittest

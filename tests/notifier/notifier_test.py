@@ -14,7 +14,7 @@
 """Tests the notifier module."""
 
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.notifier import notifier

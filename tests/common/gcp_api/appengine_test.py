@@ -15,7 +15,7 @@
 """Tests the AppEngine client."""
 import unittest
 from googleapiclient import errors
-import mock
+import unittest.mock as mock
 import httplib2
 import google.auth
 from google.oauth2 import credentials

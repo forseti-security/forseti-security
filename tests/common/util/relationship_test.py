@@ -15,7 +15,7 @@
 """Tests the RelationshipUtil."""
 
 from tests.unittest_utils import ForsetiTestCase
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.common.util import relationship

@@ -18,7 +18,7 @@ from datetime import datetime
 import json
 # pylint says unittest goes before mock
 import unittest
-import mock
+import unittest.mock as mock
 
 # pylint says sqlalchemy.orm goes before google.auth
 from sqlalchemy.orm import sessionmaker

@@ -17,7 +17,7 @@ from builtins import object
 from datetime import datetime
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase

@@ -21,7 +21,7 @@ import json
 import socket
 from io import StringIO
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.auth.transport import requests

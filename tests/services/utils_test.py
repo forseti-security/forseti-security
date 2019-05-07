@@ -15,7 +15,7 @@
 
 from builtins import range
 import unittest
-import mock
+import unittest.mock as mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.services.utils import get_resources_from_full_name

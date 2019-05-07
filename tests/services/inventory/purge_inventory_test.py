@@ -14,7 +14,7 @@
 """Unit Tests: Purge inventory for Forseti Server."""
 
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.services.util.db import create_test_engine

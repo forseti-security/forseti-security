@@ -16,7 +16,7 @@
 
 import copy
 import itertools
-import mock
+import unittest.mock as mock
 import unittest
 import yaml
 

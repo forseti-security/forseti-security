@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from builtins import zip
-import mock
+import unittest.mock as mock
 import json
 import unittest
 import parameterized

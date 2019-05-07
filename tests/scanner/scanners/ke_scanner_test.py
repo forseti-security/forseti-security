@@ -16,7 +16,7 @@
 
 from builtins import object
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests import unittest_utils
 from tests.services.util.db import create_test_engine

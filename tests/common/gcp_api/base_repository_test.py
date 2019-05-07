@@ -19,7 +19,7 @@ import threading
 import unittest
 from googleapiclient import discovery
 from googleapiclient import http
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 from google.oauth2 import service_account

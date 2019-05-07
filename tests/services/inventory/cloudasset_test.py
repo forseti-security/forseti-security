@@ -17,7 +17,7 @@ import os
 import unittest
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker

@@ -17,7 +17,7 @@
 import ast
 import datetime
 import json
-import mock
+import unittest.mock as mock
 
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import cscc_notifier

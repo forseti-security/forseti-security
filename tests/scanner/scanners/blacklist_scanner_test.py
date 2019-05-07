@@ -15,7 +15,7 @@
 """Blacklist Scanner Test"""
 
 from builtins import zip
-import mock
+import unittest.mock as mock
 from mock import patch, Mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import instance

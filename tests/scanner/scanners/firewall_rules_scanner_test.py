@@ -16,7 +16,7 @@
 
 from datetime import datetime
 import json
-import mock
+import unittest.mock as mock
 import os
 import parameterized
 import unittest

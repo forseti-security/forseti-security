@@ -19,7 +19,7 @@ from builtins import object
 from argparse import ArgumentParser
 from copy import copy
 import json
-import mock
+import unittest.mock as mock
 import os
 import shlex
 import shutil

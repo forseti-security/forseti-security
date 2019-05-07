@@ -16,7 +16,7 @@
 
 import json
 import unittest
-import mock
+import unittest.mock as mock
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 import yaml

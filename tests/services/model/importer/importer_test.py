@@ -15,7 +15,7 @@
 from __future__ import print_function
 
 from builtins import object
-import mock
+import unittest.mock as mock
 import os
 import shutil
 import tempfile

@@ -14,7 +14,7 @@
 
 """Tests for RoleScanner."""
 
-import mock
+import unittest.mock as mock
 import tempfile
 
 from tests.scanner.test_data import fake_role_scanner_data as frsd

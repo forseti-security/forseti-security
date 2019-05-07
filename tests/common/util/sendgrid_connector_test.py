@@ -14,7 +14,7 @@
 
 """Tests for the Email utility."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from sendgrid.helpers import mail

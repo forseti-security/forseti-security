@@ -22,7 +22,7 @@ import json
 import unittest
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 
 from tests.enforcer import testing_constants as constants
 

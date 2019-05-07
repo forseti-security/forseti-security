@@ -14,7 +14,7 @@
 """Scanner runner script test."""
 
 from datetime import datetime, timedelta
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 import unittest
 

@@ -16,7 +16,7 @@
 
 from builtins import object
 import unittest
-import mock
+import unittest.mock as mock
 import json
 from datetime import datetime
 

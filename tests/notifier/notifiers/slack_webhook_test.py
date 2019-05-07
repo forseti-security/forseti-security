@@ -14,7 +14,7 @@
 """Tests the email scanner summary notifier."""
 
 import json
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.notifier.notifiers import slack_webhook

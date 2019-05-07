@@ -14,7 +14,7 @@
 
 """Tests the GCS Violations upload notifier."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from datetime import datetime

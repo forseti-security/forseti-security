@@ -14,7 +14,7 @@
 
 """Tests the Stackdriver Logging API client."""
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
