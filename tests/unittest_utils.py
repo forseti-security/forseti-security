@@ -19,7 +19,6 @@ import collections
 import contextlib
 import json
 import logging
-import mock
 import os
 import tempfile
 import unittest
