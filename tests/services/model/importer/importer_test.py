@@ -126,7 +126,7 @@ class ImporterTest(ForsetiTestCase):
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(
+        self.assertEqual(
             {'pristine': True,
              'source': 'inventory',
              'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
@@ -178,7 +178,7 @@ class ImporterTest(ForsetiTestCase):
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(
+        self.assertEqual(
             {'pristine': True,
              'source': 'inventory',
              'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
@@ -238,7 +238,7 @@ class ImporterTest(ForsetiTestCase):
 
 
         action.assert_called_once_with(1, 2)
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -272,7 +272,7 @@ class ImporterTest(ForsetiTestCase):
 
         calls = [mock.call(1, 2), mock.call(4, 5)]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -307,7 +307,7 @@ class ImporterTest(ForsetiTestCase):
                                                    flush_count)
 
         action.assert_called_once_with('not_tuple')
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -340,7 +340,7 @@ class ImporterTest(ForsetiTestCase):
                                                    flush_count)
         calls = [mock.call('data'), mock.call('data1')]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)

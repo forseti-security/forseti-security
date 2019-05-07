@@ -918,11 +918,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/u1',
+    self.assertEqual('user/u1',
                       data_access.get_member(session, 'user/u1')[0].name)
-    self.assertEquals('user/u6',
+    self.assertEqual('user/u6',
                       data_access.get_member(session, 'user/u6')[0].name)
 
     # Non-existing users should not be found
@@ -1012,11 +1012,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3g1')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/g3g1u2',
+    self.assertEqual('user/g3g1u2',
                       data_access.get_member(session, 'user/g3g1u2')[0].name)
-    self.assertEquals('user/g2u3',
+    self.assertEqual('user/g2u3',
                       data_access.get_member(session, 'user/g2u3')[0].name)
 
     # Non-existing users should not be found

@@ -520,11 +520,11 @@ class IapScannerTest(ForsetiTestCase):
                      for resource in resources))
 
         self.maxDiff = None
-        self.assertEquals(
+        self.assertEqual(
             set([bs.key for bs in list(BACKEND_SERVICES.values())]),
             set(iap_resources.keys()))
 
-        self.assertEquals(
+        self.assertEqual(
             iap_scanner.IapResource(
                 project_full_name='organization/12345/project/foo/',
                 backend_service=BACKEND_SERVICES['bs1'],
@@ -548,7 +548,7 @@ class IapScannerTest(ForsetiTestCase):
         iap_scanner.IapScanner, '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
-        self.assertEquals(1, mock_output_results.call_count)
+        self.assertEqual(1, mock_output_results.call_count)
 
 if __name__ == '__main__':
     unittest.main()

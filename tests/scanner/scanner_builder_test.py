@@ -54,7 +54,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
         self.assertFalse(mock_logger.called)
-        self.assertEquals(4, len(runnable_pipelines))
+        self.assertEqual(4, len(runnable_pipelines))
 
         expected_pipelines = ['BigqueryScanner', 'BucketsAclScanner',
                               'CloudSqlAclScanner', 'IamPolicyScanner']
@@ -67,7 +67,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
-        self.assertEquals(0, len(runnable_pipelines))
+        self.assertEqual(0, len(runnable_pipelines))
 
     @mock.patch('google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
@@ -77,7 +77,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
-        self.assertEquals(1, len(runnable_pipelines))
+        self.assertEqual(1, len(runnable_pipelines))
         expected_pipelines = ['IamPolicyScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
@@ -91,7 +91,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        self.assertEquals(2, len(runnable_pipelines))
+        self.assertEqual(2, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner', 'IamPolicyScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
@@ -107,7 +107,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             'Configured scanner is undefined '
             'in scanner requirements map : %s', 'non_exist_scanner')
 
-        self.assertEquals(1, len(runnable_pipelines))
+        self.assertEqual(1, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
@@ -125,4 +125,4 @@ class ScannerBuilderTest(ForsetiTestCase):
 
         expected_scanner_name = 'ExternalProjectAccessScanner'
         actual_scanner_name = type(runnable_pipelines[0]).__name__
-        self.assertEquals(expected_scanner_name, actual_scanner_name)
+        self.assertEqual(expected_scanner_name, actual_scanner_name)

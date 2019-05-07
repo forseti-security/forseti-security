@@ -109,7 +109,7 @@ class LogSinkScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(parent, data) for parent, data in log_sink_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         log_sink_scanner.LogSinkScanner,

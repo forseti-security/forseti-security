@@ -222,7 +222,7 @@ class FirewallRulesTest(ForsetiTestCase):
             'x' * (62 - len(rule['name'])) + '-' + rule['name']
             for rule in test_rules
         ]
-        self.assertItemsEqual(expected_rule_names,
+        self.assertCountEqual(expected_rule_names,
                               list(self.firewall_rules.rules.keys()))
 
     def test_add_rules_for_network_long_name_duplicate_rule(self):
@@ -261,7 +261,7 @@ class FirewallRulesTest(ForsetiTestCase):
         expected_rule_names.append('hn-' + fe.hashlib.md5(test_networks[2])
                                    .hexdigest() + '-' + rule_name)
 
-        self.assertItemsEqual(expected_rule_names,
+        self.assertCountEqual(expected_rule_names,
                               list(self.firewall_rules.rules.keys()))
 
     def test_add_rules_for_network_is_idempotent(self):

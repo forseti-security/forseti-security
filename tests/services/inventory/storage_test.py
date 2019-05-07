@@ -218,7 +218,7 @@ class InventoryIndexTest(ForsetiTestCase):
         inv_index = self.session.query(InventoryIndex).get(inv_index_id)
         expected = {'bucket': 2, 'object': 1, 'organization': 1, 'project': 2}
         inv_summary = inv_index.get_summary(self.session)
-        self.assertEquals(expected, inv_summary)
+        self.assertEqual(expected, inv_summary)
 
     @unittest.skip('The return value for query.all will leak to other tests.')
     def test_get_lifecycle_state_details_can_handle_none_result(self):
@@ -233,7 +233,7 @@ class InventoryIndexTest(ForsetiTestCase):
         details = inventory_index.get_lifecycle_state_details(mock_session,
                                                               'abc')
 
-        self.assertEquals({}, details)
+        self.assertEqual({}, details)
 
 
 class CaiTemporaryStoreTest(ForsetiTestCase):

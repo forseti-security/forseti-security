@@ -103,7 +103,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                 violations_as_dict,
                 source_id='organizations/11111/sources/22222'))
 
-        self.assertEquals(expected_findings,
+        self.assertEqual(expected_findings,
                           ast.literal_eval(json.dumps(finding_results)))
 
 
@@ -114,13 +114,13 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         notifier._send_findings_to_cscc = mock.MagicMock()
         notifier.LOGGER = mock.MagicMock()
 
-        self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
+        self.assertEqual(0, notifier._send_findings_to_cscc.call_count)
         notifier.run(None, source_id='111')
         
         calls = notifier._send_findings_to_cscc.call_args_list
         call = calls[0]
         _, kwargs = call
-        self.assertEquals('111', kwargs['source_id'])
+        self.assertEqual('111', kwargs['source_id'])
 
     def test_outdated_findings_are_found(self):
 
@@ -182,7 +182,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
                                                             FINDINGS_IN_CSCC)
-        self.assertEquals(EXPECTED_INACTIVE_FINDINGS[0][1]['state'],
+        self.assertEqual(EXPECTED_INACTIVE_FINDINGS[0][1]['state'],
                           inactive_findings[0][1]['state'])
 
     def test_outdated_findings_are_not_found(self):

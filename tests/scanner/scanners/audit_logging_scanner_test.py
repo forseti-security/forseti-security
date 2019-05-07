@@ -123,7 +123,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in audit_logging_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         audit_logging_scanner.AuditLoggingScanner,

@@ -106,7 +106,7 @@ rules:
         _mock_bucket = get_mock_role(role_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, 'role')
 
@@ -169,7 +169,7 @@ rules:
         _mock_bucket = get_mock_role(role_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, 'role')
 

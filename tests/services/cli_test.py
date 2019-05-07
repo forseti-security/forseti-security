@@ -464,7 +464,7 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a role prefix',
             ctxt.exception.message)
 
@@ -498,7 +498,7 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a permission',
             ctxt.exception.message)
 
