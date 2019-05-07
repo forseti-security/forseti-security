@@ -60,7 +60,7 @@ class InventorySummaryTest(ForsetiTestCase):
             string_formats.INVENTORY_SUMMARY_CSV_FMT)
         expected_filename = string_formats.INVENTORY_SUMMARY_CSV_FMT.format(
                 notifier.inventory_index_id, expected_timestamp)
-        self.assertEquals(expected_filename, actual_filename)
+        self.assertEqual(expected_filename, actual_filename)
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.inventory_summary.date_time',
@@ -84,7 +84,7 @@ class InventorySummaryTest(ForsetiTestCase):
             string_formats.INVENTORY_SUMMARY_JSON_FMT)
         expected_filename = string_formats.INVENTORY_SUMMARY_JSON_FMT.format(
                 notifier.inventory_index_id, expected_timestamp)
-        self.assertEquals(expected_filename, actual_filename)
+        self.assertEqual(expected_filename, actual_filename)
 
     @mock.patch(
         'google.cloud.forseti.common.util.file_uploader.StorageClient',
@@ -147,7 +147,7 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier._upload_to_gcs([{}])
 
         self.assertTrue(notifier._get_output_filename.called)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.INVENTORY_SUMMARY_JSON_FMT,
             notifier._get_output_filename.call_args[0][0])
         self.assertFalse(mock_write_csv.called)
@@ -199,7 +199,7 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier._upload_to_gcs([{}])
 
         self.assertTrue(mock_logger.error.called)
-        self.assertEquals(
+        self.assertEqual(
             'gcs_path not set for inventory summary notifier.',
             mock_logger.error.call_args[0][0])
 
@@ -234,7 +234,7 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier.run()
 
         self.assertTrue(mock_logger.info.called)
-        self.assertEquals(
+        self.assertEqual(
             'No inventory configuration for notifier.',
             mock_logger.info.call_args[0][0])
 
@@ -265,7 +265,7 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier.run()
 
         self.assertTrue(mock_logger.info.called)
-        self.assertEquals(
+        self.assertEqual(
             'All inventory summaries are disabled.',
             mock_logger.info.call_args[0][0])
 
@@ -314,7 +314,7 @@ class InventorySummaryTest(ForsetiTestCase):
             inventory_summary_object._get_gsuite_dwd_status(
                 mock_inventory_summary_data))
 
-        self.assertEquals(expected_get_gsuite_dwd_status_output,
+        self.assertEqual(expected_get_gsuite_dwd_status_output,
                           test_get_gsuite_dwd_status_output)
 
     def test_get_gsuite_dwd_status_enabled(self):
@@ -341,7 +341,7 @@ class InventorySummaryTest(ForsetiTestCase):
             inventory_summary_object._get_gsuite_dwd_status(
                 mock_inventory_summary_data))
 
-        self.assertEquals(expected_get_gsuite_dwd_status_output,
+        self.assertEqual(expected_get_gsuite_dwd_status_output,
                           test_get_gsuite_dwd_status_output)
 
     def test_inventory_summary_can_run_successfully(self):
@@ -407,13 +407,13 @@ class InventorySummaryTest(ForsetiTestCase):
                 {'count': 1, 'resource_type': 'project - ACTIVE'},
                 {'count': 1, 'resource_type': 'project - DELETE PENDING'}])
         
-        self.assertEquals(1, notifier._upload_to_gcs.call_count)
-        self.assertEquals(
+        self.assertEqual(1, notifier._upload_to_gcs.call_count)
+        self.assertEqual(
             expected_summary_data_upload_to_gcs,
             notifier._upload_to_gcs.call_args[0][0])
 
-        self.assertEquals(1, notifier._send_email.call_count)
-        self.assertEquals(
+        self.assertEqual(1, notifier._send_email.call_count)
+        self.assertEqual(
             expected_summary_data_send_email,
             notifier._send_email.call_args[0])
 

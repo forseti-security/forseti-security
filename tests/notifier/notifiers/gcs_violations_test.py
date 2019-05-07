@@ -63,7 +63,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             self.fake_notifier_conf)
         actual_filename = gvp._get_output_filename(
             string_formats.VIOLATION_CSV_FMT)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_CSV_FMT.format(
                 gvp.resource, gvp.inventory_index_id, expected_timestamp),
             actual_filename)
@@ -87,7 +87,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             self.fake_notifier_conf)
         actual_filename = gvp._get_output_filename(
             string_formats.VIOLATION_JSON_FMT)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_JSON_FMT.format(
                 gvp.resource, gvp.inventory_index_id, expected_timestamp),
             actual_filename)
@@ -149,7 +149,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         gvp.run()
 
         self.assertTrue(gvp._get_output_filename.called)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_JSON_FMT,
             gvp._get_output_filename.call_args[0][0])
         self.assertFalse(mock_write_csv.called)
@@ -178,7 +178,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         gvp.run()
 
         self.assertTrue(gvp._get_output_filename.called)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_CSV_FMT,
             gvp._get_output_filename.call_args[0][0])
         self.assertTrue(mock_csv_writer.called)
