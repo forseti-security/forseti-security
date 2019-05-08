@@ -22,6 +22,7 @@ and varying formats to you to events in your Google Cloud Platform
 * Email
 * Slack
 * Cloud Storage
+* Cloud Security Command Center
 
 **The possible formats of notifications**
 * Human-readable data: CSV
