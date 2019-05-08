@@ -155,6 +155,7 @@ inventory:
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project
+        #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
         #    - compute.googleapis.com/Snapshot
