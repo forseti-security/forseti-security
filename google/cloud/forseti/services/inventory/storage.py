@@ -854,7 +854,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip())
+                row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.
