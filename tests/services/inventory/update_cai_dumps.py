@@ -290,7 +290,6 @@ def subnetwork(item):
     return _create_compute_asset(item, 'compute.googleapis.com/Subnetwork')
 
 
-
 CAI_TYPE_MAP = {
     'organization': organization,
     'folder': folder,
@@ -320,12 +319,14 @@ CAI_TYPE_MAP = {
     'subnetwork': subnetwork,
 }
 
+
 def write_data(data, destination):
     """Write data to destination."""
     with open(destination, 'w') as f:
         for line in data:
             f.write(line)
             f.write('\n')
+
 
 def convert_item_to_assets(item):
     """Convert the data in an item to Asset protos in json format."""

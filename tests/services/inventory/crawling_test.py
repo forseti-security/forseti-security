@@ -441,6 +441,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
@@ -505,7 +506,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
-            'forwardingrule': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 2},
@@ -624,6 +625,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()
