@@ -169,53 +169,53 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.run()
         expected_violations = [
             {'resource_id': NODE_VERSION_NOT_ALLOWED_ID,
-             'resource_name': u'node-version-not-allowed',
+             'resource_name': 'node-version-not-allowed',
              'rule_name': 'Disallowed node pool version',
              'resource_data': '{"currentMasterVersion": "1.7.11-gke.1", "currentNodeVersion": "1.7.10-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "nodePools": [{"name": "default-pool", "version": "1.7.10-gke.1"}], "selfLink": "node-version-not-allowed.com"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
+             'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
              'rule_index': 2,
              'violation_data': {
                  'violation_reason': (
                      u"Node pool version 1.7.10-gke.1 is not allowed (['>= "
                      "1.6.13-gke.1', '>= 1.7.11-gke.1', '>= 1.8.4-gke.1', "
                      "'>= 1.9.*'])."),
-                 'cluster_name': u'node-version-not-allowed',
-                 'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
-                 'node_pool_name': u'default-pool'},
+                 'cluster_name': 'node-version-not-allowed',
+                 'project_id': 'foo',
+                 'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
+                 'node_pool_name': 'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER},
             {'resource_id': MASTER_VERSION_INVALID_ID,
-             'resource_name': u'master-version-invalid',
+             'resource_name': 'master-version-invalid',
              'rule_name': 'Unsupported master version',
              'resource_data': '{"currentMasterVersion": "1.6.13-gke.1", "currentNodeVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "nodePools": [{"name": "default-pool", "version": "1.6.13-gke.1"}], "selfLink": "master-version-invalid.com"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
+             'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
              'rule_index': 1,
              'violation_data': {
                  'violation_reason': (
                      u"Master version 1.6.13-gke.1 is not supported "
-                     "([u'1.7.11-gke.1', u'1.8.6-gke.0'])."),
-                 'cluster_name': u'master-version-invalid',
-                 'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
+                     "(['1.7.11-gke.1', '1.8.6-gke.0'])."),
+                 'cluster_name': 'master-version-invalid',
+                 'project_id': 'foo',
+                 'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
                  'node_pool_name': ''},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER},
             {'resource_id': NODE_VERSION_INVALID_ID,
-             'resource_name': u'node-version-invalid',
+             'resource_name': 'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
              'resource_data': '{"currentMasterVersion": "1.8.6-gke.0", "currentNodeVersion": "1.8.4-gke.1", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "nodePools": [{"name": "default-pool", "version": "1.8.4-gke.1"}], "selfLink": "node-version-invalid.com"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
+             'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
              'rule_index': 0,
              'violation_data': {
                  'violation_reason': (
                      u"Node pool version 1.8.4-gke.1 is not supported "
-                     "([u'1.6.13-gke.1', u'1.7.10-gke.1', u'1.7.11-gke.1', "
-                     "u'1.8.6-gke.0'])."),
-                 'cluster_name': u'node-version-invalid',
-                 'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
-                 'node_pool_name': u'default-pool'},
+                     "(['1.6.13-gke.1', '1.7.10-gke.1', '1.7.11-gke.1', "
+                     "'1.8.6-gke.0'])."),
+                 'cluster_name': 'node-version-invalid',
+                 'project_id': 'foo',
+                 'full_name': 'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
+                 'node_pool_name': 'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER}]
 

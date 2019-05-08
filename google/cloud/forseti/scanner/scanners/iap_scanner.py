@@ -137,11 +137,36 @@ class _RunData(object):
                          'find the appropriate port from backend service '
                          'or instance group.')
             return None
+
         return NetworkPort(
             network=network_type.Key.from_url(
                 instance_group.network,
                 project_id=instance_group.project_id),
             port=port)
+
+    @staticmethod
+    def convert_dict_key_to_str(instance_dict, target_key):
+        """Return a value from a dict with str keys.
+
+        Args:
+            instance_dict (dict): dict to convert
+            target_key (object): object key
+
+        Returns:
+            value: value return from dict using str key
+        """
+
+        instance_dict_str = {}
+        target_key_str = str(target_key)
+        try:
+            for key, value in instance_dict.items():
+                key_str = str(key)
+                instance_dict_str[key_str] = value
+            return instance_dict_str.get(target_key_str)
+        except Exception as e:
+            logger.INFO('Convert dict did not work: %s' % e)
+            return None
+
 
     def find_instance_group_by_url(self, instance_group_url):
         """Find an instance group for the given URL.
@@ -156,7 +181,11 @@ class _RunData(object):
             return None
 
         target_key = instance_group_type.Key.from_url(instance_group_url)
-        return self.instance_groups_by_key.get(target_key)
+        if self.instance_groups_by_key.get(target_key) is None:
+            return self.convert_dict_key_to_str(self.instance_groups_by_key,
+                                                target_key)
+        else:
+            return self.instance_groups_by_key.get(target_key)
 
     def find_instance_by_url(self, instance_url):
         """Find an instance for the given URL.
@@ -168,7 +197,11 @@ class _RunData(object):
             Instance: instance
         """
         target_key = instance_type.Key.from_url(instance_url)
-        return self.instances_by_key.get(target_key)
+        if self.instances_by_key.get(target_key) is None:
+            return self.convert_dict_key_to_str(self.instances_by_key,
+                                                target_key)
+        else:
+            return self.instances_by_key.get(target_key)
 
     def firewall_allowed_sources(self, network_port, tag):
         """Which source (networks, tags) can connect to the given destination?
@@ -273,6 +306,10 @@ class _RunData(object):
         # instance template.
         instance_template = self.instance_templates_by_group_key.get(
             instance_group.key)
+        if instance_template is None:
+            instance_template = self.convert_dict_key_to_str(
+                self.instance_templates_by_group_key,
+                instance_group.key)
         if instance_template:
             template_tags = instance_template.properties.get('tags', {})
             tags.update(template_tags.get('items', []))
