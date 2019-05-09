@@ -453,6 +453,8 @@ class FirewallRules(object):
                 if value and isinstance(value[0], dict):  # List of dictionaries
                     for i, entry in enumerate(value):
                         value[i] = self._order_lists_in_rule(entry)
+                    value_key = list(value[0].keys())[0]
+                    value = sorted(value, key=lambda k: k[value_key])
 
                 sorted_rule[key] = sorted(value, key=sorted)
             elif isinstance(value, dict):
