@@ -211,7 +211,7 @@ class ProjectEnforcer(object):
         """
         rules_after_enforcement = None
         retry_enforcement_count = 0
-        while True and self.result.status not in (STATUS_ERROR, STATUS_DELETED):
+        while self.result.status not in (STATUS_ERROR, STATUS_DELETED):
             change_count = 0
             try:
                 change_count = firewall_enforcer.apply_firewall(
