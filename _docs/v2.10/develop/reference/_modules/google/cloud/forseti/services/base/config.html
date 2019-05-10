@@ -1,0 +1,476 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.base.config"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.base.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Base classes required for handling configuration of the gRPC server.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.pool</span> <span class="k">import</span> <span class="n">ThreadPool</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">file_loader</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services</span> <span class="k">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.client</span> <span class="k">import</span> <span class="n">ClientComposition</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.dao</span> <span class="k">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.dao</span> <span class="k">import</span> <span class="n">ModelManager</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.storage</span> <span class="k">import</span> <span class="n">Storage</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_validate_cai_enabled"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config._validate_cai_enabled">[docs]</a><span class="k">def</span> <span class="nf">_validate_cai_enabled</span><span class="p">(</span><span class="n">root_resource_id</span><span class="p">,</span> <span class="n">cai_configs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Verifies if CloudAsset Inventory can be used for this inventory config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        root_resource_id (str): Root resource to start crawling from</span>
+<span class="sd">        cai_configs (dict): Settings for the Cloud AssetInventory API</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if CAI is supported and enabled by configuration, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cai_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;CloudAsset Inventory disabled by configuration.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cai_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gcs_path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;CloudAsset Inventory not configured with a valid GCS &#39;</span>
+                     <span class="s1">&#39;bucket.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root_resource_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;CloudAsset Inventory only supported when with an &#39;</span>
+                     <span class="s1">&#39;organization root resource. Disabling CloudAsset &#39;</span>
+                     <span class="s1">&#39;Inventory.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="AbstractInventoryConfig"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig">[docs]</a><span class="k">class</span> <span class="nc">AbstractInventoryConfig</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for service configuration.</span>
+
+<span class="sd">    This class is used to implement dependency injection for the gRPC</span>
+<span class="sd">    services.&quot;&quot;&quot;</span>
+
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_root_resource_id"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_root_resource_id">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_root_resource_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the root resource id.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_gsuite_admin_email"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_gsuite_admin_email">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_gsuite_admin_email</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns gsuite admin email.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_api_quota_configs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_api_quota_configs">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_api_quota_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the per API quota configs.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_retention_days_configs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_retention_days_configs">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_retention_days_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the days of inventory data to retain.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_cai_asset_types"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_asset_types">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cai_asset_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the GCS bucket path to store the CAI data dumps in.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_cai_enabled"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_enabled">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cai_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if the cloudasset API should be used.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_cai_gcs_path"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_gcs_path">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cai_gcs_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the GCS bucket path to store the CAI data dumps in.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_cai_timeout"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_timeout">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cai_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the timeout in seconds for calls to the Cloud Asset API.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.get_service_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_service_config">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_service_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the service config.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractInventoryConfig.set_service_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractInventoryConfig.set_service_config">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_service_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attach a service configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            service_config (object): Service configuration.&quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="AbstractServiceConfig"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig">[docs]</a><span class="k">class</span> <span class="nc">AbstractServiceConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for service configuration.</span>
+
+<span class="sd">    This class is used to implement dependency injection for the gRPC</span>
+<span class="sd">    services.&quot;&quot;&quot;</span>
+
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+
+<div class="viewcode-block" id="AbstractServiceConfig.get_engine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig.get_engine">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the database engine.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractServiceConfig.scoped_session"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig.scoped_session">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">scoped_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scoped session.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractServiceConfig.client"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig.client">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an API client.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractServiceConfig.run_in_background"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig.run_in_background">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">run_in_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs a function in a thread pool in the background.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func (Function): Function to be executed.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractServiceConfig.get_storage_class"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.AbstractServiceConfig.get_storage_class">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_storage_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the class used for the inventory storage.&quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="InventoryConfig"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig">[docs]</a><span class="k">class</span> <span class="nc">InventoryConfig</span><span class="p">(</span><span class="n">AbstractInventoryConfig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements composed dependency injection for the inventory.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">root_resource_id</span><span class="p">,</span>
+                 <span class="n">gsuite_admin_email</span><span class="p">,</span>
+                 <span class="n">api_quota_configs</span><span class="p">,</span>
+                 <span class="n">retention_days</span><span class="p">,</span>
+                 <span class="n">cai_configs</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            root_resource_id (str): Root resource to start crawling from</span>
+<span class="sd">            gsuite_admin_email (str): G Suite admin email</span>
+<span class="sd">            api_quota_configs (dict): API quota configs</span>
+<span class="sd">            retention_days (int): Days of inventory tables to retain</span>
+<span class="sd">            cai_configs (dict): Settings for the Cloud AssetInventory API</span>
+<span class="sd">            *args: args when creating InventoryConfig</span>
+<span class="sd">            **kwargs: kwargs when creating InventoryConfig</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InventoryConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_resource_id</span> <span class="o">=</span> <span class="n">root_resource_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gsuite_admin_email</span> <span class="o">=</span> <span class="n">gsuite_admin_email</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_quota_configs</span> <span class="o">=</span> <span class="n">api_quota_configs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retention_days</span> <span class="o">=</span> <span class="n">retention_days</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cai_configs</span> <span class="o">=</span> <span class="n">cai_configs</span>
+
+<div class="viewcode-block" id="InventoryConfig.get_root_resource_id"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_root_resource_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_root_resource_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the configured root resource id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Root resource id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_resource_id</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_gsuite_admin_email"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_gsuite_admin_email">[docs]</a>    <span class="k">def</span> <span class="nf">get_gsuite_admin_email</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the gsuite admin email to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Gsuite admin email.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsuite_admin_email</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_api_quota_configs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_api_quota_configs">[docs]</a>    <span class="k">def</span> <span class="nf">get_api_quota_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the per API quota configs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The API quota configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_quota_configs</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_retention_days_configs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_retention_days_configs">[docs]</a>    <span class="k">def</span> <span class="nf">get_retention_days_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the days of inventory data to retain.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The days of inventory data to retain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retention_days</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_cai_asset_types"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_asset_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_cai_asset_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the list of Asset Types to include in the CAI export.</span>
+
+<span class="sd">        The full list of supported asset types is at:</span>
+<span class="sd">        https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The list of asset types to include, or None if all asset</span>
+<span class="sd">                types should be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cai_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;asset_types&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_cai_enabled"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">get_cai_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if the cloudasset API should be used for the inventory.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether CAI should be integrated with the inventory or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_validate_cai_enabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_resource_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cai_configs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_cai_gcs_path"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_gcs_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_cai_gcs_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the GCS bucket path to store the CAI data dumps in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The GCS bucket path for CAI data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cai_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gcs_path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_cai_timeout"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">get_cai_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the timeout in seconds for calls to the Cloud Asset API.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Timeout in seconds, defaults to 3600 seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cai_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;api_timeout&#39;</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.get_service_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.get_service_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_service_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the attached service configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Service configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span></div>
+
+<div class="viewcode-block" id="InventoryConfig.set_service_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.InventoryConfig.set_service_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_service_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attach a service configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            service_config (object): Service configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span> <span class="o">=</span> <span class="n">service_config</span></div></div>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<div class="viewcode-block" id="ServiceConfig"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig">[docs]</a><span class="k">class</span> <span class="nc">ServiceConfig</span><span class="p">(</span><span class="n">AbstractServiceConfig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements composed dependency injection to Forseti Server services.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">forseti_config_file_path</span><span class="p">,</span>
+                 <span class="n">forseti_db_connect_string</span><span class="p">,</span>
+                 <span class="n">endpoint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            forseti_config_file_path (str): Path to Forseti configuration file</span>
+<span class="sd">            forseti_db_connect_string (str): Forseti database string</span>
+<span class="sd">            endpoint (str): server endpoint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ServiceConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thread_pool</span> <span class="o">=</span> <span class="n">ThreadPool</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">forseti_db_connect_string</span><span class="p">,</span>
+                                    <span class="n">pool_recycle</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_manager</span> <span class="o">=</span> <span class="n">ModelManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sessionmaker</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scoped_sessionmaker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">forseti_config_file_path</span> <span class="o">=</span> <span class="n">forseti_config_file_path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scanner_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notifier_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forseti_config</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ServiceConfig._read_from_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig._read_from_config">[docs]</a>    <span class="k">def</span> <span class="nf">_read_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read from the forseti configuration file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_file_path (str): Forseti server config file path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple(dict, str): (Forseti server configuration, Error message)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># if config_file_path is not passed in, we will use the default</span>
+        <span class="c1"># configuration path that was passed in during the initialization</span>
+        <span class="c1"># of the server.</span>
+        <span class="n">forseti_config_path</span> <span class="o">=</span> <span class="n">config_file_path</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">forseti_config_file_path</span>
+
+        <span class="n">forseti_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">forseti_config</span> <span class="o">=</span> <span class="n">file_loader</span><span class="o">.</span><span class="n">read_and_parse_file</span><span class="p">(</span>
+                <span class="n">forseti_config_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">):</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Unable to open Forseti Security config file. Please &#39;</span>
+                       <span class="s1">&#39;check your path and filename and try again.&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">forseti_config</span><span class="p">,</span> <span class="n">err_msg</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.update_configuration"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.update_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">update_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the inventory, scanner, global and notifier configurations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_file_path (str): Forseti server config file path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple(bool, str): (Configuration was updated, Error message)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">forseti_config</span><span class="p">,</span> <span class="n">err_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_from_config</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">forseti_config</span><span class="p">:</span>
+            <span class="c1"># if forseti_config is empty, there is nothing to update.</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">err_msg</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_lock</span><span class="p">:</span>
+            <span class="c1"># Lock before performing the update to avoid multiple updates</span>
+            <span class="c1"># at the same time.</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">forseti_config</span> <span class="o">=</span> <span class="n">forseti_config</span>
+
+            <span class="c1"># Setting up individual configurations</span>
+            <span class="n">forseti_inventory_config</span> <span class="o">=</span> <span class="n">forseti_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;inventory&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">inventory_config</span> <span class="o">=</span> <span class="n">InventoryConfig</span><span class="p">(</span>
+                <span class="n">forseti_inventory_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;root_resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="n">forseti_inventory_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain_super_admin_email&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="n">forseti_inventory_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;api_quota&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+                <span class="n">forseti_inventory_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;retention_days&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="c1"># Default to disable CloudAsset Inventory if not configured.</span>
+                <span class="n">forseti_inventory_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cai&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}),</span>
+            <span class="p">)</span>
+
+            <span class="c1"># TODO: Create Config classes to store scanner and notifier configs.</span>
+            <span class="n">forseti_scanner_config</span> <span class="o">=</span> <span class="n">forseti_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scanner&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+            <span class="n">forseti_notifier_config</span> <span class="o">=</span> <span class="n">forseti_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;notifier&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+            <span class="n">forseti_global_config</span> <span class="o">=</span> <span class="n">forseti_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;global&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">inventory_config</span> <span class="o">=</span> <span class="n">inventory_config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inventory_config</span><span class="o">.</span><span class="n">set_service_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scanner_config</span> <span class="o">=</span> <span class="n">forseti_scanner_config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">notifier_config</span> <span class="o">=</span> <span class="n">forseti_notifier_config</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_config</span> <span class="o">=</span> <span class="n">forseti_global_config</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">err_msg</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_forseti_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_forseti_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_forseti_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the Forseti config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Forseti config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forseti_config</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_inventory_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_inventory_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_inventory_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the inventory config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Inventory config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory_config</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_scanner_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_scanner_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_scanner_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the scanner config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Scanner config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanner_config</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_notifier_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_notifier_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_notifier_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the notifier config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Notifier config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notifier_config</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_global_config"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_global_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_global_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the global config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Global config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_config</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_engine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_engine">[docs]</a>    <span class="k">def</span> <span class="nf">get_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the database engine.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Database engine object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.scoped_session"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.scoped_session">[docs]</a>    <span class="k">def</span> <span class="nf">scoped_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scoped session.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: A scoped session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionmaker</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.client"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.client">[docs]</a>    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: API client to use against services.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">ClientComposition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.run_in_background"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.run_in_background">[docs]</a>    <span class="k">def</span> <span class="nf">run_in_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs a function in a thread pool in the background.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func (Function): Function to be executed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">thread_pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServiceConfig.get_storage_class"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.base.config.html#google.cloud.forseti.services.base.config.ServiceConfig.get_storage_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_storage_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the storage class used to access the inventory.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            class: Type of a storage implementation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">Storage</span></div></div>
+<span class="c1"># pylint: enable=too-many-instance-attributes</span>
+</pre></div>

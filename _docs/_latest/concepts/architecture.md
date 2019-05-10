@@ -14,18 +14,18 @@ together.
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
-information so you can take action action to secure resources and minimize
+information so you can take action to secure resources and minimize
 security risks.
 
  * Inventory regularly collects data from your GCP resources and makes it
    available to other modules.
  * Scanner periodically compares your rules about GCP resource policies against
    the policies collected by Inventory, and saves the output for your review.
+ * Explain helps you understand, test, and develop Cloud Identity and Access
+   Management (Cloud IAM) policies.
  * Enforcer uses Google Cloud APIs to change resource policy state to match the
    state you define.
  * Notifier keeps you up to date about Forseti findings and actions.
- * Explain helps you understand, test, and develop Cloud Identity and Access
-   Management (Cloud IAM) policies.
 
 ---
 
@@ -41,7 +41,7 @@ security risks.
  1. Scanner compares the data collected by Inventory to the policy rules you
     set.
  1. Notifier sends Scanner & Inventory results to one or more of the following channels you
-    configure: Cloud Storage, SendGrid, and Slack.
+    configure: Cloud Storage, SendGrid, Slack and Cloud Security Command Center.
  1. You use Explain to query and understand your Cloud IAM policies.
  1. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.

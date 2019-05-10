@@ -1,0 +1,105 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.base_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.base_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Base class for policy scanner rules engines.</span>
+
+<span class="sd">Loads YAML rules either from local file system or Cloud Storage bucket.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">file_loader</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BaseRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">BaseRulesEngine</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The base class for the rules engine.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">rules_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): The path of the rules file, either</span>
+<span class="sd">                local or GCS.</span>
+<span class="sd">            snapshot_timestamp (str): The snapshot to associate any</span>
+<span class="sd">                data lookups.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rules_file_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRuleDefinitionError</span><span class="p">(</span>
+                <span class="s1">&#39;File path: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rules_file_path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_rules_path</span> <span class="o">=</span> <span class="n">rules_file_path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span> <span class="o">=</span> <span class="n">snapshot_timestamp</span>
+
+<div class="viewcode-block" id="BaseRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build RuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): The global Forseti configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: The method should be defined in subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Implement in a child class.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseRulesEngine._load_rule_definitions"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine._load_rule_definitions">[docs]</a>    <span class="k">def</span> <span class="nf">_load_rule_definitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the rule definitions file from GCS or local filesystem.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The parsed dict from the rule definitions file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Loading </span><span class="si">%r</span><span class="s1"> rules from </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_rules_path</span><span class="p">)</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="n">file_loader</span><span class="o">.</span><span class="n">read_and_parse_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_rules_path</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got rules: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rules</span></div></div>
+
+
+<div class="viewcode-block" id="BaseRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook">[docs]</a><span class="k">class</span> <span class="nc">BaseRuleBook</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for RuleBooks.</span>
+
+<span class="sd">    The RuleBook class encapsulates the logic for how the RulesEngine will</span>
+<span class="sd">    lookup rules and find policy discrepancies. The actual structure of</span>
+<span class="sd">    the RuleBook depends on how rules should be applied. For example,</span>
+<span class="sd">    Organization resource rules would be applied in a hierarchical manner.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+
+<div class="viewcode-block" id="BaseRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook.add_rule">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rule to rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): Add a rule definition to the rule book.</span>
+<span class="sd">            rule_index (int): The index of the rule.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: The method should be defined in subclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Implement add_rule() in subclass&#39;</span><span class="p">)</span></div></div>
+</pre></div>

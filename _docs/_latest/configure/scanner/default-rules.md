@@ -21,17 +21,13 @@ resources.
   * The IP address of any GCP instances should not be listed on
   the [emergingthreats](https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt) website.
 
-## Cloud Storage (legacy ACL policies)
-  * Buckets ACLs should not be publicly accessible (`AllUsers`).
-  * Buckets ACLs should not be accessible by any authenticated user (`AllAuthenticatedUsers`).
-
 ## Cloud SQL
   * Cloud SQL instances should not allow access from anywhere (authorized networks).
   * Cloud SQL instances should not allow access over SSL from anywhere (authorized networks).
-
-## G Suite
-  * Your company users (@domain.tld) and all gmail users are allowed to be members of your G Suite
-  groups.
+  
+## Cloud Storage (legacy ACL policies)
+  * Buckets ACLs should not be publicly accessible (`AllUsers`).
+  * Buckets ACLs should not be accessible by any authenticated user (`AllAuthenticatedUsers`).
 
 ## Cloud Identity and Access Management (Cloud IAM) policies
   * Only Cloud IAM users and group members in my domain may be granted the role `Organization Admin`.
@@ -40,10 +36,24 @@ resources.
   * Forbid any Cloud IAP bypasses on all resources in my organization, when Cloud IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
 
+## External Project Access
+  * Find any users in your org that may have access to projects outside of your allowed org or folder.
+  
 ## Firewall
   * Prevent allow all ingress (used to detect allow ingress to all policies)
 
-## Kubernetes Engine
+## G Suite
+  * Your company users (@domain.tld) and all gmail users are allowed to be members of your G Suite
+  groups.
+  
+## KMS
+  * Crypto keys with the following config should be rotated in 100 days.
+    algorithm: GOOGLE_SYMMETRIC_ENCRYPTION
+    protection_level: SOFTWARE
+    purpose: ENCRYPT_DECRYPT
+    state: ENABLED
+    
+## Kubernetes Engine Version
   * Only allow the following supported versions:
     * For major version 1.8, the minor version must be at least 12-gke.1
     * For major version 1.9, the minor version must be at least 7-gke.1

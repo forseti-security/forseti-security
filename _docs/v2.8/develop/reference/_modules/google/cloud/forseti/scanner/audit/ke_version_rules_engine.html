@@ -1,0 +1,576 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.ke_version_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.ke_version_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;Rules engine for verifying KE Versions are allowed.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">operator</span> <span class="k">as</span> <span class="nn">op</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="k">import</span> <span class="n">parse_version</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">resource_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_mod</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="KeVersionRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">KeVersionRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for KE Version scanner.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KeVersionRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span> <span class="o">=</span> <span class="n">snapshot_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="KeVersionRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build KeVersionRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">KeVersionRuleBook</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="KeVersionRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether Kubernetes Engine cluster version violates rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): A KE Cluster object to check.</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="KeVersionRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRuleBook">[docs]</a><span class="k">class</span> <span class="nc">KeVersionRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for KE Version rules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (list): KE Version rule definition dicts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KeVersionRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="KeVersionRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+    <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="KeVersionRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource&#39;</span><span class="p">):</span>
+                <span class="n">resource_ids</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">)</span>
+                <span class="n">resource_type</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">resource_type</span> <span class="o">=</span> <span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span>
+                        <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">))</span>
+                <span class="k">except</span> <span class="n">resource_errors</span><span class="o">.</span><span class="n">InvalidResourceTypeError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Missing resource type in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">resource_ids</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_ids</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Missing resource ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="n">check_serverconfig_valid_node_versions</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s1">&#39;check_serverconfig_valid_node_versions&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">check_serverconfig_valid_master_versions</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s1">&#39;check_serverconfig_valid_master_versions&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">allowed_nodepool_versions</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s1">&#39;allowed_nodepool_versions&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">allowed_versions</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">allowed_version</span> <span class="ow">in</span> <span class="n">allowed_nodepool_versions</span><span class="p">:</span>
+                    <span class="n">allowed_versions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">VersionRule</span><span class="p">(</span><span class="o">**</span><span class="n">allowed_version</span><span class="p">))</span>
+
+                <span class="c1"># For each resource id associated with the rule, create a</span>
+                <span class="c1"># mapping of resource =&gt; rules.</span>
+                <span class="k">for</span> <span class="n">resource_id</span> <span class="ow">in</span> <span class="n">resource_ids</span><span class="p">:</span>
+                    <span class="n">gcp_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                        <span class="n">resource_id</span><span class="o">=</span><span class="n">resource_id</span><span class="p">,</span>
+                        <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_type</span><span class="p">)</span>
+
+                    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span>
+                        <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                        <span class="n">rule_index</span><span class="p">,</span>
+                        <span class="n">check_serverconfig_valid_node_versions</span><span class="p">,</span>
+                        <span class="n">check_serverconfig_valid_master_versions</span><span class="p">,</span>
+                        <span class="n">allowed_versions</span><span class="p">)</span>
+
+                    <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                        <span class="n">gcp_resource</span><span class="p">,</span> <span class="n">ResourceRules</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">gcp_resource</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resource_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                        <span class="n">resource_rules</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+    <span class="c1"># pylint: enable=invalid-name</span>
+
+<div class="viewcode-block" id="KeVersionRuleBook.get_resource_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRuleBook.get_resource_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the resource rules for resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): The gcp_type Resource find in the map.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResourceRules: A ResourceRules object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KeVersionRuleBook.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.KeVersionRuleBook.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find violations in the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: RuleViolation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Looking for KE violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">)</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">get_ancestors_from_full_name</span><span class="p">(</span>
+            <span class="n">ke_cluster</span><span class="o">.</span><span class="n">resource_full_name</span><span class="p">)</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Ancestors of resource: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_ancestors</span><span class="p">)</span>
+
+        <span class="n">checked_wildcards</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">curr_resource</span> <span class="ow">in</span> <span class="n">resource_ancestors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">curr_resource</span><span class="p">:</span>
+                <span class="c1"># resource_ancestors will contain all the resources including</span>
+                <span class="c1"># the child resource, which has type kebernete cluster and</span>
+                <span class="c1"># cannot be created (return None) as part of the ancestor path,</span>
+                <span class="c1"># we will skip the child as it&#39;s not part of the ancestor.</span>
+                <span class="k">continue</span>
+
+            <span class="n">resource_rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">curr_resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resource_rule</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="n">resource_rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+
+            <span class="n">wildcard_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">curr_resource</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">wildcard_resource</span> <span class="ow">in</span> <span class="n">checked_wildcards</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">checked_wildcards</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
+            <span class="n">resource_rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resource_rule</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="n">resource_rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Returning violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div></div>
+
+
+<div class="viewcode-block" id="ResourceRules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.ResourceRules">[docs]</a><span class="k">class</span> <span class="nc">ResourceRules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An association of a resource to rules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">resource</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): The resource to associate with the rule.</span>
+<span class="sd">            rules (set): rules to associate with the resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+
+<div class="viewcode-block" id="ResourceRules.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.ResourceRules.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if the policy binding matches this rule&#39;s criteria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: RuleViolation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="n">rule_violations</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rule_violations</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rule_violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.ResourceRules.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare == with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (ResourceRules): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">resource</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.ResourceRules.__ne__">[docs]</a>    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare != with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.ResourceRules.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of this node.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: debug string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;IapResourceRules&lt;resource=</span><span class="si">{}</span><span class="s1">, rules=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VersionRule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.VersionRule">[docs]</a><span class="k">class</span> <span class="nc">VersionRule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to match allowed versions rules against running versions.&quot;&quot;&quot;</span>
+
+    <span class="n">ALLOWED_OPERATORS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;&gt;&#39;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">gt</span><span class="p">,</span>
+                         <span class="s1">&#39;&lt;&#39;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">lt</span><span class="p">,</span>
+                         <span class="s1">&#39;&gt;=&#39;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">ge</span><span class="p">,</span>
+                         <span class="s1">&#39;&lt;=&#39;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">le</span><span class="p">,</span>
+                         <span class="s1">&#39;=&#39;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">eq</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s1">&#39;=&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            major (str): The major part of the Kubernetes version.</span>
+<span class="sd">            minor (str): The minor part of the Kubernetes version.</span>
+<span class="sd">            operator (str): The comparison operator.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised if operator is not an allowed value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_major</span> <span class="o">=</span> <span class="n">parse_version</span><span class="p">(</span><span class="n">major</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">minor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span> <span class="o">=</span> <span class="n">parse_version</span><span class="p">(</span><span class="n">minor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">operator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALLOWED_OPERATORS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Operator </span><span class="si">%s</span><span class="s1"> not allowed.&#39;</span> <span class="o">%</span> <span class="n">operator</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operator_str</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALLOWED_OPERATORS</span><span class="p">[</span><span class="n">operator</span><span class="p">]</span>
+
+<div class="viewcode-block" id="VersionRule.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.VersionRule.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return string representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String representation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">minor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span> <span class="k">else</span> <span class="s1">&#39;*&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operator_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_major</span><span class="p">,</span> <span class="n">minor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersionRule.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.VersionRule.__hash__">[docs]</a>    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate hash.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Unique hash.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_major</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VersionRule.is_version_allowed"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.VersionRule.is_version_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">is_version_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if the version matches the allowed_version configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            version (str): A version string. e.g. &#39;1.6.11.gke.1&#39;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if version is allowed, else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking version </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">major</span> <span class="o">=</span> <span class="n">parse_version</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="n">minor</span> <span class="o">=</span> <span class="n">parse_version</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:]))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">major</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_major</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span><span class="p">(</span><span class="n">minor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span><span class="p">(</span><span class="n">major</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_major</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># False positive - pylint: disable=inconsistent-return-statements</span>
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file, also finds violations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span>
+                 <span class="n">check_serverconfig_valid_node_versions</span><span class="p">,</span>
+                 <span class="n">check_serverconfig_valid_master_versions</span><span class="p">,</span>
+                 <span class="n">allowed_nodepool_versions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions</span>
+<span class="sd">            check_serverconfig_valid_node_versions (bool): Check the node</span>
+<span class="sd">                version is listed a supported version in the server config.</span>
+<span class="sd">            check_serverconfig_valid_master_versions (bool): Check the master</span>
+<span class="sd">                version is listed a supported version in the server config.</span>
+<span class="sd">            allowed_nodepool_versions (list): A list of AllowedVersion tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_valid_node_versions</span> <span class="o">=</span> <span class="n">check_serverconfig_valid_node_versions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_valid_master_version</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">check_serverconfig_valid_master_versions</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_versions</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">allowed_nodepool_versions</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find KE Version violations in based on the rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Returns a list of RuleViolation named tuples</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_valid_node_versions</span><span class="p">:</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_versions_valid</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">violation</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">violation</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_valid_master_version</span><span class="p">:</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_master_version_valid</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">violation</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">violation</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_versions</span><span class="p">:</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_versions_allowed</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">violation</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">violation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="Rule._make_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule._make_violation">[docs]</a>    <span class="k">def</span> <span class="nf">_make_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">nodepool</span><span class="p">,</span> <span class="n">violation_reason</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a RuleViolation for the cluster.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+<span class="sd">            nodepool (dict): A node pool in the KE cluster.</span>
+<span class="sd">            violation_reason (str): The violation details.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: A new RuleViolation namedtuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node_pool_name</span> <span class="o">=</span> <span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">nodepool</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">KE_CLUSTER</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">resource_full_name</span><span class="p">,</span>
+            <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="n">violation_type</span><span class="o">=</span><span class="s1">&#39;KE_VERSION_VIOLATION&#39;</span><span class="p">,</span>
+            <span class="n">violation_reason</span><span class="o">=</span><span class="n">violation_reason</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+            <span class="n">cluster_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">node_pool_name</span><span class="o">=</span><span class="n">node_pool_name</span><span class="p">,</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Rule._node_versions_valid"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule._node_versions_valid">[docs]</a>    <span class="k">def</span> <span class="nf">_node_versions_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check the node pool versions against the supported version list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: A RuleViolation if the version is not supported,</span>
+<span class="sd">                else None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">server_config</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Server config missing from ke cluster, cannot check &#39;</span>
+                        <span class="s1">&#39;if node versions are supported: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">supported_versions</span> <span class="o">=</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">server_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;validNodeVersions&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nodepool</span> <span class="ow">in</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">node_pools</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> in cluster </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                         <span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_versions</span><span class="p">:</span>
+                <span class="n">violation</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Node pool version </span><span class="si">%s</span><span class="s1"> is not supported (</span><span class="si">%s</span><span class="s1">).&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">),</span>
+                              <span class="nb">sorted</span><span class="p">(</span><span class="n">supported_versions</span><span class="p">)))</span>
+
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_violation</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">,</span> <span class="n">nodepool</span><span class="p">,</span> <span class="n">violation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule._master_version_valid"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule._master_version_valid">[docs]</a>    <span class="k">def</span> <span class="nf">_master_version_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check the master version against the supported version list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: A RuleViolation if the version is not supported,</span>
+<span class="sd">                else None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">server_config</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Server config missing from ke cluster, cannot check &#39;</span>
+                        <span class="s1">&#39;if master version is supported: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">supported_versions</span> <span class="o">=</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">server_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;validMasterVersions&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">current_master_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_versions</span><span class="p">:</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Master version </span><span class="si">%s</span><span class="s1"> is not supported (</span><span class="si">%s</span><span class="s1">).&#39;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">current_master_version</span><span class="p">,</span>
+                          <span class="nb">sorted</span><span class="p">(</span><span class="n">supported_versions</span><span class="p">)))</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_violation</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">violation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule._node_versions_allowed"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule._node_versions_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">_node_versions_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check the node pool versions against the allowed versions list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: A RuleViolation if the version is not allowed,</span>
+<span class="sd">                else None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">nodepool</span> <span class="ow">in</span> <span class="n">ke_cluster</span><span class="o">.</span><span class="n">node_pools</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> in cluster </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                         <span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">version_allowed</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="n">version_rule</span><span class="o">.</span><span class="n">is_version_allowed</span><span class="p">(</span><span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">version_rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_versions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">version_allowed</span><span class="p">:</span>
+                <span class="n">violation</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Node pool version </span><span class="si">%s</span><span class="s1"> is not allowed (</span><span class="si">%s</span><span class="s1">).&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">nodepool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">),</span>
+                              <span class="nb">sorted</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_versions</span><span class="p">)))</span>
+
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_violation</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">,</span> <span class="n">nodepool</span><span class="p">,</span> <span class="n">violation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule equals other Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Rule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_name</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_index</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_valid_node_versions</span> <span class="o">==</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">check_valid_node_versions</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_valid_master_version</span> <span class="o">==</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">check_valid_master_version</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">allowed_versions</span> <span class="o">==</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">allowed_versions</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Rule.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule.__ne__">[docs]</a>    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule is not equal to another Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="Rule.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_version_rules_engine.html#google.cloud.forseti.scanner.audit.ke_version_rules_engine.Rule.__hash__">[docs]</a>    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a hash of the rule index.</span>
+
+<span class="sd">        For now, this will suffice since the rule index is assigned</span>
+<span class="sd">        automatically when the rules map is built, and the scanner</span>
+<span class="sd">        only handles one rule file at a time. Later on, we&#39;ll need to</span>
+<span class="sd">        revisit this hash method when we process multiple rule files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The hash of the rule index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># pylint: enable=inconsistent-return-statements</span>
+
+<span class="c1"># Rule violation.</span>
+<span class="c1"># resource_type: string</span>
+<span class="c1"># resource_id: string</span>
+<span class="c1"># rule_name: string</span>
+<span class="c1"># rule_index: int</span>
+<span class="c1"># violation_type: KE_VERSION_VIOLATION</span>
+<span class="c1"># violation_reason: string</span>
+<span class="c1"># project_id: string</span>
+<span class="c1"># cluster_name: string</span>
+<span class="c1"># node_pool_name: string</span>
+<span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;full_name&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;violation_reason&#39;</span><span class="p">,</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;cluster_name&#39;</span><span class="p">,</span> <span class="s1">&#39;node_pool_name&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;resource_data&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_name&#39;</span><span class="p">])</span>
+</pre></div>

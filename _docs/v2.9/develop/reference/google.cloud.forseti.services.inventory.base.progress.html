@@ -1,0 +1,139 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.progress module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.inventory.base.progress">
+<span id="google-cloud-forseti-services-inventory-base-progress-module"></span><h1>google.cloud.forseti.services.inventory.base.progress module<a class="headerlink" href="#module-google.cloud.forseti.services.inventory.base.progress" title="Permalink to this headline">¶</a></h1>
+<p>Crawler implementation.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.progress.CliProgresser">
+<em class="property">class </em><code class="descname">CliProgresser</code><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#CliProgresser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.CliProgresser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The command line progress state</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.CliProgresser.get_summary">
+<code class="descname">get_summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#CliProgresser.get_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.CliProgresser.get_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progress state when finish</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_error">
+<code class="descname">on_error</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#CliProgresser.on_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progress state when encounter an error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> (<em>str</em>) – error message</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_new_object">
+<code class="descname">on_new_object</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#CliProgresser.on_new_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_new_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progress state when found a new object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – the Resource object in resources</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_warning">
+<code class="descname">on_warning</code><span class="sig-paren">(</span><em>warning</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#CliProgresser.on_warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progress state when have a warning</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>warning</strong> (<em>str</em>) – warning message</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.progress.Progresser">
+<em class="property">class </em><code class="descname">Progresser</code><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#Progresser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.Progresser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Progress state Interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.Progresser.get_summary">
+<code class="descname">get_summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#Progresser.get_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.Progresser.get_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.Progresser.on_error">
+<code class="descname">on_error</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#Progresser.on_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.Progresser.on_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> (<em>str</em>) – error message</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.Progresser.on_new_object">
+<code class="descname">on_new_object</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#Progresser.on_new_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.Progresser.on_new_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<em>object</em>) – the Resource object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.progress.Progresser.on_warning">
+<code class="descname">on_warning</code><span class="sig-paren">(</span><em>warning</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/progress.html#Progresser.on_warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.progress.Progresser.on_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>warning</strong> (<em>str</em>) – warning message</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

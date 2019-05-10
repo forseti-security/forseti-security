@@ -1,0 +1,193 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.service module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.inventory.service">
+<span id="google-cloud-forseti-services-inventory-service-module"></span><h1>google.cloud.forseti.services.inventory.service module<a class="headerlink" href="#module-google.cloud.forseti.services.inventory.service" title="Permalink to this headline">¶</a></h1>
+<p>Inventory gRPC service.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory">
+<em class="property">class </em><code class="descname">GrpcInventory</code><span class="sig-paren">(</span><em>inventory_api</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.inventory_pb2_grpc.InventoryServicer</span></code></p>
+<p>Inventory gRPC handler.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.Create">
+<code class="descname">Create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.Create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function, checks context state to close stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> (<em>list</em>) – All arguments provided to the wrapped function.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>object</em> – Whatever the wrapped function yields to the stream.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.Delete">
+<code class="descname">Delete</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventory.Delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.Delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes existing inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – gRPC request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Unused</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Inventory API object that is deleted.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.Get">
+<code class="descname">Get</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventory.Get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.Get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets existing inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – gRPC request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Unused.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Inventory API object that is requested.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.List">
+<code class="descname">List</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function, checks context state to close stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> (<em>list</em>) – All arguments provided to the wrapped function.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>object</em> – Whatever the wrapped function yields to the stream.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.Ping">
+<code class="descname">Ping</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventory.Ping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.Ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ping implemented to check service availability.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – gRPC request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Unused.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">PingReply containing echo of data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventory.Purge">
+<code class="descname">Purge</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventory.Purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventory.Purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purge desired inventory data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – gRPC request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Unused</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">gRPC reply object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventoryFactory">
+<em class="property">class </em><code class="descname">GrpcInventoryFactory</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventoryFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventoryFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Factory class for Inventory service gRPC interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.service.GrpcInventoryFactory.create_and_register_service">
+<code class="descname">create_and_register_service</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#GrpcInventoryFactory.create_and_register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.GrpcInventoryFactory.create_and_register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an inventory service and registers it in the server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>server</strong> (<em>object</em>) – Server to register service to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The instantiated gRPC service for inventory.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.service.inventory_pb_from_object">
+<code class="descname">inventory_pb_from_object</code><span class="sig-paren">(</span><em>inventory_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/service.html#inventory_pb_from_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.service.inventory_pb_from_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert internal inventory data structure to protobuf.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inventory_index</strong> (<em>object</em>) – InventoryIndex class in inventory storage</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">proto message of InventoryIndex</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

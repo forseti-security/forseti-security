@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.firewall\_rule module
+===========================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.firewall_rule
+    :members:
+    :undoc-members:
+    :show-inheritance:

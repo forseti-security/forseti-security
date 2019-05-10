@@ -12,7 +12,7 @@ This page describes how to define rules for Forseti Scanner.
 ## Defining custom rules
 
 You can find some starter rules in the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/rules)
 directory. When you make changes to the rule files, upload them to your
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
 listed in `forseti_server_conf.yaml`.
@@ -281,7 +281,7 @@ rules:
 
 * `log_types`
   * **Description**: The required log types.
-  * **Valid values**: One of `AUDIT_READ`, `DATA_READ` or `DATA_WRITE`.
+  * **Valid values**: One of `ADMIN_READ`, `DATA_READ` or `DATA_WRITE`.
 
 * `allowed_exemptions`
   * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
@@ -626,6 +626,7 @@ rules:
     project_01:
     - network_01
     ```
+
 ## Lien rules
 
 ### Rule definition

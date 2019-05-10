@@ -1,0 +1,7 @@
+google.cloud.forseti.common.util.errors module
+==============================================
+
+.. automodule:: google.cloud.forseti.common.util.errors
+    :members:
+    :undoc-members:
+    :show-inheritance:

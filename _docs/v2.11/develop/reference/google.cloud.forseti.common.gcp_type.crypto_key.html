@@ -1,0 +1,71 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.crypto_key module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.crypto_key">
+<span id="google-cloud-forseti-common-gcp-type-crypto-key-module"></span><h1>google.cloud.forseti.common.gcp_type.crypto_key module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.crypto_key" title="Permalink to this headline">¶</a></h1>
+<p>A CryptoKey object.</p>
+<p>See:
+<a class="reference external" href="https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys#CryptoKey">https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys#CryptoKey</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey">
+<em class="property">class </em><code class="descname">CryptoKey</code><span class="sig-paren">(</span><em>crypto_key_name=None</em>, <em>crypto_key_full_name=None</em>, <em>crypto_key_parent_type_name=None</em>, <em>crypto_key_type=None</em>, <em>primary_version=None</em>, <em>purpose=None</em>, <em>create_time=None</em>, <em>next_rotation_time=None</em>, <em>version_template=None</em>, <em>labels=None</em>, <em>rotation_period=None</em>, <em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/crypto_key.html#CryptoKey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_type.resource.Resource</span></code></a></p>
+<p>Represents the CryptoKey resource.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 195</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>crypto_key_name</em>, <em>crypto_key_full_name</em>, <em>crypto_key_parent_type_name</em>, <em>crypto_key_type</em>, <em>json_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/crypto_key.html#CryptoKey.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new CryptoKey object from a JSON object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>crypto_key_name</strong> (<em>str</em>) – The unique Cryptokey id.</li>
+<li><strong>crypto_key_full_name</strong> (<em>str</em>) – The Cryptokey full name.</li>
+<li><strong>crypto_key_parent_type_name</strong> (<em>str</em>) – The Cryptokey parent type name.</li>
+<li><strong>crypto_key_type</strong> (<em>str</em>) – The Cryptokey type name.</li>
+<li><strong>json_string</strong> (<em>str</em>) – JSON string of a Cryptokey GCP API response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new CryptoKey object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey" title="google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey">CryptoKey</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

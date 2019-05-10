@@ -18,13 +18,16 @@ description: "Tools to secure Google Cloud Platform"
 exclude: ["Gemfile",
           "Gemfile.lock",
           "README.md",
-          "vendor",
+          "vendor/",
           "images/readme/",
           "client-secrets.json.enc",
           "_config.yml",
           ".travis.yml",
           "travis/",
-          "scripts/"]
+          "scripts/",
+          ".gitignore",
+          ".sass-cache/",
+          ".idea/"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
@@ -35,6 +38,7 @@ plugins:
   - jekyll-paginate-v2
   - jekyll-redirect-from
   - jekyll-responsive-image
+  - jekyll-include-cache
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
@@ -57,7 +61,9 @@ pagination:
   enabled: true
   collection: news
   permalink: /page/:num/
-  per_page: 6
+  per_page: 10
+  sort_reverse: true
+  sort_field: date
 
 # Responsive image templates and resizing configuration
 responsive_image:
@@ -132,23 +138,6 @@ defaults:
       path: _faq/resource
     values:
       category: Google Cloud Platform Resource Coverage
-  - scope:
-      path: _docs/v1.1
-    values:
-      category: Overview (v1.1)
-      layout: docs
-  - scope:
-      path: _docs/v1.1/quickstarts
-    values:
-      category: Quickstarts (v1.1)
-  - scope:
-      path: _docs/v1.1/howto
-    values:
-      category: Howtos (v1.1)
-  - scope:
-      path: _docs/v1.1/guides
-    values:
-      category: Guides (v1.1)
   - scope:
       path: _docs/v2.0
     values:
@@ -352,3 +341,236 @@ defaults:
       path: _docs/v2.6/faq
     values:
       category: FAQ (v2.6)
+  - scope:
+      path: _docs/v2.7
+    values:
+      category: Overview (v2.7)
+      layout: docs
+  - scope:
+      path: _docs/v2.7/concepts
+    values:
+      category: Concepts (v2.7)
+  - scope:
+      path: _docs/v2.7/setup
+    values:
+      category: Setup (v2.7)
+  - scope:
+      path: _docs/v2.7/use
+    values:
+      category: Use (v2.7)
+  - scope:
+      path: _docs/v2.7/configure
+    values:
+      category: Configure (v2.7)
+  - scope:
+      path: _docs/v2.7/develop
+    values:
+      category: Develop (v2.7)
+  - scope:
+      path: _docs/v2.7/faq
+    values:
+      category: FAQ (v2.7)
+  - scope:
+      path: _docs/v2.8
+    values:
+      category: Overview (v2.8)
+      layout: docs
+  - scope:
+      path: _docs/v2.8/concepts
+    values:
+      category: Concepts (v2.8)
+  - scope:
+      path: _docs/v2.8/setup
+    values:
+      category: Setup (v2.8)
+  - scope:
+      path: _docs/v2.8/use
+    values:
+      category: Use (v2.8)
+  - scope:
+      path: _docs/v2.8/configure
+    values:
+      category: Configure (v2.8)
+  - scope:
+      path: _docs/v2.8/develop
+    values:
+      category: Develop (v2.8)
+  - scope:
+      path: _docs/v2.8/faq
+    values:
+      category: FAQ (v2.8)
+  - scope:
+      path: _docs/v2.9
+    values:
+      category: Overview (v2.9)
+      layout: docs
+  - scope:
+      path: _docs/v2.9/concepts
+    values:
+      category: Concepts (v2.9)
+  - scope:
+      path: _docs/v2.9/setup
+    values:
+      category: Setup (v2.9)
+  - scope:
+      path: _docs/v2.9/use
+    values:
+      category: Use (v2.9)
+  - scope:
+      path: _docs/v2.9/configure
+    values:
+      category: Configure (v2.9)
+  - scope:
+      path: _docs/v2.9/develop
+    values:
+      category: Develop (v2.9)
+  - scope:
+      path: _docs/v2.9/faq
+    values:
+      category: FAQ (v2.9)
+  - scope:
+      path: _docs/v2.10
+    values:
+      category: Overview (v2.10)
+      layout: docs
+  - scope:
+      path: _docs/v2.10/concepts
+    values:
+      category: Concepts (v2.10)
+  - scope:
+      path: _docs/v2.10/setup
+    values:
+      category: Setup (v2.10)
+  - scope:
+      path: _docs/v2.10/use
+    values:
+      category: Use (v2.10)
+  - scope:
+      path: _docs/v2.10/configure
+    values:
+      category: Configure (v2.10)
+  - scope:
+      path: _docs/v2.10/develop
+    values:
+      category: Develop (v2.10)
+  - scope:
+      path: _docs/v2.10/faq
+    values:
+      category: FAQ (v2.10)
+  - scope:
+      path: _docs/v2.11
+    values:
+      category: Overview (v2.11)
+      layout: docs
+  - scope:
+      path: _docs/v2.11/concepts
+    values:
+      category: Concepts (v2.11)
+  - scope:
+      path: _docs/v2.11/setup
+    values:
+      category: Setup (v2.11)
+  - scope:
+      path: _docs/v2.11/use
+    values:
+      category: Use (v2.11)
+  - scope:
+      path: _docs/v2.11/configure
+    values:
+      category: Configure (v2.11)
+  - scope:
+      path: _docs/v2.11/develop
+    values:
+      category: Develop (v2.11)
+  - scope:
+      path: _docs/v2.11/faq
+    values:
+      category: FAQ (v2.11)
+  - scope:
+      path: _docs/v2.12
+    values:
+      category: Overview (v2.12)
+      layout: docs
+  - scope:
+      path: _docs/v2.12/concepts
+    values:
+      category: Concepts (v2.12)
+  - scope:
+      path: _docs/v2.12/setup
+    values:
+      category: Setup (v2.12)
+  - scope:
+      path: _docs/v2.12/use
+    values:
+      category: Use (v2.12)
+  - scope:
+      path: _docs/v2.12/configure
+    values:
+      category: Configure (v2.12)
+  - scope:
+      path: _docs/v2.12/develop
+    values:
+      category: Develop (v2.12)
+  - scope:
+      path: _docs/v2.12/faq
+    values:
+      category: FAQ (v2.12)
+
+  - scope:
+      path: _docs/v2.13
+    values:
+      category: Overview (v2.13)
+      layout: docs
+  - scope:
+      path: _docs/v2.13/concepts
+    values:
+      category: Concepts (v2.13)
+  - scope:
+      path: _docs/v2.13/setup
+    values:
+      category: Setup (v2.13)
+  - scope:
+      path: _docs/v2.13/use
+    values:
+      category: Use (v2.13)
+  - scope:
+      path: _docs/v2.13/configure
+    values:
+      category: Configure (v2.13)
+  - scope:
+      path: _docs/v2.13/develop
+    values:
+      category: Develop (v2.13)
+  - scope:
+      path: _docs/v2.13/faq
+    values:
+      category: FAQ (v2.13)
+  - scope:
+      path: _docs/v2.14
+    values:
+      category: Overview (v2.14)
+      layout: docs
+  - scope:
+      path: _docs/v2.14/concepts
+    values:
+      category: Concepts (v2.14)
+  - scope:
+      path: _docs/v2.14/setup
+    values:
+      category: Setup (v2.14)
+  - scope:
+      path: _docs/v2.14/use
+    values:
+      category: Use (v2.14)
+  - scope:
+      path: _docs/v2.14/configure
+    values:
+      category: Configure (v2.14)
+  - scope:
+      path: _docs/v2.14/develop
+    values:
+      category: Develop (v2.14)
+  - scope:
+      path: _docs/v2.14/faq
+    values:
+      category: FAQ (v2.14)

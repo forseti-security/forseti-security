@@ -592,7 +592,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Scanner**
-    - Update the `scanners` section to include `lien`.
+    - Update the `scanners` section to include `location`.
     ```
     scanner:
     ...

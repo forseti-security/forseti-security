@@ -1,0 +1,80 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.cloudsql_instance module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.cloudsql_instance">
+<span id="google-cloud-forseti-common-gcp-type-cloudsql-instance-module"></span><h1>google.cloud.forseti.common.gcp_type.cloudsql_instance module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.cloudsql_instance" title="Permalink to this headline">¶</a></h1>
+<p>A CloudSQL Instance Resource.</p>
+<p>See: <a class="reference external" href="https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/">https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance">
+<em class="property">class </em><code class="descname">CloudSQLInstance</code><span class="sig-paren">(</span><em>instance_id</em>, <em>full_name=None</em>, <em>data=None</em>, <em>name=None</em>, <em>display_name=None</em>, <em>parent=None</em>, <em>locations=None</em>, <em>lifecycle_state='LIFECYCLE_STATE_UNSPECIFIED'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_instance.html#CloudSQLInstance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_type.resource.Resource</span></code></a></p>
+<p>CloudSQL Instance resource.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance.RESOURCE_NAME_FMT">
+<code class="descname">RESOURCE_NAME_FMT</code><em class="property"> = 'instances/%s'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance.RESOURCE_NAME_FMT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 195</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>parent</em>, <em>json_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_instance.html#CloudSQLInstance.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a cloud_sql_instance from a JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parent</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – resource this cloud_sql_instance belongs to.</li>
+<li><strong>json_string</strong> (<em>str</em>) – JSON string of a cloud_sql_instance GCP API
+response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">cloud sql instance resource.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance" title="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstance">CloudSQLInstance</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstanceLifecycleState">
+<em class="property">class </em><code class="descname">CloudSQLInstanceLifecycleState</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_instance.html#CloudSQLInstanceLifecycleState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_instance.CloudSQLInstanceLifecycleState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.LifecycleState" title="google.cloud.forseti.common.gcp_type.resource.LifecycleState"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_type.resource.LifecycleState</span></code></a></p>
+<p>Represents the cloud_sql_instance’s LifecycleState.</p>
+</dd></dl>
+
+</div>
+
