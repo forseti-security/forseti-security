@@ -171,6 +171,7 @@ class Violation(BASE):
     scanner_index_id = Column(BigInteger)
     violation_data = Column(Text)
     violation_hash = Column(String(256))
+    violation_message = Column(Text)
     violation_type = Column(String(256), nullable=False)
 
     def __repr__(self):
@@ -193,6 +194,9 @@ class Violation(BASE):
         """
         columns_to_create = [Column('resource_name',
                                     String(256),
+                                    default=''),
+                             Column('violation_message',
+                                    Text(),
                                     default='')]
 
         schema_update_actions = {'CREATE': columns_to_create}
@@ -239,6 +243,7 @@ class ViolationAccess(object):
                 violation_data=json.dumps(
                     violation.get('violation_data'), sort_keys=True),
                 violation_hash=violation_hash,
+                violation_message=violation.get('violation_message', ''),
                 violation_type=violation.get('violation_type')
             )
             self.session.add(violation)

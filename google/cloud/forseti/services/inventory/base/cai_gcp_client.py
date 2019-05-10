@@ -15,6 +15,7 @@
 
 # pylint: disable=too-many-lines
 
+import itertools
 import threading
 
 from google.cloud.forseti.common.util import logger
@@ -124,23 +125,23 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         # Try fetching with project id, if that returns nothing, fall back to
         # project number.
-        resource = self.dao.fetch_cai_asset(
+        resource, meta_data = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'bigquery.googleapis.com/Dataset',
             bigquery_name_fmt.format(project_id, dataset_id),
             self.session)
 
         if not resource:
-            resource = self.dao.fetch_cai_asset(
+            resource, meta_data = self.dao.fetch_cai_asset(
                 ContentTypes.iam_policy,
                 'bigquery.googleapis.com/Dataset',
                 bigquery_name_fmt.format(project_number, dataset_id),
                 self.session)
 
         if resource:
-            return resource
+            return resource, meta_data
 
-        return {}
+        return {}, None
 
     def fetch_bigquery_dataset_policy(self, project_id, project_number,
                                       dataset_id):
@@ -155,11 +156,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             dict: Dataset Policy.
         """
 
-        resource = self.fetch_bigquery_iam_policy(
+        resource, metadata = self.fetch_bigquery_iam_policy(
             project_id, project_number, dataset_id)
 
         if resource:
-            return iam_helpers.convert_iam_to_bigquery_policy(resource)
+            return (iam_helpers.convert_iam_to_bigquery_policy(resource),
+                    metadata)
 
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
@@ -304,10 +306,19 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'healthCheck': 'healthChecks',
             'resourceGroup': 'group'
         }
-        resources = self._iter_compute_resources('BackendService',
-                                                 project_number)
-        for backendservice in resources:
-            yield _fixup_resource_keys(backendservice, cai_to_gcp_key_map)
+
+        backendservice = self._iter_compute_resources('BackendService',
+                                                      project_number)
+
+        region_backendservice = self._iter_compute_resources(
+            'RegionBackendService', project_number)
+
+        resources = itertools.chain(backendservice, region_backendservice)
+
+        for backendservice, metadata in resources:
+            yield (
+                _fixup_resource_keys(backendservice, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_disks(self, project_number):
         """Iterate Compute Engine disks from Cloud Asset data.
@@ -326,8 +337,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'licenseCode': 'licenseCodes',
         }
         resources = self._iter_compute_resources('Disk', project_number)
-        for disk in resources:
-            yield _fixup_resource_keys(disk, cai_to_gcp_key_map)
+        for disk, metadata in resources:
+            yield (
+                _fixup_resource_keys(disk, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_firewalls(self, project_number):
         """Iterate Compute Engine Firewalls from Cloud Asset data.
@@ -349,8 +362,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'targetTag': 'targetTags',
         }
         resources = self._iter_compute_resources('Firewall', project_number)
-        for rule in resources:
-            yield _fixup_resource_keys(rule, cai_to_gcp_key_map)
+        for rule, metadata in resources:
+            yield (
+                _fixup_resource_keys(rule, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_forwardingrules(self, project_number):
         """Iterate Forwarding Rules from Cloud Asset data.
@@ -365,10 +380,20 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'ipAddress': 'IPAddress',
             'ipProtocol': 'IPProtocol',
         }
-        resources = self._iter_compute_resources('ForwardingRule',
-                                                 project_number)
-        for forwarding_rule in resources:
-            yield _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map)
+
+        forwardingrule_resources = self._iter_compute_resources(
+            'ForwardingRule', project_number)
+
+        global_forwardingrule_resources = self._iter_compute_resources(
+            'GlobalForwardingRule', project_number)
+
+        resources = itertools.chain(forwardingrule_resources,
+                                    global_forwardingrule_resources)
+
+        for forwarding_rule, metadata in resources:
+            yield (
+                _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_healthchecks(self, project_number):
         """Iterate Health checks from Cloud Asset data.
@@ -427,8 +452,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('InstanceGroupManager',
                                                  project_number)
-        for igmanager in resources:
-            yield _fixup_resource_keys(igmanager, cai_to_gcp_key_map)
+        for igmanager, metadata in resources:
+            yield (
+                _fixup_resource_keys(igmanager, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_images(self, project_number):
         """Iterate Images from Cloud Asset data.
@@ -445,8 +472,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'licenseCode': 'licenseCodes',
         }
         resources = self._iter_compute_resources('Image', project_number)
-        for image in resources:
-            yield _fixup_resource_keys(image, cai_to_gcp_key_map)
+        for image, metadata in resources:
+            yield (
+                _fixup_resource_keys(image, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_instancegroups(self, project_number):
         """Iterate Compute Engine groups from Cloud Asset data.
@@ -462,8 +491,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('InstanceGroup',
                                                  project_number)
-        for instancegroup in resources:
-            yield _fixup_resource_keys(instancegroup, cai_to_gcp_key_map)
+        for instancegroup, metadata in resources:
+            yield (
+                _fixup_resource_keys(instancegroup, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_instances(self, project_number):
         """Iterate compute engine instance from Cloud Asset data.
@@ -491,8 +522,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'tag': 'tags',
         }
         resources = self._iter_compute_resources('Instance', project_number)
-        for instance in resources:
-            yield _fixup_resource_keys(instance, cai_to_gcp_key_map)
+        for instance, metadata in resources:
+            yield (
+                _fixup_resource_keys(instance, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_instancetemplates(self, project_number):
         """Iterate Instance Templates from Cloud Asset data.
@@ -521,8 +554,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('InstanceTemplate',
                                                  project_number)
-        for instancetemplate in resources:
-            yield _fixup_resource_keys(instancetemplate, cai_to_gcp_key_map)
+        for instancetemplate, metadata in resources:
+            yield (
+                _fixup_resource_keys(instancetemplate, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_licenses(self, project_number):
         """Iterate Licenses from Cloud Asset data.
@@ -550,8 +585,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'subnetwork': 'subnetworks',
         }
         resources = self._iter_compute_resources('Network', project_number)
-        for network in resources:
-            yield _fixup_resource_keys(network, cai_to_gcp_key_map)
+        for network, metadata in resources:
+            yield (
+                _fixup_resource_keys(network, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_project(self, project_number):
         """Iterate Project from Cloud Asset data.
@@ -569,8 +606,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'enabledFeature': 'enabledFeatures',
         }
         resources = self._iter_compute_resources('Project', project_number)
-        for project in resources:
-            yield _fixup_resource_keys(project, cai_to_gcp_key_map)
+        for project, metadata in resources:
+            yield (
+                _fixup_resource_keys(project, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from Cloud Asset data.
@@ -588,8 +627,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'interface': 'interfaces',
         }
         resources = self._iter_compute_resources('Router', project_number)
-        for router in resources:
-            yield _fixup_resource_keys(router, cai_to_gcp_key_map)
+        for router, metadata in resources:
+            yield (
+                _fixup_resource_keys(router, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from Cloud Asset data.
@@ -606,8 +647,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'licenseCode': 'licenseCodes',
         }
         resources = self._iter_compute_resources('Snapshot', project_number)
-        for snapshot in resources:
-            yield _fixup_resource_keys(snapshot, cai_to_gcp_key_map)
+        for snapshot, metadata in resources:
+            yield (
+                _fixup_resource_keys(snapshot, cai_to_gcp_key_map),
+                metadata
+            )
 
     def iter_compute_sslcertificates(self, project_number):
         """Iterate SSL certificates from Cloud Asset data.
@@ -665,8 +709,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('TargetHttpsProxy',
                                                  project_number)
-        for targethttpsproxy in resources:
-            yield _fixup_resource_keys(targethttpsproxy, cai_to_gcp_key_map)
+        for targethttpsproxy, metadata in resources:
+            yield (
+                _fixup_resource_keys(targethttpsproxy, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_targetinstances(self, project_number):
         """Iterate Target Instances from Cloud Asset data.
@@ -696,8 +742,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'instance': 'instances',
         }
         resources = self._iter_compute_resources('TargetPool', project_number)
-        for targetpool in resources:
-            yield _fixup_resource_keys(targetpool, cai_to_gcp_key_map)
+        for targetpool, metadata in resources:
+            yield (
+                _fixup_resource_keys(targetpool, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_targetsslproxies(self, project_number):
         """Iterate Target SSL proxies from Cloud Asset data.
@@ -713,8 +761,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('TargetSslProxy',
                                                  project_number)
-        for targetsslproxy in resources:
-            yield _fixup_resource_keys(targetsslproxy, cai_to_gcp_key_map)
+        for targetsslproxy, metadata in resources:
+            yield (
+                _fixup_resource_keys(targetsslproxy, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_targettcpproxies(self, project_number):
         """Iterate Target TCP proxies from Cloud Asset data.
@@ -745,8 +795,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         resources = self._iter_compute_resources('TargetVpnGateway',
                                                  project_number)
-        for targetvpngateway in resources:
-            yield _fixup_resource_keys(targetvpngateway, cai_to_gcp_key_map)
+        for targetvpngateway, metadata in resources:
+            yield (
+                _fixup_resource_keys(targetvpngateway, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_urlmaps(self, project_number):
         """Iterate URL maps from Cloud Asset data.
@@ -766,11 +818,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'test': 'tests'
         }
         resources = self._iter_compute_resources('UrlMap', project_number)
-        for urlmap in resources:
+        for urlmap, metadata in resources:
             # 'path' can be singular when scalar or plural when a list, so
             # turn on only_fixup_lists, so the singular instance isn't munged.
-            yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
-                                       only_fixup_lists=True)
+            yield (
+                _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
+                                     only_fixup_lists=True),
+                metadata)
 
     def iter_compute_vpntunnels(self, project_number):
         """Iterate VPN tunnels from Cloud Asset data.
@@ -785,23 +839,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for vpntunnel in resources:
             yield vpntunnel
 
-    def iter_container_clusters(self, project_number):
-        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-
-        Yields:
-            dict: Generator of Kubernetes Engine Cluster resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'container.googleapis.com/Cluster',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for cluster in resources:
-            yield cluster
+    # Disabling pulling ke data from CAI since it's missing nodepools
+    # attribute in the returned data. We can re-enable this once that
+    # problem is resolved.
+    # def iter_container_clusters(self, project_number):
+    #     """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Kubernetes Engine Cluster resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'container.googleapis.com/Cluster',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for cluster in resources:
+    #         yield cluster
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
@@ -977,7 +1034,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Clusters with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_dataproc_clusters(self, project_id, region=None):
         """Iterate Dataproc clusters from GCP API.
@@ -1113,7 +1170,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Service accounts with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_iam_organization_roles(self, org_id):
         """Iterate Organization roles from Cloud Asset data.
@@ -1192,7 +1249,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Cryptokeys with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def fetch_kms_keyring_iam_policy(self, keyring):
         """Fetch KMS Keyring IAM Policy from Cloud Asset data.
@@ -1213,7 +1270,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Keyrings with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_kms_cryptokeys(self, parent):
         """Iterate KMS Cryptokeys in a keyring from Cloud Asset data.
@@ -1291,7 +1348,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Subscriptions with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from Cloud Asset data.
@@ -1312,7 +1369,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
 
         # Topics with no IAM policy return an empty dict.
-        return {}
+        return {}, None
 
     def iter_pubsub_subscriptions(self, project_id, project_number):
         """Iterate PubSub subscriptions from GCP API.
@@ -1400,14 +1457,15 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             list: Bucket Access Controls.
         """
-        iam_policy = self.fetch_storage_bucket_iam_policy(bucket_id)
+        iam_policy, metadata = self.fetch_storage_bucket_iam_policy(bucket_id)
         if iam_policy:
-            return iam_helpers.convert_iam_to_bucket_acls(iam_policy,
-                                                          bucket_id,
-                                                          project_id,
-                                                          project_number)
+            return iam_helpers.convert_iam_to_bucket_acls(
+                iam_policy,
+                bucket_id,
+                project_id,
+                project_number), metadata
         # Return empty list if IAM policy isn't present.
-        return []
+        return [], None
 
     def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from Cloud Asset data.

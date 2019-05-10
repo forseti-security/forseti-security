@@ -48,6 +48,7 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/Disk',
     'compute.googleapis.com/Firewall',
     'compute.googleapis.com/ForwardingRule',
+    'compute.googleapis.com/GlobalForwardingRule'
     'compute.googleapis.com/HealthCheck',
     'compute.googleapis.com/HttpHealthCheck',
     'compute.googleapis.com/HttpsHealthCheck',
@@ -59,6 +60,7 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/License',
     'compute.googleapis.com/Network',
     'compute.googleapis.com/Project',
+    'compute.googleapis.com/RegionBackendService',
     'compute.googleapis.com/Router',
     'compute.googleapis.com/Snapshot',
     'compute.googleapis.com/SslCertificate',
