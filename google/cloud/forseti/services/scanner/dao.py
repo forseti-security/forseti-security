@@ -199,10 +199,13 @@ class Violation(BASE):
                                     Text(),
                                     default='')]
 
-        columns_to_update = [{Column('violation_data', Text()): 
-                              Column('violation_data', Text(16777215))}]
-                              
-        schema_update_actions = {'CREATE': columns_to_create}
+        columns_to_update = {
+            Column('violation_data', Text()):
+            Column('violation_data', Text(16777215))}
+
+        schema_update_actions = {'CREATE': columns_to_create,
+                                 'ALTER': columns_to_update}
+
         return schema_update_actions
 
 
