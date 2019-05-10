@@ -15,8 +15,8 @@ multiple scanners in the same run.
 ## BigQuery dataset ACL scanner
 
 BigQuery datasets have access properties that can publicly expose your datasets.
-The BigQuery scanner supports a blacklist mode to ensure unauthorized users
-don't gain access to your datasets.
+The BigQuery scanner supports blacklist and whitelist modes to ensure unauthorized users
+don't gain access to your datasets, and only authorized users can gain access.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
 [`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
