@@ -93,6 +93,10 @@ class _RunData(object):
             instance_template_url = instance_group_manager.instance_template
             instance_template_key = instance_template_type.Key.from_url(
                 instance_template_url)
+            if instance_templates_by_key.keys():
+                for key in instance_templates_by_key.keys():
+                    if vars(key) == vars(instance_template_key):
+                        instance_template_key = key
             instance_template = instance_templates_by_key.get(
                 instance_template_key)
             if instance_template:
@@ -166,7 +170,6 @@ class _RunData(object):
         except Exception as e:
             logger.INFO('Convert dict did not work: %s' % e)
             return None
-
 
     def find_instance_group_by_url(self, instance_group_url):
         """Find an instance group for the given URL.
@@ -248,7 +251,7 @@ class _RunData(object):
         for firewall_rule in self.firewall_rules:
             firewall_network = network_type.Key.from_url(
                 firewall_rule.network, project_id=firewall_rule.project_id)
-            if firewall_network != network_port.network:
+            if vars(firewall_network) != vars(network_port.network):
                 continue
 
             if (firewall_rule.target_tags and
@@ -368,7 +371,7 @@ class _RunData(object):
             project_full_name=project_full_name,
             backend_service=backend_service,
             alternate_services=alternate_services,
-            direct_access_sources=direct_access_sources,
+            direct_access_sources=sorted(direct_access_sources),
             iap_enabled=(backend_service.iap.get('enabled', False)
                          if backend_service.iap else False))
 
@@ -382,7 +385,7 @@ class _RunData(object):
         Returns:
             bool: whether the two services share any (instance, port)
         """
-        if backend_service2.key == backend_service.key:
+        if vars(backend_service2.key) == vars(backend_service.key):
             return False
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
@@ -404,7 +407,7 @@ class _RunData(object):
                     backend_service2, instance_group2)
                 if not network_port2:
                     continue
-                if network_port != network_port2:
+                if str(network_port) != str(network_port2):
                     continue
                 if instance_group == instance_group2:
                     return True
