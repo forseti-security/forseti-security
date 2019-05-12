@@ -62,6 +62,8 @@ pagination:
   collection: news
   permalink: /page/:num/
   per_page: 10
+  sort_reverse: true
+  sort_field: date
 
 # Responsive image templates and resizing configuration
 responsive_image:
@@ -136,23 +138,6 @@ defaults:
       path: _faq/resource
     values:
       category: Google Cloud Platform Resource Coverage
-  - scope:
-      path: _docs/v1.1
-    values:
-      category: Overview (v1.1)
-      layout: docs
-  - scope:
-      path: _docs/v1.1/quickstarts
-    values:
-      category: Quickstarts (v1.1)
-  - scope:
-      path: _docs/v1.1/howto
-    values:
-      category: Howtos (v1.1)
-  - scope:
-      path: _docs/v1.1/guides
-    values:
-      category: Guides (v1.1)
   - scope:
       path: _docs/v2.0
     values:
@@ -501,3 +486,91 @@ defaults:
       path: _docs/v2.11/faq
     values:
       category: FAQ (v2.11)
+  - scope:
+      path: _docs/v2.12
+    values:
+      category: Overview (v2.12)
+      layout: docs
+  - scope:
+      path: _docs/v2.12/concepts
+    values:
+      category: Concepts (v2.12)
+  - scope:
+      path: _docs/v2.12/setup
+    values:
+      category: Setup (v2.12)
+  - scope:
+      path: _docs/v2.12/use
+    values:
+      category: Use (v2.12)
+  - scope:
+      path: _docs/v2.12/configure
+    values:
+      category: Configure (v2.12)
+  - scope:
+      path: _docs/v2.12/develop
+    values:
+      category: Develop (v2.12)
+  - scope:
+      path: _docs/v2.12/faq
+    values:
+      category: FAQ (v2.12)
+
+  - scope:
+      path: _docs/v2.13
+    values:
+      category: Overview (v2.13)
+      layout: docs
+  - scope:
+      path: _docs/v2.13/concepts
+    values:
+      category: Concepts (v2.13)
+  - scope:
+      path: _docs/v2.13/setup
+    values:
+      category: Setup (v2.13)
+  - scope:
+      path: _docs/v2.13/use
+    values:
+      category: Use (v2.13)
+  - scope:
+      path: _docs/v2.13/configure
+    values:
+      category: Configure (v2.13)
+  - scope:
+      path: _docs/v2.13/develop
+    values:
+      category: Develop (v2.13)
+  - scope:
+      path: _docs/v2.13/faq
+    values:
+      category: FAQ (v2.13)
+  - scope:
+      path: _docs/v2.14
+    values:
+      category: Overview (v2.14)
+      layout: docs
+  - scope:
+      path: _docs/v2.14/concepts
+    values:
+      category: Concepts (v2.14)
+  - scope:
+      path: _docs/v2.14/setup
+    values:
+      category: Setup (v2.14)
+  - scope:
+      path: _docs/v2.14/use
+    values:
+      category: Use (v2.14)
+  - scope:
+      path: _docs/v2.14/configure
+    values:
+      category: Configure (v2.14)
+  - scope:
+      path: _docs/v2.14/develop
+    values:
+      category: Develop (v2.14)
+  - scope:
+      path: _docs/v2.14/faq
+    values:
+      category: FAQ (v2.14)

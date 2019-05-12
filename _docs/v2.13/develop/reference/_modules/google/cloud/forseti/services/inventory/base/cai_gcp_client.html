@@ -1,0 +1,1460 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.cai_gcp_client"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.inventory.base.cai_gcp_client</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;Cloud Asset and GCP API hybrid client fassade.&quot;&quot;&quot;</span>
+
+<span class="c1"># pylint: disable=too-many-lines</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services</span> <span class="k">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base</span> <span class="k">import</span> <span class="n">gcp</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base</span> <span class="k">import</span> <span class="n">iam_helpers</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.storage</span> <span class="k">import</span> <span class="n">CaiDataAccess</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.storage</span> <span class="k">import</span> <span class="n">ContentTypes</span>
+
+<span class="n">LOCAL_THREAD</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_fixup_resource_keys"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client._fixup_resource_keys">[docs]</a><span class="k">def</span> <span class="nf">_fixup_resource_keys</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">key_map</span><span class="p">,</span> <span class="n">only_fixup_lists</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correct different attribute names between CAI and json representation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource (dict): The resource dictionary to scan for keys in the</span>
+<span class="sd">            key_map.</span>
+<span class="sd">        key_map (dict): A map of bad_key:good_key pairs, any instance of bad_key</span>
+<span class="sd">            in the resource dict is replaced with an instance of good_key.</span>
+<span class="sd">        only_fixup_lists (bool): If true, only keys that have values which are</span>
+<span class="sd">            lists will be fixed. This allows the case where there is the same</span>
+<span class="sd">            key used for both a scalar entry and a list entry, and only the</span>
+<span class="sd">            list entry should change to the different key.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A resource dict with all bad keys replaced with good keys.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fixed_resource</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">resource</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># Recursively fix keys in sub dictionaries.</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">key_map</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># Recursively fix keys in sub dictionaries in lists.</span>
+            <span class="n">new_value</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">key_map</span><span class="p">)</span>
+                <span class="n">new_value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">new_value</span>
+
+        <span class="c1"># Only replace the old key with the new key if the value of the field</span>
+        <span class="c1"># is a list. This behavior can be overridden by setting the optional</span>
+        <span class="c1"># argument only_fixup_lists to False.</span>
+        <span class="n">should_update_key</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
+            <span class="ow">not</span> <span class="n">only_fixup_lists</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_map</span> <span class="ow">and</span> <span class="n">should_update_key</span><span class="p">:</span>
+            <span class="n">fixed_resource</span><span class="p">[</span><span class="n">key_map</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fixed_resource</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">fixed_resource</span></div>
+
+
+<span class="c1"># pylint: disable=too-many-public-methods</span>
+<div class="viewcode-block" id="CaiApiClientImpl"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl">[docs]</a><span class="k">class</span> <span class="nc">CaiApiClientImpl</span><span class="p">(</span><span class="n">gcp</span><span class="o">.</span><span class="n">ApiClientImpl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The gcp api client Implementation&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">parallel</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (dict): GCP API client configuration.</span>
+<span class="sd">            engine (object): Database engine to operate on.</span>
+<span class="sd">            parallel (bool): If true, use the parallel crawler implementation.</span>
+<span class="sd">            session (object): Database session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dao</span> <span class="o">=</span> <span class="n">CaiDataAccess</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cai_session</span> <span class="o">=</span> <span class="n">session</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span> <span class="o">=</span> <span class="n">LOCAL_THREAD</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a thread local CAI read only session object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: A thread local Session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
+            <span class="c1"># SQLite doesn&#39;t support per thread sessions cleanly, so use global</span>
+            <span class="c1"># session.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cai_session</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">,</span> <span class="s1">&#39;cai_session&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">cai_session</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">cai_session</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">create_readonly_session</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">cai_session</span>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_bigquery_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_bigquery_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_bigquery_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets IAM policy of a bigquery dataset from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            dataset_id (str): id of the dataset to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dataset IAM Policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bigquery_name_fmt</span> <span class="o">=</span> <span class="s1">&#39;//bigquery.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">/datasets/</span><span class="si">{}</span><span class="s1">&#39;</span>
+
+        <span class="c1"># Try fetching with project id, if that returns nothing, fall back to</span>
+        <span class="c1"># project number.</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.bigquery.Dataset&#39;</span><span class="p">,</span>
+            <span class="n">bigquery_name_fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+                <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+                <span class="s1">&#39;google.cloud.bigquery.Dataset&#39;</span><span class="p">,</span>
+                <span class="n">bigquery_name_fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_bigquery_dataset_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_bigquery_dataset_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_bigquery_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span>
+                                      <span class="n">dataset_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dataset policy Iterator for a dataset from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            dataset_id (str): id of the dataset to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dataset Policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_bigquery_iam_policy</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">iam_helpers</span><span class="o">.</span><span class="n">convert_iam_to_bigquery_policy</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_bigquery_dataset_policy</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_bigquery_datasets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_bigquery_datasets">[docs]</a>    <span class="k">def</span> <span class="nf">iter_bigquery_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Datasets from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of datasets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.bigquery.Dataset&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">dataset</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_billing_account_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_billing_account_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_billing_account_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">account_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets IAM policy of a Billing Account from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            account_id (str): id of the billing account to get policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Billing Account IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.billing.BillingAccount&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudbilling.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_billing_account_iam_policy</span><span class="p">(</span>
+            <span class="n">account_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_billing_accounts"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_billing_accounts">[docs]</a>    <span class="k">def</span> <span class="nf">iter_billing_accounts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Billing Accounts in an organization from Cloud Asset data.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of billing accounts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.billing.BillingAccount&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;&#39;</span><span class="p">,</span>  <span class="c1"># Billing accounts have no parent resource.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">account</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">account</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_cloudsql_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_cloudsql_instances">[docs]</a>    <span class="k">def</span> <span class="nf">iter_cloudsql_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Cloud sql instances from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of cloudsql instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.sql.Instance&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="c1"># CloudSQL instances may not have parent data from CAI.</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+                <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+                <span class="s1">&#39;google.cloud.sql.Instance&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;//cloudsql.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">instance</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl._iter_compute_resources"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl._iter_compute_resources">[docs]</a>    <span class="k">def</span> <span class="nf">_iter_compute_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute resources from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            asset_type (str): The Compute asset type to iterate.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            generator: A generator of resources from Cloud Asset data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.compute.</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asset_type</span><span class="p">),</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_autoscalers"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_autoscalers">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_autoscalers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Autoscalers from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of autoscaler resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Autoscaler&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">autoscaler</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">autoscaler</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_backendbuckets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_backendbuckets">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_backendbuckets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Backend buckets from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of backend bucket resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;BackendBucket&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">backendbucket</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">backendbucket</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_backendservices"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_backendservices">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_backendservices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Backend services from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of backend service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;backend&#39;</span><span class="p">:</span> <span class="s1">&#39;backends&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;healthCheck&#39;</span><span class="p">:</span> <span class="s1">&#39;healthChecks&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;resourceGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;group&#39;</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;BackendService&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">backendservice</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">backendservice</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_disks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_disks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_disks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine disks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Disk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="s1">&#39;licenses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;guestOsFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;guestOsFeatures&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;users&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;replicaZone&#39;</span><span class="p">:</span> <span class="s1">&#39;replicaZones&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;licenseCode&#39;</span><span class="p">:</span> <span class="s1">&#39;licenseCodes&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Disk&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">disk</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">disk</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_firewalls"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_firewalls">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_firewalls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine Firewalls from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Engine Firewall.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ipProtocol&#39;</span><span class="p">:</span> <span class="s1">&#39;IPProtocol&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="s1">&#39;ports&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sourceRange&#39;</span><span class="p">:</span> <span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sourceServiceAccount&#39;</span><span class="p">:</span> <span class="s1">&#39;sourceServiceAccounts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sourceTag&#39;</span><span class="p">:</span> <span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;targetRange&#39;</span><span class="p">:</span> <span class="s1">&#39;targetRanges&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;targetServiceAccount&#39;</span><span class="p">:</span> <span class="s1">&#39;targetServiceAccounts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;targetTag&#39;</span><span class="p">:</span> <span class="s1">&#39;targetTags&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Firewall&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_forwardingrules"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_forwardingrules">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_forwardingrules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Forwarding Rules from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of forwarding rule resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ipAddress&#39;</span><span class="p">:</span> <span class="s1">&#39;IPAddress&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;ipProtocol&#39;</span><span class="p">:</span> <span class="s1">&#39;IPProtocol&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;ForwardingRule&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">forwarding_rule</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">forwarding_rule</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_healthchecks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_healthchecks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_healthchecks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Health checks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of health check resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;HealthCheck&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">healthcheck</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">healthcheck</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_httphealthchecks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_httphealthchecks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_httphealthchecks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate HTTP Health checks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of HTTP health check resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;HttpHealthCheck&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">httphealthcheck</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">httphealthcheck</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_httpshealthchecks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_httpshealthchecks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_httpshealthchecks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate HTTPS Health checks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of HTTPS health check resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;HttpsHealthCheck&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">httpshealthcheck</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">httpshealthcheck</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_ig_managers"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_ig_managers">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_ig_managers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Instance Group Manager from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of instance group manager resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;namedPort&#39;</span><span class="p">:</span> <span class="s1">&#39;namedPorts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;targetPool&#39;</span><span class="p">:</span> <span class="s1">&#39;targetPools&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;versions&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;InstanceGroupManager&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">igmanager</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">igmanager</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_images"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_images">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Images from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of image resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;guestOsFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;guestOsFeatures&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="s1">&#39;licenses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;licenseCode&#39;</span><span class="p">:</span> <span class="s1">&#39;licenseCodes&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Image&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_instancegroups"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_instancegroups">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_instancegroups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine groups from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Instance group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;namedPort&#39;</span><span class="p">:</span> <span class="s1">&#39;namedPorts&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;InstanceGroup&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">instancegroup</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">instancegroup</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_instances">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate compute engine instance from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Engine Instance resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;accessConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;accessConfigs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;aliasIpRange&#39;</span><span class="p">:</span> <span class="s1">&#39;aliasIpRanges&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;disk&#39;</span><span class="p">:</span> <span class="s1">&#39;disks&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diskConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;diskConfigs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;guestAccelerator&#39;</span><span class="p">:</span> <span class="s1">&#39;guestAccelerators&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;guestOsFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;guestOsFeatures&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;item&#39;</span><span class="p">:</span> <span class="s1">&#39;items&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="s1">&#39;licenses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;networkInterface&#39;</span><span class="p">:</span> <span class="s1">&#39;networkInterfaces&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;nodeAffinity&#39;</span><span class="p">:</span> <span class="s1">&#39;nodeAffinities&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;resourcePolicy&#39;</span><span class="p">:</span> <span class="s1">&#39;resourcePolicies&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;scope&#39;</span><span class="p">:</span> <span class="s1">&#39;scopes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;serviceAccount&#39;</span><span class="p">:</span> <span class="s1">&#39;serviceAccounts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Instance&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_instancetemplates"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_instancetemplates">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_instancetemplates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Instance Templates from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of instance template resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;accessConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;accessConfigs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;aliasIpRange&#39;</span><span class="p">:</span> <span class="s1">&#39;aliasIpRanges&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;disk&#39;</span><span class="p">:</span> <span class="s1">&#39;disks&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diskConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;diskConfigs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;guestAccelerator&#39;</span><span class="p">:</span> <span class="s1">&#39;guestAccelerators&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;guestOsFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;guestOsFeatures&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;item&#39;</span><span class="p">:</span> <span class="s1">&#39;items&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="s1">&#39;licenses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;networkInterface&#39;</span><span class="p">:</span> <span class="s1">&#39;networkInterfaces&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;nodeAffinity&#39;</span><span class="p">:</span> <span class="s1">&#39;nodeAffinities&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;resourcePolicy&#39;</span><span class="p">:</span> <span class="s1">&#39;resourcePolicies&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;scope&#39;</span><span class="p">:</span> <span class="s1">&#39;scopes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;serviceAccount&#39;</span><span class="p">:</span> <span class="s1">&#39;serviceAccounts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;InstanceTemplate&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">instancetemplate</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">instancetemplate</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_licenses"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_licenses">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_licenses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Licenses from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of license resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;License&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">compute_license</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">compute_license</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_networks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_networks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Networks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of network resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;subnetwork&#39;</span><span class="p">:</span> <span class="s1">&#39;subnetworks&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_project">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Project from Cloud Asset data.</span>
+
+<span class="sd">        Will only ever return up to 1 result. Ensures compatibility with other</span>
+<span class="sd">        resource iterators.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of compute project resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;enabledFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;enabledFeatures&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Project&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_routers"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_routers">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine routers from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Routers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;advertisedGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;advertisedGroups&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;advertisedIpRange&#39;</span><span class="p">:</span> <span class="s1">&#39;advertisedIpRanges&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bgpPeer&#39;</span><span class="p">:</span> <span class="s1">&#39;bgpPeers&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;interface&#39;</span><span class="p">:</span> <span class="s1">&#39;interfaces&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Router&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">router</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_snapshots"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_snapshots">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine snapshots from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Compute Snapshots.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;guestOsFeature&#39;</span><span class="p">:</span> <span class="s1">&#39;guestOsFeatures&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;license&#39;</span><span class="p">:</span> <span class="s1">&#39;licenses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;licenseCode&#39;</span><span class="p">:</span> <span class="s1">&#39;licenseCodes&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Snapshot&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_sslcertificates"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_sslcertificates">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_sslcertificates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate SSL certificates from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of ssl certificate resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;SslCertificate&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sslcertificate</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">sslcertificate</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_subnetworks"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_subnetworks">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_subnetworks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Subnetworks from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of subnetwork resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;Subnetwork&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">subnetwork</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">subnetwork</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targethttpproxies"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targethttpproxies">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targethttpproxies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target HTTP proxies from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target http proxy resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetHttpProxy&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targethttpproxy</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">targethttpproxy</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targethttpsproxies"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targethttpsproxies">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targethttpsproxies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target HTTPS proxies from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target https proxy resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;sslCertificate&#39;</span><span class="p">:</span> <span class="s1">&#39;sslCertificates&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetHttpsProxy&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targethttpsproxy</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">targethttpsproxy</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targetinstances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targetinstances">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targetinstances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target Instances from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target instance resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetInstance&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targetinstance</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">targetinstance</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targetpools"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targetpools">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targetpools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target Pools from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target pool resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;healthCheck&#39;</span><span class="p">:</span> <span class="s1">&#39;healthChecks&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;instance&#39;</span><span class="p">:</span> <span class="s1">&#39;instances&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetPool&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targetpool</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">targetpool</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targetsslproxies"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targetsslproxies">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targetsslproxies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target SSL proxies from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target ssl proxy resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;sslCertificate&#39;</span><span class="p">:</span> <span class="s1">&#39;sslCertificates&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetSslProxy&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targetsslproxy</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">targetsslproxy</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targettcpproxies"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targettcpproxies">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targettcpproxies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target TCP proxies from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target tcp proxy resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetTcpProxy&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targettcpproxy</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">targettcpproxy</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_targetvpngateways"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_targetvpngateways">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targetvpngateways</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target VPN Gateways from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of target tcp proxy resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;forwardingRule&#39;</span><span class="p">:</span> <span class="s1">&#39;forwardingRules&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tunnel&#39;</span><span class="p">:</span> <span class="s1">&#39;tunnels&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;TargetVpnGateway&#39;</span><span class="p">,</span>
+                                                 <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">targetvpngateway</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">targetvpngateway</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_urlmaps"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_urlmaps">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_urlmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate URL maps from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of url map resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cai_to_gcp_key_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;hosts&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;hostRule&#39;</span><span class="p">:</span> <span class="s1">&#39;hostRules&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="s1">&#39;paths&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pathMatcher&#39;</span><span class="p">:</span> <span class="s1">&#39;pathMatchers&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pathRule&#39;</span><span class="p">:</span> <span class="s1">&#39;pathRules&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;tests&#39;</span>
+        <span class="p">}</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;UrlMap&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">urlmap</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="c1"># &#39;path&#39; can be singular when scalar or plural when a list, so</span>
+            <span class="c1"># turn on only_fixup_lists, so the singular instance isn&#39;t munged.</span>
+            <span class="k">yield</span> <span class="n">_fixup_resource_keys</span><span class="p">(</span><span class="n">urlmap</span><span class="p">,</span> <span class="n">cai_to_gcp_key_map</span><span class="p">,</span>
+                                       <span class="n">only_fixup_lists</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_compute_vpntunnels"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_compute_vpntunnels">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_vpntunnels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate VPN tunnels from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of vpn tunnel resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_compute_resources</span><span class="p">(</span><span class="s1">&#39;VpnTunnel&#39;</span><span class="p">,</span> <span class="n">project_number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">vpntunnel</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">vpntunnel</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_container_clusters"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_container_clusters">[docs]</a>    <span class="k">def</span> <span class="nf">iter_container_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Kubernetes Engine Cluster from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Kubernetes Engine Cluster resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.container.Cluster&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cluster</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_folder"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_folder">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Folder data from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_id (str): id of the folder to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Folder resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Folder&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_folder</span><span class="p">(</span><span class="n">folder_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_folder_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_folder_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_folder_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Folder IAM policy in a folder from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_id (str): id of the folder to get policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Folder IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Folder&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_folder_iam_policy</span><span class="p">(</span>
+            <span class="n">folder_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_organization"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_organization">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_organization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Organization data from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_id (str): id of the organization to get.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Organization resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Organization&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">org_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_organization</span><span class="p">(</span><span class="n">org_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_organization_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_organization_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_organization_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Organization IAM policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_id (str): id of the organization to get policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Organization IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Organization&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">org_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_organization_iam_policy</span><span class="p">(</span>
+            <span class="n">org_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_project">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Project data from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Project resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Project&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_project</span><span class="p">(</span><span class="n">project_number</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_crm_project_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_crm_project_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_crm_project_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Project IAM policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Project IAM Policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Project&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_crm_project_iam_policy</span><span class="p">(</span>
+            <span class="n">project_number</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_crm_folders"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_crm_folders">[docs]</a>    <span class="k">def</span> <span class="nf">iter_crm_folders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Folders from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent_id (str): id of the parent of the folder</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of folders</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Folder&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">folder</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_crm_projects"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_crm_projects">[docs]</a>    <span class="k">def</span> <span class="nf">iter_crm_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Projects from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent_type (str): type of the parent, &quot;folder&quot; or &quot;organization&quot;.</span>
+<span class="sd">            parent_id (str): id of the parent of the folder.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Project resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.resourcemanager.Project&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">s/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent_type</span><span class="p">,</span>
+                                                                  <span class="n">parent_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">project</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_dataproc_cluster_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_dataproc_cluster_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_dataproc_cluster_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Dataproc Cluster IAM Policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (str): The Dataproc cluster to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Cluster IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.dataproc.Cluster&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//dataproc.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cluster</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Clusters with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_dataproc_clusters"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_dataproc_clusters">[docs]</a>    <span class="k">def</span> <span class="nf">iter_dataproc_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Dataproc clusters from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            region (str): The region to query. Not required when using Cloud</span>
+<span class="sd">                Asset API.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Cluster resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">region</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.dataproc.Cluster&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//dataproc.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cluster</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_dns_managedzones"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_dns_managedzones">[docs]</a>    <span class="k">def</span> <span class="nf">iter_dns_managedzones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate CloudDNS Managed Zones from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the parent project.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of ManagedZone resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.dns.ManagedZone&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">managedzone</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">managedzone</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_dns_policies"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_dns_policies">[docs]</a>    <span class="k">def</span> <span class="nf">iter_dns_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate CloudDNS Policies from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the parent project of the policy.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of ManagedZone resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.dns.Policy&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">policy</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">policy</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_gae_app"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_gae_app">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_gae_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch the AppEngine App from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: AppEngine App resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.appengine.Application&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//appengine.googleapis.com/apps/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resource</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_gae_services"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_gae_services">[docs]</a>    <span class="k">def</span> <span class="nf">iter_gae_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate gae services from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of AppEngine Service resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.appengine.Service&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//appengine.googleapis.com/apps/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">service</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_gae_versions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_gae_versions">[docs]</a>    <span class="k">def</span> <span class="nf">iter_gae_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">service_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate gae versions from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query</span>
+<span class="sd">            service_id (str): id of the appengine service</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of AppEngine Version resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.appengine.Version&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//appengine.googleapis.com/apps/</span><span class="si">{}</span><span class="s1">/services/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span>
+                                                                    <span class="n">service_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">version</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_iam_serviceaccount_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_iam_serviceaccount_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_iam_serviceaccount_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Service Account IAM policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The service account name to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</span>
+<span class="sd">            unique_id (str): The unique id of the service account.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Service Account IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># CAI indexes iam policy by service account unique id, not email.</span>
+        <span class="c1"># This transforms the name to the format expected by CAI.</span>
+        <span class="n">name_parts</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">name_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_id</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_parts</span><span class="p">)</span>
+
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.iam.ServiceAccount&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//iam.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Service accounts with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_iam_organization_roles"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_iam_organization_roles">[docs]</a>    <span class="k">def</span> <span class="nf">iter_iam_organization_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Organization roles from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_id (str): id of the organization to get.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of organization role.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.iam.Role&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">org_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">role</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_iam_project_roles"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_iam_project_roles">[docs]</a>    <span class="k">def</span> <span class="nf">iter_iam_project_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Project roles in a project from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of project roles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.iam.Role&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">role</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_iam_serviceaccounts"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_iam_serviceaccounts">[docs]</a>    <span class="k">def</span> <span class="nf">iter_iam_serviceaccounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Service Accounts in a project from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of service account.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.iam.ServiceAccount&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">serviceaccount</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">serviceaccount</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_kms_cryptokey_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_kms_cryptokey_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_kms_cryptokey_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cryptokey</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Cryptokey IAM Policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cryptokey (str): The KMS cryptokey to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: KMS Cryptokey IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.kms.CryptoKey&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudkms.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cryptokey</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Cryptokeys with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_kms_keyring_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_kms_keyring_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_kms_keyring_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyring</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Keyring IAM Policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keyring (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: KMS Keyring IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.kms.KeyRing&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudkms.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">keyring</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Keyrings with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_kms_cryptokeys"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_kms_cryptokeys">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_cryptokeys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokeys in a keyring from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of KMS Cryptokey resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.kms.CryptoKey&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudkms.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cryptokey</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cryptokey</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_kms_cryptokeyversions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_kms_cryptokeyversions">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_cryptokeyversions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokey Versions from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of KMS Cryptokeyversion resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.kms.CryptoKeyVersion&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudkms.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cryptokeyversion</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cryptokeyversion</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_kms_keyrings"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_kms_keyrings">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_keyrings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Keyrings in a project from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            location (str): The location to query. Not required when</span>
+<span class="sd">                using Cloud Asset API.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of KMS Keyring resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">location</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.kms.KeyRing&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudkms.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">keyring</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">keyring</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_pubsub_subscription_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_pubsub_subscription_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_pubsub_subscription_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Subscription IAM policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: PubSub Topic IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.pubsub.Subscription&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//pubsub.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Subscriptions with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_pubsub_topic_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_pubsub_topic_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_pubsub_topic_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Topic IAM policy from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/topics/{TOPIC_NAME}</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: PubSub Topic IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.pubsub.Topic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//pubsub.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+
+        <span class="c1"># Topics with no IAM policy return an empty dict.</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_pubsub_subscriptions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_pubsub_subscriptions">[docs]</a>    <span class="k">def</span> <span class="nf">iter_pubsub_subscriptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub subscriptions from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Pubsub Subscription resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.pubsub.Subscription&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">subscription</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_pubsub_topics"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_pubsub_topics">[docs]</a>    <span class="k">def</span> <span class="nf">iter_pubsub_topics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub topics from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Pubsub Topic resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>  <span class="c1"># Used by API not CAI.</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.pubsub.Topic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">topic</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_spanner_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_spanner_instances">[docs]</a>    <span class="k">def</span> <span class="nf">iter_spanner_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Spanner Instances from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Spanner Instance resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.spanner.Instance&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spanner_instance</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">spanner_instance</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_spanner_databases"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_spanner_databases">[docs]</a>    <span class="k">def</span> <span class="nf">iter_spanner_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Spanner Databases from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): parent spanner instance to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of Spanner Database resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.spanner.Database&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//spanner.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spanner_database</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">spanner_database</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_storage_bucket_acls"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_storage_bucket_acls">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_storage_bucket_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_id</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bucket Access Controls from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_id (str): id of the bucket to query.</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Bucket Access Controls.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iam_policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_storage_bucket_iam_policy</span><span class="p">(</span><span class="n">bucket_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">iam_policy</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">iam_helpers</span><span class="o">.</span><span class="n">convert_iam_to_bucket_acls</span><span class="p">(</span><span class="n">iam_policy</span><span class="p">,</span>
+                                                          <span class="n">bucket_id</span><span class="p">,</span>
+                                                          <span class="n">project_id</span><span class="p">,</span>
+                                                          <span class="n">project_number</span><span class="p">)</span>
+        <span class="c1"># Return empty list if IAM policy isn&#39;t present.</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.fetch_storage_bucket_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.fetch_storage_bucket_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_storage_bucket_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bucket IAM policy Iterator from Cloud Asset data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_id (str): id of the bucket to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Bucket IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">fetch_cai_asset</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.storage.Bucket&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//storage.googleapis.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bucket_id</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span>
+        <span class="c1"># Fall back to live API if the data isn&#39;t in the CAI cache.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CaiApiClientImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fetch_storage_bucket_iam_policy</span><span class="p">(</span>
+            <span class="n">bucket_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaiApiClientImpl.iter_storage_buckets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cai_gcp_client.html#google.cloud.forseti.services.inventory.base.cai_gcp_client.CaiApiClientImpl.iter_storage_buckets">[docs]</a>    <span class="k">def</span> <span class="nf">iter_storage_buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Buckets from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of buckets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dao</span><span class="o">.</span><span class="n">iter_cai_assets</span><span class="p">(</span>
+            <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="s1">&#39;google.cloud.storage.Bucket&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;//cloudresourcemanager.googleapis.com/projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bucket</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">bucket</span></div></div>
+</pre></div>

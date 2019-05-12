@@ -1,0 +1,15 @@
+google.cloud.forseti.services.base package
+==========================================
+
+.. automodule:: google.cloud.forseti.services.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.services.base.config
+

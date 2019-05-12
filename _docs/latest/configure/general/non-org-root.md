@@ -13,7 +13,7 @@ But, you also have the option to run Forseti on a subset of resources:
 1. if you are Org Admin, and you want to run Forseti on a specific folder
 1. if you are Folder Admin, and you want to run Forseti on a specific folder
 1. if you are Project Admin, and you want to run Forseti on projects
-that are only owned by you
+that are only owned by you.
 
 Inventory, Data Model, and Scanner will be supported for use on these subset
 of resources, but Explain will not be supported.
@@ -32,13 +32,18 @@ manually assign the correct roles later.
 to the target folder:
 `folders/<foo_folder_id>`.
 
+1. **NEW for version 2.12.0+**: You can use the `composite_root_resources`
+   configuration to include multiple resources in a single Forseti installation.
+   See [Configure Inventory]({% link _docs/latest/configure/inventory/index.md %})
+   for more details.
+
 1. If Forseti was installed with Org Admin credentials, then the org-level
-roles will be inherited on the folder-level.
+   roles will be inherited on the folder-level.
 
 1. If Foresti was not installed with Org Admin credentails, then you need
-to grant the Forseti server service account to have the same roles on the
-target folder, as was [originally granted on the
-organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
+   to grant the Forseti server service account to have the same roles on the
+   target resources, as was [originally granted on the
+   organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
 
 1. Saving changes.
    1. Save the changes to `forseti_conf_server.yaml` file.
@@ -52,12 +57,20 @@ organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-se
 
 ## Configure Forseti to Run on Projects
 
+**NEW for version 2.12.0+**: As an alternative, you can use the
+`composite_root_resources` configuration to include multiple resources in a
+single Forseti installation.
+See [Configure Inventory]({% link _docs/latest/configure/inventory/index.md %})
+for more details.
+
 1. This assumes that Forseti is not installed with Org Admin credential, and
 you want Forseti to run on projects that you own. If Forseti is installed
 with Org Admin credential, then all the resources in the organization
 will be returned.
+
 1. Leave the `root_resource_id` pointed to the organization that the Installer
 inferred from the environment.
+
 1. Grant project viewer role to the Forseti server service account,
 on the projects that you own.
 

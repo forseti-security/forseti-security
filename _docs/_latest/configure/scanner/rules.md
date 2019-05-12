@@ -12,7 +12,7 @@ This page describes how to define rules for Forseti Scanner.
 ## Defining custom rules
 
 You can find some starter rules in the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/rules)
 directory. When you make changes to the rule files, upload them to your
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
 listed in `forseti_server_conf.yaml`.
@@ -469,6 +469,162 @@ rules:
   applies to all users in the organization.
   * **Valid values**: String, user1@example.com.
   
+## Firewall rules
+Firewall Scanner rules can be `blacklist`, `whitelist`, `required`, or `matches` policies.  
+
+### Example rule
+```yaml
+rules:
+  - rule_id: 'prevent_allow_all_ingress'
+    description: 'Detect allow tcp and udp ingress from anywhere to all instances'
+    mode: 'blacklist'
+    match_policies:
+      - direction: 'ingress'
+        allowed: ['*']
+        sourceRanges: ['0.0.0.0/0']
+    verify_policies:
+      - allowed:
+        - IPProtocol: 'tcp'
+          ports:
+            - 'all'
+      - allowed:
+        - IPProtocol: 'udp'
+          ports:
+            - 'all'
+
+# (...)
+
+# You can chose to group your rules into rule_groups
+# to apply them all at once on a resource
+rule_groups:
+  - group_id: 'default_rules'
+    rule_ids:
+      - 'prevent_allow_all_ingress'
+
+# (...)
+
+# Bind your rules or rule_groups to resources
+org_policy:
+  resources:
+    - type: organization
+      resource_ids:
+        - YOUR_ORG_ID
+      rules:
+        group_ids:
+          - 'default_rules'
+        rule_ids:
+          - 'prevent_allow_all_ingress'
+```
+
+### Rule definition 
+All modes share the same first-level rule structure:
+* `rule_id`
+  * **Description**: (*required*) The id of the rule.
+  * **Valid values**: *String*.
+  * **Note**:
+     * You will use this value to reference the rule, it must be unique inside your file.
+  * **Example values**: `prevent_allow_all_ingress`, `no_rdp_to_linux`
+
+* `description`
+  * **Description**: (*optional*) Your description of the rule.
+  * **Valid values**: *String*.
+  
+* `mode`
+  * **Description**: (*required*) The rule mode.
+  * **Valid values**: *String*. One of `blacklist`, `whitelist`, `required`, `matches`.
+  * **Modes description**:
+     * `blacklist`: Ensure unauthorized firewall rules raise a violation.
+     * `whitelist`: Only authorize the policies you define in the rule.
+     * `required`: Check if firewall rules match **one** of the `match_policies` defined in the rule.
+     * `matches`: Check if firewall rules match **all** of the `match_policies`defined in the rule.
+  * **Notes**:
+     * `whitelist` and `blacklist` rules require match and verify policies.
+     * `required` and `matches` rules only require match policies.
+
+* `match_policies` (*applicable to all modes*)
+  * **Description**: Policies to filter which firewall rules to check when scanning.  
+  * **Content**:
+    * `direction`:
+      * **Description**: The direction of the traffic for the rule.
+      * **Valid values**: *String*. One of `ingress`, `egress`.
+      * **Notes**:
+        * For `ingress` traffic, it is NOT supported to specify `destinationRanges`.
+        * For `egress` traffic, it is NOT supported to specify `sourceRanges` OR `sourceTags`.
+    * `allowed`:
+      * **Description**: A list of ALLOW rules specified by the firewall. Each rule specifies a protocol and port-range tuple that describes a permitted connection.
+      * **Valid values**: List. You can use `*` to match for all.
+      * **Notes**: Only one of `allowed` or `denied` can be used at the same time.
+    * `denied`:
+      * **Description**: A list of DENY rules specified by the firewall. Each rule specifies a protocol and port-range tuple that describes a denied connection.
+      * **Valid values**: List. You can use `*` to match for all.
+      * **Notes**: Only one of `allowed` or `denied` can be used at the same time.
+    * `sourceRanges`:
+      * **Description**: (*optional, 256 ranges max*) A list of source ranges.
+      * **Valid values**: List of CIDR formatted IP ranges, e.g. `'0.0.0.0/0'`
+    * `sourceServiceAccounts`:
+      * **Description**: (*optional*) A list of service accounts if using source service accounts in firewall rules.
+      * **Valid values**: List of service account email addresses, e.g. `'PROJECT@compute.gserviceaccount.com'`.
+    * `sourceTags`:
+      * **Description**: (*optional, 256 tags max*) A list of tags if using source tags in firewall rules.
+      * **Valid values**: List. Any GCP supported tag, e.g. `linux`.
+    * `destinationRanges`:
+      * **Description**: (*required if `egress`, 256 ranges max*) A list of destination ranges.
+      * **Valid values**: List of CIDR formatted IP ranges, e.g. `'0.0.0.0/0'` 
+    * `targetServiceAccounts`: 
+      * **Description**: (*optional*) A list of service accounts if using source service accounts in firewall rules.
+      * **Valid values**: List of service account email addresses, e.g. `'PROJECT@compute.gserviceaccount.com'`.
+    * `targetTags`:
+      * **Description**: (*optional, 256 tags max*) A list of tags if using target tags in firewall rules.
+      * **Valid values**: List. Any GCP supported tag, e.g. `linux`.
+  * **Notes**:   
+    * You specify either a source or a destination, but not both.  
+    Depending on the `direction` of the firewall rules you want to match:  
+      * For `ingress` rules, the target parameter specifies the destination VMs for traffic.
+      * For `egress` rules, the target parameter specifies the source VMs for traffic.
+    * The `source` parameters are only applicable to `ingress` rules, `ingress` rules cannot include `target` parameters.  
+    `ingress` rules require that you specify one of the following:
+      * `sourceRanges`
+      * `sourceServiceAccounts`
+      * `sourceTags
+      * A combination of `sourceRanges` and `sourceServiceAccounts`
+      * A combination of `sourceRanges` and `sourceTags`
+    * The `target` parameters are only applicable to `egress` rules, `egress` rules cannot include `source` parameters.  
+    The `destinationRanges` is required for `egress` rules.
+    
+
+* `verify_policies` (*only for `blacklist` and `whitelist` modes*) TODO
+  * **Description**: Policies to verify on firewall rules when scanning.
+  * **Content**:  
+    * `allowed`:
+      * **Description**: (*Repeatable*) Combination of `IPProtocol` and `ports` that describes a permitted connection.
+      * `IPProtocol`:
+        * **Description**: (*required*) The IP Protocol you wish to verify.
+        * **Valid values**: *String*. One of `TCP`, `UDP`, `ICMP`, `ESP`, `AH`, `IPIP`, `SCTP`, or `ALL`.
+      * `ports`:
+        * **Description**: (*optional*) A list of ports, only applicable for `TCP` and `UDP` protocols.
+        * **Valid values**: *List of strings*. Can be single ports `22`, `3389` or a range `0-1024`, or `all` (shortcut for `0-65535`).  
+      * **Notes**: Only one of `allowed` or `denied` can be used at the same time.
+    * `denied`:
+      * **Description**: (*Repeatable*) Combination of `IPProtocol` and `ports` that describes a unauthorized connection.
+      * `IPProtocol`:
+        * **Description**: (*required*) The IP Protocol we wish to verify.
+        * **Valid values**: *String*. One of `TCP`, `UDP`, `ICMP`, `ESP`, `AH`, `IPIP`, `SCTP`, or `ALL`.
+      * `ports`:
+        * **Description**: (*optional*) A list of ports, only applicable for `TCP` and `UDP` protocols.
+        * **Valid values**: *List of strings*. Can be a list of single ports `22`, `3389` or a range `0-1024`, or `all` (shortcut for `0-65535`).  
+      * **Notes**: Only one of `allowed` or `denied` can be used at the same time.
+    * `sourceRanges`:
+      * **Description**: (*optional, 256 ranges max*) A list of source ranges.
+      * **Valid values**: List of CIDR formatted IP ranges, e.g. `'0.0.0.0/0'`
+    * `sourceTags`:
+      * **Description**: (*optional, 256 tags max*) A list of tags if using source tags in firewall rules.
+      * **Valid values**: List. Any GCP supported tag, e.g. `linux`.
+
+
+Sample firewall rules for each mode are available at `samples/scanner/scanners/firewall_rules/`.  
+To learn more, see the [Firewalls API Reference](https://cloud.google.com/compute/docs/reference/latest/firewalls)
+and the [Firewall rules in GCP](https://cloud.google.com/vpc/docs/firewalls#firewall_rule_components) documentation.
+
 ## Forwarding rules
 
 ### Rule definition
@@ -531,6 +687,48 @@ documentation.
     # Big Query Transfer Service
     #- member_email: "@bqdts.google.baggins"
 ```
+
+## Google Group Settings rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: default
+    mode: whitelist
+    only_iam_groups: True
+    groups_emails:
+      - '*'
+    settings:
+      allowExternalMembers: True
+      whoCanJoin: "INVITED_CAN_JOIN"
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+      whoCanAdd: "ALL_MANAGERS_CAN_ADD"
+      allowExternalMembers: False
+      whoCanLeaveGroup: "ALL_MANAGERS_CAN_LEAVE"
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: Either whitelist or blacklist.
+
+* `only_iam_groups`
+  * **Description**: Whether to only apply rule for groups with iam policies.
+  * **Valid values**: Boolean True or False.
+
+* `group_emails`
+  * **Description**: A list of one or more resource ids to match.
+  * **Valid values**: String, you can use `*` to match all.
+
+* `settings`
+  * **Description**: Describes what group settings are allowed.
+  * **Valid values**: Group setting/value pairs. Supported group settings are
+  whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite,
+  allowExternalMembers, and whoCanLeaveGroup
 
 ## Instance Network Interface rules
 
@@ -871,7 +1069,8 @@ rules:
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
-    * **Valid values**: Currently only supports `bucket`.
+    * **Valid values**: One of `bucket`, `cloudsqlinstance`, `dataset`, 
+      `instance`or `kubernetes_cluster`.
     
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.

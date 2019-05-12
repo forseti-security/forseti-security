@@ -1,0 +1,174 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.groups_settings_scanner"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.groups_settings_scanner</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Scanner for the GroupsSettings rules engine.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">groups_settings</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">groups_settings_rules_engine</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners</span> <span class="k">import</span> <span class="n">base_scanner</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GroupsSettingsScanner"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner">[docs]</a><span class="k">class</span> <span class="nc">GroupsSettingsScanner</span><span class="p">(</span><span class="n">base_scanner</span><span class="o">.</span><span class="n">BaseScanner</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scanner for GroupsSettings data.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">scanner_configs</span><span class="p">,</span> <span class="n">service_config</span><span class="p">,</span>
+                 <span class="n">model_name</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            scanner_configs (dict): Scanner configurations.</span>
+<span class="sd">            service_config (ServiceConfig): Forseti 2.0 service configs</span>
+<span class="sd">            model_name (str): name of the data model</span>
+<span class="sd">            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.</span>
+<span class="sd">            rules (str): Fully-qualified path and filename of the rules file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GroupsSettingsScanner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span>
+            <span class="n">scanner_configs</span><span class="p">,</span>
+            <span class="n">service_config</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">,</span>
+            <span class="n">snapshot_timestamp</span><span class="p">,</span>
+            <span class="n">rules</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span> <span class="o">=</span> <span class="p">(</span><span class="n">groups_settings_rules_engine</span><span class="o">.</span>
+                             <span class="n">GroupsSettingsRulesEngine</span><span class="p">(</span>
+                                 <span class="n">rules_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span>
+                                 <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_configs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GroupsSettingsScanner._flatten_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner._flatten_violations">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_flatten_violations</span><span class="p">(</span><span class="n">violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flatten RuleViolations into a dict for each RuleViolation member.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (list): The RuleViolations to flatten.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Iterator of RuleViolations as a dict per member.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+            <span class="n">resource_data</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;whoCanAdd&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanAdd</span><span class="p">,</span>
+                <span class="s1">&#39;whoCanJoin&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanJoin</span><span class="p">,</span>
+                <span class="s1">&#39;whoCanViewMembership&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanViewMembership</span><span class="p">,</span>
+                <span class="s1">&#39;whoCanViewGroup&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanViewGroup</span><span class="p">,</span>
+                <span class="s1">&#39;whoCanInvite&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanInvite</span><span class="p">,</span>
+                <span class="s1">&#39;allowExternalMembers&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">allowExternalMembers</span><span class="p">,</span>
+                <span class="s1">&#39;whoCanLeaveGroup&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">whoCanLeaveGroup</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">group_email</span><span class="p">,</span>
+                <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">group_email</span><span class="p">,</span>
+                <span class="s1">&#39;resource_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">group_email</span><span class="p">,</span>
+                <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">resource_data</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_reason</span><span class="p">,</span>
+                <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+                <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                <span class="s1">&#39;rule_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                <span class="s1">&#39;violation_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_type</span><span class="p">,</span>
+            <span class="p">}</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsScanner._output_results"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner._output_results">[docs]</a>    <span class="k">def</span> <span class="nf">_output_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Output results.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            all_violations (list): All violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_flatten_violations</span><span class="p">(</span><span class="n">all_violations</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results_to_db</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsScanner._find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner._find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">_find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_groups_settings</span><span class="p">,</span> <span class="n">iam_groups_settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find violations in the settings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            all_groups_settings (list): GroupsSettings list to find violations</span>
+<span class="sd">            in.</span>
+<span class="sd">            iam_groups_settings (list): GroupsSettings list for only those</span>
+<span class="sd">            groups settings that have at least 1 iam policy, to find violations</span>
+<span class="sd">            in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: All violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finding groups settings violations...&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">settings</span> <span class="ow">in</span> <span class="n">all_groups_settings</span><span class="p">:</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                                           <span class="n">iam_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+            <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">settings</span> <span class="ow">in</span> <span class="n">iam_groups_settings</span><span class="p">:</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                                           <span class="n">iam_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+            <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">all_violations</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsScanner._retrieve"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner._retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the data collection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tupl: 2 lists of GroupsSettings objects, 1 only for settings that</span>
+<span class="sd">            have iam policies and 1 with all groups settings.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if resources have an unexpected type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_groups_settings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">iam_groups_settings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">model_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">model_manager</span>
+        <span class="n">scoped_session</span><span class="p">,</span> <span class="n">data_access</span> <span class="o">=</span> <span class="n">model_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">scoped_session</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">settings</span> <span class="ow">in</span> <span class="n">data_access</span><span class="o">.</span><span class="n">scanner_fetch_groups_settings</span><span class="p">(</span><span class="n">session</span><span class="p">,</span>
+                                                                      <span class="kc">True</span><span class="p">):</span>
+                <span class="n">email</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;group/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">iam_groups_settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">groups_settings</span><span class="o">.</span><span class="n">GroupsSettings</span>
+                                           <span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">settings</span> <span class="ow">in</span> <span class="n">data_access</span><span class="o">.</span><span class="n">scanner_fetch_groups_settings</span><span class="p">(</span><span class="n">session</span><span class="p">,</span>
+                                                                      <span class="kc">False</span><span class="p">):</span>
+                <span class="n">email</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;group/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">all_groups_settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">groups_settings</span><span class="o">.</span><span class="n">GroupsSettings</span>
+                                           <span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">all_groups_settings</span><span class="p">,</span> <span class="n">iam_groups_settings</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsScanner.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.groups_settings_scanner.html#google.cloud.forseti.scanner.scanners.groups_settings_scanner.GroupsSettingsScanner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run, the entry point for this scanner.&quot;&quot;&quot;</span>
+        <span class="n">all_groups_settings</span><span class="p">,</span> <span class="n">iam_groups_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve</span><span class="p">()</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_violations</span><span class="p">(</span><span class="n">all_groups_settings</span><span class="p">,</span>
+                                               <span class="n">iam_groups_settings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div></div>
+</pre></div>
