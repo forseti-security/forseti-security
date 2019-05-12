@@ -46,7 +46,7 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `billing_account`, `folder`,
-     `project` or `bucket`.
+     `project`, `bucket` or `dataset`.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
