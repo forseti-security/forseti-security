@@ -466,7 +466,7 @@ class RunExplainerTest(ForsetiTestCase):
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
         self.assertEqual(
             'please specify either a role or a role prefix',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_list_permissions_with_role_specified(self):
         ignored = mock.MagicMock()
@@ -500,7 +500,7 @@ class RunExplainerTest(ForsetiTestCase):
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
         self.assertEqual(
             'please specify either a role or a permission',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_query_access_by_authz_with_role_specified(self):
         ignored = mock.MagicMock()

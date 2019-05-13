@@ -665,7 +665,7 @@ class CaiTemporaryStore(object):
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
-            LOGGER.warn('Skipping insert of asset %s, name too long.',
+            LOGGER.warning('Skipping insert of asset %s, name too long.',
                         asset['name'])
             return None
 

@@ -2164,7 +2164,8 @@ class ModelManager(object):
         Raises:
             KeyError: model handle not available
         """
-
+        if not isinstance(handle, bytes):
+            handle = handle.encode()
         if handle not in [m.handle for m in self.models()]:
             error_message = 'handle={}, available={}'.format(
                 handle,

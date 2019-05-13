@@ -1014,7 +1014,7 @@ class DefaultConfigParser(object):
             config (obj): Configuration to store.
         """
 
-        with file(get_config_path(), 'w+') as outfile:
+        with open(get_config_path(), 'w+') as outfile:
             json.dump(config, outfile)
 
     @classmethod
@@ -1177,7 +1177,7 @@ def main(args=None,
     try:
         services[config.service](client, config, output, config_env)
     except ValueError as e:
-        parser.error(e.message)
+        parser.error(str(e))
     except grpc.RpcError as e:
         grpc_status_code = e.code()  # pylint: disable=no-member
         if grpc_status_code == grpc.StatusCode.UNAVAILABLE:

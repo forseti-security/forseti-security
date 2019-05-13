@@ -37,6 +37,8 @@ def get_available_port():
 
 @contextlib.contextmanager
 def create_temp_file(data):
+    if not isinstance(data, bytes):
+        data = data.encode()
     temp = tempfile.NamedTemporaryFile(delete=False)
     temp.write(data)
     temp.close()

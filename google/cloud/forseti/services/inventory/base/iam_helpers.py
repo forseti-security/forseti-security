@@ -68,7 +68,7 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
     roles = {}
     for policy in access_policy:
         if policy['role'] not in access_policy_to_iam_role_map:
-            LOGGER.warn('unknown role in access policy %s under project %s',
+            LOGGER.warning('unknown role in access policy %s under project %s',
                         policy, project_id)
             continue
         iam_role = access_policy_to_iam_role_map[policy['role']]
@@ -86,7 +86,7 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
         elif 'specialGroup' in policy:
             member = policy['specialGroup']
             if member not in special_group_to_iam_member_map:
-                LOGGER.warn('unknown special group type %s in access policy %s '
+                LOGGER.warning('unknown special group type %s in access policy %s '
                             'under project %s', member, policy, project_id)
                 continue
             member = special_group_to_iam_member_map[member]
@@ -264,7 +264,7 @@ def convert_iam_to_bucket_acls(iam_policy, bucket, project_id, project_number):
             member_type, member_value = _split_member(member)
 
             if member_type not in iam_to_entity_member_type_map:
-                LOGGER.warn('unparsable member in binding: %s', member)
+                LOGGER.warning('unparsable member in binding: %s', member)
                 continue
 
             (entity, team) = iam_to_entity_member_type_map[member_type]

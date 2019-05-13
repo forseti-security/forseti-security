@@ -572,7 +572,7 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             return FACTORIES['organization'].create_new(
                 data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Organization %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Organization %s: %s', resource_key, e)
             data = {'name': resource_key}
             resource = FACTORIES['organization'].create_new(data, root=root)
             resource.add_warning(e)
@@ -592,7 +592,7 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             data, _ = client.fetch_crm_organization_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -649,7 +649,7 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
             return FACTORIES['folder'].create_new(
                 data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Folder %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Folder %s: %s', resource_key, e)
             data = {'name': resource_key}
             resource = FACTORIES['folder'].create_new(data, root=root)
             resource.add_warning(e)
@@ -685,7 +685,7 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
             data, _ = client.fetch_crm_folder_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -724,7 +724,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
             return FACTORIES['project'].create_new(
                 data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Project %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Project %s: %s', resource_key, e)
             data = {'name': resource_key}
             resource = FACTORIES['project'].create_new(data, root=root)
             resource.add_warning(e)
@@ -746,7 +746,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
                     project_number=self['projectNumber'])
                 return data
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get IAM policy: %s', e)
+                LOGGER.warning('Could not get IAM policy: %s', e)
                 self.add_warning(e)
                 return None
 
@@ -768,7 +768,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
                     project_number=self['projectNumber'])
                 return data
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get Billing Info: %s', e)
+                LOGGER.warning('Could not get Billing Info: %s', e)
                 self.add_warning(e)
                 return None
         return {}
@@ -789,7 +789,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
                 enabled_apis, _ = client.fetch_services_enabled_apis(
                     project_number=self['projectNumber'])
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get Enabled APIs: %s', e)
+                LOGGER.warning('Could not get Enabled APIs: %s', e)
                 self.add_warning(e)
 
         self._enabled_service_names = frozenset(
@@ -946,7 +946,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self._set_cache('dataset_policy', dataset_policy)
             return iam_policy
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get Dataset IAM Policy: %s', e)
+            LOGGER.warning('Could not get Dataset IAM Policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -970,7 +970,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self._set_cache('iam_policy', iam_policy)
             return dataset_policy
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get Dataset Policy: %s', e)
+            LOGGER.warning('Could not get Dataset Policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1006,7 +1006,7 @@ class BillingAccount(resource_class_factory('billing_account', None)):
             data, _ = client.fetch_billing_account_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1178,7 +1178,7 @@ class DataprocCluster(resource_class_factory('dataproc_cluster',
                 TypeError) as e:
             if isinstance(e, TypeError):
                 e = 'Cluster has no labels.'
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning('Could not get IAM policy: %s' % e)
             return None
 
@@ -1223,7 +1223,7 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
                 self['name'], self['uniqueId'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1261,7 +1261,7 @@ class KmsCryptoKey(resource_class_factory('kms_cryptokey', 'name',
             data, _ = client.fetch_kms_cryptokey_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1289,7 +1289,7 @@ class KmsKeyRing(resource_class_factory('kms_keyring', 'name',
             data, _ = client.fetch_kms_keyring_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1319,7 +1319,7 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
                              self._data)
             return {}
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get Service Config: %s', e)
+            LOGGER.warning('Could not get Service Config: %s', e)
             self.add_warning(e)
             return None
 
@@ -1416,7 +1416,7 @@ class PubsubSubscription(resource_class_factory('pubsub_subscription', 'name',
             data, _ = client.fetch_pubsub_subscription_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1439,7 +1439,7 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
             data, _ = client.fetch_pubsub_topic_iam_policy(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1473,7 +1473,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             data, _ = client.fetch_storage_bucket_iam_policy(self.key())
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1501,7 +1501,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
                 self.parent()['projectNumber'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get bucket Access Control policy: %s', e)
+            LOGGER.warning('Could not get bucket Access Control policy: %s', e)
             self.add_warning(e)
             return None
 
