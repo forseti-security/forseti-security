@@ -94,11 +94,13 @@ def make_proto(path):
 
     if not protos_to_compile:
         LOGGER.info('No protos needed to be compiled.')
+
     else:
         for proto in protos_to_compile:
             LOGGER.info('Compiling %s', proto)
             protodir, protofile = os.path.split(proto)
             protopath = protofile
+
             if 'google/cloud/forseti/' in proto:
                 protopath = ''
                 while protofile != 'forseti-security':
@@ -107,7 +109,8 @@ def make_proto(path):
                     else:
                         protopath = protofile + "/" + protopath
                     protodir, protofile = os.path.split(protodir)
-                protopath = protofile + "/" + protopath
+
+            protodir = protodir + "/" + protofile
             cwd_path = protodir
 
             subprocess.check_call(
@@ -115,7 +118,7 @@ def make_proto(path):
                     'python3',
                     '-m',
                     'grpc_tools.protoc',
-                    '-I.',
+                    '-I=.',
                     '--python_out=.',
                     '--grpc_python_out=.',
                     protopath,
