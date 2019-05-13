@@ -94,7 +94,7 @@ steps below:
      
      ```
      python install/gcp_installer.py --vpc-host-project-id={YOUR_PROJECT_ID} 
-     --vpc-host-network={NETWORK} --vpc-host-subnetwork={SUBNETWORK}
+     --vpc-host-network={HOST_NETWORK} --vpc-host-subnetwork={HOST_SUBNETWORK}
      ```
 
   1. The installer will infer the necessary information to install Forseti.
