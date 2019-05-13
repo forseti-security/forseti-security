@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.audit.errors module
+================================================
+
+.. automodule:: google.cloud.forseti.scanner.audit.errors
+    :members:
+    :undoc-members:
+    :show-inheritance:

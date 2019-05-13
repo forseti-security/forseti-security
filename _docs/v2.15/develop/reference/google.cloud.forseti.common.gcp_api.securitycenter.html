@@ -1,0 +1,115 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.securitycenter module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.securitycenter">
+<span id="google-cloud-forseti-common-gcp-api-securitycenter-module"></span><h1>google.cloud.forseti.common.gcp_api.securitycenter module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.securitycenter" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Cloud Security Command Center API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient">
+<em class="property">class </em><code class="descname">SecurityCenterClient</code><span class="sig-paren">(</span><em>version=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#SecurityCenterClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cloud Security Command Center Client.</p>
+<p><a class="reference external" href="https://cloud.google.com/security-command-center/docs/reference/rest">https://cloud.google.com/security-command-center/docs/reference/rest</a></p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.create_finding">
+<code class="descname">create_finding</code><span class="sig-paren">(</span><em>finding</em>, <em>organization_id=None</em>, <em>source_id=None</em>, <em>finding_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#SecurityCenterClient.create_finding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.create_finding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a finding in CSCC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>finding</strong> (<em>dict</em>) – Forseti violation in CSCC format.</li>
+<li><strong>organization_id</strong> (<em>str</em>) – The id prefixed with ‘organizations/’.</li>
+<li><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</li>
+<li><strong>finding_id</strong> (<em>str</em>) – id hash of the CSCC finding</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An API response containing one page of results.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.list_findings">
+<code class="descname">list_findings</code><span class="sig-paren">(</span><em>source_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#SecurityCenterClient.list_findings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.list_findings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists all the findings in CSCC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An API response containing all the CSCC findings.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.update_finding">
+<code class="descname">update_finding</code><span class="sig-paren">(</span><em>finding</em>, <em>finding_id</em>, <em>source_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#SecurityCenterClient.update_finding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.update_finding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a finding in CSCC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>finding</strong> (<em>dict</em>) – Forseti violation in CSCC format.</li>
+<li><strong>finding_id</strong> (<em>str</em>) – id hash of the CSCC finding.</li>
+<li><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An API response containing one page of results.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterRepositoryClient">
+<em class="property">class </em><code class="descname">SecurityCenterRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=1.0</em>, <em>use_rate_limiter=True</em>, <em>version=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#SecurityCenterRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>SecurityCenter API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterRepositoryClient.findings">
+<code class="descname">findings</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterRepositoryClient.findings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns _SecurityCenterOrganizationsFindingsRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.securitycenter._SecurityCenterOrganizationsFindingsRepository">
+<em class="property">class </em><code class="descname">_SecurityCenterOrganizationsFindingsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/securitycenter.html#_SecurityCenterOrganizationsFindingsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.securitycenter._SecurityCenterOrganizationsFindingsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.CreateQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.CreateQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.CreateQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.PatchResourceMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of CSCC Organizations Findings repository.</p>
+</dd></dl>
+
+</div>
+
