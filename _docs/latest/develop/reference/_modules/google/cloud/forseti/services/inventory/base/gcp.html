@@ -52,10 +52,22 @@ hide:
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
 
 <div class="viewcode-block" id="ApiClient.fetch_bigquery_dataset_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_dataset_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">fetch_bigquery_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch_bigquery_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span>
+                                      <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dataset policy Iterator for a dataset from gcp API call.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            dataset_id (str): id of the dataset to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_bigquery_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_bigquery_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets IAM policy of a bigquery dataset from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">            dataset_id (str): id of the dataset to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
@@ -66,6 +78,15 @@ hide:
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_bigquery_tables"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_bigquery_tables">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_bigquery_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_reference</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Tables from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataset_reference (dict): The project and dataset ID to get</span>
+<span class="sd">                                      bigquery tables.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="ApiClient.fetch_billing_account_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_billing_account_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -89,10 +110,11 @@ hide:
         <span class="sd">&quot;&quot;&quot;Iterate visible Billing Accounts in an organization from GCP API.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="ApiClient.iter_cloudsql_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_cloudsql_instances">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">iter_cloudsql_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">iter_cloudsql_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Cloud sql instances from GCP API.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
@@ -102,6 +124,21 @@ hide:
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_compute_ig_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_compute_ig_instances">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_compute_ig_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">instance_group_name</span><span class="p">,</span>
+                                   <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the instances for an instance group from GCP API.</span>
+
+<span class="sd">        One and only one of zone (for zonal instance groups) and region</span>
+<span class="sd">        (for regional instance groups) must be specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            instance_group_name (str): The instance group&#39;s name.</span>
+<span class="sd">            region (str): The regional instance group&#39;s region.</span>
+<span class="sd">            zone (str): The zonal instance group&#39;s zone.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="ApiClient.fetch_compute_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_compute_project">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -240,6 +277,25 @@ hide:
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
+<div class="viewcode-block" id="ApiClient.iter_compute_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_project">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_compute_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Project from GCP API.</span>
+
+<span class="sd">        Will only ever return up to 1 result. Ensures compatibility with other</span>
+<span class="sd">        resource iterators.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_compute_routers"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_routers">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_compute_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine routers from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
 <div class="viewcode-block" id="ApiClient.iter_compute_snapshots"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_snapshots">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">iter_compute_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Compute Engine snapshots from GCP API.</span>
@@ -312,9 +368,25 @@ hide:
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
+<div class="viewcode-block" id="ApiClient.iter_compute_targetvpngateways"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_targetvpngateways">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_compute_targetvpngateways</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target VPN Gateways from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
 <div class="viewcode-block" id="ApiClient.iter_compute_urlmaps"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_urlmaps">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">iter_compute_urlmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate URL maps from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_compute_vpntunnels"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_vpntunnels">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_compute_vpntunnels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate VPN tunnels from GCP API.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
@@ -436,6 +508,25 @@ hide:
 <span class="sd">            parent_id (str): id of the parent of the folder.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
+<div class="viewcode-block" id="ApiClient.fetch_dataproc_cluster_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_dataproc_cluster_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_dataproc_cluster_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Dataproc Cluster IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (str): The Dataproc cluster to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_dataproc_clusters"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_dataproc_clusters">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_dataproc_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Dataproc clusters from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            region (str): The region to query. Not required when using Cloud</span>
+<span class="sd">                Asset API.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
 <div class="viewcode-block" id="ApiClient.iter_dns_managedzones"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_dns_managedzones">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">iter_dns_managedzones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate CloudDNS Managed Zones from GCP API.</span>
@@ -535,11 +626,12 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="ApiClient.iter_iam_project_roles"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_project_roles">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">iter_iam_project_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">iter_iam_project_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Project roles in a project from GCP API.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="ApiClient.iter_iam_serviceaccount_exported_keys"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_serviceaccount_exported_keys">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -553,6 +645,90 @@ hide:
 <div class="viewcode-block" id="ApiClient.iter_iam_serviceaccounts"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_serviceaccounts">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">iter_iam_serviceaccounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Service Accounts in a project from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_kms_cryptokey_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_cryptokey_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_kms_cryptokey_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cryptokey</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Cryptokey IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cryptokey (str): The KMS cryptokey to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_kms_keyring_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_keyring_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_kms_keyring_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyring</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Keyring IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keyring (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_kms_cryptokeys"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeys">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_kms_cryptokeys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokeys in a keyring from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_kms_cryptokeyversions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeyversions">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_kms_cryptokeyversions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokey Versions from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_kms_keyrings"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_keyrings">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_kms_keyrings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Keyrings in a project from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            location (str): The location to query. Not required when</span>
+<span class="sd">                using Cloud Asset API.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_pubsub_subscription_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_subscription_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_pubsub_subscription_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Subscription IAM policy from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_pubsub_topic_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_topic_iam_policy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_pubsub_topic_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Topic IAM policy from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/topics/{TOPIC_NAME}</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_pubsub_subscriptions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_subscriptions">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_pubsub_subscriptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub subscriptions from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.iter_pubsub_topics"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_topics">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iter_pubsub_topics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub topics from GCP API.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_id (str): id of the project to query.</span>
@@ -612,6 +788,16 @@ hide:
         <span class="sd">&quot;&quot;&quot;Iterate Project logging sinks from GCP API.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ApiClient.fetch_storage_bucket_acls"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_storage_bucket_acls">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_storage_bucket_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_id</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bucket Access Controls from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_id (str): id of the bucket to query.</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
@@ -687,6 +873,19 @@ hide:
     <span class="k">return</span> <span class="n">f_wrapper</span></div>
 
 
+<div class="viewcode-block" id="is_api_disabled"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.is_api_disabled">[docs]</a><span class="k">def</span> <span class="nf">is_api_disabled</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">api_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if api_name is disabled in the config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): GCP API client configuration.</span>
+<span class="sd">        api_name (str): The name of the GCP api to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the API is disabled in the configuration, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_name</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;disable_polling&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ApiClientImpl"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl">[docs]</a><span class="k">class</span> <span class="nc">ApiClientImpl</span><span class="p">(</span><span class="n">ApiClient</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The gcp api client Implementation&quot;&quot;&quot;</span>
 
@@ -716,7 +915,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">admin_directory</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Admin API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">admin_directory</span><span class="o">.</span><span class="n">AdminDirectoryClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_appengine"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_appengine">[docs]</a>    <span class="k">def</span> <span class="nf">_create_appengine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -724,7 +930,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">appengine</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;AppEngine API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">appengine</span><span class="o">.</span><span class="n">AppEngineClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_bq"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_bq">[docs]</a>    <span class="k">def</span> <span class="nf">_create_bq</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -732,7 +945,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Bigquery API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">BigQueryClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_crm"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_crm">[docs]</a>    <span class="k">def</span> <span class="nf">_create_crm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -740,7 +960,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">cloud_resource_manager</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Resource Manager API disabled by &#39;</span>
+                                       <span class="s1">&#39;server configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cloud_resource_manager</span><span class="o">.</span><span class="n">CloudResourceManagerClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_cloudbilling"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_cloudbilling">[docs]</a>    <span class="k">def</span> <span class="nf">_create_cloudbilling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -748,7 +975,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">cloudbilling</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Cloud Billing API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cloudbilling</span><span class="o">.</span><span class="n">CloudBillingClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_cloudsql"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_cloudsql">[docs]</a>    <span class="k">def</span> <span class="nf">_create_cloudsql</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -756,7 +990,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">cloudsql</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;CloudSQL Admin API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cloudsql</span><span class="o">.</span><span class="n">CloudsqlClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_compute"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_compute">[docs]</a>    <span class="k">def</span> <span class="nf">_create_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -764,7 +1005,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">compute</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute Engine API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">compute</span><span class="o">.</span><span class="n">ComputeClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_container"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_container">[docs]</a>    <span class="k">def</span> <span class="nf">_create_container</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -772,7 +1020,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">container</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Kubernetes Engine API disabled by &#39;</span>
+                                       <span class="s1">&#39;server configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">container</span><span class="o">.</span><span class="n">ContainerClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_iam"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_iam">[docs]</a>    <span class="k">def</span> <span class="nf">_create_iam</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -780,7 +1035,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">iam</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;IAM API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">iam</span><span class="o">.</span><span class="n">IAMClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_servicemanagement"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_servicemanagement">[docs]</a>    <span class="k">def</span> <span class="nf">_create_servicemanagement</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -788,7 +1050,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">servicemanagement</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Service Management API disabled by &#39;</span>
+                                       <span class="s1">&#39;server configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">servicemanagement</span><span class="o">.</span><span class="n">ServiceManagementClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_stackdriver_logging"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_stackdriver_logging">[docs]</a>    <span class="k">def</span> <span class="nf">_create_stackdriver_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -796,7 +1065,14 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">stackdriver_logging</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Stackdriver Logging API disabled by &#39;</span>
+                                       <span class="s1">&#39;server configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">stackdriver_logging</span><span class="o">.</span><span class="n">StackdriverLoggingClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl._create_storage"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._create_storage">[docs]</a>    <span class="k">def</span> <span class="nf">_create_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -804,21 +1080,46 @@ hide:
 
 <span class="sd">        Returns:</span>
 <span class="sd">            object: Client.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised if polling is disabled for this API in</span>
+<span class="sd">                the GCP API client configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_api_disabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">storage</span><span class="o">.</span><span class="n">API_NAME</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Storage API disabled by server &#39;</span>
+                                       <span class="s1">&#39;configuration.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">storage</span><span class="o">.</span><span class="n">StorageClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_bigquery_dataset_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_bigquery_dataset_policy">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;bigquery&#39;</span><span class="p">,</span> <span class="n">_create_bq</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">fetch_bigquery_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch_bigquery_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span>
+                                      <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dataset policy Iterator for a dataset from gcp API call.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
 <span class="sd">            dataset_id (str): id of the dataset to query.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Dataset Policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bigquery</span><span class="o">.</span><span class="n">get_dataset_access</span><span class="p">(</span><span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_bigquery_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_bigquery_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_bigquery_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets IAM policy of a bigquery dataset from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            dataset_id (str): id of the dataset to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Bigquery Dataset IAM policy is not &#39;</span>
+                                   <span class="s1">&#39;supported by this API client&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.iter_bigquery_datasets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_datasets">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;bigquery&#39;</span><span class="p">,</span> <span class="n">_create_bq</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">iter_bigquery_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
@@ -832,6 +1133,21 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bigquery</span><span class="o">.</span><span class="n">get_datasets_for_projectid</span><span class="p">(</span><span class="n">project_number</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">dataset</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_bigquery_tables"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_tables">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;bigquery&#39;</span><span class="p">,</span> <span class="n">_create_bq</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">iter_bigquery_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_reference</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Tables from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataset_reference (dict): The project and dataset ID to get</span>
+<span class="sd">                                      bigquery tables.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bigquery</span><span class="o">.</span><span class="n">get_tables</span><span class="p">(</span><span class="n">dataset_reference</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span>
+                                              <span class="n">dataset_reference</span><span class="p">[</span><span class="s1">&#39;datasetId&#39;</span><span class="p">]):</span>
+            <span class="k">yield</span> <span class="n">table</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_billing_account_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_billing_account_iam_policy">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;cloudbilling&#39;</span><span class="p">,</span> <span class="n">_create_cloudbilling</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">fetch_billing_account_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">account_id</span><span class="p">):</span>
@@ -868,15 +1184,17 @@ hide:
             <span class="k">yield</span> <span class="n">account</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.iter_cloudsql_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_cloudsql_instances">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;cloudsql&#39;</span><span class="p">,</span> <span class="n">_create_cloudsql</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">iter_cloudsql_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">iter_cloudsql_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Cloud sql instances from GCP API.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
 <span class="sd">            project_number (str): number of the project to query.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            dict: Generator of cloudsql instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span>  <span class="c1"># Not used by the API client</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloudsql</span><span class="o">.</span><span class="n">get_instances</span><span class="p">(</span><span class="n">project_number</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">item</span></div>
 
@@ -891,6 +1209,28 @@ hide:
 <span class="sd">            bool: True if API is enabled, else False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">is_api_enabled</span><span class="p">(</span><span class="n">project_number</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_compute_ig_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_compute_ig_instances">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="n">_create_compute</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fetch_compute_ig_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">,</span> <span class="n">instance_group_name</span><span class="p">,</span>
+                                   <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the instances for an instance group from GCP API.</span>
+
+<span class="sd">        One and only one of zone (for zonal instance groups) and region</span>
+<span class="sd">        (for regional instance groups) must be specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+<span class="sd">            instance_group_name (str): The instance group&#39;s name.</span>
+<span class="sd">            region (str): The regional instance group&#39;s region.</span>
+<span class="sd">            zone (str): The zonal instance group&#39;s zone.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: instance URLs for this instance group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">get_instance_group_instances</span><span class="p">(</span><span class="n">project_number</span><span class="p">,</span>
+                                                         <span class="n">instance_group_name</span><span class="p">,</span>
+                                                         <span class="n">region</span><span class="p">,</span>
+                                                         <span class="n">zone</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_compute_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_compute_project">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="n">_create_compute</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">fetch_compute_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
@@ -1053,7 +1393,8 @@ hide:
 <span class="sd">        Yields:</span>
 <span class="sd">            dict: Generator of Compute Instance group.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">instancegroup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">get_instance_groups</span><span class="p">(</span><span class="n">project_number</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">instancegroup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">get_instance_groups</span><span class="p">(</span>
+                <span class="n">project_number</span><span class="p">,</span> <span class="n">include_instance_urls</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">instancegroup</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.iter_compute_instances"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_instances">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="n">_create_compute</span><span class="p">)</span>
@@ -1107,6 +1448,32 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">get_networks</span><span class="p">(</span><span class="n">project_number</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">network</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_compute_project"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_project">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Project from GCP API.</span>
+
+<span class="sd">        Will only ever return up to 1 result. Ensures compatibility with other</span>
+<span class="sd">        resource iterators.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Generator of compute project resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_compute_project</span><span class="p">(</span><span class="n">project_number</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_compute_routers"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_routers">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Compute Engine routers from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute Routers are not supported &#39;</span>
+                                   <span class="s1">&#39;by this API client&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.iter_compute_snapshots"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_snapshots">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="n">_create_compute</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">iter_compute_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
@@ -1218,6 +1585,18 @@ hide:
         <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute TargetTcpProxies are not &#39;</span>
                                    <span class="s1">&#39;supported by this API client&#39;</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="ApiClientImpl.iter_compute_targetvpngateways"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_targetvpngateways">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_targetvpngateways</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Target VPN Gateways from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute TargetVpnGateways are not &#39;</span>
+                                   <span class="s1">&#39;supported by this API client&#39;</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="ApiClientImpl.iter_compute_urlmaps"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_urlmaps">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_urlmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate URL maps from GCP API.</span>
 
@@ -1229,6 +1608,18 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute UrlMaps are not supported by this &#39;</span>
                                    <span class="s1">&#39;API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_compute_vpntunnels"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_vpntunnels">[docs]</a>    <span class="k">def</span> <span class="nf">iter_compute_vpntunnels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate VPN tunnels from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Compute VpnTunnels are not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_container_serviceconfig"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_container_serviceconfig">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;container&#39;</span><span class="p">,</span> <span class="n">_create_container</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">fetch_container_serviceconfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1419,6 +1810,33 @@ hide:
             <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;projects&#39;</span><span class="p">,</span> <span class="p">[]):</span>
                 <span class="k">yield</span> <span class="n">project</span></div>
 
+<div class="viewcode-block" id="ApiClientImpl.fetch_dataproc_cluster_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_dataproc_cluster_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_dataproc_cluster_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch Dataproc Cluster IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (str): The Dataproc cluster to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Cloud Dataproc Clusters are not supported &#39;</span>
+                                   <span class="s1">&#39;by this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_dataproc_clusters"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_dataproc_clusters">[docs]</a>    <span class="k">def</span> <span class="nf">iter_dataproc_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate Dataproc clusters from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            region (str): The region to query. Not required when using Cloud</span>
+<span class="sd">                Asset API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Cloud Dataproc Clusters are not supported &#39;</span>
+                                   <span class="s1">&#39;by this API client&#39;</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="ApiClientImpl.iter_dns_managedzones"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_dns_managedzones">[docs]</a>    <span class="k">def</span> <span class="nf">iter_dns_managedzones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate CloudDNS Managed Zones from GCP API.</span>
 
@@ -1577,15 +1995,17 @@ hide:
             <span class="k">yield</span> <span class="n">role</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.iter_iam_project_roles"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_iam_project_roles">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;iam&#39;</span><span class="p">,</span> <span class="n">_create_iam</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">iter_iam_project_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">iter_iam_project_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate Project roles in a project from GCP API.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            dict: Generator of project roles.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_number</span>  <span class="c1"># Used by CAI, not the API.</span>
         <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iam</span><span class="o">.</span><span class="n">get_project_roles</span><span class="p">(</span><span class="n">project_id</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">role</span></div>
 
@@ -1617,6 +2037,126 @@ hide:
         <span class="k">del</span> <span class="n">project_number</span>  <span class="c1"># Used by CAI, not the API.</span>
         <span class="k">for</span> <span class="n">serviceaccount</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iam</span><span class="o">.</span><span class="n">get_service_accounts</span><span class="p">(</span><span class="n">project_id</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">serviceaccount</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_kms_cryptokey_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_cryptokey_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_kms_cryptokey_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cryptokey</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Cryptokey IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cryptokey (str): The KMS cryptokey to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Key Management Service is not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_kms_keyring_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_keyring_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_kms_keyring_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyring</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch KMS Keyring IAM Policy from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keyring (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Key Management Service is not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_kms_cryptokeys"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeys">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_cryptokeys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokeys in a keyring from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Key Management Service is not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_kms_cryptokeyversions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeyversions">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_cryptokeyversions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Cryptokey Versions from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The KMS keyring to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/</span>
+<span class="sd">                cryptoKeys/{CRYPTOKEY_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Key Management Service is not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_kms_keyrings"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_keyrings">[docs]</a>    <span class="k">def</span> <span class="nf">iter_kms_keyrings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate KMS Keyrings in a project from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            location (str): The location to query. Not required when</span>
+<span class="sd">                using Cloud Asset API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;Key Management Service is not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_pubsub_subscription_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_subscription_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_pubsub_subscription_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Subscription IAM policy from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">               projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;PubSub Subscriptions are not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_pubsub_topic_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_topic_iam_policy">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_pubsub_topic_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;PubSub Topic IAM policy from gcp API call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The pubsub topic to query, must be in the format</span>
+<span class="sd">                projects/{PROJECT_ID}/topics/{TOPIC_NAME}</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;PubSub Topics are not supported by this &#39;</span>
+                                   <span class="s1">&#39;API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_pubsub_subscriptions"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_subscriptions">[docs]</a>    <span class="k">def</span> <span class="nf">iter_pubsub_subscriptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub subscriptions from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;PubSub Subscriptions are not supported by &#39;</span>
+                                   <span class="s1">&#39;this API client&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.iter_pubsub_topics"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_topics">[docs]</a>    <span class="k">def</span> <span class="nf">iter_pubsub_topics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate PubSub topics from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ResourceNotSupported: Raised for all calls using this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">ResourceNotSupported</span><span class="p">(</span><span class="s1">&#39;PubSub Topics are not supported by this &#39;</span>
+                                   <span class="s1">&#39;API client&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_services_enabled_apis"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_services_enabled_apis">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;servicemanagement&#39;</span><span class="p">,</span> <span class="n">_create_servicemanagement</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">fetch_services_enabled_apis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
@@ -1705,6 +2245,21 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">sink</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stackdriver_logging</span><span class="o">.</span><span class="n">get_project_sinks</span><span class="p">(</span><span class="n">project_number</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">sink</span></div>
+
+<div class="viewcode-block" id="ApiClientImpl.fetch_storage_bucket_acls"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_storage_bucket_acls">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;storage&#39;</span><span class="p">,</span> <span class="n">_create_storage</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fetch_storage_bucket_acls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_id</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bucket Access Controls from GCP API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_id (str): id of the bucket to query.</span>
+<span class="sd">            project_id (str): id of the project to query.</span>
+<span class="sd">            project_number (str): number of the project to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Bucket Access Controls.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">project_number</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get_bucket_acls</span><span class="p">(</span><span class="n">bucket_id</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ApiClientImpl.fetch_storage_bucket_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.gcp.html#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_storage_bucket_iam_policy">[docs]</a>    <span class="nd">@create_lazy</span><span class="p">(</span><span class="s1">&#39;storage&#39;</span><span class="p">,</span> <span class="n">_create_storage</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">fetch_storage_bucket_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_id</span><span class="p">):</span>

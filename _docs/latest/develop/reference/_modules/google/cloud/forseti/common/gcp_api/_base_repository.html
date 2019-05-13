@@ -74,7 +74,8 @@ hide:
        <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
        <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_create_service_api</span><span class="p">(</span><span class="n">credentials</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">is_private_api</span><span class="p">,</span>
-                        <span class="n">developer_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_discovery</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                        <span class="n">developer_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_discovery</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">use_versioned_discovery_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Builds and returns a cloud API service object.</span>
 
 <span class="sd">    Args:</span>
@@ -87,6 +88,8 @@ hide:
 <span class="sd">            associated with the API call, most API services do not require</span>
 <span class="sd">            this to be set.</span>
 <span class="sd">        cache_discovery (bool): Whether or not to cache the discovery doc.</span>
+<span class="sd">        use_versioned_discovery_doc (bool): When set to true, will use the</span>
+<span class="sd">            discovery doc with the version suffix in the filename.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        object: A Resource object with methods for interacting with the service.</span>
@@ -99,7 +102,12 @@ hide:
 
     <span class="c1"># Used for private APIs that are built from a local discovery file</span>
     <span class="k">if</span> <span class="n">is_private_api</span><span class="p">:</span>
-        <span class="n">service_json</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">service_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_versioned_discovery_doc</span><span class="p">:</span>
+            <span class="n">service_json</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">service_json</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">service_name</span><span class="p">)</span>
+
         <span class="n">service_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DISCOVERY_DOCS_BASE_DIR</span><span class="p">,</span> <span class="n">service_json</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_build_service_from_document</span><span class="p">(</span>
             <span class="n">credentials</span><span class="p">,</span>
@@ -148,6 +156,7 @@ hide:
                  <span class="n">quota_period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">use_versioned_discovery_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructor.</span>
 
@@ -163,6 +172,8 @@ hide:
 <span class="sd">                limiter for this service.</span>
 <span class="sd">            read_only (bool): When set to true, disables any API calls that</span>
 <span class="sd">                would modify a resource within the repository.</span>
+<span class="sd">            use_versioned_discovery_doc (bool): When set to true, will use the</span>
+<span class="sd">                discovery doc with the version suffix in the filename.</span>
 <span class="sd">            **kwargs (dict): Additional args such as version.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_cached_http</span> <span class="o">=</span> <span class="kc">False</span>
@@ -219,7 +230,8 @@ hide:
                 <span class="n">version</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">is_private_api</span><span class="p">,</span>
                 <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;developer_key&#39;</span><span class="p">),</span>
-                <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cache_discovery&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cache_discovery&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                <span class="n">use_versioned_discovery_doc</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseRepositoryClient.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The object representation.</span>

@@ -62,9 +62,10 @@ hide:
     <span class="n">INSTANCE_TEMPLATE</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">ComputeInstanceTemplate</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
 
     <span class="c1"># Data storage</span>
-    <span class="n">BIGQUERY</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">BigqueryDataSet</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
     <span class="n">BUCKET</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">StorageBucket</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
-    <span class="n">CLOUDSQL</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">CloudSqlInstance</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+    <span class="n">CLOUD_SQL_INSTANCE</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">CloudSqlInstance</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+    <span class="n">DATASET</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">BigqueryDataSet</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+    <span class="n">TABLE</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">BigqueryTable</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
 
     <span class="c1"># AppEngine</span>
     <span class="n">APPENGINE_APP</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">AppEngineApp</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
@@ -77,6 +78,12 @@ hide:
     <span class="c1"># Logging</span>
     <span class="n">LOG_SINK</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">LoggingSink</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
 
+    <span class="c1"># Crypto key</span>
+    <span class="n">CRYPTO_KEY</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">KmsCryptoKey</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+
+    <span class="c1"># Key Ring</span>
+    <span class="n">KEY_RING</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">KmsKeyRing</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+
     <span class="n">resource_types</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
         <span class="n">ORGANIZATION</span><span class="p">,</span>
         <span class="n">BILLING_ACCOUNT</span><span class="p">,</span>
@@ -87,6 +94,8 @@ hide:
         <span class="n">FORWARDING_RULE</span><span class="p">,</span>
         <span class="n">LIEN</span><span class="p">,</span>
         <span class="n">LOG_SINK</span><span class="p">,</span>
+        <span class="n">CRYPTO_KEY</span><span class="p">,</span>
+        <span class="n">KEY_RING</span>
     <span class="p">])</span>
 
 <div class="viewcode-block" id="ResourceType.verify"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.ResourceType.verify">[docs]</a>    <span class="nd">@classmethod</span>

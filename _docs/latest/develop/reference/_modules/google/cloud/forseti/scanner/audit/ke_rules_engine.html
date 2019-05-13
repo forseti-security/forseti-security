@@ -68,8 +68,7 @@ hide:
             <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">KeRuleBook</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
 
-    <span class="c1"># TODO: The naming is confusing and needs to be fixed in all scanners.</span>
-<div class="viewcode-block" id="KeRulesEngine.find_policy_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRulesEngine.find_policy_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_policy_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="KeRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if KE cluster satisfies provided  rules.</span>
 
 <span class="sd">        Args:</span>
@@ -193,7 +192,7 @@ hide:
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Looking for KE violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">)</span>
         <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">get_ancestors_from_full_name</span><span class="p">(</span>
-            <span class="n">ke_cluster</span><span class="o">.</span><span class="n">resource_full_name</span><span class="p">)</span>
+            <span class="n">ke_cluster</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
 
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Ancestors of resource: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_ancestors</span><span class="p">)</span>
 
@@ -209,7 +208,7 @@ hide:
             <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">curr_resource</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
                 <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_policy_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
 
             <span class="n">wildcard_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
                 <span class="n">resource_id</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">curr_resource</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
@@ -219,7 +218,7 @@ hide:
             <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
                 <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_policy_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
 
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Returning violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">violations</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">violations</span></div></div>
@@ -242,7 +241,7 @@ hide:
         <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
 
-<div class="viewcode-block" id="ResourceRules.find_policy_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.find_policy_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_policy_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+<div class="viewcode-block" id="ResourceRules.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determine if the policy binding matches this rule&#39;s criteria.</span>
 
 <span class="sd">        Args:</span>
@@ -253,7 +252,7 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
-            <span class="n">rule_violations</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_policy_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="n">rule_violations</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">rule_violations</span><span class="p">:</span>
                 <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rule_violations</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">violations</span></div>
@@ -315,8 +314,7 @@ hide:
         <span class="c1"># compile right away to return exceptions asap</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rule_jmespath</span> <span class="o">=</span> <span class="n">jmespath</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_key</span><span class="p">)</span>
 
-    <span class="c1"># TODO: The naming is confusing and needs to be fixed in all scanners.</span>
-<div class="viewcode-block" id="Rule.find_policy_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.find_policy_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_policy_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find KE violations in based on the rule.</span>
 
 <span class="sd">        Args:</span>
@@ -369,8 +367,8 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
             <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">KE_CLUSTER</span><span class="p">,</span>
-            <span class="n">resource_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">full_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">resource_full_name</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
             <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
             <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
             <span class="n">rule_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span><span class="p">,</span>
@@ -378,9 +376,9 @@ hide:
             <span class="n">actual_value</span><span class="o">=</span><span class="n">actual</span><span class="p">,</span>
             <span class="n">violation_type</span><span class="o">=</span><span class="s1">&#39;KE_VIOLATION&#39;</span><span class="p">,</span>
             <span class="n">violation_reason</span><span class="o">=</span><span class="n">violation_reason</span><span class="p">,</span>
-            <span class="n">project_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="n">cluster_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">resource_data</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">),</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="n">resource_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span></div>
 

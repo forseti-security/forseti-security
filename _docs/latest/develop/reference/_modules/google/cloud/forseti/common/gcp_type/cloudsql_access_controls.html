@@ -75,7 +75,7 @@ hide:
             <span class="n">ipv4_enabled</span><span class="o">=</span><span class="n">acl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ipv4Enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
             <span class="n">authorized_networks</span><span class="o">=</span><span class="n">networks</span><span class="p">,</span>
             <span class="n">require_ssl</span><span class="o">=</span><span class="n">acl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;requireSsl&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-            <span class="n">raw_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">acl</span><span class="p">)</span>
+            <span class="n">raw_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">acl</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CloudSqlAccessControl.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.cloudsql_access_controls.html#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.from_json">[docs]</a>    <span class="nd">@staticmethod</span>

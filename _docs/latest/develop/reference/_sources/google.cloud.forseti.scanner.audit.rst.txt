@@ -19,6 +19,7 @@ Submodules
    google.cloud.forseti.scanner.audit.cloudsql_rules_engine
    google.cloud.forseti.scanner.audit.enabled_apis_rules_engine
    google.cloud.forseti.scanner.audit.errors
+   google.cloud.forseti.scanner.audit.external_project_access_rules_engine
    google.cloud.forseti.scanner.audit.firewall_rules_engine
    google.cloud.forseti.scanner.audit.forwarding_rule_rules_engine
    google.cloud.forseti.scanner.audit.iam_rules_engine
@@ -26,9 +27,12 @@ Submodules
    google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine
    google.cloud.forseti.scanner.audit.ke_rules_engine
    google.cloud.forseti.scanner.audit.ke_version_rules_engine
+   google.cloud.forseti.scanner.audit.kms_rules_engine
    google.cloud.forseti.scanner.audit.lien_rules_engine
    google.cloud.forseti.scanner.audit.location_rules_engine
    google.cloud.forseti.scanner.audit.log_sink_rules_engine
+   google.cloud.forseti.scanner.audit.resource_rules_engine
+   google.cloud.forseti.scanner.audit.retention_rules_engine
    google.cloud.forseti.scanner.audit.rules
    google.cloud.forseti.scanner.audit.service_account_key_rules_engine
 

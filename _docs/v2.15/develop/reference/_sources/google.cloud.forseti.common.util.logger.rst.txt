@@ -1,0 +1,7 @@
+google.cloud.forseti.common.util.logger module
+==============================================
+
+.. automodule:: google.cloud.forseti.common.util.logger
+    :members:
+    :undoc-members:
+    :show-inheritance:

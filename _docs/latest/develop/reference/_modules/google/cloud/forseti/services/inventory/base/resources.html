@@ -29,6 +29,7 @@ hide:
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span>
@@ -36,16 +37,30 @@ hide:
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">string_formats</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base.gcp</span> <span class="k">import</span> <span class="p">(</span>
     <span class="n">ResourceNotSupported</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base</span> <span class="k">import</span> <span class="n">iam_helpers</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="from_root_id"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.from_root_id">[docs]</a><span class="k">def</span> <span class="nf">from_root_id</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">root_id</span><span class="p">):</span>
+<div class="viewcode-block" id="size_t_hash"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.size_t_hash">[docs]</a><span class="k">def</span> <span class="nf">size_t_hash</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hash the key using size_t.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key (str): The key to hash.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The hashed key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%u</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="o">.</span><span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="from_root_id"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.from_root_id">[docs]</a><span class="k">def</span> <span class="nf">from_root_id</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">root_id</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Start the crawling from root if the root type is supported.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        client (object): GCP API client.</span>
 <span class="sd">        root_id (str): id of the root.</span>
+<span class="sd">        root (bool): Set this as the root resource in the hierarchy.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Resource: the root resource instance.</span>
@@ -61,7 +76,7 @@ hide:
 
     <span class="k">for</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">root_map</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">root_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">root_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">root_id</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
         <span class="s1">&#39;Unsupported root id, must be one of </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span></div>
@@ -445,7 +460,7 @@ hide:
         <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&lt;data=&quot;</span><span class="si">{}</span><span class="s1">&quot;, parent_resource_type=&quot;</span><span class="si">{}</span><span class="s1">&quot;, &#39;</span>
                 <span class="s1">&#39;parent_resource_id=&quot;</span><span class="si">{}</span><span class="s1">&quot;&gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                    <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">),</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">type</span><span class="p">(),</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">key</span><span class="p">())</span></div></div>
 <span class="c1"># pylint: enable=too-many-instance-attributes, too-many-public-methods</span>
@@ -486,11 +501,41 @@ hide:
             <span class="k">if</span> <span class="n">hash_key</span><span class="p">:</span>
                 <span class="c1"># Resource does not have a globally unique ID, use size_t hash</span>
                 <span class="c1"># of key data.</span>
-                <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%u</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key_field</span><span class="p">]))</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">return</span> <span class="n">size_t_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key_field</span><span class="p">])</span>
 
             <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key_field</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">ResourceSubclass</span></div>
+
+
+<span class="c1"># Fake composite resource class</span>
+<div class="viewcode-block" id="CompositeRootResource"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource">[docs]</a><span class="k">class</span> <span class="nc">CompositeRootResource</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;composite_root&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Composite Root fake resource.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CompositeRootResource.create"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">composite_root_resources</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new composite root.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            composite_root_resources (list): The list of resources to crawl</span>
+<span class="sd">                using a composite root.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CompositeRootResource: A new instance of the CompositeRootResource</span>
+<span class="sd">                class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Composite Root&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;composite_children&#39;</span><span class="p">:</span> <span class="n">composite_root_resources</span><span class="p">}</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;composite_root&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resource</span></div>
+
+<div class="viewcode-block" id="CompositeRootResource.key"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.key">[docs]</a>    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get key of this resource.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: key of this resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;root&#39;</span></div></div>
 
 
 <span class="c1"># Resource Manager resource classes</span>
@@ -498,7 +543,7 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Organization.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ResourceManagerOrganization.fetch"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerOrganization.fetch">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get Organization.</span>
 
 <span class="sd">        Saves ApiExecutionErrors as warnings.</span>
@@ -506,17 +551,18 @@ hide:
 <span class="sd">        Args:</span>
 <span class="sd">            client (object): GCP API client.</span>
 <span class="sd">            resource_key (str): resource key to fetch.</span>
+<span class="sd">            root (bool): Set this as the root resource in the hierarchy.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Organization: Organization resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_organization</span><span class="p">(</span><span class="n">resource_key</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to fetch Organization </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">resource_key</span><span class="p">}</span>
-            <span class="n">resource</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
             <span class="n">resource</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">resource</span></div>
 
@@ -532,7 +578,8 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_organization_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
-        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -573,19 +620,26 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Folder.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ResourceManagerFolder.fetch"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerFolder.fetch">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get Folder.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            client (object): GCP API client.</span>
 <span class="sd">            resource_key (str): resource key to fetch.</span>
+<span class="sd">            root (bool): Set this as the root resource in the hierarchy.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Folder: Folder resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_folder</span><span class="p">(</span><span class="n">resource_key</span><span class="p">)</span>
-        <span class="n">folder</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;folder&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">folder</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_folder</span><span class="p">(</span><span class="n">resource_key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;folder&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to fetch Folder </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">resource_key</span><span class="p">}</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;folder&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">resource</span></div>
 
 <div class="viewcode-block" id="ResourceManagerFolder.key"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerFolder.key">[docs]</a>    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get key of this resource.</span>
@@ -613,7 +667,12 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Folder IAM Policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_folder_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_folder_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <div class="viewcode-block" id="ResourceManagerProject"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject">[docs]</a><span class="k">class</span> <span class="nc">ResourceManagerProject</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="s1">&#39;projectId&#39;</span><span class="p">)):</span>
@@ -633,19 +692,27 @@ hide:
         <span class="bp">self</span><span class="o">.</span><span class="n">_enabled_service_names</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="ResourceManagerProject.fetch"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.fetch">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get Project.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            client (object): GCP API client.</span>
 <span class="sd">            resource_key (str): resource key to fetch.</span>
+<span class="sd">            root (bool): Set this as the root resource in the hierarchy.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Project: created project.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">project_number</span> <span class="o">=</span> <span class="n">resource_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_project</span><span class="p">(</span><span class="n">project_number</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">project_number</span> <span class="o">=</span> <span class="n">resource_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_project</span><span class="p">(</span><span class="n">project_number</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to fetch Project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">resource_key</span><span class="p">}</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">resource</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -658,8 +725,14 @@ hide:
 <span class="sd">            dict: Project IAM Policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enumerable</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_project_iam_policy</span><span class="p">(</span>
-                <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_crm_project_iam_policy</span><span class="p">(</span>
+                    <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
         <span class="k">return</span> <span class="p">{}</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.get_billing_info"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.get_billing_info">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;billing_info&#39;</span><span class="p">)</span>
@@ -673,8 +746,13 @@ hide:
 <span class="sd">            dict: Project Billing Info resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enumerable</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_billing_project_info</span><span class="p">(</span>
-                <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_billing_project_info</span><span class="p">(</span>
+                    <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get Billing Info: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{}</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.get_enabled_apis"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.get_enabled_apis">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;enabled_apis&#39;</span><span class="p">)</span>
@@ -689,8 +767,12 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">enabled_apis</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enumerable</span><span class="p">():</span>
-            <span class="n">enabled_apis</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_services_enabled_apis</span><span class="p">(</span>
-                <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">enabled_apis</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_services_enabled_apis</span><span class="p">(</span>
+                    <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get Enabled APIs: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_enabled_service_names</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
             <span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;serviceName&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="n">enabled_apis</span><span class="p">))</span>
@@ -718,7 +800,11 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: if billing is enabled on the project.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_billing_info</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;billingEnabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_billing_info</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_billing_info</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;billingEnabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># If status is unknown, always return True so other APIs aren&#39;t blocked.</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.is_api_enabled"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.is_api_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">is_api_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns True if the API service is enabled on the project.</span>
@@ -729,7 +815,11 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: whether a service api is enabled</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">service_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enabled_service_names</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enabled_service_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">service_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enabled_service_names</span>
+
+        <span class="c1"># If status is unknown, always return True so other APIs aren&#39;t blocked.</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.bigquery_api_enabled"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.bigquery_api_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">bigquery_api_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the bigquery api is enabled.</span>
@@ -740,16 +830,6 @@ hide:
         <span class="c1"># Bigquery API depends on billing being enabled</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">billing_enabled</span><span class="p">()</span> <span class="ow">and</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">is_api_enabled</span><span class="p">(</span><span class="s1">&#39;bigquery-json.googleapis.com&#39;</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="ResourceManagerProject.cloudsql_api_enabled"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.cloudsql_api_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">cloudsql_api_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if the cloudsql api is enabled.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            bool: if this API service is enabled on the project.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># CloudSQL Admin API depends on billing being enabled</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">billing_enabled</span><span class="p">()</span> <span class="ow">and</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">is_api_enabled</span><span class="p">(</span><span class="s1">&#39;sql-component.googleapis.com&#39;</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="ResourceManagerProject.compute_api_enabled"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.compute_api_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">compute_api_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the compute api is enabled.</span>
@@ -817,6 +897,41 @@ hide:
 <div class="viewcode-block" id="BigqueryDataSet"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet">[docs]</a><span class="k">class</span> <span class="nc">BigqueryDataSet</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Bigquery DataSet.&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="BigqueryDataSet._set_cache"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet._set_cache">[docs]</a>    <span class="k">def</span> <span class="nf">_set_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Manually set a cache value if it isn&#39;t already set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field_name (str): The name of the attribute to cache.</span>
+<span class="sd">            value (str): The value to cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="s1">&#39;__cached_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigqueryDataSet.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;IAM policy for this Dataset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dataset Policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">iam_policy</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_bigquery_iam_policy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;datasetReference&#39;</span><span class="p">][</span><span class="s1">&#39;datasetId&#39;</span><span class="p">])</span>
+            <span class="n">dataset_policy</span> <span class="o">=</span> <span class="n">iam_helpers</span><span class="o">.</span><span class="n">convert_iam_to_bigquery_policy</span><span class="p">(</span>
+                <span class="n">iam_policy</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_cache</span><span class="p">(</span><span class="s1">&#39;dataset_policy&#39;</span><span class="p">,</span> <span class="n">dataset_policy</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">iam_policy</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get Dataset IAM Policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
 <div class="viewcode-block" id="BigqueryDataSet.get_dataset_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_dataset_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;dataset_policy&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_dataset_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dataset policy for this Dataset.</span>
@@ -827,9 +942,24 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Dataset Policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_bigquery_dataset_policy</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;datasetReference&#39;</span><span class="p">][</span><span class="s1">&#39;datasetId&#39;</span><span class="p">])</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dataset_policy</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_bigquery_dataset_policy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;datasetReference&#39;</span><span class="p">][</span><span class="s1">&#39;datasetId&#39;</span><span class="p">])</span>
+            <span class="n">iam_policy</span> <span class="o">=</span> <span class="n">iam_helpers</span><span class="o">.</span><span class="n">convert_bigquery_policy_to_iam</span><span class="p">(</span>
+                <span class="n">dataset_policy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectId&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_cache</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">,</span> <span class="n">iam_policy</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dataset_policy</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get Dataset Policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<span class="c1"># BigqueryTable resource classes</span>
+<div class="viewcode-block" id="BigqueryTable"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryTable">[docs]</a><span class="k">class</span> <span class="nc">BigqueryTable</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;bigquery_table&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for bigquery table.&quot;&quot;&quot;</span></div>
 
 
 <span class="c1"># Billing resource classes</span>
@@ -854,11 +984,17 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Billing Account IAM Policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_billing_account_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_billing_account_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <span class="c1"># CloudSQL resource classes</span>
-<div class="viewcode-block" id="CloudSqlInstance"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CloudSqlInstance">[docs]</a><span class="k">class</span> <span class="nc">CloudSqlInstance</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;cloudsqlinstance&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)):</span>
+<div class="viewcode-block" id="CloudSqlInstance"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CloudSqlInstance">[docs]</a><span class="k">class</span> <span class="nc">CloudSqlInstance</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;cloudsqlinstance&#39;</span><span class="p">,</span> <span class="s1">&#39;selfLink&#39;</span><span class="p">,</span>
+                                              <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource implementation for CloudSQL Instance.&quot;&quot;&quot;</span></div>
 
 
@@ -935,6 +1071,10 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute Project.&quot;&quot;&quot;</span></div>
 
 
+<div class="viewcode-block" id="ComputeRouter"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeRouter">[docs]</a><span class="k">class</span> <span class="nc">ComputeRouter</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;compute_router&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute Router.&quot;&quot;&quot;</span></div>
+
+
 <div class="viewcode-block" id="ComputeSnapshot"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeSnapshot">[docs]</a><span class="k">class</span> <span class="nc">ComputeSnapshot</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;snapshot&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute Snapshot.&quot;&quot;&quot;</span></div>
 
@@ -977,8 +1117,50 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute TargetTcpProxy.&quot;&quot;&quot;</span></div>
 
 
+<div class="viewcode-block" id="ComputeTargetVpnGateway"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGateway">[docs]</a><span class="k">class</span> <span class="nc">ComputeTargetVpnGateway</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;compute_targetvpngateway&#39;</span><span class="p">,</span>
+                                                     <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute TargetVpnGateway.&quot;&quot;&quot;</span></div>
+
+
 <div class="viewcode-block" id="ComputeUrlMap"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeUrlMap">[docs]</a><span class="k">class</span> <span class="nc">ComputeUrlMap</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;compute_urlmap&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute UrlMap.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ComputeVpnTunnel"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnel">[docs]</a><span class="k">class</span> <span class="nc">ComputeVpnTunnel</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;compute_vpntunnel&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for Compute VpnTunnel.&quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># Cloud Dataproc resource classes</span>
+<div class="viewcode-block" id="DataprocCluster"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.DataprocCluster">[docs]</a><span class="k">class</span> <span class="nc">DataprocCluster</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;dataproc_cluster&#39;</span><span class="p">,</span>
+                                             <span class="s1">&#39;clusterUuid&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for Dataproc Cluster.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataprocCluster.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.DataprocCluster.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dataproc Cluster IAM policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dataproc Cluster IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Dataproc resource does not contain a direct reference to the</span>
+            <span class="c1"># region name except in an embedded label.</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="s1">&#39;goog-dataproc-location&#39;</span><span class="p">]</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="s1">&#39;projects/</span><span class="si">{}</span><span class="s1">/regions/</span><span class="si">{}</span><span class="s1">/clusters/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span> <span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;clusterName&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_dataproc_cluster_iam_policy</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span>
+                <span class="n">ResourceNotSupported</span><span class="p">,</span>
+                <span class="ne">KeyError</span><span class="p">,</span>
+                <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="s1">&#39;Cluster has no labels.&#39;</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <span class="c1"># Cloud DNS resource classes</span>
@@ -1016,8 +1198,13 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Service Account IAM policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_iam_serviceaccount_iam_policy</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;uniqueId&#39;</span><span class="p">])</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_iam_serviceaccount_iam_policy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;uniqueId&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <div class="viewcode-block" id="IamServiceAccountKey"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountKey">[docs]</a><span class="k">class</span> <span class="nc">IamServiceAccountKey</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;serviceaccount_key&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
@@ -1032,6 +1219,56 @@ hide:
 <span class="sd">            str: id key of this resource</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div></div>
+
+
+<span class="c1"># Key Management Service resource classes</span>
+<div class="viewcode-block" id="KmsCryptoKey"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey">[docs]</a><span class="k">class</span> <span class="nc">KmsCryptoKey</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;kms_cryptokey&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                                          <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for KMS CryptoKey.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KmsCryptoKey.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;KMS CryptoKey IAM policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: CryptoKey IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_kms_cryptokey_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="KmsCryptoKeyVersion"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersion">[docs]</a><span class="k">class</span> <span class="nc">KmsCryptoKeyVersion</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;kms_cryptokeyversion&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                                                 <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for KMS CryptoKeyVersion.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="KmsKeyRing"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsKeyRing">[docs]</a><span class="k">class</span> <span class="nc">KmsKeyRing</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;kms_keyring&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                                        <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for KMS KeyRing.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KmsKeyRing.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsKeyRing.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;KMS Keyring IAM policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Keyring IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_kms_keyring_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <span class="c1"># Kubernetes Engine resource classes</span>
@@ -1056,7 +1293,11 @@ hide:
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Cluster has no zone or location: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">{}</span></div>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get Service Config: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="KubernetesCluster.location"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KubernetesCluster.location">[docs]</a>    <span class="k">def</span> <span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get KubernetesCluster location.</span>
@@ -1127,6 +1368,51 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource implementation for GSuite User.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># Cloud Pub/Sub resource classes</span>
+<div class="viewcode-block" id="PubsubSubscription"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubSubscription">[docs]</a><span class="k">class</span> <span class="nc">PubsubSubscription</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;pubsub_subscription&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                                                <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for PubSub Subscription.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PubsubSubscription.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubSubscription.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get IAM policy for this Pubsub Subscription.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Pubsub Subscription IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_pubsub_subscription_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="PubsubTopic"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubTopic">[docs]</a><span class="k">class</span> <span class="nc">PubsubTopic</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;pubsub_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                                         <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource implementation for PubSub Topic.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PubsubTopic.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubTopic.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get IAM policy for this Pubsub Topic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (object): GCP API client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Pubsub Topic IAM policy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_pubsub_topic_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
 <span class="c1"># Cloud Spanner resource classes</span>
 <div class="viewcode-block" id="SpannerDatabase"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.SpannerDatabase">[docs]</a><span class="k">class</span> <span class="nc">SpannerDatabase</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;spanner_database&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
                                              <span class="n">hash_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
@@ -1152,39 +1438,43 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: bucket IAM policy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_storage_bucket_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">())</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_storage_bucket_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">())</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get IAM policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="StorageBucket.get_gcs_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.StorageBucket.get_gcs_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_gcs_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Full projection returns GCS policy with the resource.</span>
+<div class="viewcode-block" id="StorageBucket.get_gcs_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.StorageBucket.get_gcs_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;gcs_policy&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_gcs_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get Bucket Access Control policy for this storage bucket.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            client (object): GCP API client.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            dict: bucket acl.</span>
+<span class="sd">            list: bucket access controls.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Full projection returns GCS policy with the resource.</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;acl&#39;</span><span class="p">]</span>
+            <span class="c1"># Full projection returns GCS policy with the resource.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;acl&#39;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;acl&#39;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[]</span></div></div>
+            <span class="k">pass</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_storage_bucket_acls</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">,</span> <span class="n">ResourceNotSupported</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not get bucket Access Control policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <div class="viewcode-block" id="StorageObject"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.StorageObject">[docs]</a><span class="k">class</span> <span class="nc">StorageObject</span><span class="p">(</span><span class="n">resource_class_factory</span><span class="p">(</span><span class="s1">&#39;storage_object&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource implementation for Storage Object.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="StorageObject.get_iam_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.StorageObject.get_iam_policy">[docs]</a>    <span class="nd">@cached</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get IAM policy for this Storage object.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            client (object): GCP API client.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: Object IAM policy.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_storage_object_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
-                                                      <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="StorageObject.get_gcs_policy"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.StorageObject.get_gcs_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_gcs_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Full projection returns GCS policy with the resource.</span>
@@ -1223,9 +1513,25 @@ hide:
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
 
 
+<div class="viewcode-block" id="CompositeRootIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator">[docs]</a><span class="k">class</span> <span class="nc">CompositeRootIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The resource iterator for the fake composite root resource.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CompositeRootIterator.iter"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator.iter">[docs]</a>    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new resource child resource for each configured resource.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Resource: resource returned from client.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+        <span class="k">for</span> <span class="n">composite_child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;composite_children&#39;</span><span class="p">]:</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="n">from_root_id</span><span class="p">(</span><span class="n">gcp</span><span class="p">,</span> <span class="n">composite_child</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">resource</span></div></div>
+
+
 <div class="viewcode-block" id="resource_iter_class_factory"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.resource_iter_class_factory">[docs]</a><span class="k">def</span> <span class="nf">resource_iter_class_factory</span><span class="p">(</span><span class="n">api_method_name</span><span class="p">,</span>
                                 <span class="n">resource_name</span><span class="p">,</span>
                                 <span class="n">api_method_arg_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">additional_arg_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                 <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Factory function to generate ResourceIterator subclasses.</span>
@@ -1237,6 +1543,8 @@ hide:
 <span class="sd">            resource factory.</span>
 <span class="sd">        api_method_arg_key (str): An optional key from the resource dict to</span>
 <span class="sd">            lookup for the value to send to the api method.</span>
+<span class="sd">        additional_arg_keys (list): An optional list of additional keys from the</span>
+<span class="sd">            resource dict to lookup for the values to send to the api method.</span>
 <span class="sd">        resource_validation_method_name (str): An optional method name to call</span>
 <span class="sd">            to validate that the resource supports iterating resources of this</span>
 <span class="sd">            type.</span>
@@ -1277,6 +1585,9 @@ hide:
                     <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
                     <span class="k">if</span> <span class="n">api_method_arg_key</span><span class="p">:</span>
                         <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="n">api_method_arg_key</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">additional_arg_keys</span><span class="p">:</span>
+                        <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">additional_arg_keys</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">iter_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
                         <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="n">resource_name</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1319,9 +1630,13 @@ hide:
         <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
         <span class="n">parent_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
         <span class="n">parent_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">key</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_crm_projects</span><span class="p">(</span>
-                <span class="n">parent_type</span><span class="o">=</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="n">parent_id</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_crm_projects</span><span class="p">(</span>
+                    <span class="n">parent_type</span><span class="o">=</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="n">parent_id</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ResourceManagerProjectOrgPolicyIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProjectOrgPolicyIterator">[docs]</a><span class="k">class</span> <span class="nc">ResourceManagerProjectOrgPolicyIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1343,9 +1658,13 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">enumerable</span><span class="p">():</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">gcp</span><span class="o">.</span><span class="n">fetch_gae_app</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_app&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">gcp</span><span class="o">.</span><span class="n">fetch_gae_app</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_app&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="AppEngineServiceIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.AppEngineServiceIterator">[docs]</a><span class="k">class</span> <span class="nc">AppEngineServiceIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
@@ -1358,8 +1677,12 @@ hide:
 <span class="sd">            Resource: AppEngineService created</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_services</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
-            <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_service&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_services</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
+                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_service&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="AppEngineVersionIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.AppEngineVersionIterator">[docs]</a><span class="k">class</span> <span class="nc">AppEngineVersionIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
@@ -1372,10 +1695,14 @@ hide:
 <span class="sd">            Resource: AppEngineVersion created</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_versions</span><span class="p">(</span>
-                <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
-                <span class="n">service_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
-            <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_versions</span><span class="p">(</span>
+                    <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                    <span class="n">service_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
+                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="AppEngineInstanceIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.AppEngineInstanceIterator">[docs]</a><span class="k">class</span> <span class="nc">AppEngineInstanceIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
@@ -1388,11 +1715,15 @@ hide:
 <span class="sd">            Resource: AppEngineInstance created</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_instances</span><span class="p">(</span>
-                <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
-                <span class="n">service_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
-                <span class="n">version_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
-            <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_instance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_gae_instances</span><span class="p">(</span>
+                    <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                    <span class="n">service_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                    <span class="n">version_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
+                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;appengine_instance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="BigqueryDataSetIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSetIterator">[docs]</a><span class="k">class</span> <span class="nc">BigqueryDataSetIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1400,6 +1731,13 @@ hide:
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;bigquery_dataset&#39;</span><span class="p">,</span>
         <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Bigquery Dataset.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="BigqueryTableIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BigqueryTableIterator">[docs]</a><span class="k">class</span> <span class="nc">BigqueryTableIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_bigquery_tables&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;bigquery_table&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;datasetReference&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Bigquery Table.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="BillingAccountIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.BillingAccountIterator">[docs]</a><span class="k">class</span> <span class="nc">BillingAccountIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1411,8 +1749,9 @@ hide:
 <div class="viewcode-block" id="CloudSqlInstanceIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.CloudSqlInstanceIterator">[docs]</a><span class="k">class</span> <span class="nc">CloudSqlInstanceIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
         <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_cloudsql_instances&#39;</span><span class="p">,</span>
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;cloudsql_instance&#39;</span><span class="p">,</span>
-        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">,</span>
-        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;cloudsql_api_enabled&#39;</span><span class="p">)):</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">additional_arg_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for CloudSQL Instance.&quot;&quot;&quot;</span></div>
 
 
@@ -1493,10 +1832,38 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute Image.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="ComputeInstanceGroupIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeInstanceGroupIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
-        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_instancegroups&#39;</span><span class="p">,</span>
-        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_instancegroup&#39;</span><span class="p">)):</span>
-    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute InstanceGroup.&quot;&quot;&quot;</span></div>
+<span class="c1"># TODO: Refactor IAP scanner to not expect additional data to be included</span>
+<span class="c1"># with the instancegroup resource.</span>
+<div class="viewcode-block" id="ComputeInstanceGroupIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeInstanceGroupIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute InstanceGroup.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ComputeInstanceGroupIterator.iter"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator.iter">[docs]</a>    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute InstanceGroup iterator.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Resource: Compute InstanceGroup resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">compute_api_enabled</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_compute_instancegroups</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">]):</span>
+                    <span class="c1"># IAP Scanner expects instance URLs to be included with the</span>
+                    <span class="c1"># instance groups.</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;instance_urls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gcp</span><span class="o">.</span><span class="n">fetch_compute_ig_instances</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                            <span class="n">zone</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;zone&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)),</span>
+                            <span class="n">region</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+                    <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;compute_instancegroup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ComputeInstanceGroupManagerIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupManagerIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeInstanceGroupManagerIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
@@ -1527,6 +1894,18 @@ hide:
         <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_networks&#39;</span><span class="p">,</span>
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_network&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute Network.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ComputeProjectIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeProjectIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_project&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_project&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute Project.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ComputeRouterIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeRouterIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeRouterIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_routers&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_router&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute Router.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="ComputeSnapshotIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeSnapshotIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeSnapshotIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
@@ -1583,28 +1962,30 @@ hide:
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute TargetTcpProxy.&quot;&quot;&quot;</span></div>
 
 
+<div class="viewcode-block" id="ComputeTargetVpnGatewayIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGatewayIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeTargetVpnGatewayIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_targetvpngateways&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_targetvpngateway&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute TargetVpnGateway.&quot;&quot;&quot;</span></div>
+
+
 <div class="viewcode-block" id="ComputeUrlMapIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeUrlMapIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeUrlMapIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
         <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_urlmaps&#39;</span><span class="p">,</span>
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_urlmap&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute UrlMap.&quot;&quot;&quot;</span></div>
 
 
-<span class="c1"># Compute project iterator uses a fetch function, does not support using the</span>
-<span class="c1"># class factory.</span>
-<div class="viewcode-block" id="ComputeProjectIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeProjectIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute Project.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ComputeVpnTunnelIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnelIterator">[docs]</a><span class="k">class</span> <span class="nc">ComputeVpnTunnelIterator</span><span class="p">(</span><span class="n">compute_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_compute_vpntunnels&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;compute_vpntunnel&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Compute VpnTunnel.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="ComputeProjectIterator.iter"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator.iter">[docs]</a>    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Resource iterator.</span>
 
-<span class="sd">        Yields:</span>
-<span class="sd">            Resource: ComputeProject created</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">compute_api_enabled</span><span class="p">():</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">gcp</span><span class="o">.</span><span class="n">fetch_compute_project</span><span class="p">(</span>
-                <span class="n">project_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">])</span>
-            <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;compute_project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="DataprocClusterIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.DataprocClusterIterator">[docs]</a><span class="k">class</span> <span class="nc">DataprocClusterIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_dataproc_clusters&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;dataproc_cluster&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Cloud Dataproc Cluster.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DnsManagedZoneIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.DnsManagedZoneIterator">[docs]</a><span class="k">class</span> <span class="nc">DnsManagedZoneIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1635,9 +2016,13 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gsuite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">has_directory_resource_id</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_groups</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">][</span><span class="s1">&#39;directoryCustomerId&#39;</span><span class="p">]):</span>
-                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_group&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_groups</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">][</span><span class="s1">&#39;directoryCustomerId&#39;</span><span class="p">]):</span>
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_group&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="GsuiteMemberIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.GsuiteMemberIterator">[docs]</a><span class="k">class</span> <span class="nc">GsuiteMemberIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
@@ -1650,11 +2035,15 @@ hide:
 <span class="sd">            Resource: GsuiteUserMember or GsuiteGroupMember created</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gsuite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_group_members</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
-            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;USER&#39;</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_user_member&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GROUP&#39;</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_group_member&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_group_members</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;USER&#39;</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_user_member&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GROUP&#39;</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_group_member&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="GsuiteUserIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.GsuiteUserIterator">[docs]</a><span class="k">class</span> <span class="nc">GsuiteUserIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
@@ -1668,9 +2057,13 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gsuite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">has_directory_resource_id</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_users</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">][</span><span class="s1">&#39;directoryCustomerId&#39;</span><span class="p">]):</span>
-                <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gsuite</span><span class="o">.</span><span class="n">iter_gsuite_users</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">][</span><span class="s1">&#39;directoryCustomerId&#39;</span><span class="p">]):</span>
+                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;gsuite_user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="IamOrganizationCuratedRoleIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamOrganizationCuratedRoleIterator">[docs]</a><span class="k">class</span> <span class="nc">IamOrganizationCuratedRoleIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1690,31 +2083,18 @@ hide:
         <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_iam_project_roles&#39;</span><span class="p">,</span>
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;iam_role&#39;</span><span class="p">,</span>
         <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">additional_arg_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
         <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for IAM Project Role.&quot;&quot;&quot;</span></div>
 
 
-<span class="c1"># API requires the projectId, but CAI requires the projectNumber, so pass both</span>
-<span class="c1"># to the client.</span>
-<div class="viewcode-block" id="IamServiceAccountIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator">[docs]</a><span class="k">class</span> <span class="nc">IamServiceAccountIterator</span><span class="p">(</span><span class="n">ResourceIterator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for IAM ServiceAccount.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="IamServiceAccountIterator.iter"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator.iter">[docs]</a>    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;IAM ServiceAccount iterator.</span>
-
-<span class="sd">        Yields:</span>
-<span class="sd">            Resource: IAM ServiceAccount resource.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">gcp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">enumerable</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">gcp</span><span class="o">.</span><span class="n">iter_iam_serviceaccounts</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">],</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">]):</span>
-                    <span class="k">yield</span> <span class="n">FACTORIES</span><span class="p">[</span><span class="s1">&#39;iam_serviceaccount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_new</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">ResourceNotSupported</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># API client doesn&#39;t support this resource, ignore.</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="IamServiceAccountIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator">[docs]</a><span class="k">class</span> <span class="nc">IamServiceAccountIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_iam_serviceaccounts&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;iam_serviceaccount&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">additional_arg_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for IAM ServiceAccount.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="IamServiceAccountKeyIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountKeyIterator">[docs]</a><span class="k">class</span> <span class="nc">IamServiceAccountKeyIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1722,6 +2102,28 @@ hide:
         <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;iam_serviceaccount_key&#39;</span><span class="p">,</span>
         <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for IAM ServiceAccount Key.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="KmsKeyRingIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsKeyRingIterator">[docs]</a><span class="k">class</span> <span class="nc">KmsKeyRingIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_kms_keyrings&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;kms_keyring&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for KMS KeyRing.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="KmsCryptoKeyIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyIterator">[docs]</a><span class="k">class</span> <span class="nc">KmsCryptoKeyIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_kms_cryptokeys&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;kms_cryptokey&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for KMS CryptoKey.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="KmsCryptoKeyVersionIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersionIterator">[docs]</a><span class="k">class</span> <span class="nc">KmsCryptoKeyVersionIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_kms_cryptokeyversions&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;kms_cryptokeyversion&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for KMS CryptoKeyVersion.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="KubernetesClusterIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.KubernetesClusterIterator">[docs]</a><span class="k">class</span> <span class="nc">KubernetesClusterIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1759,6 +2161,24 @@ hide:
         <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">,</span>
         <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for Logging Project Sink.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PubsubSubscriptionIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubSubscriptionIterator">[docs]</a><span class="k">class</span> <span class="nc">PubsubSubscriptionIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_pubsub_subscriptions&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;pubsub_subscription&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">additional_arg_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for PubSub Subscription.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PubsubTopicIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.PubsubTopicIterator">[docs]</a><span class="k">class</span> <span class="nc">PubsubTopicIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
+        <span class="n">api_method_name</span><span class="o">=</span><span class="s1">&#39;iter_pubsub_topics&#39;</span><span class="p">,</span>
+        <span class="n">resource_name</span><span class="o">=</span><span class="s1">&#39;pubsub_topic&#39;</span><span class="p">,</span>
+        <span class="n">api_method_arg_key</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span>
+        <span class="n">additional_arg_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;projectNumber&#39;</span><span class="p">],</span>
+        <span class="n">resource_validation_method_name</span><span class="o">=</span><span class="s1">&#39;enumerable&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;The Resource iterator implementation for PubSub Topic.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="ResourceManagerProjectLienIterator"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.resources.html#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProjectLienIterator">[docs]</a><span class="k">class</span> <span class="nc">ResourceManagerProjectLienIterator</span><span class="p">(</span><span class="n">resource_iter_class_factory</span><span class="p">(</span>
@@ -1800,6 +2220,13 @@ hide:
 
 
 <span class="n">FACTORIES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;composite_root&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">CompositeRootResource</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">CompositeRootIterator</span><span class="p">,</span>
+        <span class="p">]}),</span>
+
     <span class="s1">&#39;organization&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ResourceManagerOrganization</span><span class="p">,</span>
@@ -1849,6 +2276,7 @@ hide:
             <span class="n">ComputeLicenseIterator</span><span class="p">,</span>
             <span class="n">ComputeNetworkIterator</span><span class="p">,</span>
             <span class="n">ComputeProjectIterator</span><span class="p">,</span>
+            <span class="n">ComputeRouterIterator</span><span class="p">,</span>
             <span class="n">ComputeSnapshotIterator</span><span class="p">,</span>
             <span class="n">ComputeSslCertificateIterator</span><span class="p">,</span>
             <span class="n">ComputeSubnetworkIterator</span><span class="p">,</span>
@@ -1858,13 +2286,19 @@ hide:
             <span class="n">ComputeTargetPoolIterator</span><span class="p">,</span>
             <span class="n">ComputeTargetSslProxyIterator</span><span class="p">,</span>
             <span class="n">ComputeTargetTcpProxyIterator</span><span class="p">,</span>
+            <span class="n">ComputeTargetVpnGatewayIterator</span><span class="p">,</span>
             <span class="n">ComputeUrlMapIterator</span><span class="p">,</span>
+            <span class="n">ComputeVpnTunnelIterator</span><span class="p">,</span>
+            <span class="n">DataprocClusterIterator</span><span class="p">,</span>
             <span class="n">DnsManagedZoneIterator</span><span class="p">,</span>
             <span class="n">DnsPolicyIterator</span><span class="p">,</span>
             <span class="n">IamProjectRoleIterator</span><span class="p">,</span>
             <span class="n">IamServiceAccountIterator</span><span class="p">,</span>
+            <span class="n">KmsKeyRingIterator</span><span class="p">,</span>
             <span class="n">KubernetesClusterIterator</span><span class="p">,</span>
             <span class="n">LoggingProjectSinkIterator</span><span class="p">,</span>
+            <span class="n">PubsubSubscriptionIterator</span><span class="p">,</span>
+            <span class="n">PubsubTopicIterator</span><span class="p">,</span>
             <span class="n">ResourceManagerProjectLienIterator</span><span class="p">,</span>
             <span class="n">ResourceManagerProjectOrgPolicyIterator</span><span class="p">,</span>
             <span class="n">SpannerInstanceIterator</span><span class="p">,</span>
@@ -1907,6 +2341,13 @@ hide:
     <span class="s1">&#39;bigquery_dataset&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">BigqueryDataSet</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">BigqueryTableIterator</span>
+        <span class="p">]}),</span>
+
+    <span class="s1">&#39;bigquery_table&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;bigquery_dataset&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">BigqueryTable</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
     <span class="s1">&#39;cloudsql_instance&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
@@ -1999,6 +2440,11 @@ hide:
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeProject</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
+    <span class="s1">&#39;compute_router&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeRouter</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
     <span class="s1">&#39;compute_snapshot&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeSnapshot</span><span class="p">,</span>
@@ -2044,9 +2490,19 @@ hide:
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeTargetTcpProxy</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
+    <span class="s1">&#39;compute_targetvpngateway&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeTargetVpnGateway</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
     <span class="s1">&#39;compute_urlmap&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeUrlMap</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
+    <span class="s1">&#39;compute_vpntunnel&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ComputeVpnTunnel</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
     <span class="s1">&#39;crm_lien&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
@@ -2057,6 +2513,11 @@ hide:
     <span class="s1">&#39;crm_org_policy&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;folder&#39;</span><span class="p">,</span> <span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">ResourceManagerOrgPolicy</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
+    <span class="s1">&#39;dataproc_cluster&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">DataprocCluster</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
     <span class="s1">&#39;dns_managedzone&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
@@ -2113,6 +2574,25 @@ hide:
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">IamServiceAccountKey</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
+    <span class="s1">&#39;kms_keyring&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">KmsKeyRing</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">KmsCryptoKeyIterator</span>
+        <span class="p">]}),</span>
+
+    <span class="s1">&#39;kms_cryptokey&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;kms_keyring&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">KmsCryptoKey</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">KmsCryptoKeyVersionIterator</span>
+        <span class="p">]}),</span>
+
+    <span class="s1">&#39;kms_cryptokeyversion&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;kms_cryptokey&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">KmsCryptoKeyVersion</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
     <span class="s1">&#39;kubernetes_cluster&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">KubernetesCluster</span><span class="p">,</span>
@@ -2121,6 +2601,16 @@ hide:
     <span class="s1">&#39;logging_sink&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
         <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;folder&#39;</span><span class="p">,</span> <span class="s1">&#39;project&#39;</span><span class="p">],</span>
         <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">LoggingSink</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
+    <span class="s1">&#39;pubsub_subscription&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">PubsubSubscription</span><span class="p">,</span>
+        <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
+
+    <span class="s1">&#39;pubsub_topic&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>
+        <span class="s1">&#39;dependsOn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;cls&#39;</span><span class="p">:</span> <span class="n">PubsubTopic</span><span class="p">,</span>
         <span class="s1">&#39;contains&#39;</span><span class="p">:</span> <span class="p">[]}),</span>
 
     <span class="s1">&#39;spanner_database&#39;</span><span class="p">:</span> <span class="n">ResourceFactory</span><span class="p">({</span>

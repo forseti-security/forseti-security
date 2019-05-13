@@ -18,6 +18,7 @@ Submodules
    google.cloud.forseti.scanner.scanners.bucket_rules_scanner
    google.cloud.forseti.scanner.scanners.cloudsql_rules_scanner
    google.cloud.forseti.scanner.scanners.enabled_apis_scanner
+   google.cloud.forseti.scanner.scanners.external_project_access_scanner
    google.cloud.forseti.scanner.scanners.firewall_rules_scanner
    google.cloud.forseti.scanner.scanners.forwarding_rule_scanner
    google.cloud.forseti.scanner.scanners.groups_scanner
@@ -27,8 +28,11 @@ Submodules
    google.cloud.forseti.scanner.scanners.ke_base_scanner
    google.cloud.forseti.scanner.scanners.ke_scanner
    google.cloud.forseti.scanner.scanners.ke_version_scanner
+   google.cloud.forseti.scanner.scanners.kms_scanner
    google.cloud.forseti.scanner.scanners.lien_scanner
    google.cloud.forseti.scanner.scanners.location_scanner
    google.cloud.forseti.scanner.scanners.log_sink_scanner
+   google.cloud.forseti.scanner.scanners.resource_scanner
+   google.cloud.forseti.scanner.scanners.retention_scanner
    google.cloud.forseti.scanner.scanners.service_account_key_scanner
 

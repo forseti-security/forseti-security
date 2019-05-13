@@ -13,18 +13,22 @@ hide:
 <p>Inventory storage implementation.</p>
 <dl class="class">
 <dt id="google.cloud.forseti.services.inventory.storage.BufferedDbWriter">
-<em class="property">class </em><code class="descname">BufferedDbWriter</code><span class="sig-paren">(</span><em>session</em>, <em>max_size=1024</em>, <em>commit_on_flush=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#BufferedDbWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.BufferedDbWriter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">BufferedDbWriter</code><span class="sig-paren">(</span><em>session</em>, <em>max_size=1024</em>, <em>max_packet_size=25165824.0</em>, <em>commit_on_flush=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#BufferedDbWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.BufferedDbWriter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Buffered db writing.</p>
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.storage.BufferedDbWriter.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#BufferedDbWriter.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.BufferedDbWriter.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>obj</em>, <em>estimated_length=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#BufferedDbWriter.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.BufferedDbWriter.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an object to the buffer to write to db.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<em>object</em>) – Object to write to db.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obj</strong> (<em>object</em>) – Object to write to db.</li>
+<li><strong>estimated_length</strong> (<em>int</em>) – The estimated length of this object.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -143,15 +147,20 @@ API.</li>
 <em class="property">class </em><code class="descname">CaiTemporaryStore</code><span class="sig-paren">(</span><em>name</em>, <em>parent_name</em>, <em>content_type</em>, <em>asset_type</em>, <em>asset_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#CaiTemporaryStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>CAI temporary inventory table.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.UNPARENTED_ASSETS">
+<code class="descname">UNPARENTED_ASSETS</code><em class="property"> = frozenset(['google.cloud.billing.BillingAccount', 'google.cloud.resourcemanager.Organization'])</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.UNPARENTED_ASSETS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="staticmethod">
 <dt id="google.cloud.forseti.services.inventory.storage.CaiTemporaryStore._get_parent_name">
-<em class="property">static </em><code class="descname">_get_parent_name</code><span class="sig-paren">(</span><em>asset_pb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#CaiTemporaryStore._get_parent_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore._get_parent_name" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">_get_parent_name</code><span class="sig-paren">(</span><em>asset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#CaiTemporaryStore._get_parent_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore._get_parent_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines the parent name from the resource data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asset_pb</strong> (<em>assets_pb2.Asset</em>) – An Asset protobuf object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asset</strong> (<em>dict</em>) – An Asset object.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The parent name for the resource.</td>
 </tr>
@@ -227,22 +236,6 @@ API.</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">database row object or None if there is no data.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.get_schema_update_actions">
-<em class="property">static </em><code class="descname">get_schema_update_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#CaiTemporaryStore.get_schema_update_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.get_schema_update_actions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maintain all the schema changes for this table.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of Action.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
 </tr>
 </tbody>
 </table>
@@ -397,6 +390,30 @@ inventory_index_id.</p>
 </dd></dl>
 
 <dl class="classmethod">
+<dt id="google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_index_id_by_scanner_index_id">
+<em class="property">classmethod </em><code class="descname">get_inventory_index_id_by_scanner_index_id</code><span class="sig-paren">(</span><em>session</em>, <em>scanner_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#DataAccess.get_inventory_index_id_by_scanner_index_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_index_id_by_scanner_index_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all inventory index entries.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (<em>object</em>) – Database session</li>
+<li><strong>scanner_index_id</strong> (<em>int</em>) – id of the scanner in scanner_index table</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">inventory index id</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int64</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
 <dt id="google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_indexes_older_than_cutoff">
 <em class="property">classmethod </em><code class="descname">get_inventory_indexes_older_than_cutoff</code><span class="sig-paren">(</span><em>session</em>, <em>cutoff_datetime</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/storage.html#DataAccess.get_inventory_indexes_older_than_cutoff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_indexes_older_than_cutoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all inventory index entries older than the cutoff.</p>
@@ -480,7 +497,7 @@ older inventory index entries.</li>
 
 <dl class="attribute">
 <dt id="google.cloud.forseti.services.inventory.storage.Inventory._sa_class_manager">
-<code class="descname">_sa_class_manager</code><em class="property"> = {'category': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73830&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c735f0&gt;, 'inventory_errors': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73cb0&gt;, 'inventory_index_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73770&gt;, 'other': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73bf0&gt;, 'parent_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73b30&gt;, 'resource_data': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73a70&gt;, 'resource_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c739b0&gt;, 'resource_type': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c738f0&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.Inventory._sa_class_manager" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_sa_class_manager</code><em class="property"> = {'category': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80e30&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80bf0&gt;, 'inventory_errors': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b912f0&gt;, 'inventory_index_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80d70&gt;, 'other': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b91230&gt;, 'parent_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b91170&gt;, 'resource_data': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b910b0&gt;, 'resource_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80fb0&gt;, 'resource_type': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80ef0&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.Inventory._sa_class_manager" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -719,7 +736,7 @@ older inventory index entries.</li>
 
 <dl class="attribute">
 <dt id="google.cloud.forseti.services.inventory.storage.InventoryIndex._sa_class_manager">
-<code class="descname">_sa_class_manager</code><em class="property"> = {'completed_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694cd2fb0&gt;, 'counter': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c732f0&gt;, 'created_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694cd2ef0&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694cd2d70&gt;, 'inventory_index_errors': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73470&gt;, 'inventory_index_warnings': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c733b0&gt;, 'inventory_status': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c730b0&gt;, 'message': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73530&gt;, 'progress': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73230&gt;, 'schema_version': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f0694c73170&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.InventoryIndex._sa_class_manager" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_sa_class_manager</code><em class="property"> = {'completed_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b805f0&gt;, 'counter': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b808f0&gt;, 'created_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80530&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b803b0&gt;, 'inventory_index_errors': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80a70&gt;, 'inventory_index_warnings': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b809b0&gt;, 'inventory_status': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b806b0&gt;, 'message': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80b30&gt;, 'progress': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80830&gt;, 'schema_version': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f17b9b80770&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.storage.InventoryIndex._sa_class_manager" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">

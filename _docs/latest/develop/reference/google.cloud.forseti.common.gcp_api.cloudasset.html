@@ -18,7 +18,7 @@ hide:
 <p>Cloud Asset Client.</p>
 <dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.OPERATION_DELAY_IN_SEC">
-<code class="descname">OPERATION_DELAY_IN_SEC</code><em class="property"> = 5</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.OPERATION_DELAY_IN_SEC" title="Permalink to this definition">¶</a></dt>
+<code class="descname">OPERATION_DELAY_IN_SEC</code><em class="property"> = 5.0</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.OPERATION_DELAY_IN_SEC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -136,6 +136,18 @@ CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</li>
 <dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
 <p>Cloud Asset API Respository.</p>
 <dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.folders">
+<code class="descname">folders</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.folders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudAssetFoldersRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.folders_operations">
+<code class="descname">folders_operations</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.folders_operations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudAssetFoldersOperationsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.organizations">
 <code class="descname">organizations</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.organizations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a _CloudAssetOrganizationsRepository instance.</p>
@@ -159,6 +171,20 @@ CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</li>
 <dd><p>Returns a _CloudAssetProjectsOperationsRepository instance.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersOperationsRepository">
+<em class="property">class </em><code class="descname">_CloudAssetFoldersOperationsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#_CloudAssetFoldersOperationsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersOperationsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Asset Folders Operations repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersRepository">
+<em class="property">class </em><code class="descname">_CloudAssetFoldersRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#_CloudAssetFoldersRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Asset Folders repository.</p>
 </dd></dl>
 
 <dl class="class">

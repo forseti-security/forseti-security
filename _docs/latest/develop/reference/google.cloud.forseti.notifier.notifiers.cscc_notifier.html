@@ -26,7 +26,7 @@ hide:
 
 <dl class="method">
 <dt id="google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._send_findings_to_cscc">
-<code class="descname">_send_findings_to_cscc</code><span class="sig-paren">(</span><em>violations</em>, <em>organization_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier._send_findings_to_cscc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._send_findings_to_cscc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_send_findings_to_cscc</code><span class="sig-paren">(</span><em>violations</em>, <em>organization_id=None</em>, <em>source_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier._send_findings_to_cscc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._send_findings_to_cscc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send violations to CSCC directly via the CSCC API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -35,6 +35,8 @@ hide:
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>violations</strong> (<em>dict</em>) – Violations to be uploaded as findings.</li>
 <li><strong>organization_id</strong> (<em>str</em>) – The id prefixed with ‘organizations/’.</li>
+<li><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</li>
 </ul>
 </td>
 </tr>
@@ -54,17 +56,24 @@ hide:
 
 <dl class="method">
 <dt id="google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._transform_for_api">
-<code class="descname">_transform_for_api</code><span class="sig-paren">(</span><em>violations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier._transform_for_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._transform_for_api" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_transform_for_api</code><span class="sig-paren">(</span><em>violations</em>, <em>source_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier._transform_for_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._transform_for_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform forseti violations to findings for CSCC API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>violations</strong> (<em>dict</em>) – Violations to be sent to CSCC as findings.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>violations</strong> (<em>dict</em>) – Violations to be sent to CSCC as findings.</li>
+<li><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">violations in findings format; each violation is a dict.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">violations in findings format; each violation is a dict.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -95,9 +104,38 @@ will be outputted on GCS</li>
 </table>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.find_inactive_findings">
+<em class="property">static </em><code class="descname">find_inactive_findings</code><span class="sig-paren">(</span><em>new_findings</em>, <em>findings_in_cscc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier.find_inactive_findings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.find_inactive_findings" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Finds the findings that does not correspond to the latest scanner run</dt>
+<dd>and updates it’s state to inactive.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>new_findings</strong> (<em>list</em>) – Latest violations that are transformed to
+findings.</li>
+<li><strong>findings_in_cscc</strong> (<em>list</em>) – Findings pulled from CSCC that
+corresponds to the previous scanner run.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Findings whose state has been marked as ‘INACTIVE’.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>violations</em>, <em>gcs_path</em>, <em>mode</em>, <em>organization_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>violations</em>, <em>gcs_path=None</em>, <em>mode=None</em>, <em>organization_id=None</em>, <em>source_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/notifier/notifiers/cscc_notifier.html#CsccNotifier.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the temporary json file and upload to GCS.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -108,6 +146,8 @@ will be outputted on GCS</li>
 <li><strong>gcs_path</strong> (<em>str</em>) – The GCS bucket to upload the findings.</li>
 <li><strong>mode</strong> (<em>str</em>) – The mode in which to send the CSCC notification.</li>
 <li><strong>organization_id</strong> (<em>str</em>) – The id of the organization.</li>
+<li><strong>source_id</strong> (<em>str</em>) – Unique ID assigned by CSCC, to the organization
+that the violations are originating from.</li>
 </ul>
 </td>
 </tr>

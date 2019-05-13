@@ -36,6 +36,7 @@ hide:
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">API_NAME</span> <span class="o">=</span> <span class="s1">&#39;cloudasset&#39;</span>
 
 
 <div class="viewcode-block" id="CloudAssetRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">CloudAssetRepositoryClient</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
@@ -57,13 +58,15 @@ hide:
         <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
             <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_folders_operations</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_organizations</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_organizations_operations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">CloudAssetRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="s1">&#39;cloudasset&#39;</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1beta1&#39;</span><span class="p">],</span>
+            <span class="n">API_NAME</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1beta1&#39;</span><span class="p">],</span>
             <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
             <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
             <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
@@ -71,20 +74,20 @@ hide:
     <span class="c1"># Turn off docstrings for properties.</span>
     <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetProjectsRepository instance.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
-                <span class="n">_CloudAssetProjectsRepository</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span>
+    <span class="k">def</span> <span class="nf">folders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetFoldersRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetFoldersRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">projects_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetProjectsOperationsRepository instance.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
-                <span class="n">_CloudAssetProjectsOperationsRepository</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span>
+    <span class="k">def</span> <span class="nf">folders_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetFoldersOperationsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders_operations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_folders_operations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetFoldersOperationsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders_operations</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">organizations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -100,15 +103,30 @@ hide:
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_organizations_operations</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_organizations_operations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
                 <span class="n">_CloudAssetOrganizationsOperationsRepository</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_organizations_operations</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_organizations_operations</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetProjectsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetProjectsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">projects_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetProjectsOperationsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetProjectsOperationsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects_operations</span></div>
     <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
 
 
-<div class="viewcode-block" id="_CloudAssetProjectsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetProjectsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetProjectsRepository</span><span class="p">(</span>
+<div class="viewcode-block" id="_CloudAssetFoldersRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetFoldersRepository</span><span class="p">(</span>
         <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ExportAssetsQueryMixin</span><span class="p">,</span>
         <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Projects repository.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Folders repository.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructor.</span>
@@ -116,14 +134,14 @@ hide:
 <span class="sd">        Args:</span>
 <span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetProjectsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetFoldersRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;folders&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="_CloudAssetProjectsOperationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetProjectsOperationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetProjectsOperationsRepository</span><span class="p">(</span>
+<div class="viewcode-block" id="_CloudAssetFoldersOperationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetFoldersOperationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetFoldersOperationsRepository</span><span class="p">(</span>
         <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
         <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Projects Operations repository.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Folders Operations repository.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructor.</span>
@@ -131,8 +149,8 @@ hide:
 <span class="sd">        Args:</span>
 <span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetProjectsOperationsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects.operations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetFoldersOperationsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;folders.operations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="_CloudAssetOrganizationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetOrganizationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetOrganizationsRepository</span><span class="p">(</span>
@@ -165,11 +183,41 @@ hide:
             <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;organizations.operations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="_CloudAssetProjectsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetProjectsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetProjectsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ExportAssetsQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Projects repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetProjectsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_CloudAssetProjectsOperationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetProjectsOperationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetProjectsOperationsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Projects Operations repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetProjectsOperationsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects.operations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="CloudAssetClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient">[docs]</a><span class="k">class</span> <span class="nc">CloudAssetClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Cloud Asset Client.&quot;&quot;&quot;</span>
 
     <span class="c1"># Estimation of how long to wait for an async API to complete.</span>
-    <span class="n">OPERATION_DELAY_IN_SEC</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">OPERATION_DELAY_IN_SEC</span> <span class="o">=</span> <span class="mf">5.0</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize.</span>
@@ -179,7 +227,7 @@ hide:
 <span class="sd">            **kwargs (dict): The kwargs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">max_calls</span><span class="p">,</span> <span class="n">quota_period</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_ratelimiter_config</span><span class="p">(</span>
-            <span class="n">global_configs</span><span class="p">,</span> <span class="s1">&#39;cloudasset&#39;</span><span class="p">)</span>
+            <span class="n">global_configs</span><span class="p">,</span> <span class="n">API_NAME</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">CloudAssetRepositoryClient</span><span class="p">(</span>
             <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">max_calls</span><span class="p">,</span>
@@ -215,12 +263,14 @@ hide:
 <span class="sd">            OperationTimeoutError: Raised if the operation times out.</span>
 <span class="sd">            ValueError: Raised on invalid parent resource name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
-            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span>
         <span class="k">elif</span> <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">):</span>
             <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span>
+        <span class="k">elif</span> <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;parent must start with either projects/ or &#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;parent must start with folders/, projects/, or &#39;</span>
                              <span class="s1">&#39;organizations/&#39;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -254,13 +304,15 @@ hide:
 <span class="sd">            ApiExecutionError: Returns if there is an error in the API response.</span>
 <span class="sd">            ValueError: Raised on invalid parent resource name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
-            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects_operations</span>
+        <span class="k">if</span> <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders_operations</span>
         <span class="k">elif</span> <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">):</span>
             <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations_operations</span>
+        <span class="k">elif</span> <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects_operations</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;operation_name must start with either projects/ &#39;</span>
-                             <span class="s1">&#39;or organizations/&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;operation_name must start with folders/, &#39;</span>
+                             <span class="s1">&#39;projects/, or organizations/&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">results</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">operation_name</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the operation status, operation_name = </span><span class="si">%s</span><span class="s1">, &#39;</span>

@@ -248,7 +248,7 @@ hide:
                 <span class="n">rule_name</span><span class="o">=</span><span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_name&#39;</span><span class="p">),</span>
                 <span class="n">scanner_index_id</span><span class="o">=</span><span class="n">scanner_index_id</span><span class="p">,</span>
                 <span class="n">violation_data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
-                    <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_data&#39;</span><span class="p">)),</span>
+                    <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_data&#39;</span><span class="p">),</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                 <span class="n">violation_hash</span><span class="o">=</span><span class="n">violation_hash</span><span class="p">,</span>
                 <span class="n">violation_type</span><span class="o">=</span><span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_type&#39;</span><span class="p">)</span>
             <span class="p">)</span>

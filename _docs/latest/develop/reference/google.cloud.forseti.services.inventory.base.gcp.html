@@ -28,7 +28,7 @@ hide:
 
 <dl class="attribute">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient._abc_negative_cache_version">
-<code class="descname">_abc_negative_cache_version</code><em class="property"> = 178</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 199</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -38,13 +38,33 @@ hide:
 
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_dataset_policy">
-<code class="descname">fetch_bigquery_dataset_policy</code><span class="sig-paren">(</span><em>project_number</em>, <em>dataset_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_bigquery_dataset_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_dataset_policy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fetch_bigquery_dataset_policy</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em>, <em>dataset_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_bigquery_dataset_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_dataset_policy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dataset policy Iterator for a dataset from gcp API call.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+<li><strong>dataset_id</strong> (<em>str</em>) – id of the dataset to query.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_iam_policy">
+<code class="descname">fetch_bigquery_iam_policy</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em>, <em>dataset_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_bigquery_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_bigquery_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets IAM policy of a bigquery dataset from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
 <li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
 <li><strong>dataset_id</strong> (<em>str</em>) – id of the dataset to query.</li>
 </ul>
@@ -77,6 +97,28 @@ hide:
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_compute_ig_instances">
+<code class="descname">fetch_compute_ig_instances</code><span class="sig-paren">(</span><em>project_number</em>, <em>instance_group_name</em>, <em>region=None</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_compute_ig_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_compute_ig_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instances for an instance group from GCP API.</p>
+<p>One and only one of zone (for zonal instance groups) and region
+(for regional instance groups) must be specified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+<li><strong>instance_group_name</strong> (<em>str</em>) – The instance group’s name.</li>
+<li><strong>region</strong> (<em>str</em>) – The regional instance group’s region.</li>
+<li><strong>zone</strong> (<em>str</em>) – The zonal instance group’s zone.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -200,6 +242,21 @@ hide:
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_dataproc_cluster_iam_policy">
+<code class="descname">fetch_dataproc_cluster_iam_policy</code><span class="sig-paren">(</span><em>cluster</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_dataproc_cluster_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_dataproc_cluster_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch Dataproc Cluster IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cluster</strong> (<em>str</em>) – The Dataproc cluster to query, must be in the format
+projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_gae_app">
 <code class="descname">fetch_gae_app</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_gae_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_gae_app" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch the AppEngine App.</p>
@@ -233,6 +290,67 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_cryptokey_iam_policy">
+<code class="descname">fetch_kms_cryptokey_iam_policy</code><span class="sig-paren">(</span><em>cryptokey</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_kms_cryptokey_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_cryptokey_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch KMS Cryptokey IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cryptokey</strong> (<em>str</em>) – The KMS cryptokey to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+cryptoKeys/{CRYPTOKEY_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_keyring_iam_policy">
+<code class="descname">fetch_kms_keyring_iam_policy</code><span class="sig-paren">(</span><em>keyring</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_kms_keyring_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_kms_keyring_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch KMS Keyring IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>keyring</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_subscription_iam_policy">
+<code class="descname">fetch_pubsub_subscription_iam_policy</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_pubsub_subscription_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_subscription_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>PubSub Subscription IAM policy from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) – The pubsub topic to query, must be in the format
+projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_topic_iam_policy">
+<code class="descname">fetch_pubsub_topic_iam_policy</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_pubsub_topic_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_pubsub_topic_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>PubSub Topic IAM policy from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) – The pubsub topic to query, must be in the format
+projects/{PROJECT_ID}/topics/{TOPIC_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_services_enabled_apis">
 <code class="descname">fetch_services_enabled_apis</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_services_enabled_apis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_services_enabled_apis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Project enabled API services from gcp API call.</p>
@@ -241,6 +359,25 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_storage_bucket_acls">
+<code class="descname">fetch_storage_bucket_acls</code><span class="sig-paren">(</span><em>bucket_id</em>, <em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.fetch_storage_bucket_acls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.fetch_storage_bucket_acls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bucket Access Controls from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bucket_id</strong> (<em>str</em>) – id of the bucket to query.</li>
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -307,6 +444,21 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_bigquery_tables">
+<code class="descname">iter_bigquery_tables</code><span class="sig-paren">(</span><em>dataset_reference</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_bigquery_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_bigquery_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Tables from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataset_reference</strong> (<em>dict</em>) – The project and dataset ID to get
+bigquery tables.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_billing_accounts">
 <code class="descname">iter_billing_accounts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_billing_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_billing_accounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate visible Billing Accounts in an organization from GCP API.</p>
@@ -314,13 +466,17 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_cloudsql_instances">
-<code class="descname">iter_cloudsql_instances</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_cloudsql_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_cloudsql_instances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iter_cloudsql_instances</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_cloudsql_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_cloudsql_instances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate Cloud sql instances from GCP API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -551,6 +707,36 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_project">
+<code class="descname">iter_compute_project</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Project from GCP API.</p>
+<p>Will only ever return up to 1 result. Ensures compatibility with other
+resource iterators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_routers">
+<code class="descname">iter_compute_routers</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_routers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_routers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Compute Engine routers from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_snapshots">
 <code class="descname">iter_compute_snapshots</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate Compute Engine snapshots from GCP API.</p>
@@ -677,9 +863,37 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_targetvpngateways">
+<code class="descname">iter_compute_targetvpngateways</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_targetvpngateways"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_targetvpngateways" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Target VPN Gateways from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_urlmaps">
 <code class="descname">iter_compute_urlmaps</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_urlmaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_urlmaps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate URL maps from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_vpntunnels">
+<code class="descname">iter_compute_vpntunnels</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_compute_vpntunnels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_compute_vpntunnels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate VPN tunnels from GCP API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -785,6 +999,25 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>parent_type</strong> (<em>str</em>) – type of the parent, “folder” or “organization”.</li>
 <li><strong>parent_id</strong> (<em>str</em>) – id of the parent of the folder.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_dataproc_clusters">
+<code class="descname">iter_dataproc_clusters</code><span class="sig-paren">(</span><em>project_id</em>, <em>region=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_dataproc_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_dataproc_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Dataproc clusters from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>region</strong> (<em>str</em>) – The region to query. Not required when using Cloud
+Asset API.</li>
 </ul>
 </td>
 </tr>
@@ -935,13 +1168,17 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_project_roles">
-<code class="descname">iter_iam_project_roles</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_iam_project_roles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_project_roles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iter_iam_project_roles</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_iam_project_roles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_project_roles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate Project roles in a project from GCP API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – id of the project to query.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -965,6 +1202,92 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_serviceaccounts">
 <code class="descname">iter_iam_serviceaccounts</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_iam_serviceaccounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_iam_serviceaccounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate Service Accounts in a project from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeys">
+<code class="descname">iter_kms_cryptokeys</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_kms_cryptokeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Cryptokeys in a keyring from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeyversions">
+<code class="descname">iter_kms_cryptokeyversions</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_kms_cryptokeyversions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_cryptokeyversions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Cryptokey Versions from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+cryptoKeys/{CRYPTOKEY_NAME}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_keyrings">
+<code class="descname">iter_kms_keyrings</code><span class="sig-paren">(</span><em>project_id</em>, <em>location=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_kms_keyrings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_kms_keyrings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Keyrings in a project from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>location</strong> (<em>str</em>) – The location to query. Not required when
+using Cloud Asset API.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_subscriptions">
+<code class="descname">iter_pubsub_subscriptions</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_pubsub_subscriptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_subscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate PubSub subscriptions from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_topics">
+<code class="descname">iter_pubsub_topics</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClient.iter_pubsub_topics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClient.iter_pubsub_topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate PubSub topics from GCP API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1110,7 +1433,7 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 
 <dl class="attribute">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._abc_negative_cache_version">
-<code class="descname">_abc_negative_cache_version</code><em class="property"> = 178</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 199</em><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1130,6 +1453,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1145,6 +1471,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1162,6 +1491,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1177,6 +1509,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1194,6 +1529,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1209,6 +1547,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1226,6 +1567,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1241,6 +1585,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1258,6 +1605,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1273,6 +1623,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1290,6 +1643,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1305,6 +1661,9 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Client.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised if polling is disabled for this API in
+the GCP API client configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -1328,6 +1687,28 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_bigquery_iam_policy">
+<code class="descname">fetch_bigquery_iam_policy</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em>, <em>dataset_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_bigquery_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_bigquery_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets IAM policy of a bigquery dataset from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+<li><strong>dataset_id</strong> (<em>str</em>) – id of the dataset to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</p>
 </td>
 </tr>
 </tbody>
@@ -1361,6 +1742,30 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_billing_project_info">
 <code class="descname">fetch_billing_project_info</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_billing_project_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_billing_project_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> (<em>list</em>) – Original func arguments.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Original func arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Result produced by the wrapped func.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_compute_ig_instances">
+<code class="descname">fetch_compute_ig_instances</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_compute_ig_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_compute_ig_instances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator implementation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1575,6 +1980,23 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_dataproc_cluster_iam_policy">
+<code class="descname">fetch_dataproc_cluster_iam_policy</code><span class="sig-paren">(</span><em>cluster</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_dataproc_cluster_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_dataproc_cluster_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch Dataproc Cluster IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cluster</strong> (<em>str</em>) – The Dataproc cluster to query, must be in the format
+projects/{PROJECT_ID}/regions/{REGION}/clusters/{CLUSTER_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_gae_app">
 <code class="descname">fetch_gae_app</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_gae_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_gae_app" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator implementation.</p>
@@ -1623,8 +2045,101 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_cryptokey_iam_policy">
+<code class="descname">fetch_kms_cryptokey_iam_policy</code><span class="sig-paren">(</span><em>cryptokey</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_kms_cryptokey_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_cryptokey_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch KMS Cryptokey IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cryptokey</strong> (<em>str</em>) – The KMS cryptokey to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+cryptoKeys/{CRYPTOKEY_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_keyring_iam_policy">
+<code class="descname">fetch_kms_keyring_iam_policy</code><span class="sig-paren">(</span><em>keyring</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_kms_keyring_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_kms_keyring_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch KMS Keyring IAM Policy from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>keyring</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_subscription_iam_policy">
+<code class="descname">fetch_pubsub_subscription_iam_policy</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_pubsub_subscription_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_subscription_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>PubSub Subscription IAM policy from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) – The pubsub topic to query, must be in the format
+projects/{PROJECT_ID}/subscriptions/{SUBSCRIPTION_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_topic_iam_policy">
+<code class="descname">fetch_pubsub_topic_iam_policy</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_pubsub_topic_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_pubsub_topic_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>PubSub Topic IAM policy from gcp API call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) – The pubsub topic to query, must be in the format
+projects/{PROJECT_ID}/topics/{TOPIC_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_services_enabled_apis">
 <code class="descname">fetch_services_enabled_apis</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_services_enabled_apis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_services_enabled_apis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> (<em>list</em>) – Original func arguments.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Original func arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Result produced by the wrapped func.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_storage_bucket_acls">
+<code class="descname">fetch_storage_bucket_acls</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.fetch_storage_bucket_acls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.fetch_storage_bucket_acls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator implementation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1721,6 +2236,30 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_datasets">
 <code class="descname">iter_bigquery_datasets</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_bigquery_datasets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> (<em>list</em>) – Original func arguments.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Original func arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Result produced by the wrapped func.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_tables">
+<code class="descname">iter_bigquery_tables</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_bigquery_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_bigquery_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator implementation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2127,6 +2666,40 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_project">
+<code class="descname">iter_compute_project</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Project from GCP API.</p>
+<p>Will only ever return up to 1 result. Ensures compatibility with other
+resource iterators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>dict</em> – Generator of compute project resources.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_routers">
+<code class="descname">iter_compute_routers</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_routers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_routers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Compute Engine routers from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_snapshots">
 <code class="descname">iter_compute_snapshots</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator implementation.</p>
@@ -2287,9 +2860,41 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_targetvpngateways">
+<code class="descname">iter_compute_targetvpngateways</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_targetvpngateways"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_targetvpngateways" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Target VPN Gateways from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_urlmaps">
 <code class="descname">iter_compute_urlmaps</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_urlmaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_urlmaps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate URL maps from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_number</strong> (<em>str</em>) – number of the project to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_vpntunnels">
+<code class="descname">iter_compute_vpntunnels</code><span class="sig-paren">(</span><em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_compute_vpntunnels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_compute_vpntunnels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate VPN tunnels from GCP API.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2464,6 +3069,28 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_dataproc_clusters">
+<code class="descname">iter_dataproc_clusters</code><span class="sig-paren">(</span><em>project_id</em>, <em>region=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_dataproc_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_dataproc_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate Dataproc clusters from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>region</strong> (<em>str</em>) – The region to query. Not required when using Cloud
+Asset API.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</p>
 </td>
 </tr>
 </tbody>
@@ -2767,6 +3394,105 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeys">
+<code class="descname">iter_kms_cryptokeys</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_kms_cryptokeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Cryptokeys in a keyring from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeyversions">
+<code class="descname">iter_kms_cryptokeyversions</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_kms_cryptokeyversions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_cryptokeyversions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Cryptokey Versions from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>str</em>) – The KMS keyring to query, must be in the format
+projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+cryptoKeys/{CRYPTOKEY_NAME}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_keyrings">
+<code class="descname">iter_kms_keyrings</code><span class="sig-paren">(</span><em>project_id</em>, <em>location=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_kms_keyrings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_kms_keyrings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate KMS Keyrings in a project from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>location</strong> (<em>str</em>) – The location to query. Not required when
+using Cloud Asset API.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_subscriptions">
+<code class="descname">iter_pubsub_subscriptions</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_pubsub_subscriptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_subscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate PubSub subscriptions from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_topics">
+<code class="descname">iter_pubsub_topics</code><span class="sig-paren">(</span><em>project_id</em>, <em>project_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_pubsub_topics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_pubsub_topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate PubSub topics from GCP API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – id of the project to query.</li>
+<li><strong>project_number</strong> (<em>str</em>) – number of the project to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported" title="google.cloud.forseti.services.inventory.base.gcp.ResourceNotSupported"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ResourceNotSupported</span></code></a> – Raised for all calls using this class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_spanner_databases">
 <code class="descname">iter_spanner_databases</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#ApiClientImpl.iter_spanner_databases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.ApiClientImpl.iter_spanner_databases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate Spanner Databases from GCP API.</p>
@@ -2969,6 +3695,30 @@ projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}</li>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">function</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.gcp.is_api_disabled">
+<code class="descname">is_api_disabled</code><span class="sig-paren">(</span><em>config</em>, <em>api_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/gcp.html#is_api_disabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.gcp.is_api_disabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if api_name is disabled in the config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>config</strong> (<em>dict</em>) – GCP API client configuration.</li>
+<li><strong>api_name</strong> (<em>str</em>) – The name of the GCP api to check.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if the API is disabled in the configuration, else False.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
 </td>
 </tr>
 </tbody>

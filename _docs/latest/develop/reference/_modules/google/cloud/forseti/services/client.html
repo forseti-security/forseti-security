@@ -136,13 +136,16 @@ hide:
         <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="ScannerClient.run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ScannerClient.run">[docs]</a>    <span class="nd">@require_model</span>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scanner_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Runs the scanner</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scanner_name (String): name of the scanner specified to run</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            proto: the returned proto message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="n">scanner_pb2</span><span class="o">.</span><span class="n">RunRequest</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">scanner_pb2</span><span class="o">.</span><span class="n">RunRequest</span><span class="p">(</span><span class="n">scanner_name</span><span class="o">=</span><span class="n">scanner_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
                              <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
 
@@ -238,18 +241,20 @@ hide:
         <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">notifier_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
         <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
 
-<div class="viewcode-block" id="NotifierClient.run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.NotifierClient.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">):</span>
+<div class="viewcode-block" id="NotifierClient.run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.NotifierClient.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span> <span class="n">scanner_index_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Runs the notifier.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inventory_index_id (int64): Inventory Index Id.</span>
+<span class="sd">            scanner_index_id (int64): Scanner Index Id.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            proto: the returned proto message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">request</span> <span class="o">=</span> <span class="n">notifier_pb2</span><span class="o">.</span><span class="n">RunRequest</span><span class="p">(</span>
-            <span class="n">inventory_index_id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">)</span>
+            <span class="n">inventory_index_id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">,</span>
+            <span class="n">scanner_index_id</span><span class="o">=</span><span class="n">scanner_index_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
                              <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
 
@@ -478,10 +483,10 @@ hide:
         <span class="sd">&quot;&quot;&quot;List resources by name prefix.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            resource_name_prefix (str): the prefix of resource_name to query</span>
+<span class="sd">            resource_name_prefix (str): the prefix of resource_name to query.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of list_resources</span>
+<span class="sd">            object: generator of proto message of resources.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListResources</span><span class="p">(</span>
@@ -497,7 +502,7 @@ hide:
 <span class="sd">            member_name_prefix (str): the prefix of member_name to query</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of list_members</span>
+<span class="sd">            object: generator of proto message of members.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListGroupMembers</span><span class="p">(</span>
@@ -513,7 +518,7 @@ hide:
 <span class="sd">            role_name_prefix (str): the prefix of role_name to query</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of list_roles</span>
+<span class="sd">            object: generator of proto message of roles.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListRoles</span><span class="p">(</span>
@@ -572,7 +577,7 @@ hide:
 <span class="sd">                one of roles or permission_names should be not none</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of explain_denied</span>
+<span class="sd">            object: generator of proto message of bindingstrategies.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: Either roles or permission names must be set</span>
@@ -632,7 +637,7 @@ hide:
 <span class="sd">            expand_groups (bool): whether to expand group relations</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of query_access_by_resources</span>
+<span class="sd">            object: generator of proto message of accesses.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetAccessByResourcesRequest</span><span class="p">(</span>
@@ -654,7 +659,7 @@ hide:
 <span class="sd">            expand_resources (bool): whether to expand resource hierarchy</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            proto: the returned proto message of query_access_by_members</span>
+<span class="sd">            object: generator of proto message of accesses.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetAccessByMembersRequest</span><span class="p">(</span>

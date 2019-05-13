@@ -129,8 +129,50 @@ hide:
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
 <p>The Resource implementation for Bigquery DataSet.</p>
 <dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet._set_cache">
+<code class="descname">_set_cache</code><span class="sig-paren">(</span><em>field_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryDataSet._set_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet._set_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manually set a cache value if it isn’t already set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>field_name</strong> (<em>str</em>) – The name of the attribute to cache.</li>
+<li><strong>value</strong> (<em>str</em>) – The value to cache.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_dataset_policy">
 <code class="descname">get_dataset_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryDataSet.get_dataset_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_dataset_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryDataSet.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSet.get_iam_policy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function wrapper to perform caching.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -159,6 +201,20 @@ hide:
 <em class="property">class </em><code class="descname">BigqueryDataSetIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryDataSetIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryDataSetIterator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for Bigquery Dataset.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.BigqueryTable">
+<em class="property">class </em><code class="descname">BigqueryTable</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for bigquery table.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.BigqueryTableIterator">
+<em class="property">class </em><code class="descname">BigqueryTableIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#BigqueryTableIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.BigqueryTableIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for Bigquery Table.</p>
 </dd></dl>
 
 <dl class="class">
@@ -227,6 +283,73 @@ hide:
 <em class="property">class </em><code class="descname">CloudSqlInstanceIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CloudSqlInstanceIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CloudSqlInstanceIterator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for CloudSQL Instance.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator">
+<em class="property">class </em><code class="descname">CompositeRootIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CompositeRootIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.inventory.base.resources.ResourceIterator" title="google.cloud.forseti.services.inventory.base.resources.ResourceIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIterator</span></code></a></p>
+<p>The resource iterator for the fake composite root resource.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator.iter">
+<code class="descname">iter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CompositeRootIterator.iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootIterator.iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new resource child resource for each configured resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>Resource</em> – resource returned from client.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.CompositeRootResource">
+<em class="property">class </em><code class="descname">CompositeRootResource</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CompositeRootResource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Composite Root fake resource.</p>
+<dl class="classmethod">
+<dt id="google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>composite_root_resources</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CompositeRootResource.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new composite root.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>composite_root_resources</strong> (<em>list</em>) – The list of resources to crawl
+using a composite root.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A new instance of the CompositeRootResource</dt>
+<dd>class.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource" title="google.cloud.forseti.services.inventory.base.resources.CompositeRootResource">CompositeRootResource</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.key">
+<code class="descname">key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#CompositeRootResource.key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.CompositeRootResource.key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get key of this resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">key of this resource.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -386,8 +509,22 @@ hide:
 <dl class="class">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator">
 <em class="property">class </em><code class="descname">ComputeInstanceGroupIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeInstanceGroupIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.inventory.base.resources.ResourceIterator" title="google.cloud.forseti.services.inventory.base.resources.ResourceIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIterator</span></code></a></p>
 <p>The Resource iterator implementation for Compute InstanceGroup.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator.iter">
+<code class="descname">iter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeInstanceGroupIterator.iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeInstanceGroupIterator.iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute InstanceGroup iterator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>Resource</em> – Compute InstanceGroup resource.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -463,22 +600,22 @@ hide:
 <dl class="class">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator">
 <em class="property">class </em><code class="descname">ComputeProjectIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeProjectIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.inventory.base.resources.ResourceIterator" title="google.cloud.forseti.services.inventory.base.resources.ResourceIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIterator</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for Compute Project.</p>
-<dl class="method">
-<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator.iter">
-<code class="descname">iter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeProjectIterator.iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeProjectIterator.iter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resource iterator.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>Resource</em> – ComputeProject created</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeRouter">
+<em class="property">class </em><code class="descname">ComputeRouter</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeRouter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeRouter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for Compute Router.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeRouterIterator">
+<em class="property">class </em><code class="descname">ComputeRouterIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeRouterIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeRouterIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for Compute Router.</p>
 </dd></dl>
 
 <dl class="class">
@@ -608,6 +745,20 @@ hide:
 </dd></dl>
 
 <dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGateway">
+<em class="property">class </em><code class="descname">ComputeTargetVpnGateway</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeTargetVpnGateway"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGateway" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for Compute TargetVpnGateway.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGatewayIterator">
+<em class="property">class </em><code class="descname">ComputeTargetVpnGatewayIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeTargetVpnGatewayIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeTargetVpnGatewayIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for Compute TargetVpnGateway.</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ComputeUrlMap">
 <em class="property">class </em><code class="descname">ComputeUrlMap</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeUrlMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeUrlMap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
@@ -619,6 +770,58 @@ hide:
 <em class="property">class </em><code class="descname">ComputeUrlMapIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeUrlMapIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeUrlMapIterator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for Compute UrlMap.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnel">
+<em class="property">class </em><code class="descname">ComputeVpnTunnel</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeVpnTunnel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for Compute VpnTunnel.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnelIterator">
+<em class="property">class </em><code class="descname">ComputeVpnTunnelIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ComputeVpnTunnelIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ComputeVpnTunnelIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for Compute VpnTunnel.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.DataprocCluster">
+<em class="property">class </em><code class="descname">DataprocCluster</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#DataprocCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.DataprocCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for Dataproc Cluster.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.DataprocCluster.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#DataprocCluster.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.DataprocCluster.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.DataprocClusterIterator">
+<em class="property">class </em><code class="descname">DataprocClusterIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#DataprocClusterIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.DataprocClusterIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for Cloud Dataproc Cluster.</p>
 </dd></dl>
 
 <dl class="class">
@@ -831,22 +1034,8 @@ hide:
 <dl class="class">
 <dt id="google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator">
 <em class="property">class </em><code class="descname">IamServiceAccountIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#IamServiceAccountIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.inventory.base.resources.ResourceIterator" title="google.cloud.forseti.services.inventory.base.resources.ResourceIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIterator</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for IAM ServiceAccount.</p>
-<dl class="method">
-<dt id="google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator.iter">
-<code class="descname">iter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#IamServiceAccountIterator.iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountIterator.iter" title="Permalink to this definition">¶</a></dt>
-<dd><p>IAM ServiceAccount iterator.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>Resource</em> – IAM ServiceAccount resource.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -881,6 +1070,96 @@ hide:
 <em class="property">class </em><code class="descname">IamServiceAccountKeyIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#IamServiceAccountKeyIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.IamServiceAccountKeyIterator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
 <p>The Resource iterator implementation for IAM ServiceAccount Key.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey">
+<em class="property">class </em><code class="descname">KmsCryptoKey</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsCryptoKey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for KMS CryptoKey.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsCryptoKey.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKey.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyIterator">
+<em class="property">class </em><code class="descname">KmsCryptoKeyIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsCryptoKeyIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for KMS CryptoKey.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersion">
+<em class="property">class </em><code class="descname">KmsCryptoKeyVersion</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsCryptoKeyVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for KMS CryptoKeyVersion.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersionIterator">
+<em class="property">class </em><code class="descname">KmsCryptoKeyVersionIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsCryptoKeyVersionIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsCryptoKeyVersionIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for KMS CryptoKeyVersion.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsKeyRing">
+<em class="property">class </em><code class="descname">KmsKeyRing</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsKeyRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsKeyRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for KMS KeyRing.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsKeyRing.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsKeyRing.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsKeyRing.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.KmsKeyRingIterator">
+<em class="property">class </em><code class="descname">KmsKeyRingIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#KmsKeyRingIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.KmsKeyRingIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for KMS KeyRing.</p>
 </dd></dl>
 
 <dl class="class">
@@ -1002,6 +1281,82 @@ hide:
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubSubscription">
+<em class="property">class </em><code class="descname">PubsubSubscription</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubSubscription"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubSubscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for PubSub Subscription.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubSubscription.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubSubscription.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubSubscription.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubSubscriptionIterator">
+<em class="property">class </em><code class="descname">PubsubSubscriptionIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubSubscriptionIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubSubscriptionIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for PubSub Subscription.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubTopic">
+<em class="property">class </em><code class="descname">PubsubTopic</code><span class="sig-paren">(</span><em>data</em>, <em>root=False</em>, <em>contains=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubTopic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubTopic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceSubclass</span></code></p>
+<p>The Resource implementation for PubSub Topic.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubTopic.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubTopic.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubTopic.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.resources.PubsubTopicIterator">
+<em class="property">class </em><code class="descname">PubsubTopicIterator</code><span class="sig-paren">(</span><em>resource</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#PubsubTopicIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.PubsubTopicIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.resources.ResourceIteratorSubclass</span></code></p>
+<p>The Resource iterator implementation for PubSub Topic.</p>
 </dd></dl>
 
 <dl class="class">
@@ -1557,7 +1912,7 @@ of this resource.</li>
 <p>The Resource implementation for Folder.</p>
 <dl class="classmethod">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ResourceManagerFolder.fetch">
-<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerFolder.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerFolder.fetch" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em>, <em>root=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerFolder.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerFolder.fetch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Folder.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1566,6 +1921,7 @@ of this resource.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>client</strong> (<em>object</em>) – GCP API client.</li>
 <li><strong>resource_key</strong> (<em>str</em>) – resource key to fetch.</li>
+<li><strong>root</strong> (<em>bool</em>) – Set this as the root resource in the hierarchy.</li>
 </ul>
 </td>
 </tr>
@@ -1704,7 +2060,7 @@ of this resource.</li>
 <p>The Resource implementation for Organization.</p>
 <dl class="classmethod">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ResourceManagerOrganization.fetch">
-<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerOrganization.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerOrganization.fetch" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em>, <em>root=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerOrganization.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerOrganization.fetch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Organization.</p>
 <p>Saves ApiExecutionErrors as warnings.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1714,6 +2070,7 @@ of this resource.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>client</strong> (<em>object</em>) – GCP API client.</li>
 <li><strong>resource_key</strong> (<em>str</em>) – resource key to fetch.</li>
+<li><strong>root</strong> (<em>bool</em>) – Set this as the root resource in the hierarchy.</li>
 </ul>
 </td>
 </tr>
@@ -1830,22 +2187,6 @@ of this resource.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.cloudsql_api_enabled">
-<code class="descname">cloudsql_api_enabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerProject.cloudsql_api_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.cloudsql_api_enabled" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the cloudsql api is enabled.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">if this API service is enabled on the project.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.compute_api_enabled">
 <code class="descname">compute_api_enabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerProject.compute_api_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.compute_api_enabled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the compute api is enabled.</p>
@@ -1895,7 +2236,7 @@ of this resource.</li>
 
 <dl class="classmethod">
 <dt id="google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.fetch">
-<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerProject.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.fetch" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>client</em>, <em>resource_key</em>, <em>root=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#ResourceManagerProject.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.ResourceManagerProject.fetch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Project.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1904,6 +2245,7 @@ of this resource.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>client</strong> (<em>object</em>) – GCP API client.</li>
 <li><strong>resource_key</strong> (<em>str</em>) – resource key to fetch.</li>
+<li><strong>root</strong> (<em>bool</em>) – Set this as the root resource in the hierarchy.</li>
 </ul>
 </td>
 </tr>
@@ -2111,17 +2453,23 @@ of this resource.</li>
 <p>The Resource implementation for Storage Bucket.</p>
 <dl class="method">
 <dt id="google.cloud.forseti.services.inventory.base.resources.StorageBucket.get_gcs_policy">
-<code class="descname">get_gcs_policy</code><span class="sig-paren">(</span><em>client=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#StorageBucket.get_gcs_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.StorageBucket.get_gcs_policy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Full projection returns GCS policy with the resource.</p>
+<code class="descname">get_gcs_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#StorageBucket.get_gcs_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.StorageBucket.get_gcs_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform caching.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>object</em>) – GCP API client.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> – args to be passed to the function.</li>
+<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">bucket acl.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2183,30 +2531,6 @@ of this resource.</li>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="google.cloud.forseti.services.inventory.base.resources.StorageObject.get_iam_policy">
-<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#StorageObject.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.StorageObject.get_iam_policy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function wrapper to perform caching.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>*args</strong> – args to be passed to the function.</li>
-<li><strong>**kwargs</strong> – kwargs to be passed to the function.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -2262,7 +2586,7 @@ resource factory.</li>
 
 <dl class="function">
 <dt id="google.cloud.forseti.services.inventory.base.resources.from_root_id">
-<code class="descname">from_root_id</code><span class="sig-paren">(</span><em>client</em>, <em>root_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#from_root_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.from_root_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">from_root_id</code><span class="sig-paren">(</span><em>client</em>, <em>root_id</em>, <em>root=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#from_root_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.from_root_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the crawling from root if the root type is supported.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2271,6 +2595,7 @@ resource factory.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>client</strong> (<em>object</em>) – GCP API client.</li>
 <li><strong>root_id</strong> (<em>str</em>) – id of the root.</li>
+<li><strong>root</strong> (<em>bool</em>) – Set this as the root resource in the hierarchy.</li>
 </ul>
 </td>
 </tr>
@@ -2316,7 +2641,7 @@ the value of the key field.</li>
 
 <dl class="function">
 <dt id="google.cloud.forseti.services.inventory.base.resources.resource_iter_class_factory">
-<code class="descname">resource_iter_class_factory</code><span class="sig-paren">(</span><em>api_method_name</em>, <em>resource_name</em>, <em>api_method_arg_key=None</em>, <em>resource_validation_method_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#resource_iter_class_factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.resource_iter_class_factory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resource_iter_class_factory</code><span class="sig-paren">(</span><em>api_method_name</em>, <em>resource_name</em>, <em>api_method_arg_key=None</em>, <em>additional_arg_keys=None</em>, <em>resource_validation_method_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#resource_iter_class_factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.resource_iter_class_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factory function to generate ResourceIterator subclasses.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2329,6 +2654,8 @@ iterate resources.</li>
 resource factory.</li>
 <li><strong>api_method_arg_key</strong> (<em>str</em>) – An optional key from the resource dict to
 lookup for the value to send to the api method.</li>
+<li><strong>additional_arg_keys</strong> (<em>list</em>) – An optional list of additional keys from the
+resource dict to lookup for the values to send to the api method.</li>
 <li><strong>resource_validation_method_name</strong> (<em>str</em>) – An optional method name to call
 to validate that the resource supports iterating resources of this
 type.</li>
@@ -2341,6 +2668,24 @@ type.</li>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">class</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.inventory.base.resources.size_t_hash">
+<code class="descname">size_t_hash</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/resources.html#size_t_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.resources.size_t_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash the key using size_t.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>str</em>) – The key to hash.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The hashed key.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
 </tr>
 </tbody>
 </table>

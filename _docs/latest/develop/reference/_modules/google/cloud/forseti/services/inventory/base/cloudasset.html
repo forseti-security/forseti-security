@@ -40,6 +40,63 @@ hide:
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">CONTENT_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RESOURCE&#39;</span><span class="p">,</span> <span class="s1">&#39;IAM_POLICY&#39;</span><span class="p">]</span>
 
+<span class="c1"># Any asset type referenced in cai_gcp_client.py needs to be added here.</span>
+<span class="n">DEFAULT_ASSET_TYPES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;google.appengine.Application&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.appengine.Service&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.appengine.Version&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.bigquery.Dataset&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.billing.BillingAccount&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.dataproc.Cluster&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.dns.ManagedZone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.dns.Policy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.kms.CryptoKey&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.kms.CryptoKeyVersion&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.kms.KeyRing&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.resourcemanager.Folder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.resourcemanager.Organization&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.resourcemanager.Project&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.sql.Instance&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.cloud.storage.Bucket&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Autoscaler&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.BackendBucket&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.BackendService&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Disk&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Firewall&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.ForwardingRule&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.HealthCheck&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.HttpHealthCheck&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.HttpsHealthCheck&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Image&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Instance&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.InstanceGroup&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.InstanceGroupManager&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.InstanceTemplate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.License&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Network&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Project&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Router&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Snapshot&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.SslCertificate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.Subnetwork&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetHttpProxy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetHttpsProxy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetInstance&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetPool&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetSslProxy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetTcpProxy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.TargetVpnGateway&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.UrlMap&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.compute.VpnTunnel&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.container.Cluster&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.iam.Role&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.iam.ServiceAccount&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.pubsub.Subscription&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.pubsub.Topic&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.spanner.Database&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;google.spanner.Instance&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
 
 <div class="viewcode-block" id="load_cloudasset_data"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cloudasset.html#google.cloud.forseti.services.inventory.base.cloudasset.load_cloudasset_data">[docs]</a><span class="k">def</span> <span class="nf">load_cloudasset_data</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Export asset data from Cloud Asset API and load into storage.</span>
@@ -59,15 +116,24 @@ hide:
         <span class="n">config</span><span class="o">.</span><span class="n">get_api_quota_configs</span><span class="p">())</span>
     <span class="n">imported_assets</span> <span class="o">=</span> <span class="mi">0</span>
 
+    <span class="n">root_resources</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">use_composite_root</span><span class="p">():</span>
+        <span class="n">root_resources</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_composite_root_resources</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">root_resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_root_resource_id</span><span class="p">())</span>
+
     <span class="k">with</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
         <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">content_type</span> <span class="ow">in</span> <span class="n">CONTENT_TYPES</span><span class="p">:</span>
-            <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_export_assets</span><span class="p">,</span>
-                                           <span class="n">cloudasset_client</span><span class="p">,</span>
-                                           <span class="n">config</span><span class="p">,</span>
-                                           <span class="n">content_type</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">root_id</span> <span class="ow">in</span> <span class="n">root_resources</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">content_type</span> <span class="ow">in</span> <span class="n">CONTENT_TYPES</span><span class="p">:</span>
+                <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_export_assets</span><span class="p">,</span>
+                                               <span class="n">cloudasset_client</span><span class="p">,</span>
+                                               <span class="n">config</span><span class="p">,</span>
+                                               <span class="n">root_id</span><span class="p">,</span>
+                                               <span class="n">content_type</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+            <span class="n">temporary_file</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">temporary_file</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">temporary_file</span><span class="p">:</span>
@@ -86,19 +152,24 @@ hide:
     <span class="k">return</span> <span class="n">imported_assets</span></div>
 
 
-<div class="viewcode-block" id="_export_assets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cloudasset.html#google.cloud.forseti.services.inventory.base.cloudasset._export_assets">[docs]</a><span class="k">def</span> <span class="nf">_export_assets</span><span class="p">(</span><span class="n">cloudasset_client</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">content_type</span><span class="p">):</span>
+<div class="viewcode-block" id="_export_assets"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.cloudasset.html#google.cloud.forseti.services.inventory.base.cloudasset._export_assets">[docs]</a><span class="k">def</span> <span class="nf">_export_assets</span><span class="p">(</span><span class="n">cloudasset_client</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">root_id</span><span class="p">,</span> <span class="n">content_type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Worker function for exporting assets and downloading dump from GCS.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        cloudasset_client (CloudAssetClient): CloudAsset API client interface.</span>
 <span class="sd">        config (object): Inventory configuration on server.</span>
+<span class="sd">        root_id (str): The name of the parent resource to export assests under.</span>
 <span class="sd">        content_type (ContentTypes): The content type to export.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The path to the temporary file downloaded from GCS or None on</span>
 <span class="sd">            error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">root_id</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_root_resource_id</span><span class="p">()</span>
+    <span class="n">asset_types</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_cai_asset_types</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">asset_types</span><span class="p">:</span>
+        <span class="n">asset_types</span> <span class="o">=</span> <span class="n">DEFAULT_ASSET_TYPES</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_cai_timeout</span><span class="p">()</span>
+
     <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
     <span class="n">export_path</span> <span class="o">=</span> <span class="n">_get_gcs_path</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_cai_gcs_path</span><span class="p">(),</span>
                                 <span class="n">content_type</span><span class="p">,</span>
@@ -108,11 +179,16 @@ hide:
     <span class="k">try</span><span class="p">:</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Starting Cloud Asset export for </span><span class="si">%s</span><span class="s1"> under </span><span class="si">%s</span><span class="s1"> to GCS object &#39;</span>
                     <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">root_id</span><span class="p">,</span> <span class="n">export_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">asset_types</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Limiting export to the following asset types: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">asset_types</span><span class="p">)</span>
+
         <span class="n">results</span> <span class="o">=</span> <span class="n">cloudasset_client</span><span class="o">.</span><span class="n">export_assets</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span>
                                                   <span class="n">export_path</span><span class="p">,</span>
                                                   <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+                                                  <span class="n">asset_types</span><span class="o">=</span><span class="n">asset_types</span><span class="p">,</span>
                                                   <span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                                  <span class="n">timeout</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+                                                  <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Cloud Asset export for </span><span class="si">%s</span><span class="s1"> under </span><span class="si">%s</span><span class="s1"> to GCS &#39;</span>
                      <span class="s1">&#39;object </span><span class="si">%s</span><span class="s1"> completed, result: </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span>
                      <span class="n">content_type</span><span class="p">,</span> <span class="n">root_id</span><span class="p">,</span> <span class="n">export_path</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
@@ -121,6 +197,9 @@ hide:
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">OperationTimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Timeout getting cloud asset data: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Invalid root resource id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="s1">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>

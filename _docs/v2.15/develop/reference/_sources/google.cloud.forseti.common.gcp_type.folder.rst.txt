@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.folder module
+===================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.folder
+    :members:
+    :undoc-members:
+    :show-inheritance:

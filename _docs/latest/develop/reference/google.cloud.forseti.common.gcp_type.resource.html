@@ -120,7 +120,7 @@ need to separate the classes depending on implementation.</p>
 
 <dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache_version">
-<code class="descname">_abc_negative_cache_version</code><em class="property"> = 178</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 199</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -268,11 +268,6 @@ need to separate the classes depending on implementation.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.BIGQUERY">
-<code class="descname">BIGQUERY</code><em class="property"> = 'dataset'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.BIGQUERY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.BILLING_ACCOUNT">
 <code class="descname">BILLING_ACCOUNT</code><em class="property"> = 'billing_account'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.BILLING_ACCOUNT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -283,8 +278,18 @@ need to separate the classes depending on implementation.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUDSQL">
-<code class="descname">CLOUDSQL</code><em class="property"> = 'cloudsqlinstance'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUDSQL" title="Permalink to this definition">¶</a></dt>
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUD_SQL_INSTANCE">
+<code class="descname">CLOUD_SQL_INSTANCE</code><em class="property"> = 'cloudsqlinstance'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUD_SQL_INSTANCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.CRYPTO_KEY">
+<code class="descname">CRYPTO_KEY</code><em class="property"> = 'kms_cryptokey'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.CRYPTO_KEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.DATASET">
+<code class="descname">DATASET</code><em class="property"> = 'dataset'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.DATASET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -328,6 +333,11 @@ need to separate the classes depending on implementation.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.KEY_RING">
+<code class="descname">KEY_RING</code><em class="property"> = 'kms_keyring'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.KEY_RING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.KE_CLUSTER">
 <code class="descname">KE_CLUSTER</code><em class="property"> = 'kubernetes_cluster'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.KE_CLUSTER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -363,8 +373,13 @@ need to separate the classes depending on implementation.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.TABLE">
+<code class="descname">TABLE</code><em class="property"> = 'bigquery_table'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.TABLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.resource_types">
-<code class="descname">resource_types</code><em class="property"> = frozenset(['forwardingrule', 'lien', 'bucket', 'project', 'sink', 'billing_account', 'organization', 'folder', 'gsuite_group'])</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.resource_types" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resource_types</code><em class="property"> = frozenset(['forwardingrule', 'kms_keyring', 'lien', 'bucket', 'project', 'sink', 'billing_account', 'organization', 'folder', 'kms_cryptokey', 'gsuite_group'])</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.resource_types" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">

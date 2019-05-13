@@ -87,13 +87,18 @@ hide:
     <span class="k">return</span> <span class="n">violations</span></div>
 
 
-<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.notifier.notifier.html#google.cloud.forseti.notifier.notifier.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">inventory_index_id</span><span class="p">,</span> <span class="n">progress_queue</span><span class="p">,</span> <span class="n">service_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="c1"># pylint: disable=too-many-branches,too-many-statements</span>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.notifier.notifier.html#google.cloud.forseti.notifier.notifier.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">inventory_index_id</span><span class="p">,</span>
+        <span class="n">scanner_index_id</span><span class="p">,</span>
+        <span class="n">progress_queue</span><span class="p">,</span>
+        <span class="n">service_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run the notifier.</span>
 
 <span class="sd">    Entry point when the notifier is run as a library.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inventory_index_id (int64): Inventory index id.</span>
+<span class="sd">        scanner_index_id (int64): Scanner index id.</span>
 <span class="sd">        progress_queue (Queue): The progress queue.</span>
 <span class="sd">        service_config (ServiceConfig): Forseti 2.0 service configs.</span>
 <span class="sd">    Returns:</span>
@@ -103,13 +108,19 @@ hide:
     <span class="n">global_configs</span> <span class="o">=</span> <span class="n">service_config</span><span class="o">.</span><span class="n">get_global_config</span><span class="p">()</span>
     <span class="n">notifier_configs</span> <span class="o">=</span> <span class="n">service_config</span><span class="o">.</span><span class="n">get_notifier_config</span><span class="p">()</span>
 
-    <span class="n">violations</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">with</span> <span class="n">service_config</span><span class="o">.</span><span class="n">scoped_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">inventory_index_id</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scanner_index_id</span><span class="p">:</span>
             <span class="n">inventory_index_id</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">DataAccess</span><span class="o">.</span><span class="n">get_latest_inventory_index_id</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
-        <span class="n">scanner_index_id</span> <span class="o">=</span> <span class="n">scanner_dao</span><span class="o">.</span><span class="n">get_latest_scanner_index_id</span><span class="p">(</span>
-            <span class="n">session</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">)</span>
+                <span class="n">DataAccess</span><span class="o">.</span><span class="n">get_inventory_index_id_by_scanner_index_id</span><span class="p">(</span>
+                    <span class="n">session</span><span class="p">,</span>
+                    <span class="n">scanner_index_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">inventory_index_id</span><span class="p">:</span>
+                <span class="n">inventory_index_id</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">DataAccess</span><span class="o">.</span><span class="n">get_latest_inventory_index_id</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+            <span class="n">scanner_index_id</span> <span class="o">=</span> <span class="n">scanner_dao</span><span class="o">.</span><span class="n">get_latest_scanner_index_id</span><span class="p">(</span>
+                <span class="n">session</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">scanner_index_id</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s1">&#39;No success or partial success scanner index found for &#39;</span>
@@ -155,7 +166,7 @@ hide:
                     <span class="n">notifiers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chosen_pipeline</span><span class="p">(</span>
                         <span class="n">resource</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">],</span> <span class="n">inventory_index_id</span><span class="p">,</span>
                         <span class="n">violation_map</span><span class="p">[</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">]],</span> <span class="n">global_configs</span><span class="p">,</span>
-                        <span class="n">notifier_configs</span><span class="p">,</span> <span class="n">notifier</span><span class="p">[</span><span class="s1">&#39;configuration&#39;</span><span class="p">]))</span>
+                        <span class="n">notifier_configs</span><span class="p">,</span> <span class="n">notifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;configuration&#39;</span><span class="p">)))</span>
 
             <span class="c1"># Run the notifiers.</span>
             <span class="k">for</span> <span class="n">notifier</span> <span class="ow">in</span> <span class="n">notifiers</span><span class="p">:</span>
@@ -165,12 +176,26 @@ hide:
             <span class="n">violation_configs</span> <span class="o">=</span> <span class="n">notifier_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">violation_configs</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">):</span>
-                    <span class="n">gcs_path</span> <span class="o">=</span> <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gcs_path&#39;</span><span class="p">)</span>
-                    <span class="n">mode</span> <span class="o">=</span> <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
-                    <span class="n">organization_id</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;organization_id&#39;</span><span class="p">))</span>
-                    <span class="p">(</span><span class="n">cscc_notifier</span><span class="o">.</span><span class="n">CsccNotifier</span><span class="p">(</span><span class="n">inventory_index_id</span><span class="p">)</span>
-                     <span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">violations_as_dict</span><span class="p">,</span> <span class="n">gcs_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">organization_id</span><span class="p">))</span>
+                    <span class="n">source_id</span> <span class="o">=</span> <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_id&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">source_id</span><span class="p">:</span>
+                        <span class="c1"># beta mode</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s1">&#39;Running CSCC notifier with beta API. source_id: &#39;</span>
+                            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+                        <span class="p">(</span><span class="n">cscc_notifier</span><span class="o">.</span><span class="n">CsccNotifier</span><span class="p">(</span><span class="n">inventory_index_id</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">violations_as_dict</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># alpha mode</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Running CSCC notifier with alpha API.&#39;</span><span class="p">)</span>
+                        <span class="n">gcs_path</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gcs_path&#39;</span><span class="p">))</span>
+                        <span class="n">mode</span> <span class="o">=</span> <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+                        <span class="n">organization_id</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">violation_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cscc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                                <span class="s1">&#39;organization_id&#39;</span><span class="p">))</span>
+                        <span class="p">(</span><span class="n">cscc_notifier</span><span class="o">.</span><span class="n">CsccNotifier</span><span class="p">(</span><span class="n">inventory_index_id</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">violations_as_dict</span><span class="p">,</span> <span class="n">gcs_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span>
+                              <span class="n">organization_id</span><span class="p">))</span>
 
         <span class="n">InventorySummary</span><span class="p">(</span><span class="n">service_config</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
@@ -179,4 +204,5 @@ hide:
         <span class="n">progress_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span></div>
+    <span class="c1"># pylint: enable=too-many-branches,too-many-statements</span>
 </pre></div>

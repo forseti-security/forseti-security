@@ -1,0 +1,294 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.notifier.notifiers.cscc_notifier"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.notifier.notifiers.cscc_notifier</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Upload violations to GCS bucket as Findings.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">securitycenter</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">storage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">parser</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">string_formats</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CsccNotifier"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier">[docs]</a><span class="k">class</span> <span class="nc">CsccNotifier</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Send violations to CSCC via API or via GCS bucket.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inv_index_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;`Findingsnotifier` initializer.</span>
+
+<span class="sd">        # TODO: Find out why the InventoryConfig is empty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inv_index_id (str): inventory index ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inv_index_id</span> <span class="o">=</span> <span class="n">inv_index_id</span>
+
+<div class="viewcode-block" id="CsccNotifier._transform_for_gcs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._transform_for_gcs">[docs]</a>    <span class="k">def</span> <span class="nf">_transform_for_gcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">,</span> <span class="n">gcs_upload_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transform forseti violations to GCS findings format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (dict): Violations to be uploaded as findings.</span>
+<span class="sd">            gcs_upload_path (str): bucket and filename where the violations</span>
+<span class="sd">                will be outputted on GCS</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: violations in findings format; each violation is a dict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">findings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+            <span class="n">finding</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;finding_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_hash&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;finding_summary&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_name&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;finding_source_id&#39;</span><span class="p">:</span> <span class="s1">&#39;FORSETI&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;finding_category&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_type&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;finding_asset_ids&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;full_name&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;finding_time_event&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at_datetime&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;finding_callback_url&#39;</span><span class="p">:</span> <span class="n">gcs_upload_path</span><span class="p">,</span>
+                <span class="s1">&#39;finding_properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;db_source&#39;</span><span class="p">:</span> <span class="s1">&#39;table:</span><span class="si">{}</span><span class="s1">/id:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s1">&#39;violations&#39;</span><span class="p">,</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)),</span>
+                    <span class="s1">&#39;inventory_index_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_index_id</span><span class="p">,</span>
+                    <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_data&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_id&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_type&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_index&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;scanner_index_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scanner_index_id&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_data&#39;</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="n">findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">finding</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">findings</span></div>
+
+<div class="viewcode-block" id="CsccNotifier._get_output_filename"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._get_output_filename">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_output_filename</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Create the output filename.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The output filename for the violations json.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">now_utc</span> <span class="o">=</span> <span class="n">date_time</span><span class="o">.</span><span class="n">get_utc_now_datetime</span><span class="p">()</span>
+        <span class="n">output_timestamp</span> <span class="o">=</span> <span class="n">now_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+            <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_TIMEZONE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string_formats</span><span class="o">.</span><span class="n">CSCC_FINDINGS_FILENAME</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">output_timestamp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CsccNotifier._send_findings_to_gcs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._send_findings_to_gcs">[docs]</a>    <span class="k">def</span> <span class="nf">_send_findings_to_gcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">,</span> <span class="n">gcs_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send violations to CSCC via upload to GCS (legacy mode).</span>
+<span class="sd">        Args:</span>
+<span class="sd">            violations (dict): Violations to be uploaded as findings.</span>
+<span class="sd">            gcs_path (str): The GCS bucket to upload the findings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Legacy mode detected - writing findings to GCS.&#39;</span><span class="p">)</span>
+
+        <span class="n">gcs_upload_path</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gcs_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_output_filename</span><span class="p">())</span>
+
+        <span class="n">findings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_for_gcs</span><span class="p">(</span><span class="n">violations</span><span class="p">,</span> <span class="n">gcs_upload_path</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_violations</span><span class="p">:</span>
+            <span class="n">tmp_violations</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span><span class="n">findings</span><span class="p">))</span>
+            <span class="n">tmp_violations</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">gcs_upload_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+                <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">StorageClient</span><span class="p">()</span>
+                <span class="n">storage_client</span><span class="o">.</span><span class="n">put_text_file</span><span class="p">(</span>
+                    <span class="n">tmp_violations</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">gcs_upload_path</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="CsccNotifier._transform_for_api"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._transform_for_api">[docs]</a>    <span class="k">def</span> <span class="nf">_transform_for_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transform forseti violations to findings for CSCC API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (dict): Violations to be sent to CSCC as findings.</span>
+<span class="sd">            source_id (str): Unique ID assigned by CSCC, to the organization</span>
+<span class="sd">                that the violations are originating from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: violations in findings format; each violation is a dict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">findings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Transforming findings. source_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">source_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+            <span class="c1"># CSCC can&#39;t accept the full hash, so this must be shortened.</span>
+            <span class="n">finding_id</span> <span class="o">=</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_hash&#39;</span><span class="p">)[:</span><span class="mi">32</span><span class="p">]</span>
+            <span class="n">finding</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/findings/</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">source_id</span><span class="p">,</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_hash&#39;</span><span class="p">)[:</span><span class="mi">32</span><span class="p">]),</span>
+                <span class="s1">&#39;parent&#39;</span><span class="p">:</span> <span class="n">source_id</span><span class="p">,</span>
+                <span class="s1">&#39;resource_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;full_name&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="s1">&#39;ACTIVE&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;category&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_type&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;event_time&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at_datetime&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;source_properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;FORSETI&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;db_source&#39;</span><span class="p">:</span> <span class="s1">&#39;table:</span><span class="si">{}</span><span class="s1">/id:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s1">&#39;violations&#39;</span><span class="p">,</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)),</span>
+                    <span class="s1">&#39;inventory_index_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_index_id</span><span class="p">,</span>
+                    <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_data&#39;</span><span class="p">),</span>
+                                   <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+                    <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_id&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_type&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_index&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rule_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_name&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;scanner_index_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scanner_index_id&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">violation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_data&#39;</span><span class="p">),</span>
+                                   <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+            <span class="n">findings</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">finding_id</span><span class="p">,</span> <span class="n">finding</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">findings</span></div>
+
+<div class="viewcode-block" id="CsccNotifier.find_inactive_findings"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.find_inactive_findings">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">find_inactive_findings</span><span class="p">(</span><span class="n">new_findings</span><span class="p">,</span> <span class="n">findings_in_cscc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds the findings that does not correspond to the latest scanner run</span>
+<span class="sd">           and updates it&#39;s state to inactive.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_findings (list): Latest violations that are transformed to</span>
+<span class="sd">                findings.</span>
+<span class="sd">            findings_in_cscc (list): Findings pulled from CSCC that</span>
+<span class="sd">                corresponds to the previous scanner run.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Findings whose state has been marked as &#39;INACTIVE&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">inactive_findings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_findings_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">finding_list</span> <span class="ow">in</span> <span class="n">new_findings</span><span class="p">:</span>
+            <span class="n">finding_id</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">finding</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">add_to_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">finding_id</span><span class="p">:</span> <span class="n">finding</span><span class="p">}</span>
+            <span class="n">new_findings_map</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">add_to_dict</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">finding_list</span> <span class="ow">in</span> <span class="n">findings_in_cscc</span><span class="p">:</span>
+            <span class="n">finding_id</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">to_be_updated_finding</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">finding_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_findings_map</span><span class="p">:</span>
+                <span class="n">to_be_updated_finding</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;INACTIVE&#39;</span>
+                <span class="n">current_time</span> <span class="o">=</span> <span class="n">date_time</span><span class="o">.</span><span class="n">get_utc_now_datetime</span><span class="p">()</span>
+                <span class="n">actual_time</span> <span class="o">=</span> <span class="n">current_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_TIMEZONE</span><span class="p">)</span>
+                <span class="n">to_be_updated_finding</span><span class="p">[</span><span class="s1">&#39;event_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actual_time</span>
+                <span class="n">inactive_findings</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">finding_id</span><span class="p">,</span> <span class="n">to_be_updated_finding</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">inactive_findings</span></div>
+
+    <span class="c1"># pylint: disable=too-many-locals</span>
+<div class="viewcode-block" id="CsccNotifier._send_findings_to_cscc"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier._send_findings_to_cscc">[docs]</a>    <span class="k">def</span> <span class="nf">_send_findings_to_cscc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send violations to CSCC directly via the CSCC API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (dict): Violations to be uploaded as findings.</span>
+<span class="sd">            source_id (str): Unique ID assigned by CSCC, to the organization</span>
+<span class="sd">                that the violations are originating from.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">source_id</span><span class="p">:</span>
+            <span class="n">formatted_cscc_findings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Sending findings to CSCC. source_id: &#39;</span>
+                         <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+            <span class="n">new_findings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_for_api</span><span class="p">(</span><span class="n">violations</span><span class="p">,</span>
+                                                   <span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">)</span>
+
+            <span class="n">client</span> <span class="o">=</span> <span class="n">securitycenter</span><span class="o">.</span><span class="n">SecurityCenterClient</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s1">&#39;v1&#39;</span><span class="p">)</span>
+
+            <span class="n">paged_findings_in_cscc</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">list_findings</span><span class="p">(</span><span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">)</span>
+
+            <span class="c1"># No need to use the next page token, as the results here will</span>
+            <span class="c1"># return all the pages.</span>
+            <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">paged_findings_in_cscc</span><span class="p">:</span>
+                <span class="n">formated_findings_in_page</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">page</span><span class="p">)))</span>
+                <span class="n">list_findings_result_paged</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">formated_findings_in_page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;listFindingsResult&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">list_findings_result_paged</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">findings_in_page</span> <span class="ow">in</span> <span class="n">list_findings_result_paged</span><span class="p">:</span>
+                    <span class="n">finding_data</span> <span class="o">=</span> <span class="n">findings_in_page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;finding&#39;</span><span class="p">)</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">finding_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                    <span class="n">finding_id</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">32</span><span class="p">:]</span>
+                    <span class="n">formatted_cscc_findings</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">finding_id</span><span class="p">,</span> <span class="n">finding_data</span><span class="p">])</span>
+
+            <span class="n">inactive_findings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_inactive_findings</span><span class="p">(</span>
+                <span class="n">new_findings</span><span class="p">,</span>
+                <span class="n">formatted_cscc_findings</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">finding_list</span> <span class="ow">in</span> <span class="n">new_findings</span><span class="p">:</span>
+                <span class="n">finding_id</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">finding</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Creating finding CSCC:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">finding</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">client</span><span class="o">.</span><span class="n">create_finding</span><span class="p">(</span><span class="n">finding</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">,</span>
+                                          <span class="n">finding_id</span><span class="o">=</span><span class="n">finding_id</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Successfully created finding in CSCC:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                                 <span class="n">finding</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Encountered CSCC API error.&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+            <span class="k">for</span> <span class="n">finding_list</span> <span class="ow">in</span> <span class="n">inactive_findings</span><span class="p">:</span>
+                <span class="n">finding_id</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">finding</span> <span class="o">=</span> <span class="n">finding_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Updating finding CSCC:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">finding</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">client</span><span class="o">.</span><span class="n">update_finding</span><span class="p">(</span><span class="n">finding</span><span class="p">,</span>
+                                          <span class="n">finding_id</span><span class="p">,</span>
+                                          <span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Successfully updated finding in CSCC:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                                 <span class="n">finding</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Encountered CSCC API error.&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+            <span class="k">return</span></div>
+
+<div class="viewcode-block" id="CsccNotifier.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.cscc_notifier.html#google.cloud.forseti.notifier.notifiers.cscc_notifier.CsccNotifier.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate the temporary json file and upload to GCS.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (dict): Violations to be uploaded as findings.</span>
+<span class="sd">            source_id (str): Unique ID assigned by CSCC, to the organization</span>
+<span class="sd">                that the violations are originating from.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running Cloud Security Command Center notification &#39;</span>
+                    <span class="s1">&#39;module.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># At this point, cscc notifier is already determined to be enabled.</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Running CSCC. source_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_findings_to_cscc</span><span class="p">(</span><span class="n">violations</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="n">source_id</span><span class="p">)</span>
+        <span class="k">return</span></div></div>
+</pre></div>

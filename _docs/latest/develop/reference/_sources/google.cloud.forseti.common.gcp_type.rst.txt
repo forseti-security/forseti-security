@@ -18,6 +18,9 @@ Submodules
    google.cloud.forseti.common.gcp_type.bucket
    google.cloud.forseti.common.gcp_type.bucket_access_controls
    google.cloud.forseti.common.gcp_type.cloudsql_access_controls
+   google.cloud.forseti.common.gcp_type.cloudsql_instance
+   google.cloud.forseti.common.gcp_type.crypto_key
+   google.cloud.forseti.common.gcp_type.dataset
    google.cloud.forseti.common.gcp_type.errors
    google.cloud.forseti.common.gcp_type.firewall_rule
    google.cloud.forseti.common.gcp_type.folder
@@ -29,6 +32,7 @@ Submodules
    google.cloud.forseti.common.gcp_type.instance_template
    google.cloud.forseti.common.gcp_type.ke_cluster
    google.cloud.forseti.common.gcp_type.key
+   google.cloud.forseti.common.gcp_type.key_ring
    google.cloud.forseti.common.gcp_type.lien
    google.cloud.forseti.common.gcp_type.log_sink
    google.cloud.forseti.common.gcp_type.network
@@ -37,4 +41,5 @@ Submodules
    google.cloud.forseti.common.gcp_type.resource
    google.cloud.forseti.common.gcp_type.resource_util
    google.cloud.forseti.common.gcp_type.service_account
+   google.cloud.forseti.common.gcp_type.table
 

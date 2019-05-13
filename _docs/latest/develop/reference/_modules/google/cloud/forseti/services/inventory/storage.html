@@ -49,20 +49,19 @@ hide:
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">aliased</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">mapper</span>
 
-<span class="kn">from</span> <span class="nn">google.cloud.asset_v1beta1.proto</span> <span class="k">import</span> <span class="n">assets_pb2</span>
-<span class="kn">from</span> <span class="nn">google.protobuf</span> <span class="k">import</span> <span class="n">json_format</span>
-
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util.index_state</span> <span class="k">import</span> <span class="n">IndexState</span>
 <span class="c1"># pylint: disable=line-too-long</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.base.storage</span> <span class="k">import</span> <span class="n">Storage</span> <span class="k">as</span> <span class="n">BaseStorage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.scanner.dao</span> <span class="k">import</span> <span class="n">ScannerIndex</span>
 <span class="c1"># pylint: enable=line-too-long</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">BASE</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
 <span class="n">CURRENT_SCHEMA</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">PER_YIELD</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">MAX_ALLOWED_PACKET</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1"># 32 Mb default mysql max packet size</span>
 
 
 <div class="viewcode-block" id="Categories"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.Categories">[docs]</a><span class="k">class</span> <span class="nc">Categories</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
@@ -191,10 +190,19 @@ hide:
             <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">json_extract</span><span class="p">(</span><span class="n">resource_data</span><span class="p">,</span> <span class="s1">&#39;$.lifecycleState&#39;</span><span class="p">))</span>
             <span class="o">.</span><span class="n">all</span><span class="p">())</span>
 
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Lifecycle details for </span><span class="si">%s</span><span class="s1">:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">resource_type_input</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+
+        <span class="c1"># Lifecycle can be None if Forseti is installed to a non-org level.</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">details</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
             <span class="n">new_key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
             <span class="n">new_key</span> <span class="o">=</span> <span class="s1">&#39; - &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">resource_type_input</span><span class="p">,</span> <span class="n">new_key</span><span class="p">])</span>
             <span class="n">details</span><span class="p">[</span><span class="n">new_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">details</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">details</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">details</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;ACTIVE&#39;</span> <span class="ow">in</span> <span class="n">details</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
@@ -520,6 +528,12 @@ hide:
     <span class="n">asset_type</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">asset_data</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="c1"># Assets with no parent resource.</span>
+    <span class="n">UNPARENTED_ASSETS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
+        <span class="s1">&#39;google.cloud.resourcemanager.Organization&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;google.cloud.billing.BillingAccount&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize database column.</span>
 
@@ -552,7 +566,7 @@ hide:
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s1">&#39;cai_temporary_store&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">:</span>
             <span class="n">my_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s1">&#39;cai_temporary_store&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
-                             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="n">collation</span><span class="o">=</span><span class="n">collation</span><span class="p">),</span>
+                             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">collation</span><span class="o">=</span><span class="n">collation</span><span class="p">),</span>
                                     <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
                              <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;parent_name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                              <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;content_type&#39;</span><span class="p">,</span> <span class="n">Enum</span><span class="p">(</span><span class="n">ContentTypes</span><span class="p">),</span>
@@ -569,25 +583,6 @@ hide:
 
             <span class="n">mapper</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">my_table</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CaiTemporaryStore.get_schema_update_actions"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.get_schema_update_actions">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_schema_update_actions</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot;Maintain all the schema changes for this table.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            list: A list of Action.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1">#  Format of the columns_to_alter dict: {old_column: new_column}</span>
-        <span class="n">columns_to_alter</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;asset_data&#39;</span><span class="p">,</span>
-                   <span class="n">LargeBinary</span><span class="p">(),</span>
-                   <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;asset_data&#39;</span><span class="p">,</span>
-                                           <span class="n">LargeBinary</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
-                                           <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)}</span>
-
-        <span class="n">schema_update_actions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ALTER&#39;</span><span class="p">:</span> <span class="n">columns_to_alter</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">schema_update_actions</span></div>
-
 <div class="viewcode-block" id="CaiTemporaryStore.extract_asset_data"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.extract_asset_data">[docs]</a>    <span class="k">def</span> <span class="nf">extract_asset_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_type</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Extracts the data from the asset protobuf based on the content type.</span>
 
@@ -597,16 +592,13 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: The dict representation of the asset data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># The no-member is a false positive for the dynamic protobuf class.</span>
-        <span class="c1"># pylint: disable=no-member</span>
-        <span class="n">asset_pb</span> <span class="o">=</span> <span class="n">assets_pb2</span><span class="o">.</span><span class="n">Asset</span><span class="o">.</span><span class="n">FromString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_data</span><span class="p">)</span>
-        <span class="c1"># pylint: enable=no-member</span>
+        <span class="n">asset</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_data</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">json_format</span><span class="o">.</span><span class="n">MessageToDict</span><span class="p">(</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">content_type</span> <span class="o">==</span> <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">json_format</span><span class="o">.</span><span class="n">MessageToDict</span><span class="p">(</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">iam_policy</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">json_format</span><span class="o">.</span><span class="n">MessageToDict</span><span class="p">(</span><span class="n">asset_pb</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">asset</span></div>
 
 <div class="viewcode-block" id="CaiTemporaryStore.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.from_json">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">asset_json</span><span class="p">):</span>
@@ -618,22 +610,27 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            object: database row object or None if there is no data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">asset_pb</span> <span class="o">=</span> <span class="n">json_format</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">asset_json</span><span class="p">,</span> <span class="n">assets_pb2</span><span class="o">.</span><span class="n">Asset</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">asset_pb</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s1">&#39;resource&#39;</span><span class="p">):</span>
+        <span class="n">asset</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">asset_json</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">512</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Skipping insert of asset </span><span class="si">%s</span><span class="s1">, name too long.&#39;</span><span class="p">,</span>
+                        <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s1">&#39;resource&#39;</span> <span class="ow">in</span> <span class="n">asset</span><span class="p">:</span>
             <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentTypes</span><span class="o">.</span><span class="n">resource</span>
-            <span class="n">parent_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_parent_name</span><span class="p">(</span><span class="n">asset_pb</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">asset_pb</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s1">&#39;iam_policy&#39;</span><span class="p">):</span>
+            <span class="n">parent_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_parent_name</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;iam_policy&#39;</span> <span class="ow">in</span> <span class="n">asset</span><span class="p">:</span>
             <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentTypes</span><span class="o">.</span><span class="n">iam_policy</span>
-            <span class="n">parent_name</span> <span class="o">=</span> <span class="n">asset_pb</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">parent_name</span> <span class="o">=</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
             <span class="n">parent_name</span><span class="o">=</span><span class="n">parent_name</span><span class="p">,</span>
             <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
-            <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">asset_type</span><span class="p">,</span>
-            <span class="n">asset_data</span><span class="o">=</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+            <span class="n">asset_type</span><span class="o">=</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">],</span>
+            <span class="n">asset_data</span><span class="o">=</span><span class="n">asset_json</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CaiTemporaryStore.delete_all"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore.delete_all">[docs]</a>    <span class="nd">@classmethod</span>
@@ -659,63 +656,101 @@ hide:
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="CaiTemporaryStore._get_parent_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.CaiTemporaryStore._get_parent_name">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_parent_name</span><span class="p">(</span><span class="n">asset_pb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_parent_name</span><span class="p">(</span><span class="n">asset</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determines the parent name from the resource data.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            asset_pb (assets_pb2.Asset): An Asset protobuf object.</span>
+<span class="sd">            asset (dict): An Asset object.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The parent name for the resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">asset_pb</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">asset_pb</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">if</span> <span class="s1">&#39;parent&#39;</span> <span class="ow">in</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">][</span><span class="s1">&#39;parent&#39;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">asset_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.appengine&#39;</span><span class="p">)</span> <span class="ow">or</span>
-                <span class="n">asset_pb</span><span class="o">.</span><span class="n">asset_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.bigquery&#39;</span><span class="p">)</span> <span class="ow">or</span>
-                <span class="n">asset_pb</span><span class="o">.</span><span class="n">asset_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.spanner&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;google.cloud.kms.KeyRing&#39;</span><span class="p">:</span>
+            <span class="c1"># KMS KeyRings are parented by a location under a project, but</span>
+            <span class="c1"># the location is not directly discoverable without iterating all</span>
+            <span class="c1"># locations, so instead this creates an artificial parent at the</span>
+            <span class="c1"># project level, which acts as an aggregated list of all keyrings</span>
+            <span class="c1"># in all locations to fix this broken behavior.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Strip locations/{LOCATION}/keyRings/{RING} off name to get the</span>
+            <span class="c1"># parent project.</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;google.cloud.dataproc.Cluster&#39;</span><span class="p">:</span>
+            <span class="c1"># Dataproc Clusters are parented by a region under a project, but</span>
+            <span class="c1"># the region is not directly discoverable without iterating all</span>
+            <span class="c1"># regions, so instead this creates an artificial parent at the</span>
+            <span class="c1"># project level, which acts as an aggregated list of all clusters</span>
+            <span class="c1"># in all regions to fix this broken behavior.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the</span>
+            <span class="c1"># parent project.</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.appengine&#39;</span><span class="p">)</span> <span class="ow">or</span>
+              <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.cloud.bigquery&#39;</span><span class="p">)</span> <span class="ow">or</span>
+              <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.cloud.sql&#39;</span><span class="p">)</span> <span class="ow">or</span>
+              <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.cloud.kms&#39;</span><span class="p">)</span> <span class="ow">or</span>
+              <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;google.spanner&#39;</span><span class="p">)):</span>
             <span class="c1"># Strip off the last two segments of the name to get the parent</span>
-            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">asset_pb</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
 
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not determine parent name for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">asset_pb</span><span class="p">)</span>
+        <span class="c1"># Known unparented asset types.</span>
+        <span class="k">if</span> <span class="n">asset</span><span class="p">[</span><span class="s1">&#39;asset_type&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CaiTemporaryStore</span><span class="o">.</span><span class="n">UNPARENTED_ASSETS</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not determine parent name for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">asset</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="s1">&#39;&#39;</span></div></div>
 
 
 <div class="viewcode-block" id="BufferedDbWriter"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.BufferedDbWriter">[docs]</a><span class="k">class</span> <span class="nc">BufferedDbWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Buffered db writing.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">commit_on_flush</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">session</span><span class="p">,</span>
+                 <span class="n">max_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                 <span class="n">max_packet_size</span><span class="o">=</span><span class="n">MAX_ALLOWED_PACKET</span> <span class="o">*</span> <span class="o">.</span><span class="mi">75</span><span class="p">,</span>
+                 <span class="n">commit_on_flush</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            session (object): db session</span>
 <span class="sd">            max_size (int): max size of buffer</span>
+<span class="sd">            max_packet_size (int): max size of a packet to send to SQL</span>
 <span class="sd">            commit_on_flush (bool): If true, the session is committed to the</span>
 <span class="sd">                database when the data is flushed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimated_packet_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="n">max_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_packet_size</span> <span class="o">=</span> <span class="n">max_packet_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">commit_on_flush</span> <span class="o">=</span> <span class="n">commit_on_flush</span>
 
-<div class="viewcode-block" id="BufferedDbWriter.add"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.BufferedDbWriter.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<div class="viewcode-block" id="BufferedDbWriter.add"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.BufferedDbWriter.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">estimated_length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add an object to the buffer to write to db.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obj (object): Object to write to db.</span>
+<span class="sd">            estimated_length (int): The estimated length of this object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimated_packet_size</span> <span class="o">+=</span> <span class="n">estimated_length</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimated_packet_size</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_packet_size</span> <span class="ow">or</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="BufferedDbWriter.flush"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.BufferedDbWriter.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Flush all pending objects to the database.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">bulk_save_objects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">commit_on_flush</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimated_packet_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span></div></div>
 
 
@@ -738,6 +773,7 @@ hide:
         <span class="k">except</span> <span class="n">SQLAlchemyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Attempt to delete data from CAI temporary store &#39;</span>
                              <span class="s1">&#39;failed, disabling the use of CAI: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">num_rows</span></div>
 
@@ -754,35 +790,23 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The number of rows inserted</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">commit_buffer</span> <span class="o">=</span> <span class="n">BufferedDbWriter</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">commit_on_flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># CAI data can be large, so limit the number of rows written at one</span>
+        <span class="c1"># time to 512.</span>
+        <span class="n">commit_buffer</span> <span class="o">=</span> <span class="n">BufferedDbWriter</span><span class="p">(</span><span class="n">session</span><span class="p">,</span>
+                                         <span class="n">max_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+                                         <span class="n">commit_on_flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">num_rows</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
                     <span class="k">continue</span>
 
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">row</span> <span class="o">=</span> <span class="n">CaiTemporaryStore</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-                <span class="k">except</span> <span class="n">json_format</span><span class="o">.</span><span class="n">ParseError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="c1"># If the public protobuf definition differs from the</span>
-                    <span class="c1"># internal representation of the resource content in CAI</span>
-                    <span class="c1"># then the json_format module will throw a ParseError. The</span>
-                    <span class="c1"># crawler automatically falls back to using the live API</span>
-                    <span class="c1"># when this happens, so no content is lost.</span>
-                    <span class="n">resource</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="s1">&#39;iam_policy&#39;</span> <span class="ow">in</span> <span class="n">resource</span><span class="p">:</span>
-                        <span class="n">content_type</span> <span class="o">=</span> <span class="s1">&#39;iam_policy&#39;</span>
-                    <span class="k">elif</span> <span class="s1">&#39;resource&#39;</span> <span class="ow">in</span> <span class="n">resource</span><span class="p">:</span>
-                        <span class="n">content_type</span> <span class="o">=</span> <span class="s1">&#39;resource&#39;</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">content_type</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
-                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Protobuf parsing error </span><span class="si">%s</span><span class="s1">, falling back to &#39;</span>
-                                <span class="s1">&#39;live API for resource </span><span class="si">%s</span><span class="s1">, asset type </span><span class="si">%s</span><span class="s1">, &#39;</span>
-                                <span class="s1">&#39;content type </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                                <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;asset_type&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">content_type</span><span class="p">)</span>
-                    <span class="k">continue</span>
-                <span class="n">commit_buffer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-                <span class="n">num_rows</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">CaiTemporaryStore</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">:</span>
+                    <span class="c1"># Overestimate the packet length to ensure max size is never</span>
+                    <span class="c1"># exceeded. The actual length is closer to len(line) * 1.5.</span>
+                    <span class="n">commit_buffer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">estimated_length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="n">num_rows</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">commit_buffer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">SQLAlchemyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Error populating CAI data: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
@@ -935,6 +959,31 @@ hide:
             <span class="s1">&#39;Latest success/partial_success inventory index id is: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="n">inventory_index</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">id</span></div>
+
+<div class="viewcode-block" id="DataAccess.get_inventory_index_id_by_scanner_index_id"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_index_id_by_scanner_index_id">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="k">def</span> <span class="nf">get_inventory_index_id_by_scanner_index_id</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                                                   <span class="n">session</span><span class="p">,</span>
+                                                   <span class="n">scanner_index_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all inventory index entries.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session (object): Database session</span>
+<span class="sd">            scanner_index_id (int): id of the scanner in scanner_index table</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int64: inventory index id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">query_result</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">ScannerIndex</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">ScannerIndex</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">scanner_index_id</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">ScannerIndex</span><span class="o">.</span><span class="n">inventory_index_id</span><span class="o">.</span><span class="n">desc</span><span class="p">())</span><span class="o">.</span><span class="n">first</span><span class="p">())</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">expunge</span><span class="p">(</span><span class="n">query_result</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s1">&#39;Found inventory_index_id </span><span class="si">%s</span><span class="s1"> from scanner_index_id </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span>
+            <span class="n">query_result</span><span class="o">.</span><span class="n">inventory_index_id</span><span class="p">,</span> <span class="n">scanner_index_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query_result</span><span class="o">.</span><span class="n">inventory_index_id</span></div>
 
 <div class="viewcode-block" id="DataAccess.get_inventory_indexes_older_than_cutoff"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.DataAccess.get_inventory_indexes_older_than_cutoff">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_inventory_indexes_older_than_cutoff</span><span class="p">(</span>  <span class="c1"># pylint: disable=invalid-name</span>
@@ -1134,11 +1183,14 @@ hide:
 
 <div class="viewcode-block" id="Storage.commit"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.storage.html#google.cloud.forseti.services.inventory.storage.Storage.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Commit the stored inventory.&quot;&quot;&quot;</span>
-
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_index_warnings</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">IndexState</span><span class="o">.</span><span class="n">PARTIAL_SUCCESS</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">IndexState</span><span class="o">.</span><span class="n">SUCCESS</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">session_completed</span> <span class="o">=</span> <span class="kc">True</span></div>
@@ -1347,7 +1399,8 @@ hide:
                 <span class="n">Inventory</span><span class="o">.</span><span class="n">inventory_index_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                 <span class="n">Inventory</span><span class="o">.</span><span class="n">parent_id</span> <span class="o">==</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">Inventory</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">Categories</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
-                <span class="n">Inventory</span><span class="o">.</span><span class="n">resource_type</span><span class="o">.</span><span class="n">in_</span><span class="p">([</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span>
+                <span class="n">Inventory</span><span class="o">.</span><span class="n">resource_type</span><span class="o">.</span><span class="n">in_</span><span class="p">([</span><span class="s1">&#39;composite_root&#39;</span><span class="p">,</span>
+                                             <span class="s1">&#39;organization&#39;</span><span class="p">,</span>
                                              <span class="s1">&#39;folder&#39;</span><span class="p">,</span>
                                              <span class="s1">&#39;project&#39;</span><span class="p">])</span>
             <span class="p">))</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>

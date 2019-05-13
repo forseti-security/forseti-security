@@ -26,12 +26,12 @@ hide:
 <span class="sd">&quot;&quot;&quot;Scanner for the IAM rules engine.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">iam_policy</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.billing_account</span> <span class="k">import</span> <span class="n">BillingAccount</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.bucket</span> <span class="k">import</span> <span class="n">Bucket</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.dataset</span> <span class="k">import</span> <span class="n">Dataset</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.folder</span> <span class="k">import</span> <span class="n">Folder</span>
-<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">iam_policy</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.organization</span> <span class="k">import</span> <span class="n">Organization</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.project</span> <span class="k">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type.resource</span> <span class="k">import</span> <span class="n">ResourceType</span>
@@ -40,6 +40,17 @@ hide:
 <span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners</span> <span class="k">import</span> <span class="n">base_scanner</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># List of Resource types that have supported IAM policy bindings.</span>
+<span class="c1"># Add new supported resources to this dict to enable support in the scanner.</span>
+<span class="n">IAM_TYPE_RESOURCE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">BILLING_ACCOUNT</span><span class="p">:</span> <span class="n">BillingAccount</span><span class="p">,</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">BUCKET</span><span class="p">:</span> <span class="n">Bucket</span><span class="p">,</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">DATASET</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">FOLDER</span><span class="p">:</span> <span class="n">Folder</span><span class="p">,</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">ORGANIZATION</span><span class="p">:</span> <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">ResourceType</span><span class="o">.</span><span class="n">PROJECT</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
+<span class="p">}</span>
 
 
 <span class="c1"># pylint: disable=too-many-branches</span>
@@ -187,7 +198,7 @@ hide:
             <span class="c1"># &quot;policy&quot; is really the resource from the data model.</span>
             <span class="c1"># &quot;resource&quot; is the generated Forseti gcp type.</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> =&gt; </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span>
-            <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_policy_violations</span><span class="p">(</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
                 <span class="n">resource</span><span class="p">,</span> <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">)</span>
             <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">all_violations</span></div>
@@ -198,19 +209,18 @@ hide:
 <span class="sd">        Returns:</span>
 <span class="sd">            list: List of (gcp_type, forseti_data_model_resource) tuples.</span>
 <span class="sd">            dict: A dict of resource counts.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NoDataError: If no policies are found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">model_manager</span>
         <span class="n">scoped_session</span><span class="p">,</span> <span class="n">data_access</span> <span class="o">=</span> <span class="n">model_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">scoped_session</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-
             <span class="n">policy_data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">supported_iam_types</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">ResourceType</span><span class="o">.</span><span class="n">ORGANIZATION</span><span class="p">,</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">BILLING_ACCOUNT</span><span class="p">,</span>
-                <span class="n">ResourceType</span><span class="o">.</span><span class="n">FOLDER</span><span class="p">,</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">PROJECT</span><span class="p">,</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">BUCKET</span><span class="p">]</span>
-            <span class="n">resource_counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">iam_type</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">iam_type</span> <span class="ow">in</span> <span class="n">supported_iam_types</span><span class="p">}</span>
-
+            <span class="n">resource_counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">iam_type</span><span class="p">:</span> <span class="mi">0</span>
+                               <span class="k">for</span> <span class="n">iam_type</span> <span class="ow">in</span> <span class="n">IAM_TYPE_RESOURCE_MAP</span><span class="p">}</span>
             <span class="k">for</span> <span class="n">policy</span> <span class="ow">in</span> <span class="n">data_access</span><span class="o">.</span><span class="n">scanner_iter</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="s1">&#39;iam_policy&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_iam_types</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">IAM_TYPE_RESOURCE_MAP</span><span class="p">:</span>
                     <span class="k">continue</span>
 
                 <span class="n">policy_bindings</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">[</span>  <span class="c1"># pylint: disable=bad-builtin</span>
@@ -218,48 +228,21 @@ hide:
                     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bindings&#39;</span><span class="p">,</span> <span class="p">[])])</span>
 
                 <span class="n">resource_counts</span><span class="p">[</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">if</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">BUCKET</span><span class="p">:</span>
-                    <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">Bucket</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
-                                <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                         <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">PROJECT</span><span class="p">:</span>
-                    <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">Project</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                 <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
-                                 <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                         <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">FOLDER</span><span class="p">:</span>
-                    <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">Folder</span><span class="p">(</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                         <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">BILLING_ACCOUNT</span><span class="p">:</span>
-                    <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">BillingAccount</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                        <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
-                                        <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                         <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ResourceType</span><span class="o">.</span><span class="n">ORGANIZATION</span><span class="p">:</span>
-                    <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">Organization</span><span class="p">(</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
-                            <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                         <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
+                <span class="n">resource_class</span> <span class="o">=</span> <span class="n">IAM_TYPE_RESOURCE_MAP</span><span class="p">[</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+                <span class="n">policy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">resource_class</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                    <span class="n">policy</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                                    <span class="n">policy</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+                     <span class="n">policy</span><span class="p">,</span> <span class="n">policy_bindings</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">policy_data</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No policies found. Exiting.&#39;</span><span class="p">)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No policies found.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="n">policy_data</span><span class="p">,</span> <span class="n">resource_counts</span></div>
 
 <div class="viewcode-block" id="IamPolicyScanner.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.iam_rules_scanner.html#google.cloud.forseti.scanner.scanners.iam_rules_scanner.IamPolicyScanner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Runs the data collection.&quot;&quot;&quot;</span>
-
         <span class="n">policy_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve</span><span class="p">()</span>
         <span class="n">_add_bucket_ancestor_bindings</span><span class="p">(</span><span class="n">policy_data</span><span class="p">)</span>
         <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_violations</span><span class="p">(</span><span class="n">policy_data</span><span class="p">)</span>

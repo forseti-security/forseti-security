@@ -55,6 +55,7 @@ hide:
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">reconstructor</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">relationship</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">sessionmaker</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="k">import</span> <span class="n">NoResultFound</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="k">import</span> <span class="n">select</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="k">import</span> <span class="n">union</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="k">import</span> <span class="n">declarative_base</span>
@@ -168,7 +169,7 @@ hide:
         <span class="k">for</span> <span class="n">new_item</span> <span class="ow">in</span> <span class="n">new_desc</span><span class="p">:</span>
             <span class="n">model_desc</span><span class="p">[</span><span class="n">new_item</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_desc</span><span class="p">[</span><span class="n">new_item</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">model_desc</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">model_desc</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Model.set_done"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.dao.html#google.cloud.forseti.services.dao.Model.set_done">[docs]</a>    <span class="k">def</span> <span class="nf">set_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Indicate a finished import.</span>
@@ -473,6 +474,15 @@ hide:
         <span class="n">TBL_RESOURCE</span> <span class="o">=</span> <span class="n">Resource</span>
         <span class="n">TBL_MEMBERSHIP</span> <span class="o">=</span> <span class="n">group_members</span>
 
+        <span class="c1"># Set of member binding types that expand like groups.</span>
+        <span class="n">GROUP_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;group&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;projecteditor&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;projectowner&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;projectviewer&#39;</span><span class="p">}</span>
+
+        <span class="c1"># Members that represent all users</span>
+        <span class="n">ALL_USER_MEMBERS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;allusers&#39;</span><span class="p">,</span> <span class="s1">&#39;allauthenticatedusers&#39;</span><span class="p">]</span>
+
         <span class="nd">@classmethod</span>
         <span class="k">def</span> <span class="nf">delete_all</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">engine</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Delete all data from the model.</span>
@@ -592,6 +602,47 @@ hide:
                     <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;UNLOCK TABLES&#39;</span><span class="p">)</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">iterations</span>
+
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">expand_special_members</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Create dynamic groups for project(Editor|Owner|Viewer).</span>
+
+<span class="sd">            Should be called after IAM bindings are added to the model.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                session (object): Database session to use.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">member_type_map</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;projecteditor&#39;</span><span class="p">:</span> <span class="s1">&#39;roles/editor&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;projectowner&#39;</span><span class="p">:</span> <span class="s1">&#39;roles/owner&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;projectviewer&#39;</span><span class="p">:</span> <span class="s1">&#39;roles/viewer&#39;</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">parent_member</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">list_group_members</span><span class="p">(</span>
+                    <span class="n">session</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">member_types</span><span class="o">=</span><span class="n">member_type_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">member_type</span><span class="p">,</span> <span class="n">project_id</span> <span class="o">=</span> <span class="n">parent_member</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">role</span> <span class="o">=</span> <span class="n">member_type_map</span><span class="p">[</span><span class="n">member_type</span><span class="p">]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">iam_policy</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span>
+                        <span class="n">session</span><span class="p">,</span>
+                        <span class="s1">&#39;project/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">),</span>
+                        <span class="n">roles</span><span class="o">=</span><span class="p">[</span><span class="n">role</span><span class="p">])</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;iam_policy: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">iam_policy</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Found a non-existent project, or project &#39;</span>
+                                   <span class="s1">&#39;outside of the organization, in an IAM &#39;</span>
+                                   <span class="s1">&#39;binding: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">parent_member</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">members</span> <span class="o">=</span> <span class="n">iam_policy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bindings&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">expanded_members</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">expand_members</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">expanded_members</span><span class="p">:</span>
+                    <span class="n">stmt</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">TBL_MEMBERSHIP</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                        <span class="p">{</span><span class="s1">&#39;group_name&#39;</span><span class="p">:</span> <span class="n">parent_member</span><span class="p">,</span>
+                         <span class="s1">&#39;members_name&#39;</span><span class="p">:</span> <span class="n">member</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;group&#39;</span> <span class="ow">and</span> <span class="n">member</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+                        <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">TBL_GROUP_IN_GROUP</span><span class="p">(</span>
+                            <span class="n">parent</span><span class="o">=</span><span class="n">parent_member</span><span class="p">,</span>
+                            <span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
         <span class="nd">@classmethod</span>
         <span class="k">def</span> <span class="nf">explain_granted</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">,</span>
@@ -916,6 +967,8 @@ hide:
                     <span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">Resource</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span>
                              <span class="n">Binding</span><span class="o">.</span><span class="n">resource_type_name</span><span class="p">))</span>
                     <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">role_names</span><span class="p">))</span>
+                    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">expanded_resources</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">asc</span><span class="p">(),</span>
+                              <span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">qry</span> <span class="o">=</span> <span class="p">(</span>
@@ -925,9 +978,8 @@ hide:
                     <span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">Resource</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span>
                              <span class="n">Binding</span><span class="o">.</span><span class="n">resource_type_name</span><span class="p">))</span>
                     <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">role_names</span><span class="p">))</span>
+                    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">asc</span><span class="p">(),</span> <span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span>
                 <span class="p">)</span>
-
-            <span class="n">qry</span> <span class="o">=</span> <span class="n">qry</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">asc</span><span class="p">(),</span> <span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span>
 
             <span class="k">if</span> <span class="n">expand_groups</span><span class="p">:</span>
                 <span class="n">to_expand</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span>
@@ -1035,7 +1087,11 @@ hide:
             <span class="k">return</span> <span class="n">qry</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
         <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">set_iam_policy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">set_iam_policy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                           <span class="n">session</span><span class="p">,</span>
+                           <span class="n">resource_type_name</span><span class="p">,</span>
+                           <span class="n">policy</span><span class="p">,</span>
+                           <span class="n">update_members</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Set IAM policy</span>
 
 <span class="sd">            Sets an IAM policy for the resource, check the etag when setting</span>
@@ -1046,6 +1102,11 @@ hide:
 <span class="sd">                session (object): db session</span>
 <span class="sd">                resource_type_name (str): type_name of the resource</span>
 <span class="sd">                policy (dict): the policy to set on the resource</span>
+<span class="sd">                update_members (bool): If true, then add new members to Member</span>
+<span class="sd">                    table. This must be set when the call to set_iam_policy</span>
+<span class="sd">                    happens outside of the model InventoryImporter class. Tests</span>
+<span class="sd">                    or users that manually add an IAM policy need to mark this</span>
+<span class="sd">                    as true to ensure the model remains consistent.</span>
 
 <span class="sd">            Raises:</span>
 <span class="sd">                Exception: Etag doesn&#39;t match</span>
@@ -1124,6 +1185,20 @@ hide:
                     <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span> <span class="o">==</span> <span class="n">role</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">all</span><span class="p">())</span>
 
+                <span class="k">if</span> <span class="n">update_members</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_member</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">member</span><span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="c1"># This is the default case, e.g. &#39;group/foobar&#39;</span>
+                                <span class="n">m_type</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                                <span class="c1"># Special groups like &#39;allUsers&#39;</span>
+                                <span class="n">m_type</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">member</span><span class="p">,</span> <span class="n">member</span>
+                            <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">TBL_MEMBER</span><span class="p">(</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">member</span><span class="p">,</span>
+                                <span class="nb">type</span><span class="o">=</span><span class="n">m_type</span><span class="p">,</span>
+                                <span class="n">member_name</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
+
                 <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">existing_bindings</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">binding</span><span class="o">.</span><span class="n">role_name</span> <span class="o">==</span> <span class="n">role</span><span class="p">:</span>
                         <span class="n">inserted</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1145,12 +1220,13 @@ hide:
             <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
         <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Return the IAM policy for a resource.</span>
 
 <span class="sd">            Args:</span>
 <span class="sd">                session (object): db session</span>
 <span class="sd">                resource_type_name (str): type_name of the resource to query</span>
+<span class="sd">                roles (list): An optional list of roles to limit the results to</span>
 
 <span class="sd">            Returns:</span>
 <span class="sd">                dict: the IAM policy</span>
@@ -1162,8 +1238,10 @@ hide:
                       <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">{},</span>
                       <span class="s1">&#39;resource&#39;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">type_name</span><span class="p">}</span>
             <span class="n">bindings</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Binding</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                <span class="n">Binding</span><span class="o">.</span><span class="n">resource_type_name</span> <span class="o">==</span> <span class="n">resource_type_name</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">:</span>
+                <span class="n">Binding</span><span class="o">.</span><span class="n">resource_type_name</span> <span class="o">==</span> <span class="n">resource_type_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">roles</span><span class="p">:</span>
+                <span class="n">bindings</span> <span class="o">=</span> <span class="n">bindings</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Binding</span><span class="o">.</span><span class="n">role_name</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">roles</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">bindings</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                 <span class="n">role</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">role_name</span>
                 <span class="n">members</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">binding</span><span class="o">.</span><span class="n">members</span><span class="p">]</span>
                 <span class="n">policy</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">][</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="n">members</span>
@@ -1284,19 +1362,27 @@ hide:
             <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
         <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">list_group_members</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">member_name_prefix</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">list_group_members</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                               <span class="n">session</span><span class="p">,</span>
+                               <span class="n">member_name_prefix</span><span class="p">,</span>
+                               <span class="n">member_types</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Returns members filtered by prefix.</span>
 
 <span class="sd">            Args:</span>
 <span class="sd">                session (object): db session</span>
 <span class="sd">                member_name_prefix (str): the prefix of the member_name</span>
+<span class="sd">                member_types (list): an optional list of member types to filter</span>
+<span class="sd">                    the results by.</span>
 
 <span class="sd">            Returns:</span>
 <span class="sd">                list: list of Members that match the query</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
-            <span class="k">return</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Member</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                <span class="n">Member</span><span class="o">.</span><span class="n">member_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">member_name_prefix</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Member</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">Member</span><span class="o">.</span><span class="n">member_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">member_name_prefix</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">member_types</span><span class="p">:</span>
+                <span class="n">qry</span> <span class="o">=</span> <span class="n">qry</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Member</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">member_types</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">qry</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
 
         <span class="nd">@classmethod</span>
         <span class="k">def</span> <span class="nf">iter_groups</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
@@ -1609,7 +1695,7 @@ hide:
 <span class="sd">            Returns:</span>
 <span class="sd">                object: set if graph not requested, set and graph if requested</span>
 <span class="sd">            &quot;&quot;&quot;</span>
-
+            <span class="n">member_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">ALL_USER_MEMBERS</span><span class="p">)</span>
             <span class="n">members</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Member</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
                 <span class="n">Member</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">member_names</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
             <span class="n">membership_graph</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
@@ -1678,7 +1764,8 @@ hide:
                 <span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">others</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">member_names</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;group/&#39;</span><span class="p">):</span>
+                    <span class="n">member_type</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">member_type</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">GROUP_TYPES</span><span class="p">:</span>
                         <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">others</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -1768,7 +1855,7 @@ hide:
 <span class="sd">                Returns:</span>
 <span class="sd">                    bool: whether the member is a group</span>
 <span class="sd">                &quot;&quot;&quot;</span>
-                <span class="k">return</span> <span class="n">member</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;group&#39;</span>
+                <span class="k">return</span> <span class="n">member</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">GROUP_TYPES</span>
 
             <span class="n">group_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="n">non_group_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -2242,10 +2329,24 @@ hide:
 
     <span class="n">sqlite_enforce_fks</span> <span class="o">=</span> <span class="s1">&#39;sqlite_enforce_fks&#39;</span>
     <span class="n">forward_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()}</span>
+    <span class="n">is_sqlite</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;sqlite&#39;</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+            <span class="n">is_sqlite</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="k">if</span> <span class="n">sqlite_enforce_fks</span> <span class="ow">in</span> <span class="n">forward_kwargs</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">forward_kwargs</span><span class="p">[</span><span class="n">sqlite_enforce_fks</span><span class="p">]</span>
 
-    <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy_create_engine</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">forward_kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_sqlite</span><span class="p">:</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy_create_engine</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">forward_kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Default connection timeout for mysql is 10 seconds which is</span>
+        <span class="c1"># not enough for a bigger dataset, increasing this to 1 hour instead.</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy_create_engine</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="n">pool_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+            <span class="n">connect_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;connect_timeout&#39;</span><span class="p">:</span> <span class="mi">3600</span><span class="p">},</span>
+            <span class="o">**</span><span class="n">forward_kwargs</span><span class="p">)</span>
     <span class="n">dialect</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">dialect</span><span class="o">.</span><span class="n">name</span>
     <span class="k">if</span> <span class="n">dialect</span> <span class="o">==</span> <span class="s1">&#39;sqlite&#39;</span><span class="p">:</span>
         <span class="nd">@event</span><span class="o">.</span><span class="n">listens_for</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s1">&#39;connect&#39;</span><span class="p">)</span>
