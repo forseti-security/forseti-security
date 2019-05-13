@@ -1,0 +1,816 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.client"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.client</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Forseti gRPC client.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">grpc</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.explain</span> <span class="k">import</span> <span class="n">explain_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.explain</span> <span class="k">import</span> <span class="n">explain_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory</span> <span class="k">import</span> <span class="n">inventory_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory</span> <span class="k">import</span> <span class="n">inventory_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.model</span> <span class="k">import</span> <span class="n">model_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.model</span> <span class="k">import</span> <span class="n">model_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.notifier</span> <span class="k">import</span> <span class="n">notifier_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.notifier</span> <span class="k">import</span> <span class="n">notifier_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.scanner</span> <span class="k">import</span> <span class="n">scanner_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.scanner</span> <span class="k">import</span> <span class="n">scanner_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.server_config</span> <span class="k">import</span> <span class="n">server_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.server_config</span> <span class="k">import</span> <span class="n">server_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.utils</span> <span class="k">import</span> <span class="n">oneof</span>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+<div class="viewcode-block" id="ModelNotSetError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelNotSetError">[docs]</a><span class="k">class</span> <span class="nc">ModelNotSetError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ModelNotSetError.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="require_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.require_model">[docs]</a><span class="k">def</span> <span class="nf">require_model</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator to perform check that the model handle exists in the service.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f (func): The model handle should exists when executing function f</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        wrapper: Function wrapper to perform model handle existence check.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function wrapper to perform model handle existence check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            args: args to be passed to the function</span>
+<span class="sd">            kwargs: kwargs to be passed to the function</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Results of executing f if model handle exists</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ModelNotSetError: Model handle not set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">handle</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ModelNotSetError</span><span class="p">(</span><span class="s1">&#39;API requires model to be set.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="ClientConfig"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientConfig">[docs]</a><span class="k">class</span> <span class="nc">ClientConfig</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide access to client configuration data.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ClientConfig.handle"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientConfig.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return currently active handle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The data model handle of client configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;handle&#39;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="ForsetiClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ForsetiClient">[docs]</a><span class="k">class</span> <span class="nc">ForsetiClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Client base class.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+
+<div class="viewcode-block" id="ForsetiClient.metadata"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ForsetiClient.metadata">[docs]</a>    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create default metadata for gRPC call.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: the default metada for gRPC call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="s1">&#39;handle&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">handle</span><span class="p">())]</span></div></div>
+
+
+<div class="viewcode-block" id="ScannerClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ScannerClient">[docs]</a><span class="k">class</span> <span class="nc">ScannerClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scanner service allows the client to scan a model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScannerClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">scanner_pb2_grpc</span><span class="o">.</span><span class="n">ScannerStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ScannerClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ScannerClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Scanner&#39; service is available by performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">scanner_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="ScannerClient.run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ScannerClient.run">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scanner_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the scanner</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scanner_name (String): name of the scanner specified to run</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">scanner_pb2</span><span class="o">.</span><span class="n">RunRequest</span><span class="p">(</span><span class="n">scanner_name</span><span class="o">=</span><span class="n">scanner_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="ServerConfigClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient">[docs]</a><span class="k">class</span> <span class="nc">ServerConfigClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Allows the client to update the server configuration.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ServerConfigClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">server_pb2_grpc</span><span class="o">.</span><span class="n">ServerStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ServerConfigClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Server Config&#39; service is available by</span>
+<span class="sd">        performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">server_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="ServerConfigClient.get_log_level"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient.get_log_level">[docs]</a>    <span class="k">def</span> <span class="nf">get_log_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the current log level.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">server_pb2</span><span class="o">.</span><span class="n">GetLogLevelRequest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetLogLevel</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerConfigClient.set_log_level"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient.set_log_level">[docs]</a>    <span class="k">def</span> <span class="nf">set_log_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_level</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the log level.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            log_level (str): The updated log level.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">server_pb2</span><span class="o">.</span><span class="n">SetLogLevelRequest</span><span class="p">(</span><span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">SetLogLevel</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerConfigClient.reload_server_configuration"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient.reload_server_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">reload_server_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reload the server configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_file_path (str): Forseti configuration file path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">server_pb2</span><span class="o">.</span><span class="n">ReloadServerConfigurationRequest</span><span class="p">(</span>
+            <span class="n">config_file_path</span><span class="o">=</span><span class="n">config_file_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ReloadServerConfiguration</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerConfigClient.get_server_configuration"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ServerConfigClient.get_server_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_server_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the server configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">server_pb2</span><span class="o">.</span><span class="n">GetServerConfigurationRequest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetServerConfiguration</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NotifierClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.NotifierClient">[docs]</a><span class="k">class</span> <span class="nc">NotifierClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Notifier service allows the client to send violation notifications.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NotifierClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">notifier_pb2_grpc</span><span class="o">.</span><span class="n">NotifierStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="NotifierClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.NotifierClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Notifier&#39; service is available by performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the &quot;Inventory&quot; service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">notifier_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="NotifierClient.run"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.NotifierClient.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span> <span class="n">scanner_index_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the notifier.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inventory_index_id (int64): Inventory Index Id.</span>
+<span class="sd">            scanner_index_id (int64): Scanner Index Id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">notifier_pb2</span><span class="o">.</span><span class="n">RunRequest</span><span class="p">(</span>
+            <span class="n">inventory_index_id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">,</span>
+            <span class="n">scanner_index_id</span><span class="o">=</span><span class="n">scanner_index_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="ModelClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient">[docs]</a><span class="k">class</span> <span class="nc">ModelClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Model service allows the client to create models from inventory.</span>
+
+<span class="sd">    Model provides the following functionality:</span>
+<span class="sd">       - Create a new model by importing from inventory or create an empty</span>
+<span class="sd">       - List/Delete functionality on models</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ModelClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">model_pb2_grpc</span><span class="o">.</span><span class="n">ModellerStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ModelClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Model&#39; service is available by performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the &quot;Inventory&quot; service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">model_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="ModelClient.new_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient.new_model">[docs]</a>    <span class="k">def</span> <span class="nf">new_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new model, reply contains the handle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            source (str): the source to create the model, either EMPTY</span>
+<span class="sd">                or INVENTORY.</span>
+<span class="sd">            name (str): the name for the model.</span>
+<span class="sd">            inventory_index_id (int64): the index id of the inventory to</span>
+<span class="sd">                import from.</span>
+<span class="sd">            background (bool): whether to run in background.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of creating model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">CreateModel</span><span class="p">(</span>
+            <span class="n">model_pb2</span><span class="o">.</span><span class="n">CreateModelRequest</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">,</span>
+                <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ModelClient.list_models"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient.list_models">[docs]</a>    <span class="k">def</span> <span class="nf">list_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List existing models in the service.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of list_models</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListModel</span><span class="p">(</span><span class="n">model_pb2</span><span class="o">.</span><span class="n">ListModelRequest</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ModelClient.get_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the details of a model by name or handle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model (str): the name or the handle for the data model to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of get model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetModel</span><span class="p">(</span>
+            <span class="n">model_pb2</span><span class="o">.</span><span class="n">GetModelRequest</span><span class="p">(</span>
+                <span class="n">identifier</span><span class="o">=</span><span class="n">model</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ModelClient.delete_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ModelClient.delete_model">[docs]</a>    <span class="k">def</span> <span class="nf">delete_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a model, deletes all corresponding data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (str): the handle of the data model to delete</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of deleting model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">DeleteModel</span><span class="p">(</span>
+            <span class="n">model_pb2</span><span class="o">.</span><span class="n">DeleteModelRequest</span><span class="p">(</span>
+                <span class="n">handle</span><span class="o">=</span><span class="n">model_name</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="InventoryClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient">[docs]</a><span class="k">class</span> <span class="nc">InventoryClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Inventory service allows the client to create GCP inventory.</span>
+
+<span class="sd">    Inventory provides the following functionality:</span>
+<span class="sd">       - Create a new inventory and optionally import it</span>
+<span class="sd">       - Manage your inventory using List/Get/Delete</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InventoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">inventory_pb2_grpc</span><span class="o">.</span><span class="n">InventoryStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="InventoryClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Inventory&#39; service is available by performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the &quot;Inventory&quot; service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">inventory_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">echo</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="InventoryClient.create"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">import_as</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enable_debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new inventory, with an optional import.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            background (bool): whether to run in background</span>
+<span class="sd">            import_as (str): the name of the data model to create after</span>
+<span class="sd">                inventory is created</span>
+<span class="sd">            enable_debug (bool): whether to emit additional information</span>
+<span class="sd">                for debugging</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of create inventory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">CreateRequest</span><span class="p">(</span>
+            <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">import_as</span><span class="p">,</span>
+            <span class="n">enable_debug</span><span class="o">=</span><span class="n">enable_debug</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Create</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryClient.get"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns all information about a particular inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inventory_index_id (int): the index id of the inventory to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of get inventory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">GetRequest</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryClient.delete"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete an inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inventory_index_id (int64): the index id of the inventory to delete.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of delete inventory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">DeleteRequest</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">inventory_index_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Delete</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryClient.purge"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retention_days</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Purge all inventory data older than the retention days.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            retention_days (str): Days of inventory data to retain.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of purge inventory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">PurgeRequest</span><span class="p">(</span>
+            <span class="n">retention_days</span><span class="o">=</span><span class="n">retention_days</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Purge</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InventoryClient.list"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.InventoryClient.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lists all available inventory.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of list inventory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">ListRequest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">List</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ExplainClient"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient">[docs]</a><span class="k">class</span> <span class="nc">ExplainClient</span><span class="p">(</span><span class="n">ForsetiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Explain service allows the client to reason about a model.</span>
+
+<span class="sd">    Explain provides the following functionality:</span>
+<span class="sd">       - List access by resource/member</span>
+<span class="sd">       - Provide information on why a member has access</span>
+<span class="sd">       - Provide recommendations on how to provide access</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (ClientConfig): the client config object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExplainClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">explain_pb2_grpc</span><span class="o">.</span><span class="n">ExplainStub</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ExplainClient.is_available"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the &#39;Explain&#39; service is available by performing a ping.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the &quot;Inventory&quot; service is available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">Ping</span><span class="p">(</span><span class="n">explain_pb2</span><span class="o">.</span><span class="n">PingRequest</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="ExplainClient.list_resources"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.list_resources">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name_prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List resources by name prefix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_name_prefix (str): the prefix of resource_name to query.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListResources</span><span class="p">(</span>
+            <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ListResourcesRequest</span><span class="p">(</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="n">resource_name_prefix</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.list_members"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.list_members">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">list_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_name_prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List members by prefix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_name_prefix (str): the prefix of member_name to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListGroupMembers</span><span class="p">(</span>
+            <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ListGroupMembersRequest</span><span class="p">(</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="n">member_name_prefix</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.list_roles"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.list_roles">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">list_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_name_prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List roles by prefix, can be empty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role_name_prefix (str): the prefix of role_name to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of roles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ListRoles</span><span class="p">(</span>
+            <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ListRolesRequest</span><span class="p">(</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="n">role_name_prefix</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.get_iam_policy"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.get_iam_policy">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">get_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_resource_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the IAM policy from the resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            full_resource_name (str): the resource to query iam_policy</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of get_iam_policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetIamPolicy</span><span class="p">(</span>
+            <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetIamPolicyRequest</span><span class="p">(</span>
+                <span class="n">resource</span><span class="o">=</span><span class="n">full_resource_name</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span><span class="o">.</span><span class="n">policy</span></div>
+
+<div class="viewcode-block" id="ExplainClient.check_iam_policy"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.check_iam_policy">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">check_iam_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_resource_name</span><span class="p">,</span> <span class="n">permission_name</span><span class="p">,</span>
+                         <span class="n">member_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check access via IAM policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            full_resource_name (str): the resource to check iam_policy</span>
+<span class="sd">            permission_name (str): the permission to check iam_policy</span>
+<span class="sd">            member_name (str): the member to check iam_policy</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of check_iam_policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">CheckIamPolicy</span><span class="p">(</span>
+            <span class="n">explain_pb2</span><span class="o">.</span><span class="n">CheckIamPolicyRequest</span><span class="p">(</span>
+                <span class="n">resource</span><span class="o">=</span><span class="n">full_resource_name</span><span class="p">,</span>
+                <span class="n">permission</span><span class="o">=</span><span class="n">permission_name</span><span class="p">,</span>
+                <span class="n">identity</span><span class="o">=</span><span class="n">member_name</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.explain_denied"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.explain_denied">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">explain_denied</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">resource_names</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">permission_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List possibilities to grant access which is currently denied.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_name (str): the member to explain denied</span>
+<span class="sd">            resource_names (list): the resources to explain denied</span>
+<span class="sd">            roles (list): the roles to explain denied, one of roles or</span>
+<span class="sd">                permission_names should be not none</span>
+<span class="sd">            permission_names (list): the permissions to explain denied,</span>
+<span class="sd">                one of roles or permission_names should be not none</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of bindingstrategies.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: Either roles or permission names must be set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">roles</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">roles</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">roles</span>
+        <span class="n">permission_names</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">permission_names</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">permission_names</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">oneof</span><span class="p">(</span><span class="n">roles</span> <span class="o">!=</span> <span class="p">[],</span> <span class="n">permission_names</span> <span class="o">!=</span> <span class="p">[]):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Either roles or permission names must be set&#39;</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ExplainDeniedRequest</span><span class="p">(</span>
+            <span class="n">member</span><span class="o">=</span><span class="n">member_name</span><span class="p">,</span>
+            <span class="n">resources</span><span class="o">=</span><span class="n">resource_names</span><span class="p">,</span>
+            <span class="n">roles</span><span class="o">=</span><span class="n">roles</span><span class="p">,</span>
+            <span class="n">permissions</span><span class="o">=</span><span class="n">permission_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ExplainDenied</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.explain_granted"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.explain_granted">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">explain_granted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">permission</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide data on all possibilities on</span>
+<span class="sd">           how a member has access to a resources.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_name (str): the member to explain granted</span>
+<span class="sd">            resource_name (str): the resource to explain granted</span>
+<span class="sd">            role (str): the role to explain granted, one of role or permission</span>
+<span class="sd">                should be not none</span>
+<span class="sd">            permission (str): the permission to explain granted, one of role</span>
+<span class="sd">                or permission should be not none</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of explain_granted</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: Either role or permission must be set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">oneof</span><span class="p">(</span><span class="n">role</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">permission</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Either role or permission name must be set&#39;</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ExplainGrantedRequest</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">permission</span> <span class="o">=</span> <span class="n">permission</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource_name</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">member_name</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">ExplainGranted</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.query_access_by_resources"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.query_access_by_resources">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">query_access_by_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="n">permission_names</span><span class="p">,</span>
+                                  <span class="n">expand_groups</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List members who have access to a given resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_name (str): the resource to query who have access to</span>
+<span class="sd">            permission_names (list): the permissions to constrain the query</span>
+<span class="sd">            expand_groups (bool): whether to expand group relations</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of accesses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetAccessByResourcesRequest</span><span class="p">(</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">resource_name</span><span class="p">,</span>
+            <span class="n">permission_names</span><span class="o">=</span><span class="n">permission_names</span><span class="p">,</span>
+            <span class="n">expand_groups</span><span class="o">=</span><span class="n">expand_groups</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAccessByResources</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.query_access_by_members"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.query_access_by_members">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">query_access_by_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">permission_names</span><span class="p">,</span>
+                                <span class="n">expand_resources</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List resources to which a set of members has access to.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_name (str): the member to query what resources he/she</span>
+<span class="sd">                               has access to</span>
+<span class="sd">            permission_names (list): the permissions to constrain the query</span>
+<span class="sd">            expand_resources (bool): whether to expand resource hierarchy</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: generator of proto message of accesses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetAccessByMembersRequest</span><span class="p">(</span>
+            <span class="n">member_name</span><span class="o">=</span><span class="n">member_name</span><span class="p">,</span>
+            <span class="n">permission_names</span><span class="o">=</span><span class="n">permission_names</span><span class="p">,</span>
+            <span class="n">expand_resources</span><span class="o">=</span><span class="n">expand_resources</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAccessByMembers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.query_access_by_permissions"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.query_access_by_permissions">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">query_access_by_permissions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">role_name</span><span class="p">,</span>
+                                    <span class="n">permission_name</span><span class="p">,</span>
+                                    <span class="n">expand_groups</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">expand_resources</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List (resource, member) tuples satisfying the authorization</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role_name (str): Role name to query for.</span>
+<span class="sd">            permission_name (str): Permission name to query for.</span>
+<span class="sd">            expand_groups (bool): Whether or not to expand groups.</span>
+<span class="sd">            expand_resources (bool): Whether or not to expand resources.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Generator yielding access tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetAccessByPermissionsRequest</span><span class="p">(</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="n">role_name</span><span class="p">,</span>
+            <span class="n">permission_name</span><span class="o">=</span><span class="n">permission_name</span><span class="p">,</span>
+            <span class="n">expand_groups</span><span class="o">=</span><span class="n">expand_groups</span><span class="p">,</span>
+            <span class="n">expand_resources</span><span class="o">=</span><span class="n">expand_resources</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAccessByPermissions</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExplainClient.query_permissions_by_roles"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ExplainClient.query_permissions_by_roles">[docs]</a>    <span class="nd">@require_model</span>
+    <span class="k">def</span> <span class="nf">query_permissions_by_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role_prefixes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all the permissions per given roles.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role_names (list): Role names to query for.</span>
+<span class="sd">            role_prefixes (list): Role name prefixes to query for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of query_permissions_by_roles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">role_names</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">role_names</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">role_names</span>
+        <span class="n">role_prefixes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">role_prefixes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">role_prefixes</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetPermissionsByRolesRequest</span><span class="p">(</span>
+            <span class="n">role_names</span><span class="o">=</span><span class="n">role_names</span><span class="p">,</span> <span class="n">role_prefixes</span><span class="o">=</span><span class="n">role_prefixes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetPermissionsByRoles</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="ClientComposition"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition">[docs]</a><span class="k">class</span> <span class="nc">ClientComposition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Client composition class.</span>
+
+<span class="sd">        Most convenient to use since it comprises the common use cases among</span>
+<span class="sd">        the different services.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_ENDPOINT</span> <span class="o">=</span> <span class="s1">&#39;localhost:50051&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">DEFAULT_ENDPOINT</span><span class="p">,</span> <span class="n">ping</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            endpoint (str): the channel endpoint</span>
+<span class="sd">            ping (bool): whether to ping to test if all services registered</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: gRPC connected but services not registered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">ClientConfig</span><span class="p">({</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="s1">&#39;handle&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">explain</span> <span class="o">=</span> <span class="n">ExplainClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">InventoryClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scanner</span> <span class="o">=</span> <span class="n">ScannerClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notifier</span> <span class="o">=</span> <span class="n">NotifierClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ModelClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_config</span> <span class="o">=</span> <span class="n">ServerConfigClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">explain</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scanner</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">notifier</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">server_config</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ping</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;gRPC connected but services not registered&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ClientComposition.new_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition.new_model">[docs]</a>    <span class="k">def</span> <span class="nf">new_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new model from the specified source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            source (str): the source to create the model, either EMPTY</span>
+<span class="sd">                or INVENTORY.</span>
+<span class="sd">            name (str): the name for the model.</span>
+<span class="sd">            inventory_index_id (int64): the index id of the inventory to</span>
+<span class="sd">                import from.</span>
+<span class="sd">            background (bool): whether to run in background.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of creating model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">new_model</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span>
+                                    <span class="n">background</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClientComposition.list_models"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition.list_models">[docs]</a>    <span class="k">def</span> <span class="nf">list_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List existing models.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of list_models</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">list_models</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ClientComposition.get_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the details of a model by name or handle</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model (str): the name or the handle for the data model to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of get model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClientComposition.switch_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition.switch_model">[docs]</a>    <span class="k">def</span> <span class="nf">switch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Switch the client into using a model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (str): the handle of the data model to switch to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;handle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_name</span></div>
+
+<div class="viewcode-block" id="ClientComposition.delete_model"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.client.html#google.cloud.forseti.services.client.ClientComposition.delete_model">[docs]</a>    <span class="k">def</span> <span class="nf">delete_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a model. Deletes all associated data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (str): the handle of the data model to delete</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            proto: the returned proto message of deleting model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div></div>
+</pre></div>
