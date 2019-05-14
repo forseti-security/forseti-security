@@ -1,0 +1,15 @@
+google.cloud package
+====================
+
+.. automodule:: google.cloud
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.forseti
+
