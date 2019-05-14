@@ -90,6 +90,11 @@ steps below:
      ```bash
      python install/gcp_installer.py -h
      ```
+     Install Forseti in shared VPC by running the installer with additional flags.
+     
+     ```
+     python install/gcp_installer.py --vpc-host-project-id={VPC_HOST_PROJECT_ID} --vpc-host-network={VPC_HOST_NETWORK} --vpc-host-subnetwork={VPC_HOST_SUBNETWORK}
+     ```
 
   1. The installer will infer the necessary information to install Forseti.
 
