@@ -15,8 +15,8 @@ multiple scanners in the same run.
 ## BigQuery dataset ACL scanner
 
 BigQuery datasets have access properties that can publicly expose your datasets.
-The BigQuery scanner supports a blacklist mode to ensure unauthorized users
-don't gain access to your datasets.
+The BigQuery scanner supports blacklist and whitelist modes to ensure unauthorized users
+don't gain access to your datasets, and only authorized users can gain access.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
 [`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
@@ -66,6 +66,16 @@ the
 [`cloudsql_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/cloudsql_rules.yaml)
 rule file.
 
+## Config Validator scanner
+
+The Config Validator scanner uses the [Forseti Config Validator](https://github.com/forseti-security/config-validator) 
+service to evaluate violations with policies written in Rego. With this scanner 
+in place, users are now able to define customized policies easily without writing 
+a new scanner.
+
+Read more about the Forseti Config Validator efforts and how to define customized 
+policies for the Config Validator scanner [here](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
+
 ## Enabled APIs scanner
 
 The Enabled APIs scanner detects if a project has appropriate APIs enabled. It
@@ -76,6 +86,20 @@ For examples of how to define scanner rules for Enabled APIs, see the
 [`enabled_apis_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/enabled_apis_rules.yaml)
 rule file.
 
+## External Project Access Scanner
+
+The External Project Access Scanner mitigates data exfiltration by identifying users who have access to projects outside of your organization or folder.
+
+Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
+
+This scanner is not part of the regular cron job, because it might take a long time to finish the scanning. To try it out you can manually run this scanner:
+```
+    forseti scanner run --scanner external_project_access_scanner
+```
+
+Before running this scanner, please 
+[enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
+
 ## Firewall rules scanner
 
 Network firewall rules protect your network & organization by only allowing
@@ -84,17 +108,6 @@ ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
 [`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/firewall_rules.yaml)
-rule file.
-
-## Load balancer forwarding rules scanner
-
-You can configure load balancer forwarding rules to direct unauthorized external
-traffic to your target instances. The forwarding rule scanner supports a
-whitelist mode, to ensure each forwarding rule only directs to the intended
-target instances.
-
-For examples of how to define scanner rules for your forwarding rules, see the
-[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/forwarding_rules.yaml)
 rule file.
 
 ## Groups scanner
@@ -116,7 +129,8 @@ supports the following:
 
 * Whitelist, blacklist, and required modes.
 * Define if the scope of the rule inherits from parents or just self.
-* Access to specific organization, folder, project or bucket resource types.
+* Access to specific organization, billing account, folder, project, bucket and
+  dataset resource types. 
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
 [`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iam_rules.yaml)
@@ -143,6 +157,16 @@ external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/instance_network_interface_rules.yaml)
+rule file.
+
+## KMS scanner
+
+Alert or notify if the crypto keys in the organization are not rotated within the 
+time specified. This scanner can ensure that all the cryptographic keys are 
+properly configured. 
+
+For examples of how to define scanner rules for your crypto keys, see the
+[`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
 rule file.
 
 ## Kubernetes Engine scanner
@@ -186,6 +210,17 @@ For examples of how to define scanner rules for lien, see the
 [`lien_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml)
 rule file.
 
+## Load balancer forwarding rules scanner
+
+You can configure load balancer forwarding rules to direct unauthorized external
+traffic to your target instances. The forwarding rule scanner supports a
+whitelist mode, to ensure each forwarding rule only directs to the intended
+target instances.
+
+For examples of how to define scanner rules for your forwarding rules, see the
+[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/forwarding_rules.yaml)
+rule file.
+
 ## Location scanner
 Allow customers to ensure their resources are located only in the intended 
 locations. Set guards around locations as part of automated project deployment.
@@ -202,6 +237,12 @@ For examples of how to define scanner rules for log sink, see the
 [`log_sink_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/log_sink_rules.yaml)
 rule file.
 
+## Retention scanner
+
+Allow customers to ensure the retention policies on their resources are set as intended.
+
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
+
 ## Service Account Key scanner
 
 It's best to periodically rotate your user-managed service account
@@ -213,10 +254,4 @@ than the max age.
 For examples of how to define scanner rules for your service account keys, see the
 [`service_account_key_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/service_account_key_rules.yaml)
 file.
-
-## Retention scanner
-
-Allow customers to ensure the retention policies on their resources are set as intended.
-
-For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
 
