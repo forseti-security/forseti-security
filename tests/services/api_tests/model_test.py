@@ -431,7 +431,7 @@ class ExplainerTest(ForsetiTestCase):
                 role_names=['role/a', 'role/b'])
             rp_pairs = expand_message(response.permissionsbyroles,
                                       "role_permission")
-            self.assertEquals(rp_pairs, set([
+            self.assertEqual(rp_pairs, set([
                 'role/a permission/a',
                 'role/a permission/b',
                 'role/a permission/c',

@@ -16,7 +16,7 @@
 # pylint: disable=line-too-long
 from builtins import str
 import unittest
-import mock
+import unittest.mock as mock
 
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.organization import Organization

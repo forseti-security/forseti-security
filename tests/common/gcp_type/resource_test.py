@@ -14,7 +14,7 @@
 
 """Tests the GCP Resource base class."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase

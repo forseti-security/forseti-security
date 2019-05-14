@@ -16,7 +16,7 @@
 
 from builtins import object
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests import unittest_utils
 from tests.services.util.db import create_test_engine
@@ -81,11 +81,10 @@ NO_NODE_POOLS = '''
 
 NO_NODE_POOLS_ID = size_t_hash('fake-cluster-no-node-pools.com')
 
-FAKE_CLUSTERS = {
-    FAKE_CLUSTER_ID: FAKE_CLUSTER,
-    NO_NODE_POOLS_ID: NO_NODE_POOLS,
-}
-
+FAKE_CLUSTERS = [
+    (FAKE_CLUSTER_ID, FAKE_CLUSTER),
+    (NO_NODE_POOLS_ID, NO_NODE_POOLS)
+]
 
 class FakeServiceConfig(object):
 
@@ -112,7 +111,7 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
             project = data_access.add_resource(session, 'project/fake-project',
                                                organization)
 
-            for cluster_id, cluster in list(FAKE_CLUSTERS.items()):
+            for cluster_id, cluster in FAKE_CLUSTERS:
                 ke_cluster = data_access.add_resource(
                     session,
                     'kubernetes_cluster/{}'.format(cluster_id),
@@ -147,104 +146,280 @@ class KeScannerTest(unittest_utils.ForsetiTestCase):
     def test_run_scanner(self, mock_output_results, mock_logger):
         self.scanner.run()
         expected_violations = [
-            {'rule_name': 'explicit whitelist, pass',
-             'resource_name': 'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 0,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': "name has value fake-cluster-no-node-pools, which is not in the whitelist (['fake-cluster'])", 'cluster_name': 'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'explicit whitelist, fail',
-             'resource_name': u'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
+            {'resource_id': FAKE_CLUSTER_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
              'rule_index': 1,
+             'rule_name': 'explicit whitelist, fail',
              'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': u"name has value fake-cluster-no-node-pools, which is not in the whitelist (['real-cluster'])", 'cluster_name': u'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
+             'violation_data': {
+                 'violation_reason': "name has value fake-cluster, "
+                                     "which is not in the whitelist "
+                                     "(['real-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster',
+                 'full_name': 'organization/12345/project/fake-project/'
+                                 'kubernetes_cluster/{}/'
+                               .format(FAKE_CLUSTER_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster", '
+                              '"nodePools": [{"config": {"imageType": "COS"}, '
+                              '"name": "default-pool", '
+                              '"version": "1.7.11-gke.1"}, '
+                              '{"config": {"imageType": "COS"}, '
+                              '"name": "secondary-pool", '
+                              '"version": "1.7.11-gke.1"}], '
+                              '"selfLink": "fake-cluster.com"}'},
 
-            {'rule_name': 'multiple values, pass',
-             'resource_name': u'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 4,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': u"name has value fake-cluster-no-node-pools, which is not in the whitelist (['real-cluster', 'fake-cluster'])", 'cluster_name': u'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'multiple values, fail',
-             'resource_name': u'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 5,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': u"name has value fake-cluster-no-node-pools, which is not in the whitelist (['real-cluster', 'imaginary-cluster'])", 'cluster_name': u'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'use projection to look for a list, pass',
-             'resource_name': u'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 7, 'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': "nodePools[*].config.imageType has value None, which is not in the whitelist ([['COS', 'COS']])", 'cluster_name': u'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'use projection, look for a list, fail',
-             'resource_name': u'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 8,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': "nodePools[*].config.imageType has value None, which is not in the whitelist ([['COS'], ['Ubuntu', 'COS']])", 'cluster_name': u'fake-cluster-no-node-pools', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'missing nodePool, should generate violation',
-             'resource_name': 'fake-cluster-no-node-pools',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster-no-node-pools", "selfLink": "fake-cluster-no-node-pools.com"}',
-             'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
-             'resource_id': NO_NODE_POOLS_ID,
-             'rule_index': 12,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': 'length(nodePools || `[]`) > `0` has value False, which is not in the whitelist ([True])',
-                                'cluster_name': 'fake-cluster-no-node-pools',
-                                'project_id': 'fake-project',
-                                'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID)},
-             'resource_type': 'kubernetes_cluster'},
-
-            {'rule_name': 'explicit whitelist, fail',
-             'resource_name': u'fake-cluster',
-             'full_name': u'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster", "nodePools": [{"config": {"imageType": "COS"}, "name": "default-pool", "version": "1.7.11-gke.1"}, {"config": {"imageType": "COS"}, "name": "secondary-pool", "version": "1.7.11-gke.1"}], "selfLink": "fake-cluster.com"}',
-             'resource_id': FAKE_CLUSTER_ID,
-             'rule_index': 1,
-             'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': u"name has value fake-cluster, which is not in the whitelist (['real-cluster'])", 'cluster_name': u'fake-cluster', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)},
-             'resource_type': 'kubernetes_cluster'},
-            {'rule_name': 'explicit blacklist, fail',
-             'resource_name': u'fake-cluster',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster", "nodePools": [{"config": {"imageType": "COS"}, "name": "default-pool", "version": "1.7.11-gke.1"}, {"config": {"imageType": "COS"}, "name": "secondary-pool", "version": "1.7.11-gke.1"}], "selfLink": "fake-cluster.com"}',
-             'full_name': u'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
-             'resource_id': FAKE_CLUSTER_ID,
+            {'resource_id': FAKE_CLUSTER_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
              'rule_index': 3,
+             'rule_name': 'explicit blacklist, fail',
              'violation_type': 'KE_VIOLATION',
-             'violation_data': {'violation_reason': u"name has value fake-cluster, which is in the blacklist (['fake-cluster'])", 'cluster_name': u'fake-cluster', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)},
-             'resource_type': 'kubernetes_cluster'},
-            {'rule_name': 'multiple values, fail',
-             'resource_name': u'fake-cluster',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster", "nodePools": [{"config": {"imageType": "COS"}, "name": "default-pool", "version": "1.7.11-gke.1"}, {"config": {"imageType": "COS"}, "name": "secondary-pool", "version": "1.7.11-gke.1"}], "selfLink": "fake-cluster.com"}',
-             'full_name': u'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID), 'resource_id': FAKE_CLUSTER_ID, 'rule_index': 5, 'violation_type': 'KE_VIOLATION', 'violation_data': {'violation_reason': u"name has value fake-cluster, which is not in the whitelist (['real-cluster', 'imaginary-cluster'])", 'cluster_name': u'fake-cluster', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)}, 'resource_type': 'kubernetes_cluster'},
-            {'rule_name': 'use projection, look for a list, fail',
-             'resource_name': u'fake-cluster',
-             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, "istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, "kubernetesDashboard": {"disabled": true}}, "name": "fake-cluster", "nodePools": [{"config": {"imageType": "COS"}, "name": "default-pool", "version": "1.7.11-gke.1"}, {"config": {"imageType": "COS"}, "name": "secondary-pool", "version": "1.7.11-gke.1"}], "selfLink": "fake-cluster.com"}',
-             'full_name': u'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID), 'resource_id': FAKE_CLUSTER_ID, 'rule_index': 8, 'violation_type': 'KE_VIOLATION', 'violation_data': {'violation_reason': "nodePools[*].config.imageType has value [u'COS', u'COS'], which is not in the whitelist ([['COS'], ['Ubuntu', 'COS']])", 'cluster_name': u'fake-cluster', 'project_id': 'fake-project', 'full_name': 'organization/12345/project/fake-project/kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)}, 'resource_type': 'kubernetes_cluster'},
+             'violation_data': {
+                 'violation_reason': "name has value fake-cluster, which is "
+                                     "in the blacklist (['fake-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster", '
+                              '"nodePools": [{"config": {"imageType": "COS"}, '
+                              '"name": "default-pool", '
+                              '"version": "1.7.11-gke.1"}, '
+                              '{"config": {"imageType": "COS"}, '
+                              '"name": "secondary-pool", '
+                              '"version": "1.7.11-gke.1"}], '
+                              '"selfLink": "fake-cluster.com"}'},
+
+            {'resource_id': FAKE_CLUSTER_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
+             'rule_index': 5,
+             'rule_name': 'multiple values, fail',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "name has value fake-cluster, "
+                                     "which is not in the whitelist "
+                                     "(['real-cluster', 'imaginary-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster", '
+                              '"nodePools": [{"config": {"imageType": "COS"}, '
+                              '"name": "default-pool", '
+                              '"version": "1.7.11-gke.1"}, '
+                              '{"config": {"imageType": "COS"}, '
+                              '"name": "secondary-pool", '
+                              '"version": "1.7.11-gke.1"}], '
+                              '"selfLink": "fake-cluster.com"}'},
+
+            {'resource_id': FAKE_CLUSTER_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID),
+             'rule_index': 8,
+             'rule_name': 'use projection, look for a list, fail',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "nodePools[*].config.imageType has value "
+                                     "['COS', 'COS'], which is not in the "
+                                     "whitelist ([['COS'], ['Ubuntu', 'COS']])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'.format(FAKE_CLUSTER_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster", '
+                              '"nodePools": [{"config": {"imageType": "COS"}, '
+                              '"name": "default-pool", '
+                              '"version": "1.7.11-gke.1"}, '
+                              '{"config": {"imageType": "COS"}, '
+                              '"name": "secondary-pool", '
+                              '"version": "1.7.11-gke.1"}], '
+                              '"selfLink": "fake-cluster.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 0,
+             'rule_name': 'explicit whitelist, pass',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "name has value "
+                                     "fake-cluster-no-node-pools, which is not "
+                                     "in the whitelist (['fake-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 1,
+             'rule_name': 'explicit whitelist, fail',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "name has value "
+                                     "fake-cluster-no-node-pools, which is not "
+                                     "in the whitelist (['real-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 4,
+             'rule_name': 'multiple values, pass',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "name has value "
+                                     "fake-cluster-no-node-pools, "
+                                     "which is not in the whitelist "
+                                     "(['real-cluster', 'fake-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 5,
+             'rule_name': 'multiple values, fail',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "name has value "
+                                     "fake-cluster-no-node-pools, which is not "
+                                     "in the whitelist "
+                                     "(['real-cluster', 'imaginary-cluster'])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 7,
+             'rule_name': 'use projection to look for a list, pass',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "nodePools[*].config.imageType has "
+                                     "value None, which is not in the "
+                                     "whitelist ([['COS', 'COS']])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 8,
+             'rule_name': 'use projection, look for a list, fail',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': "nodePools[*].config.imageType has "
+                                     "value None, which is not in the "
+                                     "whitelist ([['COS'], ['Ubuntu', 'COS']])",
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'},
+
+            {'resource_id': NO_NODE_POOLS_ID,
+             'resource_type': 'kubernetes_cluster',
+             'resource_name': 'fake-cluster-no-node-pools',
+             'full_name': 'organization/12345/project/fake-project/'
+                          'kubernetes_cluster/{}/'.format(NO_NODE_POOLS_ID),
+             'rule_index': 12,
+             'rule_name': 'missing nodePool, should generate violation',
+             'violation_type': 'KE_VIOLATION',
+             'violation_data': {
+                 'violation_reason': 'length(nodePools || `[]`) > `0` has '
+                                     'value False, which is not in the '
+                                     'whitelist ([True])',
+                 'project_id': 'fake-project',
+                 'cluster_name': 'fake-cluster-no-node-pools',
+                 'full_name': 'organization/12345/project/fake-project/'
+                              'kubernetes_cluster/{}/'
+                              .format(NO_NODE_POOLS_ID)},
+             'resource_data': '{"addonsConfig": {"httpLoadBalancing": {}, '
+                              '"istioConfig": {"auth": "AUTH_MUTUAL_TLS"}, '
+                              '"kubernetesDashboard": {"disabled": true}}, '
+                              '"name": "fake-cluster-no-node-pools", '
+                              '"selfLink": "fake-cluster-no-node-pools.com"}'}
         ]
 
         mock_output_results.assert_called_once_with(mock.ANY,

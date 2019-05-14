@@ -18,7 +18,7 @@
 import copy
 from datetime import datetime
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.enforcer import testing_constants as constants
 from google.protobuf import text_format

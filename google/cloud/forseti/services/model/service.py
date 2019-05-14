@@ -107,7 +107,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         # pylint: disable=no-member
         model_name = request.handle
         if not model_name:
-            LOGGER.warn('No model name in request: %s', request)
+            LOGGER.warning('No model name in request: %s', request)
             status = model_pb2.DeleteModelReply.FAIL
             return model_pb2.DeleteModelReply(status=status)
 

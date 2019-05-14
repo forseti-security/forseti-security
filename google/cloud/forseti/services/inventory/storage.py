@@ -665,7 +665,7 @@ class CaiTemporaryStore(object):
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
-            LOGGER.warn('Skipping insert of asset %s, name too long.',
+            LOGGER.warning('Skipping insert of asset %s, name too long.',
                         asset['name'])
             return None
 
@@ -854,7 +854,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip())
+                row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.

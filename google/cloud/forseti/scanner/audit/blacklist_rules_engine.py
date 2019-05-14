@@ -18,7 +18,9 @@ standard_library.install_aliases()
 from builtins import object
 import itertools
 import re
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import struct
 import socket
 

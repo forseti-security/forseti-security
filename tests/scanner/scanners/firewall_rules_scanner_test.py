@@ -16,7 +16,7 @@
 
 from datetime import datetime
 import json
-import mock
+import unittest.mock as mock
 import os
 import parameterized
 import unittest
@@ -97,7 +97,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
         expected = string_formats.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
         actual = self.scanner.get_output_filename(self.fake_utcnow)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
@@ -395,7 +395,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         for _, fws in list(results[0].items()):
           for fw in fws:
             retrieved_names.append(fw.full_name)
-        self.assertItemsEqual(expected_names, retrieved_names)
+        self.assertCountEqual(expected_names, retrieved_names)
 
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
@@ -466,12 +466,12 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             {}, {}, mock_service_config, '', '', rules_local_path)
         scanner.rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         scanner.run()
-        self.assertEquals(1, mock_output_results_to_db.call_count)
+        self.assertEqual(1, mock_output_results_to_db.call_count)
 
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)
         sorted(violations, key=lambda k: k.resource_id)
-        self.assertItemsEqual(expected, violations)
+        self.assertCountEqual(expected, violations)
 
 
 if __name__ == '__main__':

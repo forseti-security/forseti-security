@@ -16,7 +16,7 @@
 from future import standard_library
 standard_library.install_aliases()
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 import io
@@ -74,7 +74,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         results = self.gcs_api_client.get_buckets(
             fake_storage.FAKE_PROJECT_NUMBER)
-        self.assertEquals(expected_bucket_names,
+        self.assertEqual(expected_bucket_names,
                           [r.get('name') for r in results])
 
     def test_get_buckets_raises(self):
@@ -187,7 +187,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         results = self.gcs_api_client.get_objects(
             fake_storage.FAKE_PROJECT_NUMBER)
-        self.assertEquals(expected_object_names,
+        self.assertEqual(expected_object_names,
                           [r.get('name') for r in results])
 
     def test_get_objects_raises(self):
@@ -211,7 +211,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         results = self.gcs_api_client.get_objects(
             fake_storage.FAKE_PROJECT_NUMBER)
-        self.assertEquals(expected_object_names,
+        self.assertEqual(expected_object_names,
                           [r.get('name') for r in results])
 
     def test_get_object_iam_policy(self):
@@ -295,7 +295,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     def test_get_text_file_raises(self):
         """Test get test file returns not found error."""
         http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
-
         with self.assertRaises(storage.errors.HttpError):
             self.gcs_api_client.get_text_file(
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
@@ -312,7 +311,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_result = b'12345'
-        output_file = io.StringIO()
+        output_file = io.BytesIO()
         file_size = self.gcs_api_client.download(
             'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                 fake_storage.FAKE_OBJECT_NAME),

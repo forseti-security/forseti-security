@@ -19,7 +19,7 @@ from builtins import object
 from argparse import ArgumentParser
 from copy import copy
 import json
-import mock
+import unittest.mock as mock
 import os
 import shlex
 import shutil
@@ -464,9 +464,9 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a role prefix',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_list_permissions_with_role_specified(self):
         ignored = mock.MagicMock()
@@ -498,9 +498,9 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a permission',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_query_access_by_authz_with_role_specified(self):
         ignored = mock.MagicMock()

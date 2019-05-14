@@ -47,6 +47,7 @@ def clean(path):
     """
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
+    unlink_pb2 = ('_pb2.py', '_pb2_grpc.py', '_pb2.pyc', '_pb2_grpc.pyc')
     LOGGER.info('Cleaning out compiled protos.')
     cwd = os.path.dirname(path)
 
@@ -60,8 +61,7 @@ def clean(path):
             full_filename = os.path.join(root, filename)
             if filename in PB2_TO_KEEP:
                 continue
-            if full_filename.endswith('_pb2.py') or full_filename.endswith(
-                    '_pb2.pyc'):
+            if full_filename.endswith(unlink_pb2):
                 os.unlink(full_filename)
 
 
@@ -94,19 +94,33 @@ def make_proto(path):
 
     if not protos_to_compile:
         LOGGER.info('No protos needed to be compiled.')
+
     else:
         for proto in protos_to_compile:
             LOGGER.info('Compiling %s', proto)
             protodir, protofile = os.path.split(proto)
+            protopath = protofile
+
+            if 'google/cloud/forseti/' in proto:
+                protopath = ''
+                while protofile != 'forseti-security':
+                    if protopath == '':
+                        protopath = protofile
+                    else:
+                        protopath = protofile + "/" + protopath
+                    protodir, protofile = os.path.split(protodir)
+
+            protodir = protodir + "/" + protofile
+            cwd_path = protodir
 
             subprocess.check_call(
                 [
-                    'python',
+                    'python3',
                     '-m',
                     'grpc_tools.protoc',
-                    '-I.',
+                    '-I=.',
                     '--python_out=.',
                     '--grpc_python_out=.',
-                    protofile,
+                    protopath,
                 ],
-                cwd=protodir)
+                cwd=cwd_path)

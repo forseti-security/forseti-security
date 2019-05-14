@@ -90,8 +90,11 @@ def _create_service_api(credentials, service_name, version, is_private_api,
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING unless
     # debug is enabled.
-    if LOGGER.getEffectiveLevel() > logging.DEBUG:
-        logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    try:
+        if LOGGER.getEffectiveLevel() > logging.DEBUG:
+            logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    except Exception as e:
+        LOGGER.debug('Logging cannot be set: %s' % e)
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
@@ -191,7 +194,7 @@ class BaseRepositoryClient(object):
         # Look to see if the API is formally supported in Forseti.
         supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
         if not supported_api:
-            LOGGER.warn('API "%s" is not formally supported in Forseti, '
+            LOGGER.warning('API "%s" is not formally supported in Forseti, '
                         'proceed at your own risk.', api_name)
 
         # See if the version is supported by Forseti.
@@ -203,7 +206,7 @@ class BaseRepositoryClient(object):
         if supported_api:
             for version in versions:
                 if version not in supported_api.get('supported_versions', []):
-                    LOGGER.warn('API "%s" version %s is not formally supported '
+                    LOGGER.warning('API "%s" version %s is not formally supported '
                                 'in Forseti, proceed at your own risk.',
                                 api_name, version)
 
@@ -523,6 +526,9 @@ class GCPRepository(object):
         Returns:
             dict: The response from the API.
         """
+        if hasattr(self.http, 'data'):
+            if isinstance(self.http.data, str):
+                self.http.data = self.http.data.encode()
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
             # interface the code has to be duplicated to handle the case where

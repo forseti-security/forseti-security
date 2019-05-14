@@ -15,7 +15,7 @@
 
 from builtins import range
 import unittest
-import mock
+import unittest.mock as mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.services.utils import get_resources_from_full_name
@@ -98,7 +98,7 @@ class ServerUtilsTest(ForsetiTestCase):
         resources = get_resources_from_full_name(fake_full_name)
         counter = 0
         for resource_type, resource_id in resources:
-            self.assertEquals(expected_resources[counter],
+            self.assertEqual(expected_resources[counter],
                               (resource_type, resource_id))
             counter += 1
 

@@ -23,15 +23,15 @@ WORKDIR /forseti-security/
 # This should stay in sync with the deployment script used on the host machine in
 #   deployment-templates/compute-engine/forseti-instance.py
 
-RUN pip install -q --upgrade pip==9.0.3
-RUN pip install -q --upgrade setuptools wheel 1> /dev/null
-RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
+RUN pip3 install -q --upgrade pip==19.1
+RUN pip3 install -q --upgrade setuptools wheel 1> /dev/null
+RUN pip3 install -q --upgrade -r requirements.txt 1> /dev/null
 
 # Expose our source so we can install Forseti Security.
 ADD . /forseti-security/
 
 # Install Forseti Security.
-RUN python setup.py install 1> /dev/null
+RUN python3 setup.py install 1> /dev/null
 
 # Make entrypoint script executable
 RUN chmod +x /forseti-security/install/scripts/docker_entrypoint.sh

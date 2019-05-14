@@ -16,7 +16,7 @@
 from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_enabled_apis_scanner_data as feasd
@@ -92,7 +92,7 @@ class EnabledApisScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in enabled_apis_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         enabled_apis_scanner.EnabledApisScanner,

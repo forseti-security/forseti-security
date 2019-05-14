@@ -177,7 +177,8 @@ class CloudAssetClient(object):
             LOGGER.error('Error exporting assets for parent %s: %s', parent, e)
             raise api_errors.ApiExecutionError(parent, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn('Timeout exporting assets for parent %s: %s', parent, e)
+            LOGGER.warning('Timeout exporting assets for parent %s: %s',
+                           parent, e)
             raise
 
         LOGGER.info('Exporting assets for parent %s. Result: %s',

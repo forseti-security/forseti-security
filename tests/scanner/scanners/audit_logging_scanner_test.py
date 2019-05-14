@@ -16,7 +16,7 @@
 from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_audit_logging_scanner_data as fasd
@@ -123,7 +123,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in audit_logging_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         audit_logging_scanner.AuditLoggingScanner,

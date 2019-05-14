@@ -21,7 +21,7 @@ import json
 import socket
 from io import StringIO
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.auth.transport import requests
@@ -95,7 +95,7 @@ class MetadataServerTest(ForsetiTestCase):
         mock_response = 'expected_response'
 
         with mock.patch(
-                'httplib.HTTPResponse',
+                'http.client.HTTPResponse',
                 mock.mock_open(read_data=mock_response)) as mock_http_resp:
             mock_http_resp.return_value.status = http.client.OK
             mock_meta_req.side_effect = mock_http_resp
@@ -131,7 +131,7 @@ class MetadataServerTest(ForsetiTestCase):
         mock_response = 'test-project'
 
         with mock.patch(
-                'httplib.HTTPResponse',
+                'http.client.HTTPResponse',
                 mock.mock_open(read_data=mock_response)) as mock_http_resp:
             mock_http_resp.return_value.status = http.client.OK
             mock_meta_req.side_effect = mock_http_resp

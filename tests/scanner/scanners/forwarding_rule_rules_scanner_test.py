@@ -15,7 +15,7 @@
 """Forwarding Rules Rule Scanner Test"""
 
 from builtins import object
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner.scanners import forwarding_rule_scanner

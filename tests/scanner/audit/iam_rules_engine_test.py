@@ -17,7 +17,7 @@
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import yaml
 import unittest
 
@@ -670,7 +670,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_whitelist_rules_vs_policy_no_violations(self):
         """Test ruleset on an org with whitelist with no rule violations.
@@ -709,7 +709,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 self.org789, self.mock_org_policy_resource, rule_bindings),
         ))
 
-        self.assertItemsEqual(set(), actual_violations)
+        self.assertCountEqual(set(), actual_violations)
 
     def test_org_proj_rules_vs_policy_has_violations(self):
         """Test rules on org and project with whitelist, blacklist, required.
@@ -820,7 +820,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_self_rules_work_with_org_child_rules(self):
         """Test org "self" whitelist works with org "children" whitelist
@@ -916,7 +916,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_project_noinherit_project_overrides_org_rule(self):
         """Test org with blacklist and child with whitelist, no inherit.
@@ -961,7 +961,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         expected_violations = set([])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_2_child_rules_report_violation(self):
         """Test org "children" whitelist works with org "children" blacklist.
@@ -1024,7 +1024,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_project_inherit_org_rule_violation(self):
         """Test org with blacklist and child with whitelist, no inherit.
@@ -1089,7 +1089,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_self_bl_proj_noinherit_wl_no_violation(self):
         """Test proj policy doesn't violate rule b/l user (org), w/l (project).
@@ -1135,7 +1135,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         )
 
         expected_violations = set([])
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_org_self_wl_proj_noinherit_bl_has_violation(self):
         """Test org allowing user + proj blacklisting user has violation.
@@ -1217,7 +1217,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_ignore_case_works(self):
         """Test blacklisted user with different case still violates rule.
@@ -1280,7 +1280,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_wildcard_resource_rules_work(self):
         """Test whitelisted wildcard resources.
@@ -1340,7 +1340,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_wildcard_resources_with_project_whitelist(self):
         """Test whitelisted wildcard resources.
@@ -1428,7 +1428,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 resource_data=self.project1.data),
         ])
 
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_folder_rule_whitelist(self):
         """Test a simple folder whitelist rule."""
@@ -1499,7 +1499,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 members=tuple(expected_outstanding['roles/editor']),
                 resource_data=self.folder1.data),
         ])
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_project_required(self):
         """Test required rule."""
@@ -1574,7 +1574,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 members=tuple(expected_outstanding['roles/owner']),
                 resource_data=self.project2.data),
         ])
-        self.assertItemsEqual(expected_violations, actual_violations)
+        self.assertCountEqual(expected_violations, actual_violations)
 
     def test_policy_all_projects_must_have_owners_from_domain_type(self):
         """Test a policy where the owner belongs to the required domain.
