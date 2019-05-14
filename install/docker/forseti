@@ -23,7 +23,7 @@ WORKDIR /forseti-security/
 # This should stay in sync with the deployment script used on the host machine in
 #   deployment-templates/compute-engine/forseti-instance.py
 
-RUN pip3 install -q --upgrade pip==19.1
+RUN pip3 install -q --upgrade pip==19.1.1
 RUN pip3 install -q --upgrade setuptools wheel 1> /dev/null
 RUN pip3 install -q --upgrade -r requirements.txt 1> /dev/null
 
