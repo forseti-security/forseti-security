@@ -239,18 +239,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        if self.composite_root_resources:
-            # split element 0 into type and id
-            rtype, rid = self.composite_root_resources[0].split('/')
 
-            organization_id = self.organization_id
-        else:
-            organization_id = self.resource_root_id.split('/')[-1]
-
-        domain = gcloud.get_domain_from_organization_id(organization_id)
+        domain = gcloud.get_domain_from_organization_id(self.organization_id)
 
         return {
-            'ORGANIZATION_ID': organization_id,
+            'ORGANIZATION_ID': self.organization_id,
             'DOMAIN': domain
         }
 
