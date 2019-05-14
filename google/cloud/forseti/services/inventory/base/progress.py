@@ -13,10 +13,12 @@
 # limitations under the License.
 
 """ Crawler implementation. """
+from __future__ import print_function
 
 # pylint: disable=no-self-use
 
 
+from builtins import object
 class Progresser(object):
     """Progress state Interface"""
     def __init__(self):
@@ -78,7 +80,7 @@ class CliProgresser(object):
         Args:
             resource (Resource): the Resource object in resources
         """
-        print 'found new object: {}'.format(resource)
+        print('found new object: {}'.format(resource))
 
     def on_warning(self, warning):
         """Show progress state when have a warning
@@ -86,7 +88,7 @@ class CliProgresser(object):
         Args:
             warning (str): warning message
         """
-        print 'warning: {}'.format(warning)
+        print('warning: {}'.format(warning))
         self.warnings.append(warning)
 
     def on_error(self, error):
@@ -95,11 +97,11 @@ class CliProgresser(object):
         Args:
             error (str): error message
         """
-        print 'error: {}'.format(error)
+        print('error: {}'.format(error))
         self.errors.append(error)
 
     def get_summary(self):
         """Show progress state when finish"""
-        print 'Errors: {}, Warnings: {}'.format(
+        print('Errors: {}, Warnings: {}'.format(
             len(self.errors),
-            len(self.warnings))
+            len(self.warnings)))

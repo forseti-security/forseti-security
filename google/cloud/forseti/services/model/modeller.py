@@ -14,6 +14,7 @@
 
 """ Modeller API. """
 
+from builtins import object
 from google.cloud.forseti.services.model.importer import importer
 from google.cloud.forseti.common.util import logger
 

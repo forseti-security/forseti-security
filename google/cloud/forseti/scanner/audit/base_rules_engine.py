@@ -17,11 +17,13 @@
 Loads YAML rules either from local file system or Cloud Storage bucket.
 """
 
+from builtins import object
 import abc
 
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import errors as audit_errors
+from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 
@@ -69,7 +71,7 @@ class BaseRulesEngine(object):
         return rules
 
 
-class BaseRuleBook(object):
+class BaseRuleBook(with_metaclass(abc.ABCMeta, object)):
     """Base class for RuleBooks.
 
     The RuleBook class encapsulates the logic for how the RulesEngine will
@@ -77,7 +79,6 @@ class BaseRuleBook(object):
     the RuleBook depends on how rules should be applied. For example,
     Organization resource rules would be applied in a hierarchical manner.
     """
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def add_rule(self, rule_def, rule_index):

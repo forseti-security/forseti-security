@@ -20,6 +20,7 @@ Usage for enforcing a single project's firewall:
       --policy_file <policy file path>
 
 """
+from __future__ import print_function
 import argparse
 import sys
 import threading
@@ -184,10 +185,10 @@ def main():
                                                   flags['enforce_project'],
                                                   flags['policy_file'])
 
-        print enforcer_results
+        print(enforcer_results)
 
     else:
-        print 'Batch mode not implemented yet.'
+        print('Batch mode not implemented yet.')
 
 
 if __name__ == '__main__':

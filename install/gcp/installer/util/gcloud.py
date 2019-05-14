@@ -15,14 +15,17 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
+from builtins import input
+from builtins import str
 import json
 import os.path
 import re
 import sys
 
-import constants
-import installer_errors
-import utils
+from . import constants
+from . import installer_errors
+from . import utils
 
 
 def get_gcloud_info():
@@ -385,7 +388,7 @@ def _grant_roles(roles_map, target_id, project_id,
 
     assign_roles_cmds = []
 
-    for (resource_type, roles) in roles_map.iteritems():
+    for (resource_type, roles) in roles_map.items():
         resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
@@ -477,7 +480,7 @@ def choose_organization():
             print('ID=%s (description="%s")' %
                   (org_id, org['displayName']))
 
-        choice = raw_input('Enter the organization id where '
+        choice = input('Enter the organization id where '
                            'you want Forseti to crawl for data: ').strip()
         try:
             # make sure that the choice is a valid organization id
@@ -501,7 +504,7 @@ def choose_folder(organization_id):
     """
     target_id = None
     while not target_id:
-        choice = raw_input(
+        choice = input(
             constants.QUESTION_CHOOSE_FOLDER.format(organization_id)).strip()
         try:
             # make sure that the choice is an int before converting to str
@@ -519,7 +522,7 @@ def choose_project():
     """
     target_id = None
     while not target_id:
-        target_id = raw_input(
+        target_id = input(
             'Enter the project id (NOT PROJECT NUMBER), '
             'where you want Forseti to crawl for data: ').strip()
     return target_id

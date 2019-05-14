@@ -14,20 +14,20 @@
 
 """Base email connector to select connector"""
 
+from builtins import object
 import abc
 import os
 
 import jinja2
 
 from google.cloud.forseti.common.util import logger
+from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 
 
-class BaseEmailConnector(object):
+class BaseEmailConnector(with_metaclass(abc.ABCMeta, object)):
     """Base email connector."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def _execute_send(self, email):

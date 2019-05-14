@@ -95,7 +95,7 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
 
         roles.setdefault(iam_role, set()).add(member)
 
-    for role, members in roles.items():
+    for role, members in list(roles.items()):
         iam_policy['bindings'].append({'role': role, 'members': list(members)})
     return iam_policy
 
@@ -293,4 +293,4 @@ def convert_iam_to_bucket_acls(iam_policy, bucket, project_id, project_number):
 
             access_policies[acl['id']] = acl
 
-    return access_policies.values()
+    return list(access_policies.values())

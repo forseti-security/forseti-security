@@ -16,8 +16,11 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import json
-from StringIO import StringIO
+from io import StringIO
 import traceback
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -1029,8 +1032,8 @@ class InventoryImporter(object):
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
 
-        self.session.add_all(self.permission_cache.values())
-        self.session.add_all(self.role_cache.values())
+        self.session.add_all(list(self.permission_cache.values()))
+        self.session.add_all(list(self.role_cache.values()))
 
     def _convert_service_config(self, service_config):
         """Convert Kubernetes Service Config to a database object.

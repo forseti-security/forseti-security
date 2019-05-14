@@ -14,10 +14,12 @@
 
 """Tests the Metadata Server utility."""
 
-import httplib
+from future import standard_library
+standard_library.install_aliases()
+import http.client
 import json
 import socket
-from StringIO import StringIO
+from io import StringIO
 import unittest
 import mock
 
@@ -41,7 +43,7 @@ class _MockMetadataServerHttpError(errors.MetadataServerHttpError):
 class MetadataServerTest(ForsetiTestCase):
     """Test the Metadata Server util."""
 
-    @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
+    @mock.patch.object(http.client.HTTPConnection, 'request', autospec=True)
     def test_issue_http_request_raises_metadatahttperror(self, mock_req):
         """Test _issue_http_request raises an exception with socket.error
         in httplib.HTTPConnection.request().
@@ -63,7 +65,7 @@ class MetadataServerTest(ForsetiTestCase):
             * Assert a httplib.HTTPConnection object is returned.
         """
         returned_object = metadata_server._obtain_http_client()
-        self.assertIsInstance(returned_object, httplib.HTTPConnection)
+        self.assertIsInstance(returned_object, http.client.HTTPConnection)
 
     @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
     def test_get_value_for_attribute_with_exception(self, mock_meta_req):
@@ -95,7 +97,7 @@ class MetadataServerTest(ForsetiTestCase):
         with mock.patch(
                 'httplib.HTTPResponse',
                 mock.mock_open(read_data=mock_response)) as mock_http_resp:
-            mock_http_resp.return_value.status = httplib.OK
+            mock_http_resp.return_value.status = http.client.OK
             mock_meta_req.side_effect = mock_http_resp
 
             actual_response = metadata_server.get_value_for_attribute('')
@@ -131,7 +133,7 @@ class MetadataServerTest(ForsetiTestCase):
         with mock.patch(
                 'httplib.HTTPResponse',
                 mock.mock_open(read_data=mock_response)) as mock_http_resp:
-            mock_http_resp.return_value.status = httplib.OK
+            mock_http_resp.return_value.status = http.client.OK
             mock_meta_req.side_effect = mock_http_resp
 
             actual_response = metadata_server.get_project_id()
@@ -141,18 +143,18 @@ class MetadataServerTest(ForsetiTestCase):
     @mock.patch.object(metadata_server, '_obtain_http_client', autospec=True)
     def test_can_reach_metadata_server(self, mock_client):
         """Verifies can_reach_metadata_server returns correctly."""
-        mock_http_resp = mock.Mock(spec=httplib.HTTPResponse)
-        mock_http_resp.return_value.status = httplib.OK
+        mock_http_resp = mock.Mock(spec=http.client.HTTPResponse)
+        mock_http_resp.return_value.status = http.client.OK
         mock_http_resp.return_value.getheader.return_value = (
             metadata_server._METADATA_FLAVOR_VALUE)
         mock_client.return_value.getresponse.side_effect = mock_http_resp
 
         self.assertTrue(metadata_server.can_reach_metadata_server())
 
-    @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
+    @mock.patch.object(http.client.HTTPConnection, 'request', autospec=True)
     def test_can_reach_metadata_server_timeout(self, mock_req):
         """Verifies can_reach_metadata_server returns correctly."""
-        mock_req.side_effect = httplib.HTTPException()
+        mock_req.side_effect = http.client.HTTPException()
         self.assertFalse(metadata_server.can_reach_metadata_server())
 
 if __name__ == '__main__':

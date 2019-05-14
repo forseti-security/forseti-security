@@ -13,7 +13,9 @@
 # limitations under the License.
 
 """Forseti CLI."""
+from __future__ import print_function
 
+from builtins import object
 from argparse import ArgumentParser
 import json
 import os
@@ -618,7 +620,7 @@ class JsonOutput(Output):
             Args:
                 obj (object): Object to write as json
         """
-        print MessageToJson(obj, including_default_value_fields=True)
+        print(MessageToJson(obj, including_default_value_fields=True))
 
 
 def run_config(_, config, output, config_env):
@@ -633,7 +635,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        print config_env
+        print(config_env)
 
     def do_set_endpoint():
         """Set a config item."""
@@ -1055,7 +1057,7 @@ class DefaultConfig(dict):
         self.DEFAULT['endpoint'] = self.get_default_endpoint()
 
         # Initialize default values
-        for key, value in self.DEFAULT.iteritems():
+        for key, value in self.DEFAULT.items():
             if key not in self:
                 self[key] = value
 
@@ -1187,7 +1189,7 @@ def main(args=None,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n')
         else:
-            print 'Error occurred on the server side, message: {}'.format(e)
+            print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:
         print ('Model must be specified before running this command. '
                'You can specify a model to use with command '

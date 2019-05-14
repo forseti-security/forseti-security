@@ -14,6 +14,7 @@
 
 """KMS Scanner Tests."""
 
+from builtins import object
 import unittest
 import mock
 from datetime import datetime

@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Forseti installer CLI config object."""
+from __future__ import absolute_import
 
-from config import Config
+from .config import Config
 
 
 class ClientConfig(Config):

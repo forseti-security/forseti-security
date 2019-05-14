@@ -15,6 +15,8 @@
 
 # pylint: disable=too-many-lines, no-self-use, bad-docstring-quotes
 
+from builtins import str
+from builtins import object
 import ctypes
 from functools import partial
 import json
@@ -63,12 +65,12 @@ def from_root_id(client, root_id, root=True):
         'folders': ResourceManagerFolder.fetch,
     }
 
-    for prefix, func in root_map.iteritems():
+    for prefix, func in root_map.items():
         if root_id.startswith(prefix):
             return func(client, root_id, root=root)
     raise Exception(
         'Unsupported root id, must be one of {}'.format(
-            ','.join(root_map.keys())))
+            ','.join(list(root_map.keys()))))
 
 
 def cached(field_name):

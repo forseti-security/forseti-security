@@ -19,6 +19,7 @@ stored locally or in GCS) and compares a policy against the RuleBook to
 determine whether there are violations.
 """
 
+from builtins import object
 import itertools
 import threading
 
@@ -339,11 +340,8 @@ class IamRuleBook(bre.BaseRuleBook):
 
                     # TODO: Rewrite this as a list comprehension.
                     # pylint: disable=bad-builtin
-                    rule_bindings = filter(
-                        None,
-                        [iam_policy.IamPolicyBinding.create_from(b) for b in
-                         rule_def.get('bindings')]
-                    )
+                    rule_bindings = [_f for _f in [iam_policy.IamPolicyBinding.create_from(b) for b in
+                         rule_def.get('bindings')] if _f]
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
                                               rule_index=rule_index,
                                               bindings=rule_bindings,
@@ -610,7 +608,7 @@ class ResourceRules(object):
             violating_bindings = {b.role_name: b.members for b in rule.bindings}
 
         if violating_bindings:
-            for (role_name, members) in violating_bindings.iteritems():
+            for (role_name, members) in violating_bindings.items():
                 yield scanner_rules.RuleViolation(
                     resource_type=resource.type,
                     resource_id=resource.id,

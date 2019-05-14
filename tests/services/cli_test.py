@@ -13,6 +13,9 @@
 # limitations under the License.
 """Unit Tests: Forseti CLI."""
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 from argparse import ArgumentParser
 from copy import copy
 import json
@@ -21,7 +24,7 @@ import os
 import shlex
 import shutil
 import sys
-import StringIO
+import io
 import tempfile
 import unittest
 
@@ -374,10 +377,10 @@ class ImporterTest(ForsetiTestCase):
                 try:
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
-                        json.load(StringIO.StringIO(config_string)))
+                        json.load(io.StringIO(config_string)))
                     # Capture stdout, so it doesn't pollute the test output
                     with mock.patch('sys.stdout',
-                                    new_callable=StringIO.StringIO):
+                                    new_callable=io.StringIO):
                         config = cli.main(
                             args=args,
                             config_env=env_config,
@@ -388,7 +391,7 @@ class ImporterTest(ForsetiTestCase):
                                                        **func_kwargs)
 
                     # Check attribute values
-                    for attribute, value in config_expect.iteritems():
+                    for attribute, value in config_expect.items():
                         self.assertEqual(
                             getattr(config, attribute),
                             value,
@@ -414,9 +417,9 @@ class ImporterTest(ForsetiTestCase):
              func_kwargs, config_string, config_expect) in test_cases:
             args = shlex.split(commandline)
             env_config = cli.DefaultConfig(
-                json.load(StringIO.StringIO(config_string)))
+                json.load(io.StringIO(config_string)))
             with mock.patch('sys.stdout',
-                            new_callable=StringIO.StringIO) as mock_out:
+                            new_callable=io.StringIO) as mock_out:
                 cli.main(
                     args=args,
                     config_env=env_config,
@@ -438,9 +441,9 @@ class ImporterTest(ForsetiTestCase):
              func_kwargs, config_string, config_expect) in test_cases:
             args = shlex.split(commandline)
             env_config = cli.DefaultConfig(
-                json.load(StringIO.StringIO(config_string)))
+                json.load(io.StringIO(config_string)))
             with mock.patch('sys.stdout',
-                            new_callable=StringIO.StringIO) as mock_out:
+                            new_callable=io.StringIO) as mock_out:
                 cli.main(
                     args=args,
                     config_env=env_config,

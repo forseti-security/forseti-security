@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Rules engine for IAP policies on backend services."""
+from builtins import str
+from builtins import object
 from collections import namedtuple
 import re
 import threading

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Scanner for the Identity-Aware Proxy rules engine."""
+from builtins import str
+from builtins import object
 import collections
 
 from google.cloud.forseti.common.gcp_type import (
@@ -225,7 +227,7 @@ class _RunData(object):
 
             relevant_rules_by_priority[firewall_rule.priority].append(
                 firewall_rule)
-        priorities = relevant_rules_by_priority.keys()
+        priorities = list(relevant_rules_by_priority.keys())
         priorities.sort(reverse=True)
         for priority in priorities:
             # DENY at a given priority takes precedence over ALLOW
@@ -628,7 +630,7 @@ class IapScanner(base_scanner.BaseScanner):
             for iap_resource in iap_resources:
                 ret.extend(self.rules_engine.find_violations(iap_resource))
 
-            for key, value in project_resource_counts.items():
+            for key, value in list(project_resource_counts.items()):
                 resource_counts[key] += value
 
         LOGGER.debug('find_violations returning %r', ret)

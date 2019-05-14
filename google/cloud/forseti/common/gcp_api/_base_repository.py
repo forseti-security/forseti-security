@@ -13,11 +13,15 @@
 # limitations under the License.
 
 """Base GCP client which uses the discovery API."""
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import json
 import logging
 import os
 import threading
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 import google_auth_httplib2
 import googleapiclient
@@ -364,7 +368,7 @@ class GCPRepository(object):
         # Since we initially build our kwargs as a dictionary where one of the
         # keys is a variable (target), we need to convert keys to strings,
         # even though the variable in question is of type str.
-        method_args = {str(k): v for k, v in verb_arguments.iteritems()}
+        method_args = {str(k): v for k, v in verb_arguments.items()}
         return method(**method_args)
 
     def _build_next_request(self, verb, prior_request, prior_response):

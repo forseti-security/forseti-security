@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
+from __future__ import print_function
 
+from builtins import object
 import mock
 import os
 import shutil
@@ -95,7 +97,7 @@ class ImporterTest(ForsetiTestCase):
             # segments.
             for policy in self.data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
-                        len(filter(None, policy.full_name.split('/'))) % 2)
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
             gcs_policies = list(
                 self.data_access.scanner_iter(session, 'gcs_policy'))
@@ -163,7 +165,7 @@ class ImporterTest(ForsetiTestCase):
             # segments.
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
-                        len(filter(None, policy.full_name.split('/'))) % 2)
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
             # Verify that two projects are in the inventory after import.
             projects = list(data_access.scanner_iter(session, 'project'))

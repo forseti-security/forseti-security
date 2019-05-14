@@ -223,9 +223,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
         proj_2_policy = {
@@ -244,9 +244,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_2_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_2_policy.get('bindings')])
+            for b in proj_2_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_2, self.proj_2_policy_resource,
                     proj_2_bindings))
@@ -284,9 +284,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
         folder_1_policy = {
@@ -305,9 +305,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_1_policy.get('bindings')])
+            for b in folder_1_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.folder_1, self.folder_1_policy_resource,
                     folder_1_bindings))
@@ -327,9 +327,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_3_policy.get('bindings')])
+            for b in proj_3_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource,
                     proj_3_bindings))
@@ -366,9 +366,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_policy.get('bindings')])
+            for b in expected_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_bindings, bucket_3_1_bindings)
         self.assertEqual(expected_bindings, bucket_3_2_bindings)
@@ -399,9 +399,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
         folder_1_policy = {
@@ -420,9 +420,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_1_policy.get('bindings')])
+            for b in folder_1_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.folder_1, self.folder_1_policy_resource,
                     folder_1_bindings))
@@ -442,9 +442,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_3_policy.get('bindings')])
+            for b in proj_3_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource,
                     proj_3_bindings))
@@ -469,9 +469,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_policy.get('bindings')])
+            for b in expected_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_bindings, bucket_3_1_bindings)
 
@@ -501,9 +501,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
         folder_1_policy = {
@@ -522,9 +522,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_1_policy.get('bindings')])
+            for b in folder_1_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.folder_1, self.folder_1_policy_resource,
                     folder_1_bindings))
@@ -544,9 +544,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_3_policy.get('bindings')])
+            for b in proj_3_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource,
                     proj_3_bindings))
@@ -571,9 +571,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_policy.get('bindings')])
+            for b in expected_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_bindings, bucket_3_1_bindings)
 
@@ -604,9 +604,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
 
@@ -626,9 +626,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_2_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_2_policy.get('bindings')])
+            for b in proj_2_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_2, self.proj_2_policy_resource,
                     proj_2_bindings))
@@ -649,9 +649,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_1_policy.get('bindings')])
+            for b in folder_1_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.folder_1, self.folder_1_policy_resource,
                     folder_1_bindings))
@@ -672,9 +672,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_3_policy.get('bindings')])
+            for b in proj_3_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource,
                     proj_3_bindings))
@@ -710,9 +710,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 }
             ]
         }
-        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+        org_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in org_policy.get('bindings')])
+            for b in org_policy.get('bindings')] if _f]
         policy_data = [
                 (self.org_234, self.org_234_policy_resource, org_bindings)]
 
@@ -732,9 +732,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_2_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_2_policy.get('bindings')])
+            for b in proj_2_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_2, self.proj_2_policy_resource, proj_2_bindings))
 
@@ -754,9 +754,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+        folder_1_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in folder_1_policy.get('bindings')])
+            for b in folder_1_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.folder_1, self.folder_1_policy_resource,
                     folder_1_bindings))
@@ -777,9 +777,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        proj_3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in proj_3_policy.get('bindings')])
+            for b in proj_3_policy.get('bindings')] if _f]
         policy_data.append(
                 (self.proj_3, self.proj_3_policy_resource, proj_3_bindings))
 
@@ -821,9 +821,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_b3_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_b3_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_b3_policy.get('bindings')])
+            for b in expected_b3_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_b3_bindings, bucket_3_1_bindings)
         self.assertEqual(expected_b3_bindings, bucket_3_2_bindings)
@@ -838,9 +838,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_b2_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_b2_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_b2_policy.get('bindings')])
+            for b in expected_b2_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_b2_bindings, bucket_2_1_bindings)
 
@@ -929,9 +929,9 @@ class IamRulesScannerTest(ForsetiTestCase):
                 },
             ]
         }
-        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+        expected_bindings = [_f for _f in [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in expected_policy.get('bindings')])
+            for b in expected_policy.get('bindings')] if _f]
 
         self.assertEqual(expected_bindings, bucket_bindings)
 

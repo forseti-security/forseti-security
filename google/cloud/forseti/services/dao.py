@@ -17,6 +17,8 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 
+from builtins import next
+from builtins import object
 import binascii
 import collections
 import hmac
@@ -619,7 +621,7 @@ def define_model(model_name, dbengine, model_seed):
                 'projectowner': 'roles/owner',
                 'projectviewer': 'roles/viewer'}
             for parent_member in cls.list_group_members(
-                    session, '', member_types=member_type_map.keys()):
+                    session, '', member_types=list(member_type_map.keys())):
                 member_type, project_id = parent_member.split('/')
                 role = member_type_map[member_type]
                 try:
@@ -821,9 +823,9 @@ def define_model(model_name, dbengine, model_seed):
                 """
 
                 root = None
-                for parent in resource_hierarchy.iterkeys():
+                for parent in resource_hierarchy.keys():
                     is_root = True
-                    for children in resource_hierarchy.itervalues():
+                    for children in resource_hierarchy.values():
                         if parent in children:
                             is_root = False
                             break
@@ -832,7 +834,7 @@ def define_model(model_name, dbengine, model_seed):
                 chain = [root]
                 cur = root
                 while len(resource_hierarchy[cur]) == 1:
-                    cur = iter(resource_hierarchy[cur]).next()
+                    cur = next(iter(resource_hierarchy[cur]))
                     chain.append(cur)
                 return chain
 
@@ -933,7 +935,7 @@ def define_model(model_name, dbengine, model_seed):
                 r_type_names)
 
             res_exp = {k.type_name: [v.type_name for v in values]
-                       for k, values in expansion.iteritems()}
+                       for k, values in expansion.items()}
 
             return [(binding.role_name,
                      res_exp[binding.resource_type_name])
@@ -1161,7 +1163,7 @@ def define_model(model_name, dbengine, model_seed):
                 Raises:
                 """
 
-                return {k: v for k, v in policy.iteritems() if k != 'etag'}
+                return {k: v for k, v in policy.items() if k != 'etag'}
 
             def calculate_diff(policy, old_policy):
                 """Calculate the grant/revoke difference between policies.
@@ -1176,7 +1178,7 @@ def define_model(model_name, dbengine, model_seed):
                 """
 
                 diff = collections.defaultdict(list)
-                for role, members in filter_etag(policy).iteritems():
+                for role, members in filter_etag(policy).items():
                     if role in old_policy:
                         for member in members:
                             if member not in old_policy[role]:
@@ -1188,7 +1190,7 @@ def define_model(model_name, dbengine, model_seed):
             grants = calculate_diff(policy, old_policy)
             revocations = calculate_diff(old_policy, policy)
 
-            for role, members in revocations.iteritems():
+            for role, members in revocations.items():
                 bindings = (
                     session.query(Binding)
                     .filter((Binding.resource_type_name ==
@@ -1200,7 +1202,7 @@ def define_model(model_name, dbengine, model_seed):
                 for binding in bindings:
                     session.delete(binding)
 
-            for role, members in grants.iteritems():
+            for role, members in grants.items():
                 inserted = False
                 existing_bindings = (
                     session.query(Binding)
@@ -2352,7 +2354,7 @@ def create_engine(*args, **kwargs):
     """
 
     sqlite_enforce_fks = 'sqlite_enforce_fks'
-    forward_kwargs = {k: v for k, v in kwargs.iteritems()}
+    forward_kwargs = {k: v for k, v in kwargs.items()}
     is_sqlite = False
     for arg in args:
         if 'sqlite' in arg:

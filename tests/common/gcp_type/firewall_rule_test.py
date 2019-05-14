@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for firewall_rule."""
+from builtins import range
 import json
 import unittest
 import mock

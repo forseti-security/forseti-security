@@ -13,6 +13,8 @@
 # limitations under the License.
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
+from builtins import str
+from builtins import range
 import os
 import unittest
 from tests.unittest_utils import ForsetiTestCase

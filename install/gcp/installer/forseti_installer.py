@@ -15,16 +15,20 @@
 """ Forseti Installer."""
 
 from __future__ import print_function
+from __future__ import absolute_import
+from builtins import input
+from builtins import object
 from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
 
-from util import constants
-from util import files
-from util import gcloud
-from util import installer_errors
-from util import utils
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import installer_errors
+from .util import utils
+from future.utils import with_metaclass
 
 
 class ForsetiInstructions(object):
@@ -75,9 +79,8 @@ class ForsetiInstructions(object):
         return message
 
 
-class ForsetiInstaller(object):
+class ForsetiInstaller(with_metaclass(ABCMeta, object)):
     """Forseti installer base class (abstract)"""
-    __metaclass__ = ABCMeta
 
     # Class variables initialization
     version = None
@@ -183,7 +186,7 @@ class ForsetiInstaller(object):
         if domain not in authed_user:
             choice = ''
             while choice != 'y' and choice != 'n':
-                choice = raw_input(
+                choice = input(
                     constants.QUESTION_CONTINUE_IF_AUTHED_USER_IS_NOT_IN_DOMAIN)
             choice = choice.lower()
             if choice == 'n':

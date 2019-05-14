@@ -14,6 +14,7 @@
 
 """Scanner for Audit Logging."""
 
+from builtins import next
 import json
 
 from google.cloud.forseti.common.gcp_type import iam_policy

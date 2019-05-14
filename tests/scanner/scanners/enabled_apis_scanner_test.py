@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Enabled APIs Scanner Test"""
+from builtins import range
 import json
 import unittest
 import mock
@@ -70,7 +71,7 @@ class EnabledApisScannerTest(ForsetiTestCase):
 
         self.assertEqual(3, len(enabled_apis_data))
 
-        for i in xrange(3):
+        for i in range(3):
           actual_project, actual_enabled_apis = enabled_apis_data[i]
           self.assertEqual(expected_projects[i], actual_project.name)
           self.assertEqual(expected_enabled_apis[i], actual_enabled_apis)

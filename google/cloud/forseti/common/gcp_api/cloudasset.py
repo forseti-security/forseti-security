@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for Cloud Asset API client."""
+from builtins import object
 import time
 
 from googleapiclient import errors

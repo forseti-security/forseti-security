@@ -13,9 +13,12 @@
 # limitations under the License.
 
 """Rules engine for Blacklist of IP addresses."""
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import itertools
 import re
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import struct
 import socket
 
@@ -150,7 +153,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
             lists: first one is IP addresses,
             second one is network blocks
         """
-        data = urllib2.urlopen(url).read()
+        data = urllib.request.urlopen(url).read()
         ip_addresses = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
         netblocks = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$',
                                data, re.M)

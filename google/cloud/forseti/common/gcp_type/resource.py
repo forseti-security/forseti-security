@@ -18,10 +18,13 @@ For now, this only represents Organization resources. In the future, we may
 need to separate the classes depending on implementation.
 """
 
+from builtins import str
+from builtins import object
 import abc
 
 from google.cloud.forseti.common.gcp_type import errors
 from google.cloud.forseti.services.inventory.base import resources
+from future.utils import with_metaclass
 
 
 class ResourceType(object):
@@ -116,9 +119,8 @@ class LifecycleState(object):
     UNSPECIFIED = 'LIFECYCLE_STATE_UNSPECIFIED'
 
 
-class Resource(object):
+class Resource(with_metaclass(abc.ABCMeta, object)):
     """Represents a GCP resource."""
-    __metaclass__ = abc.ABCMeta
 
     def __init__(
             self,

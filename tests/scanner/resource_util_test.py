@@ -1,3 +1,4 @@
+from builtins import str
 from datetime import datetime
 import json
 # pylint says unittest goes before mock

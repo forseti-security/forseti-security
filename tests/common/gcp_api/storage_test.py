@@ -13,11 +13,13 @@
 # limitations under the License.
 
 """Tests the Storage client."""
+from future import standard_library
+standard_library.install_aliases()
 import unittest
 import mock
 import google.auth
 from google.oauth2 import credentials
-import StringIO
+import io
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
@@ -310,7 +312,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_result = b'12345'
-        output_file = StringIO.StringIO()
+        output_file = io.StringIO()
         file_size = self.gcs_api_client.download(
             'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                 fake_storage.FAKE_OBJECT_NAME),
@@ -322,7 +324,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     def test_download_raises(self):
         """Test download file returns not found error."""
         http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
-        output_file = StringIO.StringIO()
+        output_file = io.StringIO()
         with self.assertRaises(storage.errors.HttpError):
             self.gcs_api_client.download(
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,

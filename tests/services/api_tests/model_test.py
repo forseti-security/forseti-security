@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests the Forseti Server model service."""
 
+from builtins import object
 import unittest
 
 from tests.services.api_tests.api_tester import ModelTestRunner

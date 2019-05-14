@@ -14,6 +14,7 @@
 
 """Scanner runner script test."""
 
+from builtins import str
 import json
 import mock
 

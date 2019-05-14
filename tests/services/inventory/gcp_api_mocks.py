@@ -14,6 +14,7 @@
 
 """Mock responses to GCP API calls, for testing."""
 
+from builtins import object
 import contextlib
 from googleapiclient import errors
 import httplib2

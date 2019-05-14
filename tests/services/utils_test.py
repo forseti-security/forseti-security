@@ -13,6 +13,7 @@
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
 
+from builtins import range
 import unittest
 import mock
 from tests.unittest_utils import ForsetiTestCase

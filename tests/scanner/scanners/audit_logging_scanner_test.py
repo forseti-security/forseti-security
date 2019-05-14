@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for AuditLoggingScanner."""
 
+from builtins import range
 import json
 import unittest
 import mock
@@ -100,7 +101,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
         # _retrieve only returns projects.
         self.assertEqual(3, len(audit_logging_data))
 
-        for i in xrange(3):
+        for i in range(3):
             actual_project, actual_audit_configs = audit_logging_data[i]
             self.assertEqual(expected_projects[i], actual_project.full_name)
             self.assertEqual(expected_audit_configs[i],

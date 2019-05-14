@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import abc
 from multiprocessing.pool import ThreadPool
 import threading
@@ -29,6 +31,7 @@ from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.storage import Storage
+from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,13 +57,11 @@ def _validate_cai_enabled(cai_configs):
     return True
 
 
-class AbstractInventoryConfig(object):
+class AbstractInventoryConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def use_composite_root(self):
@@ -115,13 +116,11 @@ class AbstractInventoryConfig(object):
             service_config (object): Service configuration."""
 
 
-class AbstractServiceConfig(object):
+class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get_engine(self):

@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from builtins import object
 import threading
 
 import concurrent.futures
@@ -122,7 +123,7 @@ class BatchFirewallEnforcer(object):
             LOGGER.info('Simulating changes')
 
         if isinstance(project_policies, dict):
-            project_policies = project_policies.items()
+            project_policies = list(project_policies.items())
 
         self.enforcement_log.Clear()
         self.enforcement_log.summary.projects_total = len(project_policies)

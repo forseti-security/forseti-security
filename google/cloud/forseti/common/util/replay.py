@@ -14,6 +14,7 @@
 
 """Wrapper functions used to record and replay API responses."""
 
+from builtins import str
 import collections
 import functools
 import os

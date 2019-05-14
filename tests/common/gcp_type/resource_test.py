@@ -80,7 +80,7 @@ class ResourceUtilTest(ForsetiTestCase):
 
     def test_can_create_from_json(self):
         """Test that can_create resources in map have a from_json method."""
-        for resource in resource_util._RESOURCE_TYPE_MAP.values():
+        for resource in list(resource_util._RESOURCE_TYPE_MAP.values()):
             if resource['can_create_resource']:
                 self.assertTrue(hasattr(resource['class'], 'from_json'),
                                 msg='%s missing from_json' % resource['class'])

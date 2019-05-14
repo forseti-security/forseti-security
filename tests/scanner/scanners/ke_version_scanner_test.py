@@ -14,6 +14,7 @@
 
 """KE Version Rule Scanner Tests."""
 
+from builtins import object
 import unittest
 import mock
 
@@ -142,7 +143,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                 session, 'organization/12345', '', True)
             project = data_access.add_resource(session, 'project/foo',
                                                organization)
-            for name, data in FAKE_CLUSTERS.items():
+            for name, data in list(FAKE_CLUSTERS.items()):
                 ke_cluster = data_access.add_resource(
                     session, 'kubernetes_cluster/%s' % name,
                     project)

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules engine for checking service account key age."""
 
+from builtins import object
 from collections import namedtuple
 import json
 import threading

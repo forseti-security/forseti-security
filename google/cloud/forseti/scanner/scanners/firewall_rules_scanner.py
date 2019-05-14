@@ -107,7 +107,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         """
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
-        for resource_id, p_policies in policies.items():
+        for resource_id, p_policies in list(policies.items()):
             resource = resource_util.create_resource(
                 resource_id=resource_id, resource_type='project')
             LOGGER.debug('%s => %s', resource, p_policies)
