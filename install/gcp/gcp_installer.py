@@ -80,7 +80,8 @@ def run():
     parser.add_argument('--project-id',
                         help='The project id for the forseti installaltion.')
     parser.add_argument('--organization-id',
-                        help='The organization id for the forseti installaltion.')
+                        help='The organization id for the forseti '
+                             'installaltion.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
