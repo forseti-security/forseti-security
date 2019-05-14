@@ -531,5 +531,5 @@ def write_csv(resource_name, data, write_header=False):
 
         # Remove the csv file after loading.
         os.remove(csv_file.name)
-    except (IOError, OSError, csv.Error) as e:
+    except (OSError, csv.Error) as e:
         raise CSVFileError(resource_name, e)

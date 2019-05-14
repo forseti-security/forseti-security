@@ -343,8 +343,9 @@ def map_by_resource(violation_rows):
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
         except ValueError:
-            LOGGER.warn('Invalid violation data, unable to parse json for %s',
-                        v_data['violation_data'])
+            LOGGER.warning('Invalid violation data, unable to parse json '
+                           'for %s',
+                           v_data['violation_data'])
 
         # resource_data can be regular python string
         try:

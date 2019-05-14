@@ -1351,8 +1351,8 @@ def define_model(model_name, dbengine, model_seed):
                 try:
                     permission_names.remove(existing_permission.name)
                 except KeyError:
-                    LOGGER.warn('existing_permissions.name = %s, KeyError',
-                                existing_permission.name)
+                    LOGGER.warning('existing_permissions.name = %s, KeyError',
+                                   existing_permission.name)
 
             new_permissions = [Permission(name=n) for n in permission_names]
             for perm in new_permissions:

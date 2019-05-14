@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Base GCP client which uses the discovery API."""
-from future import standard_library
-standard_library.install_aliases()
 from builtins import str
 from builtins import object
 import json
@@ -33,6 +31,7 @@ import uritemplate
 import google.auth
 from google.auth.credentials import with_scopes_if_required
 
+from future import standard_library
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import http_helpers
@@ -40,6 +39,8 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 import google.oauth2.credentials
+
+standard_library.install_aliases()
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
@@ -195,7 +196,7 @@ class BaseRepositoryClient(object):
         supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
         if not supported_api:
             LOGGER.warning('API "%s" is not formally supported in Forseti, '
-                        'proceed at your own risk.', api_name)
+                           'proceed at your own risk.', api_name)
 
         # See if the version is supported by Forseti.
         # If no version is specified, use the supported API's default version.
@@ -206,9 +207,10 @@ class BaseRepositoryClient(object):
         if supported_api:
             for version in versions:
                 if version not in supported_api.get('supported_versions', []):
-                    LOGGER.warning('API "%s" version %s is not formally supported '
-                                'in Forseti, proceed at your own risk.',
-                                api_name, version)
+                    LOGGER.warning('API "%s" version %s is not formally '
+                                   'supported in Forseti, proceed at your '
+                                   'own risk.',
+                                   api_name, version)
 
         self.is_private_api = None
         if supported_api:

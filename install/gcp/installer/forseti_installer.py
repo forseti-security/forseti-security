@@ -23,12 +23,12 @@ from abc import abstractmethod
 
 import sys
 
+from future.utils import with_metaclass
 from .util import constants
 from .util import files
 from .util import gcloud
 from .util import installer_errors
 from .util import utils
-from future.utils import with_metaclass
 
 
 class ForsetiInstructions(object):
@@ -257,7 +257,7 @@ class ForsetiInstaller(with_metaclass(ABCMeta, object)):
         if not deployment_completed:
             # If after 15 mins and the deployment is still not completed, there
             # is something wrong with the deployment.
-            print ('Deployment failed.')
+            print('Deployment failed.')
             sys.exit(1)
 
         if deployment_completed:

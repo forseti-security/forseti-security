@@ -69,7 +69,7 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
     for policy in access_policy:
         if policy['role'] not in access_policy_to_iam_role_map:
             LOGGER.warning('unknown role in access policy %s under project %s',
-                        policy, project_id)
+                           policy, project_id)
             continue
         iam_role = access_policy_to_iam_role_map[policy['role']]
 
@@ -86,8 +86,9 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
         elif 'specialGroup' in policy:
             member = policy['specialGroup']
             if member not in special_group_to_iam_member_map:
-                LOGGER.warning('unknown special group type %s in access policy %s '
-                            'under project %s', member, policy, project_id)
+                LOGGER.warning('unknown special group type %s in access '
+                               'policy %s under project %s',
+                               member, policy, project_id)
                 continue
             member = special_group_to_iam_member_map[member]
             if member.startswith('project'):

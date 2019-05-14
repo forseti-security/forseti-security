@@ -51,7 +51,7 @@ class GroupsSettings(resource.Resource):
         super(GroupsSettings, self).__init__(
             resource_id=email,
             name=email,
-            resource_type=resource.ResourceType.GROUPS_SETTINGS),
+            resource_type=resource.ResourceType.GROUPS_SETTINGS)
         self.whoCanAdd = whoCanAdd
         self.whoCanJoin = whoCanJoin
         self.whoCanViewMembership = whoCanViewMembership

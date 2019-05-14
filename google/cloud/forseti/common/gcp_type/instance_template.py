@@ -92,7 +92,8 @@ class InstanceTemplate(object):
             'properties': self.properties}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in list(resource_dict.items()) if v)
+        resource_dict = dict((k, v) for k, v in
+                             list(resource_dict.items()) if v)
         return json.dumps(resource_dict, sort_keys=True)
 
     @property

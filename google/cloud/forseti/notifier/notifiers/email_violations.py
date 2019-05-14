@@ -98,7 +98,8 @@ class EmailViolations(base_notification.BaseNotification):
         output_filename = self._get_output_filename(
             string_formats.VIOLATION_JSON_FMT)
         with tempfile.NamedTemporaryFile() as tmp_violations:
-            tmp_violations.write(parser.json_stringify(self.violations).encode())
+            tmp_violations.write(parser.json_stringify(self.violations)
+                                 .encode())
             tmp_violations.flush()
             LOGGER.info('JSON filename: %s', tmp_violations.name)
             attachment = self.connector.create_attachment(
@@ -199,7 +200,7 @@ class EmailViolations(base_notification.BaseNotification):
                                 content_type='text/html',
                                 attachment=attachment)
         except util_errors.EmailSendError:
-            LOGGER.warn('Unable to send Violations email')
+            LOGGER.warning('Unable to send Violations email')
 
     def run(self):
         """Run the email notifier"""

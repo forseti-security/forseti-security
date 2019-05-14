@@ -19,6 +19,7 @@
 from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
@@ -32,7 +33,6 @@ from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
-from future.utils import with_metaclass
 
 
 class AssetMetadata(object):

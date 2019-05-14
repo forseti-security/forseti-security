@@ -16,13 +16,12 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import object
 import json
 from io import StringIO
 import traceback
 
+from future import standard_library
 from sqlalchemy.exc import SQLAlchemyError
 
 from google.cloud.forseti.common.util import logger
@@ -31,6 +30,8 @@ from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -1122,7 +1123,7 @@ class InventoryImporter(object):
         exists = role_name in self.role_cache
 
         if exists:
-            LOGGER.warn('Duplicate role_name: %s', role_name)
+            LOGGER.warning('Duplicate role_name: %s', role_name)
             return False
         return True
 

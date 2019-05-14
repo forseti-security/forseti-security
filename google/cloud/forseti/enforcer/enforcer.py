@@ -61,7 +61,7 @@ def initialize_batch_enforcer(global_configs, concurrent_threads,
         BatchFirewallEnforcer: A BatchFirewallEnforcer instance.
     """
     if max_running_operations:
-        LOGGER.warn('Deprecated argument max_running_operations set.')
+        LOGGER.warning('Deprecated argument max_running_operations set.')
 
     if max_write_threads:
         project_sema = threading.BoundedSemaphore(value=max_write_threads)

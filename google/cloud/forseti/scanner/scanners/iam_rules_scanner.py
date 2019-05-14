@@ -226,7 +226,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                      policy, policy_bindings))
 
         if not policy_data:
-            LOGGER.warn('No policies found.')
+            LOGGER.warning('No policies found.')
             return [], 0
 
         return policy_data, resource_counts

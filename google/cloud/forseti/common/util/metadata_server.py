@@ -17,14 +17,15 @@
 The metadata server is only accessible on GCE.
 """
 
-from future import standard_library
-standard_library.install_aliases()
 import http.client
 import os
 import socket
 
+from future import standard_library
 from google.cloud.forseti.common.util import errors
 from google.cloud.forseti.common.util import logger
+
+standard_library.install_aliases()
 
 # This is used to ping the metadata server, it avoids the cost of a DNS
 # lookup.
@@ -52,7 +53,7 @@ def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
         HttpClient: A simple HTTP client to the GCP metadata server.
     """
     return http.client.HTTPConnection(hostname,
-                                  timeout=METADATA_SERVER_CONN_TIMEOUT)
+                                      timeout=METADATA_SERVER_CONN_TIMEOUT)
 
 
 def _issue_http_request(method, path, headers):
@@ -93,7 +94,7 @@ def can_reach_metadata_server():
                 metadata_flavor == _METADATA_FLAVOR_VALUE)
 
     except (socket.error, http.client.HTTPException) as e:
-        LOGGER.warn('Compute Engine Metadata server unreachable: %s', e)
+        LOGGER.warning('Compute Engine Metadata server unreachable: %s', e)
         return False
 
 

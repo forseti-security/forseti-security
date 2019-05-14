@@ -14,22 +14,23 @@
 
 """Inventory API."""
 
-# pylint: disable=line-too-long,broad-except
+# pylint: disable=broad-except
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import str
 from builtins import object
 import datetime
 from queue import Queue
 import threading
 
+from future import standard_library
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.inventory.storage import DataAccess
-from google.cloud.forseti.services.inventory.storage import initialize as init_storage
+from google.cloud.forseti.services.inventory.storage import initialize \
+    as init_storage
 
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 

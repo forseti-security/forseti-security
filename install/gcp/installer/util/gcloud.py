@@ -481,7 +481,7 @@ def choose_organization():
                   (org_id, org['displayName']))
 
         choice = input('Enter the organization id where '
-                           'you want Forseti to crawl for data: ').strip()
+                       'you want Forseti to crawl for data: ').strip()
         try:
             # make sure that the choice is a valid organization id
             if choice not in valid_org_ids:
@@ -543,7 +543,7 @@ def create_or_reuse_service_acct(acct_type,
             the installation.
     """
 
-    print ('Creating {}... '.format(acct_type), end='')
+    print('Creating {}... '.format(acct_type), end='')
     sys.stdout.flush()
 
     return_code, _, err = utils.run_command(
@@ -555,8 +555,8 @@ def create_or_reuse_service_acct(acct_type,
         print('Could not create the service account. Terminating '
               'because this is an unexpected error.')
         sys.exit(1)
-    print ('created')
-    print ('\t{}'.format(acct_email))
+    print('created')
+    print('\t{}'.format(acct_email))
     return acct_email
 
 
@@ -714,7 +714,7 @@ def get_vm_instance_info(instance_name, try_match=False):
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
     if return_code:
-        print (err)
+        print(err)
         sys.exit(1)
     try:
         instances = json.loads(out)
@@ -783,7 +783,7 @@ def create_firewall_rule(rule_name,
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
 
 def delete_firewall_rule(rule_name):
     """Delete a firewall rule for a specific gcp service account.
@@ -813,7 +813,7 @@ def enable_os_login(instance_name, zone):
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
 
 
 def create_deployment(project_id,

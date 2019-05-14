@@ -245,9 +245,9 @@ class ProjectEnforcer(object):
             retry_enforcement_count += 1
             if retry_enforcement_count <= maximum_retries:
                 LOGGER.warning('New firewall rules do not match the expected '
-                            'rules enforced by the policy for project %s, '
-                            'retrying. (Retry #%d)', self.project_id,
-                            retry_enforcement_count)
+                               'rules enforced by the policy for project %s, '
+                               'retrying. (Retry #%d)',
+                               self.project_id, retry_enforcement_count)
                 firewall_enforcer.refresh_current_rules()
             else:
                 self._set_error_status('New firewall rules do not match '
@@ -495,12 +495,12 @@ class ProjectEnforcer(object):
             self.result.status_reason = (
                 'Project scheduled for deletion: %s' % e)
             LOGGER.warning('Project %s scheduled for deletion: %s',
-                        self.project_id, e)
+                           self.project_id, e)
         elif isinstance(e, ComputeApiDisabledError):
             self.result.status_reason = (
                 'Project has GCE API disabled: %s' % e)
             LOGGER.warning('Project %s has the GCE API disabled: %s',
-                        self.project_id, e)
+                           self.project_id, e)
 
 
 def _is_project_deleted_error(err):

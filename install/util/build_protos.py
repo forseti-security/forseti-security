@@ -87,7 +87,7 @@ def make_proto(path):
                     if pb2_stat.st_mtime >= proto_stat.st_mtime:
                         continue
 
-                except (OSError, IOError):
+                except OSError:
                     pass
 
                 protos_to_compile.append(full_filename)
@@ -104,13 +104,13 @@ def make_proto(path):
             if 'google/cloud/forseti/' in proto:
                 protopath = ''
                 while protofile != 'forseti-security':
-                    if protopath == '':
+                    if not protopath:
                         protopath = protofile
                     else:
-                        protopath = protofile + "/" + protopath
+                        protopath = protofile + '/' + protopath
                     protodir, protofile = os.path.split(protodir)
 
-            protodir = protodir + "/" + protofile
+            protodir = protodir + '/' + protofile
             cwd_path = protodir
 
             subprocess.check_call(

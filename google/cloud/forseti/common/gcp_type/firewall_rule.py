@@ -789,7 +789,9 @@ class FirewallAction(object):
         """
         return (self.action == other.action and
                 (self.any_value or other.any_value or
-                 list(self.expanded_rules.keys()) == list(other.expanded_rules.keys()) and
+                 list(self.expanded_rules.keys()) == list(other.
+                                                          expanded_rules.keys())
+                 and
                  all([
                      self.ports_are_equal(
                          self.expanded_rules.get(protocol, []),

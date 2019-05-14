@@ -14,16 +14,17 @@
 
 """ Scanner gRPC service. """
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import object
 from queue import Queue
 
+from future import standard_library
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
-from google.cloud.forseti.services.scanner import scanner_pb2 # noqa=E501
+from google.cloud.forseti.services.scanner import scanner_pb2  # noqa=E501
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 

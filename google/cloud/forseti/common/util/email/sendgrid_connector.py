@@ -18,12 +18,12 @@
 # this is needed because quiet the Sendgrid no-member error on Travis.
 # pylint: disable=no-member,useless-suppression
 
+import base64
+import urllib.request
+import urllib.error
+import urllib.parse
 
 from future import standard_library
-standard_library.install_aliases()
-import base64
-import urllib.request, urllib.error, urllib.parse
-
 import sendgrid
 from sendgrid.helpers import mail
 from retrying import retry
@@ -33,6 +33,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
 from google.cloud.forseti.common.util.email import base_email_connector
 
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -116,8 +117,8 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             EmailSendError: An error with sending email has occurred.
         """
         if not email_sender or not email_recipient:
-            LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
-                        email_sender, email_recipient)
+            LOGGER.warning('Unable to send email: sender=%s, recipient=%s',
+                           email_sender, email_recipient)
             raise util_errors.EmailSendError
 
         email = mail.Mail()

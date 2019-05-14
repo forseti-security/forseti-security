@@ -15,8 +15,6 @@
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
-from future import standard_library
-standard_library.install_aliases()
 from builtins import object
 import hashlib
 import http.client
@@ -24,10 +22,14 @@ import json
 import operator
 import socket
 import ssl
-
 import httplib2
+
+from future import standard_library
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
+
+standard_library.install_aliases()
+
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -264,7 +266,8 @@ class FirewallRules(object):
         for rule in firewall_rules:
             # Only include keys in the ALLOWED_RULE_ITEMS set.
             scrubbed_rule = dict(
-                [(k, v) for k, v in list(rule.items()) if k in ALLOWED_RULE_ITEMS])
+                [(k, v) for k, v in list(rule.items()) if k
+                 in ALLOWED_RULE_ITEMS])
             self.add_rule(scrubbed_rule)
 
     def add_rules(self, rules, network_name=None):
@@ -395,7 +398,8 @@ class FirewallRules(object):
                 name.
         """
         rules = sorted(
-            list(self.rules.values()), key=operator.itemgetter('network', 'name'))
+            list(self.rules.values()), key=operator.itemgetter('network',
+                                                               'name'))
         return json.dumps(rules, sort_keys=True)
 
     def add_rules_from_json(self, json_rules):
@@ -419,8 +423,8 @@ class FirewallRules(object):
             InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
-            LOGGER.warning('Can not import from JSON into a FirewallRules object '
-                        'with rules already added')
+            LOGGER.warning('Can not import from JSON into a FirewallRules '
+                           'object with rules already added')
             return
 
         rules = json.loads(json_rules)
@@ -884,8 +888,9 @@ class FirewallEnforcer(object):
                                 'for project %s.', self.project)
                     delete_before_insert = True
         else:
-            LOGGER.warning('Unknown firewall quota, switching to "delete first" '
-                        'rule update order for project %s.', self.project)
+            LOGGER.warning('Unknown firewall quota, switching to "delete '
+                           'first" rule update order for project %s.',
+                           self.project)
             delete_before_insert = True
 
         return delete_before_insert

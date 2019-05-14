@@ -20,10 +20,10 @@ Loads YAML rules either from local file system or Cloud Storage bucket.
 from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import errors as audit_errors
-from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 

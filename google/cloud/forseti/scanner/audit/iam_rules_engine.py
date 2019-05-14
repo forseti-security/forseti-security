@@ -340,8 +340,10 @@ class IamRuleBook(bre.BaseRuleBook):
 
                     # TODO: Rewrite this as a list comprehension.
                     # pylint: disable=bad-builtin
-                    rule_bindings = [_f for _f in [iam_policy.IamPolicyBinding.create_from(b) for b in
-                         rule_def.get('bindings')] if _f]
+                    rule_bindings = [_f for _f in [iam_policy.IamPolicyBinding
+                                                   .create_from(b) for b in
+                                                   rule_def.get('bindings')]
+                                     if _f]
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
                                               rule_index=rule_index,
                                               bindings=rule_bindings,

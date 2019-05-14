@@ -423,5 +423,5 @@ def start_loading(max_loading_time, exit_condition_checker=None,
         dots = '.' * (i % max_number_of_dots)
         sys.stdout.write('\r{}{}{} '.format(erase_line, message, dots))
         sys.stdout.flush()
-    print ('time limit reached')
+    print('time limit reached')
     return False

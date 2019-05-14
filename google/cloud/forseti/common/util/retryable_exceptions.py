@@ -14,18 +14,21 @@
 
 """Module to determine whether an exception should be retried."""
 
-from future import standard_library
-standard_library.install_aliases()
 import http.client
 import socket
 import ssl
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
+
+from future import standard_library
 import httplib2
 
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     errors as cv_errors
 )
 
+standard_library.install_aliases()
 
 RETRYABLE_EXCEPTIONS = (
     http.client.ResponseNotReady,

@@ -563,7 +563,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -588,7 +588,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -610,7 +610,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 

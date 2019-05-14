@@ -17,12 +17,12 @@
 Keys can be converted to and from URLs.
 """
 
-from past.builtins import cmp
-from future import standard_library
-standard_library.install_aliases()
 from builtins import object
 import urllib.parse
 
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
 
 class Key(object):
     """Represents a reference to a unique GCP object.
@@ -108,7 +108,8 @@ class Key(object):
         path_components = urllib.parse.urlparse(url)[2].split('/')[3:]
 
         key_name = None
-        object_path = dict((key, None) for key in list(path_component_map.values()))
+        object_path = dict((key, None) for key in
+                           list(path_component_map.values()))
         if defaults:
             object_path.update(defaults)
         for path_component in path_components:

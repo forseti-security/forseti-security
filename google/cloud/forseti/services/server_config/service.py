@@ -87,7 +87,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
             logger.set_logger_level(logger.LOGLEVELS[request.log_level])
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
-            err_msg = e.message
+            err_msg = str(e)
 
         is_success = not err_msg
 

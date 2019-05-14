@@ -18,10 +18,10 @@ from builtins import str
 from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 

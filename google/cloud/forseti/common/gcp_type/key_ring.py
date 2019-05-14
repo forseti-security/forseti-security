@@ -46,10 +46,10 @@ class KeyRing(resource.Resource):
             resource_id=key_ring_name,
             name=key_ring_full_name,
             parent=key_ring_parent_type_name,
-            resource_type=resource.ResourceType.KEY_RING),
-        self.key_ring_type = key_ring_type,
-        self.create_time = create_time,
-        self.name = name,
+            resource_type=resource.ResourceType.KEY_RING)
+        self.key_ring_type = key_ring_type
+        self.create_time = create_time
+        self.name = name
         self.data = data
 
     @classmethod

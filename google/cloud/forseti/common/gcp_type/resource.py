@@ -22,9 +22,9 @@ from builtins import str
 from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.gcp_type import errors
 from google.cloud.forseti.services.inventory.base import resources
-from future.utils import with_metaclass
 
 
 class ResourceType(object):

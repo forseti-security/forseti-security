@@ -572,7 +572,8 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             return FACTORIES['organization'].create_new(
                 data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warning('Unable to fetch Organization %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Organization %s: %s',
+                           resource_key, e)
             data = {'name': resource_key}
             resource = FACTORIES['organization'].create_new(data, root=root)
             resource.add_warning(e)

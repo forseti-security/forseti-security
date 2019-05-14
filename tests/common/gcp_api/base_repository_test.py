@@ -140,7 +140,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             * Instantiate the Base Client with the API name and version.
 
         Expect:
-            * Unsupported version will call LOGGER.warn().
+            * Unsupported version will call LOGGER.warning().
         """
 
         api_name = 'cloudresourcemanager'
@@ -179,7 +179,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             * Instantiate the Base Client with the API name and version.
 
         Expect:
-            * Unsupported API will call LOGGER.warn().
+            * Unsupported API will call LOGGER.warning().
         """
 
         api_name = 'zoo'

@@ -1026,11 +1026,11 @@ class DefaultConfigParser(object):
         """
 
         try:
-            with file(get_config_path()) as infile:
+            with open(get_config_path()) as infile:
                 return DefaultConfig(json.load(infile))
         except IOError:
-            LOGGER.warn('IOError - trying to open configuration'
-                        ' file located at %s', get_config_path())
+            LOGGER.warning('IOError - trying to open configuration '
+                           'file located at %s', get_config_path())
             return DefaultConfig()
 
 
@@ -1191,9 +1191,9 @@ def main(args=None,
         else:
             print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:
-        print ('Model must be specified before running this command. '
-               'You can specify a model to use with command '
-               '"forseti model use <MODEL_NAME>".')
+        print('Model must be specified before running this command. '
+              'You can specify a model to use with command '
+              '"forseti model use <MODEL_NAME>".')
     return config
 
 

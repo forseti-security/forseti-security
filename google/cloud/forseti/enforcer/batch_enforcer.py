@@ -71,7 +71,7 @@ class BatchFirewallEnforcer(object):
         self._project_sema = project_sema
 
         if max_running_operations:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Max running operations is deprecated. Argument ignored.')
         self._max_running_operations = None
         self._local = LOCAL_THREAD
@@ -152,7 +152,7 @@ class BatchFirewallEnforcer(object):
         self._summarize_results()
 
         if not projects_enforced_count:
-            LOGGER.warn('No projects enforced on the last run, exiting.')
+            LOGGER.warning('No projects enforced on the last run, exiting.')
 
         return self.enforcement_log
 

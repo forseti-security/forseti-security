@@ -24,6 +24,7 @@ import abc
 from multiprocessing.pool import ThreadPool
 import threading
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
@@ -31,7 +32,6 @@ from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.storage import Storage
-from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 

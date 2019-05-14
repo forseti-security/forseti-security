@@ -122,7 +122,7 @@ def migrate_schema(base, dao_classes):
             elif column_action in [ColumnAction.ALTER]:
                 _alter_columns(column_action, columns, table)
             else:
-                LOGGER.warn('Unknown column action: %s', column_action)
+                LOGGER.warning('Unknown column action: %s', column_action)
 
 
 def _alter_columns(column_action, columns, table):
@@ -190,7 +190,7 @@ def _find_subclasses(cls):
 if __name__ == '__main__':
     # If the DB connection string is passed in, use that, otherwise
     # fall back to the default DB connection string.
-    print (sys.argv)
+    print(sys.argv)
     DB_CONN_STR = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DB_CONN_STR
 
     SQL_ENGINE = general_dao.create_engine(DB_CONN_STR,

@@ -18,10 +18,10 @@ from builtins import object
 import abc
 import os
 
+from future.utils import with_metaclass
 import jinja2
 
 from google.cloud.forseti.common.util import logger
-from future.utils import with_metaclass
 
 LOGGER = logger.get_logger(__name__)
 

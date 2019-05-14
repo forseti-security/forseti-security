@@ -13,12 +13,13 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
-from future import standard_library
-standard_library.install_aliases()
+
 from builtins import object
 import json
 import io
 import urllib.parse
+
+from future import standard_library
 from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
@@ -29,6 +30,8 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import metadata_server
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 API_NAME = 'storage'
@@ -52,7 +55,7 @@ def get_bucket_and_path_from(full_path):
     try:
         parsed = urllib.parse.urlparse(full_path)
     except AttributeError as e:
-        LOGGER.warn('Could not parse path %s: %s', full_path, e)
+        LOGGER.warning('Could not parse path %s: %s', full_path, e)
         parsed = None
 
     if not parsed or parsed.scheme != GCS_SCHEME:

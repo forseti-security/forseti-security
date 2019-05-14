@@ -187,8 +187,7 @@ class _RunData(object):
         if self.instance_groups_by_key.get(target_key) is None:
             return self.convert_dict_key_to_str(self.instance_groups_by_key,
                                                 target_key)
-        else:
-            return self.instance_groups_by_key.get(target_key)
+        return self.instance_groups_by_key.get(target_key)
 
     def find_instance_by_url(self, instance_url):
         """Find an instance for the given URL.

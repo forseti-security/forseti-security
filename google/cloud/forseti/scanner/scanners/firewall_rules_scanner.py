@@ -144,7 +144,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         validate=True))
 
         if count < 0:
-            LOGGER.warn('No firewall policies found. Exiting.')
+            LOGGER.warning('No firewall policies found. Exiting.')
             return project_policies, {
                 resource_type.ResourceType.FIREWALL_RULE: 0
             }
