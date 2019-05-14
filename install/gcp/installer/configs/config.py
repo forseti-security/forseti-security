@@ -34,6 +34,7 @@ class Config(object):
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.project_id = kwargs.get('project_id')
+        self.organization_id = kwargs.get('organization_id')
         if kwargs.get('composite_root_resources'):
             tmpcrr = kwargs.get('composite_root_resources')
             self.composite_root_resources = tmpcrr.split(',')

@@ -203,7 +203,8 @@ class ForsetiInstaller(object):
                                          authed_user,
                                          self.config.force_no_cloudshell,
                                          is_cloudshell)
-        self.organization_id = gcloud.lookup_organization(self.project_id)
+        self.organization_id = (self.config.organization_id or
+                                gcloud.lookup_organization(self.project_id))
         self.config.generate_identifier(self.organization_id)
 
         if not service_account_key_file:
