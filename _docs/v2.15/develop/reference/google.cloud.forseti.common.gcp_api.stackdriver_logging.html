@@ -1,0 +1,237 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.stackdriver_logging module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.stackdriver_logging">
+<span id="google-cloud-forseti-common-gcp-api-stackdriver-logging-module"></span><h1>google.cloud.forseti.common.gcp_api.stackdriver_logging module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.stackdriver_logging" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Stackdriver Logging API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient">
+<em class="property">class </em><code class="descname">StackdriverLoggingClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Stackdriver Logging Client.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_billing_account_sinks">
+<code class="descname">get_billing_account_sinks</code><span class="sig-paren">(</span><em>account_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingClient.get_billing_account_sinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_billing_account_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about billing_account sinks.
+:param account_id: The id of the billing account.
+:type account_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The response of retrieving the billing_account sinks.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_folder_sinks">
+<code class="descname">get_folder_sinks</code><span class="sig-paren">(</span><em>folder_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingClient.get_folder_sinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_folder_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about folder sinks.
+:param folder_id: The id of the folder.
+:type folder_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The response of retrieving the folder sinks.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_organization_sinks">
+<code class="descname">get_organization_sinks</code><span class="sig-paren">(</span><em>org_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingClient.get_organization_sinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_organization_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about organization sinks.
+:param org_id: The id of the organization.
+:type org_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The response of retrieving the organization sinks.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_project_sinks">
+<code class="descname">get_project_sinks</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingClient.get_project_sinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingClient.get_project_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about project sinks.
+:param project_id: The id of the project.
+:type project_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The response of retrieving the project sinks.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient">
+<em class="property">class </em><code class="descname">StackdriverLoggingRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=1.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#StackdriverLoggingRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Stackdriver Logging API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.billing_accounts_sinks">
+<code class="descname">billing_accounts_sinks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.billing_accounts_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _LoggingBillingAccountsSinksRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.folders_sinks">
+<code class="descname">folders_sinks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.folders_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _LoggingFoldersSinksRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.organizations_sinks">
+<code class="descname">organizations_sinks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.organizations_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _LoggingOrganizationsSinksRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.projects_sinks">
+<code class="descname">projects_sinks</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging.StackdriverLoggingRepositoryClient.projects_sinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _LoggingProjectsSinksRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingBillingAccountsSinksRepository">
+<em class="property">class </em><code class="descname">_LoggingBillingAccountsSinksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingBillingAccountsSinksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingBillingAccountsSinksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Logging BillingAccounts Sinks repository.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingBillingAccountsSinksRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>account_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingBillingAccountsSinksRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingBillingAccountsSinksRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted name field to pass in to the API.
+:param account_id: The id of the billing account to query.
+:type account_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A formatted project name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingFoldersSinksRepository">
+<em class="property">class </em><code class="descname">_LoggingFoldersSinksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingFoldersSinksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingFoldersSinksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Logging Folders Sinks repository.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingFoldersSinksRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>folder_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingFoldersSinksRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingFoldersSinksRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted name field to pass in to the API.
+:param folder_id: The id of the folder to query.
+:type folder_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A formatted project name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingOrganizationsSinksRepository">
+<em class="property">class </em><code class="descname">_LoggingOrganizationsSinksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingOrganizationsSinksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingOrganizationsSinksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Logging Organizations Sinks repository.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingOrganizationsSinksRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>org_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingOrganizationsSinksRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingOrganizationsSinksRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted name field to pass in to the API.
+:param org_id: The id of the organization to query.
+:type org_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A formatted project name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingProjectsSinksRepository">
+<em class="property">class </em><code class="descname">_LoggingProjectsSinksRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingProjectsSinksRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingProjectsSinksRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Logging Projects Sinks repository.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingProjectsSinksRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/stackdriver_logging.html#_LoggingProjectsSinksRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.stackdriver_logging._LoggingProjectsSinksRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted name field to pass in to the API.
+:param project_id: The id of the project to query.
+:type project_id: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A formatted project name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

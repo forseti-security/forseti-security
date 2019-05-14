@@ -36,6 +36,8 @@ hide:
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">API_NAME</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+
 <span class="n">REQUIRED_SCOPES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
     <span class="s1">&#39;https://www.googleapis.com/auth/admin.directory.group.readonly&#39;</span><span class="p">,</span>
     <span class="s1">&#39;https://www.googleapis.com/auth/admin.directory.user.readonly&#39;</span>
@@ -78,7 +80,7 @@ hide:
         <span class="bp">self</span><span class="o">.</span><span class="n">_users</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">AdminDirectoryRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;directory_v1&#39;</span><span class="p">],</span>
+            <span class="n">API_NAME</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;directory_v1&#39;</span><span class="p">],</span>
             <span class="n">credentials</span><span class="o">=</span><span class="n">credentials</span><span class="p">,</span>
             <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
             <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
@@ -172,7 +174,7 @@ hide:
             <span class="n">REQUIRED_SCOPES</span><span class="p">)</span>
 
         <span class="n">max_calls</span><span class="p">,</span> <span class="n">quota_period</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_ratelimiter_config</span><span class="p">(</span>
-            <span class="n">global_configs</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span>
+            <span class="n">global_configs</span><span class="p">,</span> <span class="n">API_NAME</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">AdminDirectoryRepositoryClient</span><span class="p">(</span>
             <span class="n">credentials</span><span class="o">=</span><span class="n">credentials</span><span class="p">,</span>
