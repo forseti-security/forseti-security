@@ -222,7 +222,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             resource_root_id = self.resource_root_id
 
         return {
-            'CAI_ENABLED': 'organizations' in self.resource_root_id,
+            'CAI_ENABLED': True,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
