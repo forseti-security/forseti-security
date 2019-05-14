@@ -791,8 +791,7 @@ class FirewallAction(object):
                 (self.any_value or other.any_value or
                  list(self.expanded_rules.keys()) == list(other.
                                                           expanded_rules.keys())
-                 and
-                 all([
+                 and all([
                      self.ports_are_equal(
                          self.expanded_rules.get(protocol, []),
                          other.expanded_rules.get(protocol, []))

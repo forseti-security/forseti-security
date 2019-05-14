@@ -16,6 +16,8 @@
 
 
 from builtins import object
+
+
 class IndexState(object):
     """Possible states for the inventory/scanner index."""
 

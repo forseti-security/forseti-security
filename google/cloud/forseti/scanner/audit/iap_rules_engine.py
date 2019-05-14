@@ -116,7 +116,7 @@ class IapRuleBook(bre.BaseRuleBook):
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
-    def add_rule(self, rule_def, rule_index):  # pylint: disable=too-many-locals
+    def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
 
         Args:

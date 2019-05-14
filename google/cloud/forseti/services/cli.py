@@ -353,7 +353,6 @@ def define_notifier_parser(parent):
     )
 
 
-# pylint: disable=too-many-locals
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 

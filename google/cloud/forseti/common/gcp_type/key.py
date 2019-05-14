@@ -24,6 +24,7 @@ from past.builtins import cmp
 from future import standard_library
 standard_library.install_aliases()
 
+
 class Key(object):
     """Represents a reference to a unique GCP object.
 

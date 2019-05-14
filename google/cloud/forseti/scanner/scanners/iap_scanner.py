@@ -167,8 +167,8 @@ class _RunData(object):
                 key_str = str(key)
                 instance_dict_str[key_str] = value
             return instance_dict_str.get(target_key_str)
-        except Exception as e:
-            logger.INFO('Convert dict did not work: %s' % e)
+        except ValueError as e:
+            LOGGER.info('Convert dict did not work: %s', e)
             return None
 
     def find_instance_group_by_url(self, instance_group_url):
@@ -202,8 +202,7 @@ class _RunData(object):
         if self.instances_by_key.get(target_key) is None:
             return self.convert_dict_key_to_str(self.instances_by_key,
                                                 target_key)
-        else:
-            return self.instances_by_key.get(target_key)
+        return self.instances_by_key.get(target_key)
 
     def firewall_allowed_sources(self, network_port, tag):
         """Which source (networks, tags) can connect to the given destination?

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Helper functions for handling IAM policies."""
-# pylint: disable=too-many-locals
 
 from google.cloud.forseti.common.util import logger
 

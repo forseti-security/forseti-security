@@ -26,7 +26,6 @@ from google.cloud.forseti.common.gcp_type import resource
 class KeyRing(resource.Resource):
     """KeyRing resource."""
 
-    # pylint: disable=expression-not-assigned
     def __init__(self, key_ring_name=None, key_ring_full_name=None,
                  key_ring_parent_type_name=None, key_ring_type=None,
                  create_time=None, name=None, data=None):

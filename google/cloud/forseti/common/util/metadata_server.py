@@ -37,7 +37,7 @@ METADATA_SERVER_CONN_TIMEOUT = 2
 _METADATA_FLAVOR_HEADER = 'metadata-flavor'
 _METADATA_FLAVOR_VALUE = 'Google'
 REQUIRED_METADATA_HEADER = {_METADATA_FLAVOR_HEADER: _METADATA_FLAVOR_VALUE}
-HTTP_SUCCESS = http.client.OK
+HTTP_SUCCESS = http.HTTPStatus.OK
 HTTP_GET = 'GET'
 
 LOGGER = logger.get_logger(__name__)
@@ -90,7 +90,7 @@ def can_reach_metadata_server():
         http_client.request('GET', '/', headers=REQUIRED_METADATA_HEADER)
         response = http_client.getresponse()
         metadata_flavor = response.getheader(_METADATA_FLAVOR_HEADER, '')
-        return (response.status == http.client.OK and
+        return (response.status == http.HTTPStatus.OK and
                 metadata_flavor == _METADATA_FLAVOR_VALUE)
 
     except (socket.error, http.client.HTTPException) as e:

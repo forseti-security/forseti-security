@@ -19,7 +19,9 @@ import json
 import logging
 import os
 import threading
+
 from urllib.parse import urljoin
+from future import standard_library
 
 import google_auth_httplib2
 import googleapiclient
@@ -31,7 +33,6 @@ import uritemplate
 import google.auth
 from google.auth.credentials import with_scopes_if_required
 
-from future import standard_library
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import http_helpers
@@ -94,8 +95,8 @@ def _create_service_api(credentials, service_name, version, is_private_api,
     try:
         if LOGGER.getEffectiveLevel() > logging.DEBUG:
             logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
-    except Exception as e:
-        LOGGER.debug('Logging cannot be set: %s' % e)
+    except Exception as e:  # pylint: disable=broad-except
+        LOGGER.debug('Logging cannot be set: %s', e)
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:

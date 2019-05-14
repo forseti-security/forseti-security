@@ -14,8 +14,9 @@
 
 """Forseti Inventory Base Crawler Implementation."""
 
-
 from builtins import object
+
+
 class CrawlerConfig(object):
     """The configuration profile of an inventory crawler"""
 

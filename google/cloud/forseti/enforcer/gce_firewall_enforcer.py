@@ -22,9 +22,10 @@ import json
 import operator
 import socket
 import ssl
-import httplib2
 
 from future import standard_library
+import httplib2
+
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 
@@ -452,6 +453,7 @@ class FirewallRules(object):
             dict: A new rule dictionary with the lists sorted
         """
         sorted_rule = {}
+        value_key = None
         for key, value in list(unsorted_rule.items()):
             if isinstance(value, list):
                 if value and isinstance(value[0], dict):  # List of dictionaries

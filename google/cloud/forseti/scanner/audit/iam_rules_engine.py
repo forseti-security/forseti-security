@@ -339,7 +339,6 @@ class IamRuleBook(bre.BaseRuleBook):
                         resource_type=resource_type)
 
                     # TODO: Rewrite this as a list comprehension.
-                    # pylint: disable=bad-builtin
                     rule_bindings = [_f for _f in [iam_policy.IamPolicyBinding
                                                    .create_from(b) for b in
                                                    rule_def.get('bindings')]

@@ -147,8 +147,8 @@ def _debug_operation_response_time(project_id, operation):
         if LOGGER.getEffectiveLevel() > logging.DEBUG:
             # Don't compute times if DEBUG logging is not enabled.
             return
-    except Exception as e:
-        LOGGER.debug('DEBUG logging exception: %s' % e)
+    except Exception as e:  # pylint: disable=broad-except
+        LOGGER.debug('DEBUG logging exception: %s', e)
 
     try:
         op_insert_timestamp = date_time.get_unix_timestamp_from_string(

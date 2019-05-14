@@ -213,7 +213,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 if policy.parent.type not in IAM_TYPE_RESOURCE_MAP:
                     continue
 
-                policy_bindings = [_f for _f in [  # pylint: disable=bad-builtin
+                policy_bindings = [_f for _f in [
                     iam_policy.IamPolicyBinding.create_from(b)
                     for b in json.loads(policy.data).get('bindings', [])] if _f]
 
