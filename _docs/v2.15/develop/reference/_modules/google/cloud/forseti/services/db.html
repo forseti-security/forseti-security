@@ -1,0 +1,169 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.db"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.db</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Database session handling for Forseti Server.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">sessionmaker</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ScopedSession"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.ScopedSession">[docs]</a><span class="k">class</span> <span class="nc">ScopedSession</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A scoped session is automatically released.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">auto_commit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session (object): Database session to use scope.</span>
+<span class="sd">            auto_commit (bool): Set to true, of commit should automatically</span>
+<span class="sd">                happen upon close.</span>
+<span class="sd">            readonly (bool): whether or not the session is read only.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_commit</span> <span class="o">=</span> <span class="n">auto_commit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readonly</span> <span class="o">=</span> <span class="n">readonly</span>
+
+<div class="viewcode-block" id="ScopedSession.__enter__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.ScopedSession.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To support with statement.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Returns its session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">readonly</span><span class="p">:</span>
+            <span class="n">stub_out_flush_operation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span></div>
+
+<div class="viewcode-block" id="ScopedSession.__exit__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.ScopedSession.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To support with statement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exc_type (object): Exception type</span>
+<span class="sd">            value (object): Exception value</span>
+<span class="sd">            traceback (object): Traceback if any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">traceback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_commit</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># session.close() is not a must have operation based on the</span>
+            <span class="c1"># sqlalchemy documentation, it&#39;s only useful when you are in</span>
+            <span class="c1"># some intermediate state, if the session is readonly, there</span>
+            <span class="c1"># is no need to close the session.</span>
+            <span class="c1"># http://docs.sqlalchemy.org/en/latest/orm/session_transaction.html</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">readonly</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="ScopedSessionMaker"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.ScopedSessionMaker">[docs]</a><span class="k">class</span> <span class="nc">ScopedSessionMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wraps session maker to create scoped sessions.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_maker</span><span class="p">,</span> <span class="n">auto_commit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session_maker (object): Session creator.</span>
+<span class="sd">            auto_commit (bool): If set to true, generated sessions will</span>
+<span class="sd">                automatically commit the transaction upon close</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sessionmaker</span> <span class="o">=</span> <span class="n">session_maker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_commit</span> <span class="o">=</span> <span class="n">auto_commit</span>
+
+<div class="viewcode-block" id="ScopedSessionMaker.__call__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.ScopedSessionMaker.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new session.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args (list): Will be forwarded to session creator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Scoped session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">ScopedSession</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sessionmaker</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_commit</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="create_scoped_sessionmaker"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.create_scoped_sessionmaker">[docs]</a><span class="k">def</span> <span class="nf">create_scoped_sessionmaker</span><span class="p">(</span><span class="n">engine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a scoped session maker</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        engine (object): Engine to bind session to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: Scoped session maker.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">ScopedSessionMaker</span><span class="p">(</span>
+        <span class="n">sessionmaker</span><span class="p">(</span>
+            <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">),</span>
+        <span class="n">auto_commit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_abort_readonly"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db._abort_readonly">[docs]</a><span class="k">def</span> <span class="nf">_abort_readonly</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Intercept the flush operation and log a warning message.&quot;&quot;&quot;</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;This session is read-only, no flush is allowed.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stub_out_flush_operation"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.stub_out_flush_operation">[docs]</a><span class="k">def</span> <span class="nf">stub_out_flush_operation</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stub out flush operation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (Session): Session to stub out.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Session: The session after stubbed out the flush operation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">flush</span> <span class="o">=</span> <span class="n">_abort_readonly</span>
+    <span class="k">return</span> <span class="n">session</span></div>
+
+
+<div class="viewcode-block" id="create_scoped_readonly_session"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.create_scoped_readonly_session">[docs]</a><span class="k">def</span> <span class="nf">create_scoped_readonly_session</span><span class="p">(</span><span class="n">engine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a readonly scoped session.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        engine (object): Engine to bind session to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: Scoped session maker.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">autoflush</span><span class="o">=</span><span class="kc">False</span><span class="p">)()</span>
+
+    <span class="k">return</span> <span class="n">ScopedSession</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">auto_commit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_readonly_session"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.db.html#google.cloud.forseti.services.db.create_readonly_session">[docs]</a><span class="k">def</span> <span class="nf">create_readonly_session</span><span class="p">(</span><span class="n">engine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a readonly session.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        engine (object): Engine to bind session to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: Scoped session maker.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">autoflush</span><span class="o">=</span><span class="kc">False</span><span class="p">)()</span>
+    <span class="n">stub_out_flush_operation</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session</span></div>
+</pre></div>

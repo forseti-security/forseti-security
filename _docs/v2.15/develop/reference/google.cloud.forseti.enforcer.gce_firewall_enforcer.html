@@ -1,0 +1,804 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.enforcer.gce_firewall_enforcer module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.enforcer.gce_firewall_enforcer">
+<span id="google-cloud-forseti-enforcer-gce-firewall-enforcer-module"></span><h1>google.cloud.forseti.enforcer.gce_firewall_enforcer module<a class="headerlink" href="#module-google.cloud.forseti.enforcer.gce_firewall_enforcer" title="Permalink to this headline">¶</a></h1>
+<p>Core classes for firewall policy enforcement.</p>
+<p>Simplifies the interface with the compute API for managing firewall policies.</p>
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError">
+<em class="property">exception </em><code class="descname">DuplicateFirewallRuleNameError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#DuplicateFirewallRuleNameError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.Error</span></code></a></p>
+<p>Raised if a rule name is reused in a policy, names must be unique.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.EmptyProposedFirewallRuleSetError">
+<em class="property">exception </em><code class="descname">EmptyProposedFirewallRuleSetError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#EmptyProposedFirewallRuleSetError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.EmptyProposedFirewallRuleSetError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Raised if the proposed firewall rule set is empty.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.Error">
+<em class="property">exception </em><code class="descname">Error</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions.Exception</span></code></p>
+<p>Base error class for the module.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementDeleteFailedError">
+<em class="property">exception </em><code class="descname">FirewallEnforcementDeleteFailedError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcementDeleteFailedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementDeleteFailedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Deletion of a firewall rule failed.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError">
+<em class="property">exception </em><code class="descname">FirewallEnforcementFailedError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcementFailedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.Error</span></code></a></p>
+<p>Updating firewall for project failed.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementInsertFailedError">
+<em class="property">exception </em><code class="descname">FirewallEnforcementInsertFailedError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcementInsertFailedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementInsertFailedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Insertion of a firewall rule failed.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementUpdateFailedError">
+<em class="property">exception </em><code class="descname">FirewallEnforcementUpdateFailedError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcementUpdateFailedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementUpdateFailedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Update of a firewall rule failed.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer">
+<em class="property">class </em><code class="descname">FirewallEnforcer</code><span class="sig-paren">(</span><em>project</em>, <em>compute_client</em>, <em>expected_rules</em>, <em>current_rules=None</em>, <em>project_sema=None</em>, <em>operation_sema=None</em>, <em>add_rule_callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Enforce a set of firewall rules for use with GCE projects.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change">
+<code class="descname">_apply_change</code><span class="sig-paren">(</span><em>firewall_function</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._apply_change"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the firewall using the passed in function and rules.</p>
+<p>If self.operation_sema is defined, then the number of outstanding
+changes is limited to the number of semaphore locks that can be
+acquired.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>firewall_function</strong> (<em>function</em>) – The delete|insert|update function to
+call for this set of rules</li>
+<li><strong>rules</strong> (<em>list</em>) – A list of rules to pass to the firewall_function.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>A tuple with the rules successfully changed by this function</dt>
+<dd><p class="first last">and the rules that failed.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change_set">
+<code class="descname">_apply_change_set</code><span class="sig-paren">(</span><em>delete_before_insert</em>, <em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._apply_change_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates project firewall rules based on the generated changeset.</p>
+<p>Extends self._(deleted|inserted|updated)_rules with the rules changed by
+these operations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>delete_before_insert</strong> (<em>bool</em>) – If true, delete operations are
+completed before inserts. Otherwise insert operations are
+completed first.</li>
+<li><strong>network</strong> (<em>str</em>) – The network to limit rule changes to. Rules on
+other networks will not be changed. If not set, then all rules
+are in the change set are applied.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The total number of firewall rules deleted, inserted and</dt>
+<dd><p class="first last">updated.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._build_change_set">
+<code class="descname">_build_change_set</code><span class="sig-paren">(</span><em>networks=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._build_change_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._build_change_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate changes between the current and expected firewall rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>networks</strong> (<em>list</em>) – The network names to restrict rules to. If no
+networks specified then all rules are returned.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._check_change_operation_order">
+<code class="descname">_check_change_operation_order</code><span class="sig-paren">(</span><em>insert_count</em>, <em>delete_count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._check_change_operation_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._check_change_operation_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if enough quota to do the firewall changes insert first.</p>
+<p>If current usage is near the limit, check if deleting current rules
+before adding the new rules would allow the project to stay below quota.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>insert_count</strong> (<em>int</em>) – The number of rules that will be inserted.</li>
+<li><strong>delete_count</strong> (<em>int</em>) – The number of rules that will be deleted.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>True if existing rules should be deleted before new rules are</dt>
+<dd><p class="first last">inserted, otherwise false.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallQuotaExceededError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallQuotaExceededError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FirewallQuotaExceededError</span></code></a> – Raised if there is not enough quota for
+the required policy to be applied.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._delete_rules">
+<code class="descname">_delete_rules</code><span class="sig-paren">(</span><em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._delete_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._delete_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete old rules from the project firewall.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>network</strong> (<em>str</em>) – The network name to restrict rules to. If no network
+specified then all unexpected rules are deleted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The count of rules deleted.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementDeleteFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementDeleteFailedError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FirewallEnforcementDeleteFailedError</span></code></a> – Raised if one or more changes
+fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._insert_rules">
+<code class="descname">_insert_rules</code><span class="sig-paren">(</span><em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._insert_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._insert_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert new rules into the project firewall.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>network</strong> (<em>str</em>) – The network name to restrict rules to. If no network
+specified then all new rules are inserted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The count of rules inserted.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementInsertFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementInsertFailedError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FirewallEnforcementInsertFailedError</span></code></a> – Raised if one or more changes
+fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._update_rules">
+<code class="descname">_update_rules</code><span class="sig-paren">(</span><em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._update_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._update_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update existing rules in the project firewall using patch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>network</strong> (<em>str</em>) – The network name to restrict rules to. If no network
+specified then all changed rules are updated.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The count of rules updated.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementUpdateFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementUpdateFailedError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FirewallEnforcementUpdateFailedError</span></code></a> – Raised if one or more changes
+fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._validate_change_set">
+<code class="descname">_validate_change_set</code><span class="sig-paren">(</span><em>networks=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer._validate_change_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._validate_change_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the changeset will not leave the project in a bad state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>networks</strong> (<em>list</em>) – The network names to restrict rules to. If no
+networks specified then all rules are returned.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRuleValidationError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRuleValidationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FirewallRuleValidationError</span></code></a> – Raised if a rule name to be inserted
+already exists on the project.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.NetworkImpactValidationError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.NetworkImpactValidationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NetworkImpactValidationError</span></code></a> – Raised if a rule to be changed exists
+on a network not in the networks list.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.apply_firewall">
+<code class="descname">apply_firewall</code><span class="sig-paren">(</span><em>prechange_callback=None</em>, <em>networks=None</em>, <em>allow_empty_ruleset=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer.apply_firewall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.apply_firewall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enforce the expected firewall rules on the project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>prechange_callback</strong> (<em>function</em>) – <p>An optional callback function that
+will get called if the firewall policy for a project does not
+match the expected policy, before any changes are actually
+applied. If the callback returns False then no changes will be
+made to the project. If it returns True then the changes will be
+pushed. If prechange_callback is set to None then the callback
+will be skipped and enforcement will continue as though it had
+returned True.</p>
+<dl class="docutils">
+<dt>The callback template is callback_func(project,</dt>
+<dd>rules_to_delete,
+rules_to_insert,
+rules_to_update)</dd>
+</dl>
+<p>The callback may be used to limit the kinds of firewall changes
+that are allowed to be pushed for a project, limit the number of
+rules that can get changed, to check if the project should have
+rules changed, etc.</p>
+<p>The callback may also raise FirewallEnforcementFailedError if it
+determines that the set of changes to the policy could result in
+an outage for an underlying service, or otherwise are
+inconsistent with business rules. This will cause the
+enforcement to fail.</p>
+</li>
+<li><strong>networks</strong> (<em>list</em>) – <p>A list of networks to limit rule changes to. Rules
+on networks not in the list will not be changed.</p>
+<dl class="docutils">
+<dt>Note- This can lead to duplicate rule name collisions since all</dt>
+<dd>rules are not included when building the change set. The
+change set will be validated before getting enforced and
+any errors will cause a FirewallEnforcementFailedError
+exception to be raised.</dd>
+</dl>
+</li>
+<li><strong>allow_empty_ruleset</strong> (<em>booL</em>) – If set to true and expected_rules has no
+rules, all current firewall rules will be deleted from the
+project.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The total number of firewall rules deleted, inserted and</dt>
+<dd><p class="first last">updated.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">int</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.EmptyProposedFirewallRuleSetError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.EmptyProposedFirewallRuleSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">EmptyProposedFirewallRuleSetError</span></code></a> – An error occurred while updating
+the firewall. The calling code should validate the current state
+of the project firewall, and potentially revert to the old
+firewall rules.</p>
+<p class="last">Any rules changed before the error occurred can be retrieved by
+calling the Get(Deleted|Inserted|Updated)Rules methods.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_deleted_rules">
+<code class="descname">get_deleted_rules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer.get_deleted_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_deleted_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of deleted rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The list of deleted rules.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_inserted_rules">
+<code class="descname">get_inserted_rules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer.get_inserted_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_inserted_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of inserted rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The list of inserted rules.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_updated_rules">
+<code class="descname">get_updated_rules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer.get_updated_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_updated_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of updated rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The list of updated rules.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.refresh_current_rules">
+<code class="descname">refresh_current_rules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallEnforcer.refresh_current_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.refresh_current_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the current rules for the project using the compute API.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallQuotaExceededError">
+<em class="property">exception </em><code class="descname">FirewallQuotaExceededError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallQuotaExceededError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallQuotaExceededError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Raised if the proposed changes would exceed firewall quota.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRuleValidationError">
+<em class="property">exception </em><code class="descname">FirewallRuleValidationError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRuleValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRuleValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.Error</span></code></a></p>
+<p>Raised if a firewall rule fails validation.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules">
+<em class="property">class </em><code class="descname">FirewallRules</code><span class="sig-paren">(</span><em>project</em>, <em>rules=None</em>, <em>add_rule_callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A collection of validated firewall rules.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_DIRECTION">
+<code class="descname">DEFAULT_DIRECTION</code><em class="property"> = 'INGRESS'</em><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_DIRECTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_DISABLED">
+<code class="descname">DEFAULT_DISABLED</code><em class="property"> = False</em><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_DISABLED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_LOGCONFIG">
+<code class="descname">DEFAULT_LOGCONFIG</code><em class="property"> = {'enable': False}</em><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_LOGCONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_PRIORITY">
+<code class="descname">DEFAULT_PRIORITY</code><em class="property"> = 1000</em><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.DEFAULT_PRIORITY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equality.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules"><em>FirewallRules</em></a>) – The other object to compare with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if equal, else false.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Equal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules"><em>FirewallRules</em></a>) – The other object to compare with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if not equal, else false.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._check_rule_before_adding">
+<code class="descname">_check_rule_before_adding</code><span class="sig-paren">(</span><em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules._check_rule_before_adding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._check_rule_before_adding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates that a rule is valid and not a duplicate.</p>
+<p>Validation is based on reference:
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/beta/firewalls">https://cloud.google.com/compute/docs/reference/beta/firewalls</a> and
+<a class="reference external" href="https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table">https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table</a>
+If add_rule_callback is set, this will also confirm that
+add_rule_callback returns True for the rule, otherwise it will not add
+the rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rule</strong> (<em>dict</em>) – The rule to validate.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>True if rule is valid, False if the add_rule_callback returns</dt>
+<dd><p class="first last">False.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleNameError</span></code></a> – Two or more rules have the same
+name.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidFirewallRuleError</span></code></a> – One or more rules failed validation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._order_lists_in_rule">
+<code class="descname">_order_lists_in_rule</code><span class="sig-paren">(</span><em>unsorted_rule</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules._order_lists_in_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._order_lists_in_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively iterates a rule dictionary and sorts any lists.</p>
+<p>This ensures that two rule with the same polices, but with unordered
+lists will compare equal when tested.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>unsorted_rule</strong> (<em>dict</em>) – A rule dictionary that has not been sorted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new rule dictionary with the lists sorted</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rule">
+<code class="descname">add_rule</code><span class="sig-paren">(</span><em>rule</em>, <em>network_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.add_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds rule to the self.rules dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rule</strong> (<em>dict</em>) – A valid dict representing a GCE firewall rule</li>
+<li><strong>network_name</strong> (<em>str</em>) – <p>If set, rules which have no network currently
+defined will have their network set to network_name, and
+network_name will be prepended to the rule name.</p>
+<p>Rules that do have a network defined have their network matched
+against network_name, and if they differ the rule is not added.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleNameError</span></code></a> – Two or more rules have the same
+name.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidFirewallRuleError</span></code></a> – One or more rules failed validation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rules</em>, <em>network_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds rules from a list of rule dicts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rules</strong> (<em>list</em>) – A list of rule dicts to add to the object</li>
+<li><strong>network_name</strong> (<em>str</em>) – <p>If set, rules which have no network currently
+defined will have their network set to network_name, and
+network_name will be prepended to the rule name.</p>
+<p>Rules that do have a network defined have their network matched
+against network_name, and if they differ the rule is not added.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleNameError</span></code></a> – Two or more rules have the same
+name.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidFirewallRuleError</span></code></a> – One or more rules failed validation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_api">
+<code class="descname">add_rules_from_api</code><span class="sig-paren">(</span><em>compute_client</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.add_rules_from_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_api" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads rules from compute.firewalls().list().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compute_client</strong> (<em>object</em>) – A ComputeClient instance for interfacing with
+GCE API.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleNameError</span></code></a> – Two or more rules have the same
+name.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidFirewallRuleError</span></code></a> – One or more rules failed validation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_json">
+<code class="descname">add_rules_from_json</code><span class="sig-paren">(</span><em>json_rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.add_rules_from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import rules from a json string as exported by as_json.</p>
+<p>The JSON string should be an array of Firewall resource objects, see
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/firewalls">https://cloud.google.com/compute/docs/reference/latest/firewalls</a>
+for details. Only the fields in ALLOWED_RULE_ITEMS are permitted.</p>
+<p>The legacy format from older versions of GCE Enforcer is also supported.
+This format wraps the array of Firewall resources in a dictionary under
+the key ‘items’.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>json_rules</strong> (<em>str</em>) – The JSON formatted string containing the rules to
+import.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleNameError</span></code></a> – Two or more rules have the same
+name.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidFirewallRuleError</span></code></a> – One or more rules failed validation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.as_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export rules to a json string.</p>
+<p>The JSON string should be an array of Firewall resource objects, see
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/firewalls">https://cloud.google.com/compute/docs/reference/latest/firewalls</a>
+for details. Only the fields in ALLOWED_RULE_ITEMS are permitted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A JSON string with an array of rules sorted by network and</dt>
+<dd>name.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.filtered_by_networks">
+<code class="descname">filtered_by_networks</code><span class="sig-paren">(</span><em>networks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#FirewallRules.filtered_by_networks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.filtered_by_networks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset of rules that apply to the specified network(s).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>networks</strong> (<em>list</em>) – A list of one or more network names to fetch rules
+for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary of rules that apply to the filtered networks.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError">
+<em class="property">exception </em><code class="descname">InvalidFirewallRuleError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#InvalidFirewallRuleError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.Error</span></code></a></p>
+<p>Raised if a firewall rule doesn’t look like a firewall rule should.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.NetworkImpactValidationError">
+<em class="property">exception </em><code class="descname">NetworkImpactValidationError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#NetworkImpactValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.NetworkImpactValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError" title="google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError</span></code></a></p>
+<p>Raised if a firewall rule is to be applied to a disallowed network.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer._is_successful">
+<code class="descname">_is_successful</code><span class="sig-paren">(</span><em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#_is_successful"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer._is_successful" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the operation finished with no errors.</p>
+<p>If the operation response contains an ‘error’ key, then the error code
+is checked. Any error code that is not ignored causes this to return
+False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>operation</strong> (<em>dict</em>) – A Compute GlobalOperations response object from an API
+call.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>True if there were no errors, or all errors are ignored, otherwise</dt>
+<dd>False.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.build_network_url">
+<code class="descname">build_network_url</code><span class="sig-paren">(</span><em>project</em>, <em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#build_network_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.build_network_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the network url from project and network names.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<em>str</em>) – The name of the GCE project to operate upon.</li>
+<li><strong>network</strong> (<em>str</em>) – The name of the network to operate upon.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The fully qualified network url for the given project/network.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.filter_rules_by_network">
+<code class="descname">filter_rules_by_network</code><span class="sig-paren">(</span><em>rules</em>, <em>network</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#filter_rules_by_network"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.filter_rules_by_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset of rules that apply to the specified network(s).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rules</strong> (<em>list</em>) – A list of rule dicts to filter.</li>
+<li><strong>network</strong> (<em>str</em>) – The network name to restrict rules to. If no network
+specified then all rules are returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of rules that apply to the filtered networks.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.enforcer.gce_firewall_enforcer.get_network_name_from_url">
+<code class="descname">get_network_name_from_url</code><span class="sig-paren">(</span><em>network_url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/gce_firewall_enforcer.html#get_network_name_from_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.gce_firewall_enforcer.get_network_name_from_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a network URL, return the name of the network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>network_url</strong> (<em>str</em>) – The fully qualified network url, such as
+(‘&lt;root&gt;/compute/v1/projects/my-proj/global/networks/my-network’)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The network name, my-network in the previous example</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
