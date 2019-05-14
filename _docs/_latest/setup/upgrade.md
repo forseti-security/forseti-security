@@ -1391,7 +1391,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
-1. Update group_rules.yaml rule file under rules/ in your Forseti server GCS bucket to remove the member_email: "@gmail.com" field [here](https://github.com/forseti-security/terraform-google-forseti/blob/hshin-g-release-2-15/modules/rules/templates/rules/group_rules.yaml)
+1. Update group_rules.yaml rule file under rules/ in your Forseti server GCS bucket to remove the member_email: "@gmail.com" field [here](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/group_rules.yaml)
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.14.0 to 2.15.0" content=upgrading_2_14_0_to_2_15_0 uid=16 %}
