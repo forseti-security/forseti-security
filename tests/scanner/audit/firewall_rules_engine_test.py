@@ -1035,7 +1035,6 @@ class RuleTest(ForsetiTestCase):
         for expected_dict, violation in zip(expected, violations):
             self.assertCountEqual(list(expected_dict.values()), list(violation))
 
-
 class RuleBookTest(ForsetiTestCase):
 
     @parameterized.parameterized.expand([

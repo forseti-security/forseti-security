@@ -44,7 +44,9 @@ class ValidatorClient(object):
             endpoint (String): The Config Validator endpoint.
         """
         self.buffer_sender = BufferedCVDataSender(self)
-        self.channel = grpc.insecure_channel(endpoint)
+        self.gigabyte = 1024 ** 3
+        self.channel = grpc.insecure_channel(endpoint, options=[
+            ('grpc.max_receive_message_length', self.gigabyte)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
