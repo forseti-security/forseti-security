@@ -146,13 +146,17 @@ def check_proper_gcloud():
         print(err)
         sys.exit(1)
     else:
-        for line in out.split('\n'.encode()):
-            version_match = version_regex.match(line.decode())
+
+        if isinstance(out, bytes):
+            out = out.decode()
+
+        for line in out.split('\n'):
+            version_match = version_regex.match(line)
             if version_match:
                 version = tuple(
                     [int(i) for i in version_match.group(1).split('.')])
                 continue
-            alpha_match = alpha_regex.match(line.decode())
+            alpha_match = alpha_regex.match(line)
             if alpha_match:
                 break
 
@@ -466,7 +470,7 @@ def choose_organization():
         if return_code:
             print(err)
 
-        if type(out, bytes):
+        if isinstance(out, bytes):
             out = out.decode()
 
         else:
@@ -590,7 +594,7 @@ def check_billing_enabled(project_id, organization_id):
         print(err)
         _billing_not_enabled()
 
-    if type(out, bytes):
+    if isinstance(out, bytes):
         out = out.decode()
 
     try:
@@ -658,7 +662,7 @@ def lookup_organization(resource_id, rtype='projects'):
             print(err)
             print('Error trying to find current organization from '
                   'project! Exiting.')
-        if type(out, bytes):
+        if isinstance(out, bytes):
             out = out.decode()
         try:
             project = json.loads(out)
@@ -732,7 +736,7 @@ def get_vm_instance_info(instance_name, try_match=False):
         print(err)
         sys.exit(1)
 
-    if type(out, bytes):
+    if isinstance(out, bytes):
         out = out.decode()
 
     try:
@@ -926,7 +930,7 @@ def get_domain_from_organization_id(organization_id):
         print('Unable to retrieve domain from the organization.')
         return ''
 
-    if type(out, bytes):
+    if isinstance(out, bytes):
         out = out.decode()
 
     org_info = json.loads(out)
@@ -957,7 +961,7 @@ def check_deployment_status(deployment_name, status):
         print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
-    if type(out, bytes):
+    if isinstance(out, bytes):
         out = out.decode()
 
     deployment_info = json.loads(out)
