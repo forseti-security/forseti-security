@@ -77,7 +77,7 @@ class ForsetiInstructions(object):
         return message
 
 
-class ForsetiInstaller(metaclass=ABCMeta, object):
+class ForsetiInstaller(object, metaclass=ABCMeta):
     """Forseti installer base class (abstract)"""
 
     # Class variables initialization
