@@ -1,7 +1,0 @@
-google.cloud.forseti.actions.sample\_action module
-==================================================
-
-.. automodule:: google.cloud.forseti.actions.sample_action
-    :members:
-    :undoc-members:
-    :show-inheritance:
