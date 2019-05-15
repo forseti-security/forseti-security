@@ -22,7 +22,6 @@ from abc import abstractmethod
 
 import sys
 
-from future.utils import with_metaclass
 from util import constants
 from util import files
 from util import gcloud
@@ -78,7 +77,7 @@ class ForsetiInstructions(object):
         return message
 
 
-class ForsetiInstaller(with_metaclass(ABCMeta, object)):
+class ForsetiInstaller(metaclass=ABCMeta, object):
     """Forseti installer base class (abstract)"""
 
     # Class variables initialization
