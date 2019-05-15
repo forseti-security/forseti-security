@@ -29,7 +29,7 @@ deploy:
   keyfile: "$TRAVIS_BUILD_DIR/client-secrets.json"
   project: forseti-security-website-prod
   on:
-    repo: GoogleCloudPlatform/forseti-security
+    repo: forseti-security/forseti-security
     branch: forsetisecurity.org
     condition: "($TRAVIS_SECURE_ENV_VARS = true) && ($TRAVIS_EVENT_TYPE != cron)"
   skip_cleanup: true
