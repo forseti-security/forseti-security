@@ -43,7 +43,7 @@ def get_gcloud_info():
         sys.exit(1)
     else:
         try:
-            gcloud_info = json.loads(out)
+            gcloud_info = json.loads(out.decode())
             config = gcloud_info.get('config', {})
             project_id = config.get('project')
             authed_user = config.get('account')
@@ -141,13 +141,13 @@ def check_proper_gcloud():
         print(err)
         sys.exit(1)
     else:
-        for line in out.split('\n'):
-            version_match = version_regex.match(line)
+        for line in out.split('\n'.encode()):
+            version_match = version_regex.match(line.decode())
             if version_match:
                 version = tuple(
                     [int(i) for i in version_match.group(1).split('.')])
                 continue
-            alpha_match = alpha_regex.match(line)
+            alpha_match = alpha_regex.match(line.decode())
             if alpha_match:
                 break
 
