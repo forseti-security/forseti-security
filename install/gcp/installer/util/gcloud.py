@@ -43,7 +43,7 @@ def get_gcloud_info():
         print(err)
         sys.exit(1)
 
-    if type(out, bytes):
+    if isinstance(out, bytes):
         out = out.decode()
 
     else:
