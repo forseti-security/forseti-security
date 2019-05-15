@@ -20,11 +20,11 @@ import os
 import random
 import time
 
-from .forseti_installer import ForsetiInstaller
-from .util import constants
-from .util import files
-from .util import gcloud
-from .util import utils
+from forseti_installer import ForsetiInstaller
+from util import constants
+from util import files
+from util import gcloud
+from util import utils
 
 
 class ForsetiServerInstaller(ForsetiInstaller):

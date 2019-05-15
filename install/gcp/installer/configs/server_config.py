@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Forseti installer server config object."""
-from .config import Config
+from config import Config
 
 
 class ServerConfig(Config):

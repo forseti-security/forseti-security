@@ -23,11 +23,11 @@ from abc import abstractmethod
 import sys
 
 from future.utils import with_metaclass
-from .util import constants
-from .util import files
-from .util import gcloud
-from .util import installer_errors
-from .util import utils
+from util import constants
+from util import files
+from util import gcloud
+from util import installer_errors
+from util import utils
 
 
 class ForsetiInstructions(object):
