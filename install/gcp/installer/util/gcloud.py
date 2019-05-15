@@ -38,12 +38,17 @@ def get_gcloud_info():
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
+
     if return_code:
         print(err)
         sys.exit(1)
+
+    if type(out, bytes):
+        out = out.decode()
+
     else:
         try:
-            gcloud_info = json.loads(out.decode())
+            gcloud_info = json.loads(out)
             config = gcloud_info.get('config', {})
             project_id = config.get('project')
             authed_user = config.get('account')
@@ -457,11 +462,16 @@ def choose_organization():
         orgs = None
         return_code, out, err = utils.run_command([
             'gcloud', 'organizations', 'list', '--format=json'])
+
         if return_code:
             print(err)
+
+        if type(out, bytes):
+            out = out.decode()
+
         else:
             try:
-                orgs = json.loads(out.decode())
+                orgs = json.loads(out)
             except ValueError as verr:
                 print(verr)
 
@@ -579,8 +589,12 @@ def check_billing_enabled(project_id, organization_id):
     if return_code:
         print(err)
         _billing_not_enabled()
+
+    if type(out, bytes):
+        out = out.decode()
+
     try:
-        billing_info = json.loads(out.decode())
+        billing_info = json.loads(out)
         if billing_info.get('billingEnabled'):
             print('Billing: Enabled')
         else:
@@ -644,9 +658,10 @@ def lookup_organization(resource_id, rtype='projects'):
             print(err)
             print('Error trying to find current organization from '
                   'project! Exiting.')
-
+        if type(out, bytes):
+            out = out.decode()
         try:
-            project = json.loads(out.decode())
+            project = json.loads(out)
             project_parent = project.get('parent')
             if not project_parent:
                 _no_organization()
@@ -716,8 +731,12 @@ def get_vm_instance_info(instance_name, try_match=False):
     if return_code:
         print(err)
         sys.exit(1)
+
+    if type(out, bytes):
+        out = out.decode()
+
     try:
-        instances = json.loads(out.decode())
+        instances = json.loads(out)
         for instance in instances:
             cur_instance_name = instance.get('name')
             match = (try_match and re.match(instance_name, cur_instance_name) or
@@ -907,7 +926,10 @@ def get_domain_from_organization_id(organization_id):
         print('Unable to retrieve domain from the organization.')
         return ''
 
-    org_info = json.loads(out.decode())
+    if type(out, bytes):
+        out = out.decode()
+
+    org_info = json.loads(out)
 
     return org_info.get('displayName', '')
 
@@ -935,7 +957,10 @@ def check_deployment_status(deployment_name, status):
         print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
-    deployment_info = json.loads(out.decode())
+    if type(out, bytes):
+        out = out.decode()
+
+    deployment_info = json.loads(out)
 
     deployment_operation = deployment_info['deployment']['operation']
 
