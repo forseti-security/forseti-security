@@ -38,7 +38,7 @@ def install(package_name):
     # pip's python api is deprecated, we will run the pip command
     # through subprocess directly instead.
     return_code, _, err = run_command(
-        ['pip', 'install', package_name, '--user'])
+        ['pip3', 'install', package_name, '--user'])
 
     if return_code:
         print('Error installing package {}'.format(package_name))
