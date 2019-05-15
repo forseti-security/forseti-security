@@ -23,7 +23,7 @@ import datetime
 import site
 import sys
 
-from .installer.util.utils import run_command
+from install.gcp.installer.util.utils import run_command
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
