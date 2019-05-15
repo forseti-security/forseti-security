@@ -15,7 +15,6 @@
 """ Forseti Installer."""
 
 from __future__ import print_function
-from __future__ import absolute_import
 from builtins import input
 from builtins import object
 from abc import ABCMeta
@@ -24,11 +23,11 @@ from abc import abstractmethod
 import sys
 
 from future.utils import with_metaclass
-from install.gcp.installer.util import constants
-from install.gcp.installer.util import files
-from install.gcp.installer.util import gcloud
-from install.gcp.installer.util import installer_errors
-from install.gcp.installer.util import utils
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import installer_errors
+from .util import utils
 
 
 class ForsetiInstructions(object):

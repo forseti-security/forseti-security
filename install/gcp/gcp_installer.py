@@ -16,14 +16,13 @@
 This has been tested with python 2.7.
 """
 from __future__ import print_function
-from __future__ import absolute_import
 
 import argparse
 import datetime
 import site
 import sys
 
-from install.gcp.installer.util.utils import run_command
+from .installer.util.utils import run_command
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'

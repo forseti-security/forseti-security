@@ -15,17 +15,16 @@
 """Forseti Server installer."""
 
 from __future__ import print_function
-from __future__ import absolute_import
 from builtins import input
 import os
 import random
 import time
 
-from install.gcp.installer.forseti_installer import ForsetiInstaller
-from install.gcp.installer.util import constants
-from install.gcp.installer.util import files
-from install.gcp.installer.util import gcloud
-from install.gcp.installer.util import utils
+from .forseti_installer import ForsetiInstaller
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import utils
 
 
 class ForsetiServerInstaller(ForsetiInstaller):

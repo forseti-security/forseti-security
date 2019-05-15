@@ -13,12 +13,11 @@
 # limitations under the License.
 
 """Forseti CLI installer."""
-from __future__ import absolute_import
 
 import time
-from install.gcp.installer.forseti_installer import ForsetiInstaller
-from install.gcp.installer.util import constants
-from install.gcp.installer.util import gcloud
+from .forseti_installer import ForsetiInstaller
+from .util import constants
+from .util import gcloud
 
 
 class ForsetiClientInstaller(ForsetiInstaller):
