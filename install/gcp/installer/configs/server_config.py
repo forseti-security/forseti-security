@@ -15,7 +15,7 @@
 """Forseti installer server config object."""
 from __future__ import absolute_import
 
-from .config import Config
+from install.gcp.installer.configs.config import Config
 
 
 class ServerConfig(Config):
