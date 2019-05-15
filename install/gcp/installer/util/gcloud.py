@@ -461,7 +461,7 @@ def choose_organization():
             print(err)
         else:
             try:
-                orgs = json.loads(out)
+                orgs = json.loads(out.decode())
             except ValueError as verr:
                 print(verr)
 
@@ -580,7 +580,7 @@ def check_billing_enabled(project_id, organization_id):
         print(err)
         _billing_not_enabled()
     try:
-        billing_info = json.loads(out)
+        billing_info = json.loads(out.decode())
         if billing_info.get('billingEnabled'):
             print('Billing: Enabled')
         else:
@@ -646,7 +646,7 @@ def lookup_organization(resource_id, rtype='projects'):
                   'project! Exiting.')
 
         try:
-            project = json.loads(out)
+            project = json.loads(out.decode())
             project_parent = project.get('parent')
             if not project_parent:
                 _no_organization()
@@ -717,7 +717,7 @@ def get_vm_instance_info(instance_name, try_match=False):
         print(err)
         sys.exit(1)
     try:
-        instances = json.loads(out)
+        instances = json.loads(out.decode())
         for instance in instances:
             cur_instance_name = instance.get('name')
             match = (try_match and re.match(instance_name, cur_instance_name) or
@@ -907,7 +907,7 @@ def get_domain_from_organization_id(organization_id):
         print('Unable to retrieve domain from the organization.')
         return ''
 
-    org_info = json.loads(out)
+    org_info = json.loads(out.decode())
 
     return org_info.get('displayName', '')
 
@@ -935,7 +935,7 @@ def check_deployment_status(deployment_name, status):
         print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
-    deployment_info = json.loads(out)
+    deployment_info = json.loads(out.decode())
 
     deployment_operation = deployment_info['deployment']['operation']
 
