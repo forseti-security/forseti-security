@@ -419,6 +419,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
+            'backendservice': {'resource': 2},
             'cloudsqlinstance': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
@@ -441,6 +442,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
@@ -476,7 +478,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'appengine_app': {'resource': 2},
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
-            'backendservice': {'resource': 1},
+            'backendservice': {'resource': 2},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
@@ -505,7 +507,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
-            'forwardingrule': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 2},
@@ -624,6 +626,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()
