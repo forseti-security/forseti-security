@@ -1,8 +1,0 @@
-google.cloud.forseti.common.gcp\_api.discovery\_documents package
-=================================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.discovery_documents
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

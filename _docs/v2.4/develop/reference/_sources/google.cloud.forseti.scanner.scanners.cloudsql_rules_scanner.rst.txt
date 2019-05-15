@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.cloudsql\_rules\_scanner module
-=====================================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.cloudsql_rules_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:
