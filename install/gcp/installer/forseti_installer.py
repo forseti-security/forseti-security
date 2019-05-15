@@ -21,6 +21,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
+from future.utils import with_metaclass
 
 from .util import constants
 from .util import files
@@ -77,7 +78,7 @@ class ForsetiInstructions(object):
         return message
 
 
-class ForsetiInstaller(object, metaclass=ABCMeta):
+class ForsetiInstaller(with_metaclass(ABCMeta, object)):
     """Forseti installer base class (abstract)"""
 
     # Class variables initialization

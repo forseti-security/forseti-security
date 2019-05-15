@@ -26,6 +26,7 @@ from .installer.util.utils import run_command
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
+    'future==0.17.1'
 ]
 
 
