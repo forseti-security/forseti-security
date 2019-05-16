@@ -1,7 +1,0 @@
-google.cloud.forseti.stubs module
-=================================
-
-.. automodule:: google.cloud.forseti.stubs
-    :members:
-    :undoc-members:
-    :show-inheritance:

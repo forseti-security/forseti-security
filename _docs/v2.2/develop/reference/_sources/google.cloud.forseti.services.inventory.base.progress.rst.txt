@@ -1,7 +1,0 @@
-google.cloud.forseti.services.inventory.base.progress module
-============================================================
-
-.. automodule:: google.cloud.forseti.services.inventory.base.progress
-    :members:
-    :undoc-members:
-    :show-inheritance:
