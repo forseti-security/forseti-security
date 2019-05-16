@@ -50,6 +50,7 @@ sudo chmod ugo+x ${FORSETI_HOME}/external-dependencies/config-validator/ConfigVa
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
+SQL_PROXY_COMMAND+=" --ip_address_types=PRIVATE"
 
 # Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
