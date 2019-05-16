@@ -39,12 +39,12 @@ def get_gcloud_info():
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         sys.exit(1)
-
-    if isinstance(out, bytes):
-        out = out.decode()
 
     else:
         try:
@@ -146,7 +146,6 @@ def check_proper_gcloud():
         print(err)
         sys.exit(1)
     else:
-
         if isinstance(out, bytes):
             out = out.decode()
 
@@ -467,11 +466,11 @@ def choose_organization():
         return_code, out, err = utils.run_command([
             'gcloud', 'organizations', 'list', '--format=json'])
 
-        if return_code:
-            print(err)
-
         if isinstance(out, bytes):
             out = out.decode()
+
+        if return_code:
+            print(err)
 
         else:
             try:
@@ -590,12 +589,13 @@ def check_billing_enabled(project_id, organization_id):
     return_code, out, err = utils.run_command(
         ['gcloud', 'alpha', 'billing', 'projects', 'describe',
          project_id, '--format=json'])
-    if return_code:
-        print(err)
-        _billing_not_enabled()
 
     if isinstance(out, bytes):
         out = out.decode()
+
+    if return_code:
+        print(err)
+        _billing_not_enabled()
 
     try:
         billing_info = json.loads(out)
@@ -658,12 +658,14 @@ def lookup_organization(resource_id, rtype='projects'):
         return_code, out, err = utils.run_command(
             ['gcloud', 'projects', 'describe',
              resource_id, '--format=json'])
+
+        if isinstance(out, bytes):
+            out = out.decode()
+
         if return_code:
             print(err)
             print('Error trying to find current organization from '
                   'project! Exiting.')
-        if isinstance(out, bytes):
-            out = out.decode()
         try:
             project = json.loads(out)
             project_parent = project.get('parent')
@@ -732,12 +734,12 @@ def get_vm_instance_info(instance_name, try_match=False):
     return_code, out, err = utils.run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         sys.exit(1)
-
-    if isinstance(out, bytes):
-        out = out.decode()
 
     try:
         instances = json.loads(out)
@@ -925,13 +927,13 @@ def get_domain_from_organization_id(organization_id):
         ['gcloud', 'organizations', 'describe', organization_id,
          '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         print('Unable to retrieve domain from the organization.')
         return ''
-
-    if isinstance(out, bytes):
-        out = out.decode()
 
     org_info = json.loads(out)
 
@@ -956,13 +958,13 @@ def check_deployment_status(deployment_name, status):
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
-
-    if isinstance(out, bytes):
-        out = out.decode()
 
     deployment_info = json.loads(out)
 
