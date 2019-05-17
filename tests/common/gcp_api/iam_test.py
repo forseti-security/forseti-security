@@ -127,6 +127,16 @@ class IamTest(unittest_utils.ForsetiTestCase):
 
         self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
+    def test_get_service_account_keys_404(self):
+        """Test get iam project service accounts."""
+        http_mocks.mock_http_response(
+            fake_iam.GET_PROJECTS_SERVICEACCOUNTS_KEYS, status=404)
+
+        result = self.iam_api_client.get_service_account_keys(
+            fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
+        self.assertEquals([], result)
+
     def test_get_service_account_keys_key_type(self):
         """Test get iam project service accounts."""
         http_mocks.mock_http_response(
