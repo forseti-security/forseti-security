@@ -449,7 +449,7 @@ class IAMClient(object):
                          name, key_type, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
+            if isinstance(e, errors.HttpError) and str(e.resp.status) == '404':
                 LOGGER.debug('Service account %s doesn\'t exist', name)
                 return []
             api_exception = api_errors.ApiExecutionError(
