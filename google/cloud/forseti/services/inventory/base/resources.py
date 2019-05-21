@@ -867,6 +867,16 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('container.googleapis.com'))
 
+    def kubernetes_api_enabled(self):
+        """Check if the kubernetes api is enabled.
+
+        Returns:
+            bool: if this API service is enabled on the project.
+        """
+        # Kubernetes API depends on billing being enabled
+        return (self.billing_enabled() and (self.is_api_enabled('k8s.io') or
+                self.is_api_enabled('rbac.authorization.k8s.io')))
+
     def storage_api_enabled(self):
         """whether storage api is enabled.
 
@@ -1349,6 +1359,37 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
                          self._data)
             return None
 
+# Kubernetes resource class
+
+
+class KubernetesNode(resource_class_factory('node', 'id')):
+    """The Resource implementation for Kubernetes Node."""
+
+
+class KubernetesPod(resource_class_factory('pod', 'id')):
+    """The Resource implementation for Kubernetes Pod."""
+
+
+class KubernetesNamespace(resource_class_factory('namespace', 'id')):
+    """The Resource implementation for Kubernetes Namespace."""
+
+
+class KubernetesRole(resource_class_factory('role', 'id')):
+    """The Resource implementation for Kubernetes Role."""
+
+
+class KubernetesRoleBinding(resource_class_factory('rolebinding', 'id')):
+    """The Resource implementation for Kubernetes RoleBinding."""
+
+
+class KubernetesClusterRole(resource_class_factory('clusterrole', 'id')):
+    """The Resource implementation for Kubernetes ClusterRole."""
+
+
+class KubernetesClusterRoleBinding(resource_class_factory('clusterrolebinding',
+                                                          'id')):
+    """The Resource implementation for Kubernetes ClusterRoleBinding."""
+
 
 # Stackdriver Logging resource classes
 class LoggingSink(resource_class_factory('sink', None)):
@@ -1627,6 +1668,66 @@ def resource_iter_class_factory(api_method_name,
                     LOGGER.debug(e)
 
     return ResourceIteratorSubclass
+
+
+def kubernetes_iter_class_factory(api_method_name, resource_name):
+    """Factory function to generate ResourceIterator subclasses for Compute.
+
+    Args:
+        api_method_name (str): The method to call on the API client class to
+            iterate resources.
+        resource_name (str): The name of the resource to create from the
+            resource factory.
+
+    Returns:
+        class: A new class object.
+    """
+    return resource_iter_class_factory(
+        api_method_name, resource_name, api_method_arg_key='projectNumber',
+        resource_validation_method_name='kubernetes_api_enabled')
+
+
+class KubernetesNodeIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_nodes',
+        resource_name='k8s_node')):
+    """The Resource iterator implementation for Kubernetes Node."""
+
+
+class KubernetesPodIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_pods',
+        resource_name='k8s_pod')):
+    """The Resource iterator implementation for Kubernetes Pod."""
+
+
+class KubernetesNamespaceIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_namespaces',
+        resource_name='k8s_namespace')):
+    """The Resource iterator implementation for Kubernetes Namespace."""
+
+
+class KubernetesRoleIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_roles',
+        resource_name='k8s_role')):
+    """The Resource iterator implementation for Kubernetes Role."""
+
+
+class KubernetesRoleBindingIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_rolebindings',
+        resource_name='k8s_rolebinding')):
+    """The Resource iterator implementation for Kubernetes RoleBinding."""
+
+
+class KubernetesClusterRoleIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_clusterroles',
+        resource_name='k8s_clusterrole')):
+    """The Resource iterator implementation for Kubernetes ClusterRole."""
+
+
+class KubernetesClusterRoleBindingIterator(kubernetes_iter_class_factory(
+        api_method_name='iter_kubernetes_clusterrolebindings',
+        resource_name='k8s_clusterrolebinding')):
+    """The Resource iterator implementation for Kubernetes
+    ClusterRoleBinding."""
 
 
 class ResourceManagerFolderIterator(resource_iter_class_factory(
@@ -2363,6 +2464,13 @@ FACTORIES = {
             ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
+            KubernetesNodeIterator,
+            KubernetesPodIterator,
+            KubernetesNamespaceIterator,
+            KubernetesRoleIterator,
+            KubernetesRoleBindingIterator,
+            KubernetesClusterRoleIterator,
+            KubernetesClusterRoleBindingIterator,
         ]}),
 
     'appengine_app': ResourceFactory({
@@ -2659,9 +2767,39 @@ FACTORIES = {
         'cls': KmsCryptoKeyVersion,
         'contains': []}),
 
-    'kubernetes_cluster': ResourceFactory({
+    'k8s_node': ResourceFactory({
         'dependsOn': ['project'],
-        'cls': KubernetesCluster,
+        'cls': KubernetesNode,
+        'contains': []}),
+
+    'k8s_pod': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesPod,
+        'contains': []}),
+
+    'k8s_namespace': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesNamespace,
+        'contains': []}),
+
+    'k8s_role': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesRole,
+        'contains': []}),
+
+    'k8s_rolebinding': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesRoleBinding,
+        'contains': []}),
+
+    'k8s_clusterrole': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesClusterRole,
+        'contains': []}),
+
+    'k8s_clusterrolebinding': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesClusterRoleBinding,
         'contains': []}),
 
     'logging_sink': ResourceFactory({

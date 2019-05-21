@@ -996,6 +996,125 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for folder in resources:
             yield folder
 
+    def iter_kubernetes_nodes(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Node',
+            '//k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_pods(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Pod',
+            '//k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_namespaces(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Namespace',
+            '//k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_roles(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/Role',
+            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_rolebindings(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/RoleBinding',
+            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_clusterroles(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/ClusterRole',
+            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_kubernetes_clusterrolebindings(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/ClusterRoleBinding',
+            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
     def iter_crm_projects(self, parent_type, parent_id):
         """Iterate Projects from Cloud Asset data.
 

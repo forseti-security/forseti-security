@@ -78,6 +78,7 @@ class NullProgresser(Progresser):
     def get_summary(self):
         pass
 
+
 def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
     resource = {
         'name': name,
@@ -114,6 +115,7 @@ def folder(item):
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
+
 def project(item):
     name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         item['projectNumber'])
@@ -122,6 +124,7 @@ def project(item):
         item['parent']['type'], item['parent']['id'])
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
+
 
 def appengine_app(item):
     parent = item.parent()
@@ -226,6 +229,45 @@ def serviceaccount(item):
 #         parent['projectNumber'])
 #     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
+def _create_kubernetes_asset(item, asset_type):
+    parent = item.parent()
+    self_link =
+    name = '//k8s.io/{}'.format(self_link)
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+def _create_kubernetes_rbac_asset(item, asset_type):
+    parent = item.parent()
+    self_link = '/'.join(item['selfLink'].split('/')[5:])
+    name = '//rbac.authorization.k8s.io/{}'.format(self_link)
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+def node(item):
+    return _create_kubernetes_asset(item, 'k8s.io/Node')
+
+def pod(item):
+    return _create_kubernetes_asset(item, 'k8s.io/Pod')
+
+def namespace(item):
+    return _create_kubernetes_asset(item, 'k8s.io/Namespace')
+
+def role(item):
+    return _create_kubernetes_rbac_asset(item, 'rbac.authorization.k8s.io/Role')
+
+def role_binding(item):
+    return _create_kubernetes_rbac_asset(
+        item, 'rbac.authorization.k8s.io/RoleBinding')
+
+def cluster_role(item):
+    return _create_kubernetes_rbac_asset(
+        item, 'rbac.authorization.k8s.io/ClusterRole')
+
+def cluster_role_binding(item):
+    return _create_kubernetes_rbac_asset(
+        item, 'rbac.authorization.k8s.io/ClusterRoleBinding')
 
 def _create_compute_asset(item, asset_type):
     parent = item.parent()
