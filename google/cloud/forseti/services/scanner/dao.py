@@ -169,7 +169,7 @@ class Violation(BASE):
     rule_index = Column(Integer, default=0)
     rule_name = Column(String(256))
     scanner_index_id = Column(BigInteger)
-    violation_data = Column(Text)
+    violation_data = Column(Text(16777215))
     violation_hash = Column(String(256))
     violation_message = Column(Text)
     violation_type = Column(String(256), nullable=False)
@@ -199,7 +199,13 @@ class Violation(BASE):
                                     Text(),
                                     default='')]
 
-        schema_update_actions = {'CREATE': columns_to_create}
+        columns_to_update = {
+            Column('violation_data', Text()):
+            Column('violation_data', Text(16777215))}
+
+        schema_update_actions = {'CREATE': columns_to_create,
+                                 'ALTER': columns_to_update}
+
         return schema_update_actions
 
 

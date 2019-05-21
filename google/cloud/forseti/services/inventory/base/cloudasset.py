@@ -48,7 +48,7 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/Disk',
     'compute.googleapis.com/Firewall',
     'compute.googleapis.com/ForwardingRule',
-    'compute.googleapis.com/GlobalForwardingRule'
+    'compute.googleapis.com/GlobalForwardingRule',
     'compute.googleapis.com/HealthCheck',
     'compute.googleapis.com/HttpHealthCheck',
     'compute.googleapis.com/HttpsHealthCheck',
