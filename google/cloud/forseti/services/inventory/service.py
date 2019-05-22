@@ -23,13 +23,21 @@ from google.cloud.forseti.services.inventory import inventory
 from google.cloud.forseti.services.utils import autoclose_stream
 
 # pylint: disable=no-member
+SUPPRESS_MESSAGE_TEMPLATE = (
+    'Your inventory contains {message_type} message(s), please run command '
+    '`forseti inventory get INVENTORY_ID` for more information.')
 
 
-def inventory_pb_from_object(inventory_index):
+def inventory_pb_from_object(inventory_index,
+                             suppress_warnings=False,
+                             suppress_errors=False):
     """Convert internal inventory data structure to protobuf.
 
     Args:
-        inventory_index (object): InventoryIndex class in inventory storage
+        inventory_index (InventoryIndex): InventoryIndex class in
+            inventory storage.
+        suppress_warnings (bool): Suppress warning messages.
+        suppress_errors (bool): Suppress error messages.
 
     Returns:
         object: proto message of InventoryIndex
@@ -44,6 +52,19 @@ def inventory_pb_from_object(inventory_index):
     start_timestamp = timestamp.Timestamp()
     start_timestamp.FromDatetime(inventory_index.created_at_datetime)
 
+    warnings = inventory_index.inventory_index_warnings
+    errors = inventory_index.inventory_index_errors
+
+    if suppress_warnings:
+        warnings = (
+            SUPPRESS_MESSAGE_TEMPLATE.format(message_type='warning')
+            if warnings else '')
+
+    if suppress_errors:
+        errors = (
+            SUPPRESS_MESSAGE_TEMPLATE.format(message_type='error')
+            if errors else '')
+
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
         start_timestamp=start_timestamp,
@@ -51,8 +72,8 @@ def inventory_pb_from_object(inventory_index):
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,
         status=inventory_index.inventory_status,
-        warnings=inventory_index.inventory_index_warnings,
-        errors=inventory_index.inventory_index_errors)
+        warnings=warnings,
+        errors=errors)
 
 
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
@@ -124,7 +145,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         for inventory_index in self.inventory.list():
-            yield inventory_pb_from_object(inventory_index)
+            yield inventory_pb_from_object(inventory_index,
+                                           suppress_warnings=True)
 
     def Get(self, request, _):
         """Gets existing inventory.

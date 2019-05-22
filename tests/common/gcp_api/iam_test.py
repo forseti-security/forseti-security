@@ -127,6 +127,25 @@ class IamTest(unittest_utils.ForsetiTestCase):
 
         self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
+    def test_get_service_account_keys_404_sa_not_found(self):
+        """Test get iam project service accounts not found."""
+        http_mocks.mock_http_response(fake_iam.SERVICE_ACCOUNT_NOT_FOUND,
+                                      '404')
+
+        result = self.iam_api_client.get_service_account_keys(
+            fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
+        self.assertEquals([], result)
+
+    def test_get_service_account_keys_404_raises(self):
+        """Test get iam project service accounts not found."""
+
+        http_mocks.mock_http_response(fake_iam.GENERAL_NOT_FOUND, '404')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.iam_api_client.get_service_account_keys(
+                fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
     def test_get_service_account_keys_key_type(self):
         """Test get iam project service accounts."""
         http_mocks.mock_http_response(
@@ -146,14 +165,6 @@ class IamTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(ValueError):
             self.iam_api_client.get_service_account_keys(
                 fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type='Other')
-
-    def test_get_service_account_keys_raises(self):
-        """Test get iam project service accounts not found."""
-        http_mocks.mock_http_response(fake_iam.SERVICE_ACCOUNT_NOT_FOUND, '404')
-
-        with self.assertRaises(api_errors.ApiExecutionError):
-            self.iam_api_client.get_service_account_keys(
-                fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
     def test_get_service_account_iam_policy(self):
         """Test get iam project service accounts."""
