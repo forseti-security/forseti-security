@@ -1329,14 +1329,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for keyring in resources:
             yield keyring
 
-    def iter_kubernetes_nodes(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_nodes(self):
+        """Iterate Nodes from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of nodes
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1349,14 +1349,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for node in resources:
             yield node
 
-    def iter_kubernetes_pods(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_pods(self):
+        """Iterate Pods from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of pods
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1366,14 +1366,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for pod in resources:
             yield pod
 
-    def iter_kubernetes_namespaces(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_namespaces(self):
+        """Iterate Namespaces from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of namespaces
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1384,14 +1384,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for namespace in resources:
             yield namespace
 
-    def iter_kubernetes_roles(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_roles(self):
+        """Iterate Roles from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of roles
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1402,14 +1402,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for role in resources:
             yield role
 
-    def iter_kubernetes_rolebindings(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_rolebindings(self):
+        """Iterate RoleBindings from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of role bindings
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1420,14 +1420,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for rolebinding in resources:
             yield rolebinding
 
-    def iter_kubernetes_clusterroles(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_clusterroles(self):
+        """Iterate ClusterRole from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of cluster roles
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
@@ -1438,14 +1438,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for clusterrole in resources:
             yield clusterrole
 
-    def iter_kubernetes_clusterrolebindings(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_clusterrolebindings(self):
+        """Iterate ClusterRoleBindings from Cloud Asset data.
 
         Args:
             parent_id (str): id of the parent of the folder
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of cluster role bindings
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
