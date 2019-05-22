@@ -22,13 +22,13 @@ import os
 import sys
 
 import grpc
+
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
 from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
-
 
 LOGGER = logger.get_logger(__name__)
 
@@ -1083,7 +1083,6 @@ class DefaultConfig(dict):
                         'endpoint instead, endpoint: %s',
                         conf_path,
                         self.DEFAULT_ENDPOINT)
-
         return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):
@@ -1175,7 +1174,7 @@ def main(args=None,
     output = outputs[config.out_format]()
     try:
         services[config.service](client, config, output, config_env)
-    except ValueError as e:
+    except (KeyError, ValueError) as e:
         parser.error(str(e))
     except grpc.RpcError as e:
         grpc_status_code = e.code()  # pylint: disable=no-member
