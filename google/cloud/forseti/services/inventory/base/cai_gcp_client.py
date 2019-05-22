@@ -1329,6 +1329,133 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for keyring in resources:
             yield keyring
 
+    def iter_kubernetes_nodes(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Node',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        parent_id = parent_id
+        print('parent id:', parent_id)
+        for node in resources:
+            yield node
+
+    def iter_kubernetes_pods(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Pod',
+            '//k8s.io/Namespace/{}'.format(parent_id),
+            self.session)
+        for pod in resources:
+            yield pod
+
+    def iter_kubernetes_namespaces(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Namespace',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        for namespace in resources:
+            yield namespace
+
+    def iter_kubernetes_roles(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/Role',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        for role in resources:
+            yield role
+
+    def iter_kubernetes_rolebindings(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/RoleBinding',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        for rolebinding in resources:
+            yield rolebinding
+
+    def iter_kubernetes_clusterroles(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/ClusterRole',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        for clusterrole in resources:
+            yield clusterrole
+
+    def iter_kubernetes_clusterrolebindings(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'rbac.authorization.k8s.io/ClusterRoleBinding',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format('x', 'y', 'z'),
+            self.session)
+        for clusterrolebinding in resources:
+            yield clusterrolebinding
+
     def fetch_pubsub_subscription_iam_policy(self, name):
         """PubSub Subscription IAM policy from Cloud Asset data.
 

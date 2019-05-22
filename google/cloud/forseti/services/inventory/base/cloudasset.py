@@ -86,6 +86,14 @@ DEFAULT_ASSET_TYPES = [
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',
     'storage.googleapis.com/Bucket',
+    'k8s.io/Node',
+    'k8s.io/Pod',
+    'k8s.io/Namespace',
+    'rbac.authorization.k8s.io/Role',
+    'rbac.authorization.k8s.io/RoleBinding',
+    'rbac.authorization.k8s.io/ClusterRole',
+    'rbac.authorization.k8s.io/ClusterRoleBinding',
+
 ]
 
 
