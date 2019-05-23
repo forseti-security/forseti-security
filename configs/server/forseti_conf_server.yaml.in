@@ -186,10 +186,10 @@ inventory:
         #    - container.googleapis.com/Cluster
         #    - k8s.io/Node
         #    - k8s.io/Pod
-        #    - k8s.io/Namespace,
-        #    - rbac.authorization.k8s.io/Role,
-        #    - rbac.authorization.k8s.io/RoleBinding,
-        #    - rbac.authorization.k8s.io/ClusterRole,
+        #    - k8s.io/Namespace
+        #    - rbac.authorization.k8s.io/Role
+        #    - rbac.authorization.k8s.io/RoleBinding
+        #    - rbac.authorization.k8s.io/ClusterRole
         #    - rbac.authorization.k8s.io/ClusterRoleBinding
 
     # Number of days to retain inventory data:

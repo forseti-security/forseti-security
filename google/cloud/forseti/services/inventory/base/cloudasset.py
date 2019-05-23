@@ -87,8 +87,8 @@ DEFAULT_ASSET_TYPES = [
     'sqladmin.googleapis.com/Instance',
     'storage.googleapis.com/Bucket',
     # 'container.googleapis.com/Cluster',
-    'k8s.io/Node'
-    'k8s.io/Pod'
+    'k8s.io/Node',
+    'k8s.io/Pod',
     'k8s.io/Namespace',
     'rbac.authorization.k8s.io/Role',
     'rbac.authorization.k8s.io/RoleBinding',

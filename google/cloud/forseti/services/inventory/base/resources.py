@@ -1362,32 +1362,32 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
 # Kubernetes resource class
 
 
-class KubernetesNode(resource_class_factory('node', 'id')):
+class KubernetesNode(resource_class_factory('k8s_node', 'id')):
     """The Resource implementation for Kubernetes Node."""
 
 
-class KubernetesPod(resource_class_factory('pod', 'id')):
+class KubernetesPod(resource_class_factory('k8s_pod', 'id')):
     """The Resource implementation for Kubernetes Pod."""
 
 
-class KubernetesNamespace(resource_class_factory('namespace', 'id')):
+class KubernetesNamespace(resource_class_factory('k8s_namespace', 'id')):
     """The Resource implementation for Kubernetes Namespace."""
 
 
-class KubernetesRole(resource_class_factory('role', 'id')):
+class KubernetesRole(resource_class_factory('k8s_role', 'id')):
     """The Resource implementation for Kubernetes Role."""
 
 
-class KubernetesRoleBinding(resource_class_factory('rolebinding', 'id')):
+class KubernetesRoleBinding(resource_class_factory('k8s_rolebinding', 'id')):
     """The Resource implementation for Kubernetes RoleBinding."""
 
 
-class KubernetesClusterRole(resource_class_factory('clusterrole', 'id')):
+class KubernetesClusterRole(resource_class_factory('k8s_clusterrole', 'id')):
     """The Resource implementation for Kubernetes ClusterRole."""
 
 
-class KubernetesClusterRoleBinding(resource_class_factory('clusterrolebinding',
-                                                          'id')):
+class KubernetesClusterRoleBinding(resource_class_factory(
+    'k8s_clusterrolebinding', 'id')):
     """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
 
@@ -2287,12 +2287,32 @@ class KmsCryptoKeyVersionIterator(resource_iter_class_factory(
     """The Resource iterator implementation for KMS CryptoKeyVersion."""
 
 
-class KubernetesClusterIterator(resource_iter_class_factory(
-        api_method_name='iter_container_clusters',
-        resource_name='kubernetes_cluster',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='container_api_enabled')):
-    """The Resource iterator implementation for Kubernetes Cluster."""
+# class KubernetesClusterIterator(resource_iter_class_factory(
+#         api_method_name='iter_container_clusters',
+#         resource_name='kubernetes_cluster',
+#         api_method_arg_key='projectNumber',
+#         resource_validation_method_name='container_api_enabled')):
+#     """The Resource iterator implementation for Kubernetes Cluster."""
+
+
+class KubernetesClusterIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesCluster"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_container_clusters(
+                    project_id=self.resource['projectId']):
+                yield FACTORIES['kubernetes_cluster'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
 
 
 class LoggingBillingAccountSinkIterator(resource_iter_class_factory(
@@ -2464,6 +2484,12 @@ FACTORIES = {
             ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
+        ]}),
+
+    'kubernetes_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesCluster,
+        'contains': [
             KubernetesNodeIterator,
             KubernetesPodIterator,
             KubernetesNamespaceIterator,

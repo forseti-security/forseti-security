@@ -842,23 +842,23 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
     # Disabling pulling ke data from CAI since it's missing nodepools
     # attribute in the returned data. We can re-enable this once that
     # problem is resolved.
-    # def iter_container_clusters(self, project_number):
-    #     """Iterate Kubernetes Engine Cluster from Cloud Asset data.
-    #
-    #     Args:
-    #         project_number (str): number of the project to query.
-    #
-    #     Yields:
-    #         dict: Generator of Kubernetes Engine Cluster resources.
-    #     """
-    #     resources = self.dao.iter_cai_assets(
-    #         ContentTypes.resource,
-    #         'container.googleapis.com/Cluster',
-    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-    #             project_number),
-    #         self.session)
-    #     for cluster in resources:
-    #         yield cluster
+    def iter_container_clusters(self, project_number):
+        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Kubernetes Engine Cluster resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'container.googleapis.com/Cluster',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for cluster in resources:
+            yield cluster
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
@@ -1008,8 +1008,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Node',
-            '//k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
+        parent_id = parent_id
+        print('parent id:', parent_id)
         for folder in resources:
             yield folder
 
@@ -1025,7 +1028,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Pod',
-            '//k8s.io{}'.format(parent_id),
+            '//k8s.io/Namespace/{}'.format(parent_id),
             self.session)
         for folder in resources:
             yield folder
@@ -1042,7 +1045,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Namespace',
-            '//k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
         for folder in resources:
             yield folder
@@ -1059,7 +1063,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/Role',
-            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
         for folder in resources:
             yield folder
@@ -1076,7 +1081,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/RoleBinding',
-            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
         for folder in resources:
             yield folder
@@ -1093,7 +1099,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRole',
-            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
         for folder in resources:
             yield folder
@@ -1110,7 +1117,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRoleBinding',
-            '//rbac.authorization.k8s.io{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
+            .format(parent_id, 'abc', 'xyz'),
             self.session)
         for folder in resources:
             yield folder
