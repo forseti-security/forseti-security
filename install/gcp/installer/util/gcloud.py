@@ -15,14 +15,17 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
+from builtins import input
+from builtins import str
 import json
 import os.path
 import re
 import sys
 
-import constants
-import installer_errors
-import utils
+from . import constants
+from . import installer_errors
+from . import utils
 
 
 def get_gcloud_info():
@@ -35,9 +38,14 @@ def get_gcloud_info():
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         sys.exit(1)
+
     else:
         try:
             gcloud_info = json.loads(out)
@@ -138,6 +146,9 @@ def check_proper_gcloud():
         print(err)
         sys.exit(1)
     else:
+        if isinstance(out, bytes):
+            out = out.decode()
+
         for line in out.split('\n'):
             version_match = version_regex.match(line)
             if version_match:
@@ -385,7 +396,7 @@ def _grant_roles(roles_map, target_id, project_id,
 
     assign_roles_cmds = []
 
-    for (resource_type, roles) in roles_map.iteritems():
+    for (resource_type, roles) in roles_map.items():
         resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
@@ -454,8 +465,13 @@ def choose_organization():
         orgs = None
         return_code, out, err = utils.run_command([
             'gcloud', 'organizations', 'list', '--format=json'])
+
+        if isinstance(out, bytes):
+            out = out.decode()
+
         if return_code:
             print(err)
+
         else:
             try:
                 orgs = json.loads(out)
@@ -477,8 +493,8 @@ def choose_organization():
             print('ID=%s (description="%s")' %
                   (org_id, org['displayName']))
 
-        choice = raw_input('Enter the organization id where '
-                           'you want Forseti to crawl for data: ').strip()
+        choice = input('Enter the organization id where '
+                       'you want Forseti to crawl for data: ').strip()
         try:
             # make sure that the choice is a valid organization id
             if choice not in valid_org_ids:
@@ -501,7 +517,7 @@ def choose_folder(organization_id):
     """
     target_id = None
     while not target_id:
-        choice = raw_input(
+        choice = input(
             constants.QUESTION_CHOOSE_FOLDER.format(organization_id)).strip()
         try:
             # make sure that the choice is an int before converting to str
@@ -519,7 +535,7 @@ def choose_project():
     """
     target_id = None
     while not target_id:
-        target_id = raw_input(
+        target_id = input(
             'Enter the project id (NOT PROJECT NUMBER), '
             'where you want Forseti to crawl for data: ').strip()
     return target_id
@@ -540,7 +556,7 @@ def create_or_reuse_service_acct(acct_type,
             the installation.
     """
 
-    print ('Creating {}... '.format(acct_type), end='')
+    print('Creating {}... '.format(acct_type), end='')
     sys.stdout.flush()
 
     return_code, _, err = utils.run_command(
@@ -552,8 +568,8 @@ def create_or_reuse_service_acct(acct_type,
         print('Could not create the service account. Terminating '
               'because this is an unexpected error.')
         sys.exit(1)
-    print ('created')
-    print ('\t{}'.format(acct_email))
+    print('created')
+    print('\t{}'.format(acct_email))
     return acct_email
 
 
@@ -573,9 +589,14 @@ def check_billing_enabled(project_id, organization_id):
     return_code, out, err = utils.run_command(
         ['gcloud', 'alpha', 'billing', 'projects', 'describe',
          project_id, '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         _billing_not_enabled()
+
     try:
         billing_info = json.loads(out)
         if billing_info.get('billingEnabled'):
@@ -637,11 +658,14 @@ def lookup_organization(resource_id, rtype='projects'):
         return_code, out, err = utils.run_command(
             ['gcloud', 'projects', 'describe',
              resource_id, '--format=json'])
+
+        if isinstance(out, bytes):
+            out = out.decode()
+
         if return_code:
             print(err)
             print('Error trying to find current organization from '
                   'project! Exiting.')
-
         try:
             project = json.loads(out)
             project_parent = project.get('parent')
@@ -710,9 +734,13 @@ def get_vm_instance_info(instance_name, try_match=False):
     return_code, out, err = utils.run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
-        print (err)
+        print(err)
         sys.exit(1)
+
     try:
         instances = json.loads(out)
         for instance in instances:
@@ -780,7 +808,7 @@ def create_firewall_rule(rule_name,
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
 
 def delete_firewall_rule(rule_name):
     """Delete a firewall rule for a specific gcp service account.
@@ -810,7 +838,7 @@ def enable_os_login(instance_name, zone):
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
 
 
 def create_deployment(project_id,
@@ -899,6 +927,9 @@ def get_domain_from_organization_id(organization_id):
         ['gcloud', 'organizations', 'describe', organization_id,
          '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         print('Unable to retrieve domain from the organization.')
@@ -926,6 +957,9 @@ def check_deployment_status(deployment_name, status):
     return_code, out, err = utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
 
     if return_code:
         print(err)

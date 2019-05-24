@@ -202,9 +202,9 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip install --upgrade pip==9.0.3
-pip install -q --upgrade setuptools wheel
-pip install -q --upgrade -r requirements.txt
+pip3 install --upgrade pip==19.1.1
+pip3 install -q --upgrade setuptools wheel
+pip3 install -q --upgrade -r requirements.txt
 
 # Setup Forseti logging
 touch /var/log/forseti.log
@@ -219,7 +219,7 @@ logrotate /etc/logrotate.conf
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/install/gcp/scripts/run_forseti.sh
 
 # Install Forseti
-python setup.py install
+python3 setup.py install
 
 # Export variables required by initialize_forseti_services.sh.
 {export_initialize_vars}
@@ -248,7 +248,7 @@ systemctl start config-validator
 sleep 5
 
 echo "Attempting to update database schema, if necessary."
-python $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
+python3 $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
 
 systemctl start forseti
 echo "Success! The Forseti API server has been started."

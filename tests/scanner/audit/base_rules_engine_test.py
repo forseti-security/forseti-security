@@ -14,7 +14,7 @@
 
 """Test BaseRulesEngine and associated modules."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
@@ -30,7 +30,7 @@ class BaseRulesEngineTest(ForsetiTestCase):
         """Test the __init__() with a rules path."""
         path1 = 'path/to/rules'
         base = bre.BaseRulesEngine(rules_file_path=path1)
-        self.assertEquals(path1, base.full_rules_path)
+        self.assertEqual(path1, base.full_rules_path)
 
         path2 = '  path/to/rules   '
         base2 = bre.BaseRulesEngine(rules_file_path=path2)

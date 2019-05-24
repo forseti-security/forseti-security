@@ -15,6 +15,7 @@
 """Config Validator Validator Client."""
 
 
+from builtins import object
 import sys
 
 import grpc

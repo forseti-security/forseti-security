@@ -14,6 +14,7 @@
 
 """Provides formatting functions for violations"""
 
+from builtins import str
 import json
 
 

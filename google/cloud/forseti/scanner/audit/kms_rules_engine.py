@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules engine for checking crypto keys configuration."""
 
+from builtins import object
 from collections import namedtuple
 import datetime
 import threading

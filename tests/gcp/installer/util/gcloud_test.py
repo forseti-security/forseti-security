@@ -14,13 +14,15 @@
 
 """Tests for install/gcp/installer/util/gcloud.py."""
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import json
 import sys
-import unittest
-from StringIO import StringIO
+import unittest.mock as mock
+from io import StringIO
 from contextlib import contextmanager
 
-import mock
 from install.gcp.installer.util import gcloud
 
 from install.gcp.installer.util import utils
@@ -258,34 +260,29 @@ class GcloudTest(ForsetiTestCase):
             self.assertEqual(None, target_id)
 
     @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
-    @mock.patch('__builtin__.raw_input')
-    def test_choose_organization_has_org(self, mock_rawinput, test_patch):
+    @mock.patch('install.gcp.installer.util.gcloud.input')
+    def test_choose_organization_has_org(self, mock_input, test_patch):
         """Test choose_organization()."""
-        mock_rawinput.side_effect = ['123']
+        mock_input.side_effect = ['123']
         # Has orgs
         test_patch.return_value = (
             0, '[{"name": "organizations/123", "displayName": "fake org"}]', None)
-        with captured_output() as (out, err):
-            target_id = gcloud.choose_organization()
-            self.assertEqual('123', target_id)
+        target_id = gcloud.choose_organization()
+        self.assertEqual('123', target_id)
 
-    @mock.patch('__builtin__.raw_input')
-    def test_choose_folder(self, mock_rawinput):
+    @mock.patch('install.gcp.installer.util.gcloud.input')
+    def test_choose_folder(self, mock_input):
         """Test choose_folder()."""
-        mock_rawinput.side_effect = ['abc', '123']
-        # Has orgs
-        with captured_output() as (out, err):
-            target_id = gcloud.choose_folder(FAKE_PROJECT)
-            self.assertEqual('123', target_id)
+        mock_input.side_effect = ['abc', '123']
+        target_id = gcloud.choose_folder(FAKE_PROJECT)
+        self.assertEqual('123', target_id)
 
-    @mock.patch('__builtin__.raw_input')
-    def test_choose_project(self, mock_rawinput):
+    @mock.patch('install.gcp.installer.util.gcloud.input')
+    def test_choose_project(self, mock_input):
         """Test choose_project()."""
-        mock_rawinput.side_effect = ['abc']
-        # Has orgs
-        with captured_output() as (out, err):
-            target_id = gcloud.choose_project()
-            self.assertEqual('abc', target_id)
+        mock_input.side_effect = ['abc']
+        target_id = gcloud.choose_project()
+        self.assertEqual('abc', target_id)
 
 if __name__ == '__main__':
     unittest.main()

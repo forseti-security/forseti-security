@@ -15,16 +15,18 @@
 """ GCP Installer.
 This has been tested with python 2.7.
 """
+from __future__ import print_function
 
 import argparse
 import datetime
 import site
 import sys
 
-from installer.util.utils import run_command
+from .installer.util.utils import run_command
 
 INSTALLER_REQUIRED_PACKAGES = [
-    'ruamel.yaml'
+    'ruamel.yaml',
+    'future==0.17.1'
 ]
 
 
@@ -36,11 +38,11 @@ def install(package_name):
     # pip's python api is deprecated, we will run the pip command
     # through subprocess directly instead.
     return_code, _, err = run_command(
-        ['pip', 'install', package_name, '--user'])
+        ['pip3', 'install', package_name, '--user'])
 
     if return_code:
-        print 'Error installing package {}'.format(package_name)
-        print err
+        print('Error installing package {}'.format(package_name))
+        print(err)
         sys.exit(1)
 
 
@@ -114,10 +116,10 @@ def run():
     args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     # import installers and configs
-    from installer.forseti_server_installer import ForsetiServerInstaller
-    from installer.forseti_client_installer import ForsetiClientInstaller
-    from installer.configs.client_config import ClientConfig
-    from installer.configs.server_config import ServerConfig
+    from .installer.forseti_server_installer import ForsetiServerInstaller
+    from .installer.forseti_client_installer import ForsetiClientInstaller
+    from .installer.configs.client_config import ClientConfig
+    from .installer.configs.server_config import ServerConfig
     client_config = ClientConfig(**args)
     server_config = ServerConfig(**args)
 

@@ -15,12 +15,13 @@
 """ File utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 
 import ruamel.yaml
 
-import constants
-import utils
+from . import constants
+from . import utils
 
 
 def generate_deployment_templates(template_type, values, timestamp):

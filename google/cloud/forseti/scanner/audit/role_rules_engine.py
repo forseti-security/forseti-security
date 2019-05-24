@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Roles."""
+from builtins import object
 import collections
 import itertools
 import threading
