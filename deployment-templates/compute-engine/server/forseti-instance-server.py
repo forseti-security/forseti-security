@@ -202,7 +202,7 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip3 install --upgrade pip==19.1.1
+pip3 install --upgrade pip==9.0.3
 pip3 install -q --upgrade setuptools wheel
 pip3 install -q --upgrade -r requirements.txt
 
