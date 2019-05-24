@@ -175,9 +175,8 @@ git fetch --all
 {checkout_forseti_version}
 
 # Forseti dependencies
-pip3 install --upgrade pip==9.0.3
-pip3 install -q --upgrade setuptools wheel
-pip3 install -q --upgrade -r requirements.txt
+python3 -m pip install -q --upgrade setuptools wheel
+python3 -m pip install -q --upgrade -r requirements.txt
 
 # Install Forseti
 python3 setup.py install

@@ -20,44 +20,11 @@ from __future__ import print_function
 import argparse
 import datetime
 import site
-import sys
-
-from .installer.util.utils import run_command
-
-INSTALLER_REQUIRED_PACKAGES = [
-    'ruamel.yaml',
-    'future==0.17.1'
-]
-
-
-def install(package_name):
-    """Install package.
-    Args:
-        package_name (str): Name of the package to install.
-    """
-    # pip's python api is deprecated, we will run the pip command
-    # through subprocess directly instead.
-    return_code, _, err = run_command(
-        ['pip3', 'install', package_name, '--user'])
-
-    if return_code:
-        print('Error installing package {}'.format(package_name))
-        print(err)
-        sys.exit(1)
-
-
-def install_required_packages():
-    """Install required packages."""
-    for package in INSTALLER_REQUIRED_PACKAGES:
-        install(package)
 
 
 def run():
     """Run the steps for the gcloud setup."""
 
-    # We need to install all the required packages before importing our modules
-    # Installing required packages
-    install_required_packages()
     site.main() # Load up the package
 
     parser = argparse.ArgumentParser(

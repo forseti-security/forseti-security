@@ -202,9 +202,8 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip3 install --upgrade pip==9.0.3
-pip3 install -q --upgrade setuptools wheel
-pip3 install -q --upgrade -r requirements.txt
+python3 -m pip install -q --upgrade setuptools wheel
+python3 -m pip install -q --upgrade -r requirements.txt
 
 # Setup Forseti logging
 touch /var/log/forseti.log
