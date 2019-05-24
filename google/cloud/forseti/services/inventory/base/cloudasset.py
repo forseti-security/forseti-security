@@ -86,7 +86,6 @@ DEFAULT_ASSET_TYPES = [
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',
     'storage.googleapis.com/Bucket',
-    # 'container.googleapis.com/Cluster',
     'k8s.io/Node',
     'k8s.io/Pod',
     'k8s.io/Namespace',

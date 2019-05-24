@@ -1683,8 +1683,7 @@ def kubernetes_iter_class_factory(api_method_name, resource_name):
         class: A new class object.
     """
     return resource_iter_class_factory(
-        api_method_name, resource_name, api_method_arg_key='projectNumber',
-        resource_validation_method_name='kubernetes_api_enabled')
+        api_method_name, resource_name, api_method_arg_key='projectNumber')
 
 
 class KubernetesNodeIterator(kubernetes_iter_class_factory(
@@ -2307,7 +2306,7 @@ class KubernetesClusterIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_container_clusters(
-                    project_id=self.resource['projectId']):
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['kubernetes_cluster'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:

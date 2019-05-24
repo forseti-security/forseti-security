@@ -1009,10 +1009,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'k8s.io/Node',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
-        parent_id = parent_id
-        print('parent id:', parent_id)
+        print('self link:', parent_id)
         for folder in resources:
             yield folder
 
@@ -1046,7 +1046,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'k8s.io/Namespace',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
         for folder in resources:
             yield folder
@@ -1064,7 +1065,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'rbac.authorization.k8s.io/Role',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
         for folder in resources:
             yield folder
@@ -1082,7 +1084,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'rbac.authorization.k8s.io/RoleBinding',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
         for folder in resources:
             yield folder
@@ -1100,7 +1103,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRole',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
         for folder in resources:
             yield folder
@@ -1118,7 +1122,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRoleBinding',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id, 'abc', 'xyz'),
+            .format(parent_id.split('/')[5], parent_id.split('/')[7],
+                    parent_id.split('/')[9]),
             self.session)
         for folder in resources:
             yield folder

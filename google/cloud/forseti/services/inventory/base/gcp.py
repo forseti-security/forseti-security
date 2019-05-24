@@ -1726,6 +1726,7 @@ class ApiClientImpl(ApiClient):
         for cluster in self.container.get_clusters(project_number):
 
             # Don't store the master auth data in the database.
+            project_number = project_number
             if 'masterAuth' in cluster:
                 cluster['masterAuth'] = {
                     k: '[redacted]'
