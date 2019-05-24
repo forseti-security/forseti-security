@@ -328,7 +328,7 @@ def define_model(model_name, dbengine, model_seed):
             serialized_ctr = struct.pack('>I', self.policy_update_counter)
             msg = binascii.hexlify(serialized_ctr)
             msg += self.full_name.encode()
-            return hmac.new(model_seed, msg).hexdigest()
+            return hmac.new(model_seed.encode(), msg).hexdigest()
 
         def __repr__(self):
             """String representation.
@@ -2164,6 +2164,8 @@ class ModelManager(object):
         Raises:
             KeyError: model handle not available
         """
+        if isinstance(handle, bytes):
+            handle = handle.decode('utf-8')
         if handle not in [m.handle for m in self.models()]:
             error_message = 'handle={}, available={}'.format(
                 handle,
