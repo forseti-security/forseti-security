@@ -72,7 +72,7 @@ def generate_model_handle():
         str: random bytes for handle
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return str(binascii.hexlify(os.urandom(16)))
 
 
 def generate_model_seed():
@@ -82,7 +82,7 @@ def generate_model_seed():
         str: random bytes
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return str(binascii.hexlify(os.urandom(16)))
 
 
 MODEL_BASE = declarative_base()
@@ -328,7 +328,9 @@ def define_model(model_name, dbengine, model_seed):
             serialized_ctr = struct.pack('>I', self.policy_update_counter)
             msg = binascii.hexlify(serialized_ctr)
             msg += self.full_name.encode()
-            return hmac.new(model_seed, msg).hexdigest()
+            seed = (model_seed if isinstance(model_seed, bytes)
+                    else model_seed.encode())
+            return hmac.new(seed, msg).hexdigest()
 
         def __repr__(self):
             """String representation.
@@ -2164,8 +2166,8 @@ class ModelManager(object):
         Raises:
             KeyError: model handle not available
         """
-        if not isinstance(handle, bytes):
-            handle = handle.encode()
+        if isinstance(handle, bytes):
+            handle = handle.decode('utf-8')
         if handle not in [m.handle for m in self.models()]:
             error_message = 'handle={}, available={}'.format(
                 handle,
