@@ -16,17 +16,16 @@
 
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.common.util import logger
-
 
 LOGGER = logger.get_logger(__name__)
 
 
-class BaseEmailNotification(base_notification.BaseNotification):
+class BaseEmailNotification(with_metaclass(abc.ABCMeta,
+                                           base_notification.BaseNotification)):
     """Base email notifier."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def _send(self, **kwargs):

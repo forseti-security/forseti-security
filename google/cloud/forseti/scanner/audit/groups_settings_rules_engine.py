@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules engine for checking gsuite groups settings configuration."""
 
+from builtins import object
 from collections import namedtuple
 import threading
 
@@ -345,7 +346,7 @@ class Rule(object):
            str: value couples specified in rule, joined by AND.
         """
         rule_list = []
-        for setting, value in self.rule['settings'].iteritems():
+        for setting, value in self.rule['settings'].items():
             rule_list.append('{}:{}'.format(setting, value))
         return ' AND '.join(rule_list)
 
@@ -364,7 +365,7 @@ class Rule(object):
             return has_violation
 
         violates_every_setting_in_rule = True
-        for setting, value in self.rule['settings'].iteritems():
+        for setting, value in self.rule['settings'].items():
             if getattr(settings, setting) != value:
                 violates_every_setting_in_rule = False
         if violates_every_setting_in_rule:
@@ -384,7 +385,7 @@ class Rule(object):
         """
         has_violation = False
         a_setting_doesnt_match = False
-        for setting, value in self.rule['settings'].iteritems():
+        for setting, value in self.rule['settings'].items():
             if getattr(settings, setting) != value:
                 a_setting_doesnt_match = True
         if a_setting_doesnt_match:

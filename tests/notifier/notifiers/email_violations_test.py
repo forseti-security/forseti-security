@@ -15,7 +15,7 @@
 """Tests the Email Violations upload notifier."""
 
 import filecmp
-import mock
+import unittest.mock as mock
 import os
 import unittest
 
@@ -75,7 +75,7 @@ class EmailViolationsTest(ForsetiTestCase):
 
         evp = email_violations.EmailViolations(*self.evp_init_args)
         attachment = evp._make_attachment_csv()
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_CSV_FMT.format(
                 evp.resource, evp.inventory_index_id, expected_timestamp),
             attachment.filename)
@@ -179,7 +179,7 @@ class EmailViolationsTest(ForsetiTestCase):
         evp.run()
 
         self.assertTrue(evp._get_output_filename.called)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_JSON_FMT,
             evp._get_output_filename.call_args[0][0])
         self.assertFalse(evp._make_attachment_csv.called)
@@ -213,7 +213,7 @@ class EmailViolationsTest(ForsetiTestCase):
         evp.run()
 
         self.assertTrue(evp._get_output_filename.called)
-        self.assertEquals(
+        self.assertEqual(
             string_formats.VIOLATION_CSV_FMT,
             evp._get_output_filename.call_args[0][0])
         self.assertFalse(evp._make_attachment_json.called)

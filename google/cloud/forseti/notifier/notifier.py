@@ -13,6 +13,7 @@
 # limitations under the License.
 """Notifier runner."""
 
+from builtins import str
 import importlib
 import inspect
 

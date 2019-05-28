@@ -14,6 +14,7 @@
 
 """Wrapper functions used to record and replay API responses."""
 
+from builtins import str
 import collections
 import functools
 import os
@@ -80,7 +81,7 @@ def record(requests):
             if not record_file:
                 return f(self, request, *args, **kwargs)
 
-            with file(record_file, 'w') as outfile:
+            with open(record_file, 'wb') as outfile:
                 pickler = pickle.Pickler(outfile)
                 request_key = _key_from_request(request)
                 results = requests.setdefault(
@@ -169,7 +170,7 @@ def replay(requests):
 
             if not requests:
                 LOGGER.info('Loading replay file %s.', replay_file)
-                with file(replay_file) as infile:
+                with open(replay_file, 'rb') as infile:
                     unpickler = pickle.Unpickler(infile)
                     requests.update(unpickler.load())
 

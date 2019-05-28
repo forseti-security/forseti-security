@@ -17,6 +17,7 @@
 See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules
 """
 
+from builtins import object
 import json
 
 

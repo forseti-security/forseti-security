@@ -14,8 +14,9 @@
 
 """Service Account Key Scanner Tests."""
 
+from builtins import object
 import unittest
-import mock
+import unittest.mock as mock
 from datetime import datetime, timedelta
 
 from tests import unittest_utils

@@ -15,6 +15,9 @@
 """Common state enum/class for index tables."""
 
 
+from builtins import object
+
+
 class IndexState(object):
     """Possible states for the inventory/scanner index."""
 

@@ -14,6 +14,7 @@
 
 """Forseti gRPC client."""
 
+from builtins import object
 import binascii
 import os
 import grpc

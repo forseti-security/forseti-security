@@ -15,16 +15,19 @@
 """ Forseti Installer."""
 
 from __future__ import print_function
+from builtins import input
+from builtins import object
 from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
+from future.utils import with_metaclass
 
-from util import constants
-from util import files
-from util import gcloud
-from util import installer_errors
-from util import utils
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import installer_errors
+from .util import utils
 
 
 class ForsetiInstructions(object):
@@ -75,9 +78,8 @@ class ForsetiInstructions(object):
         return message
 
 
-class ForsetiInstaller(object):
+class ForsetiInstaller(with_metaclass(ABCMeta, object)):
     """Forseti installer base class (abstract)"""
-    __metaclass__ = ABCMeta
 
     # Class variables initialization
     version = None
@@ -183,7 +185,7 @@ class ForsetiInstaller(object):
         if domain not in authed_user:
             choice = ''
             while choice != 'y' and choice != 'n':
-                choice = raw_input(
+                choice = input(
                     constants.QUESTION_CONTINUE_IF_AUTHED_USER_IS_NOT_IN_DOMAIN)
             choice = choice.lower()
             if choice == 'n':
@@ -254,7 +256,7 @@ class ForsetiInstaller(object):
         if not deployment_completed:
             # If after 15 mins and the deployment is still not completed, there
             # is something wrong with the deployment.
-            print ('Deployment failed.')
+            print('Deployment failed.')
             sys.exit(1)
 
         if deployment_completed:

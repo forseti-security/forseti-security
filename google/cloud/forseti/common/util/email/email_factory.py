@@ -14,6 +14,7 @@
 
 """Email Factory to select connector"""
 
+from builtins import object
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.errors import InvalidInputError
