@@ -1,0 +1,95 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.groups_settings"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.groups_settings</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A GroupsSettings object.</span>
+
+<span class="sd">See:</span>
+<span class="sd">https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GroupsSettings"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings">[docs]</a><span class="k">class</span> <span class="nc">GroupsSettings</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents the GroupsSettings resource.&quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=expression-not-assigned, invalid-name</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">whoCanAdd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">whoCanJoin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">whoCanViewMembership</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">whoCanViewGroup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">whoCanInvite</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">allowExternalMembers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">whoCanLeaveGroup</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (str): The unique group email.</span>
+<span class="sd">            whoCanAdd (str): Setting for who can add.</span>
+<span class="sd">            whoCanJoin (str): Setting for who can join.</span>
+<span class="sd">            whoCanViewMembership (str): Setting for who can view membership.</span>
+<span class="sd">            whoCanViewGroup (str): Setting for who can view group.</span>
+<span class="sd">            whoCanInvite (str): Setting for who can invite to group.</span>
+<span class="sd">            allowExternalMembers (str): Setting for are external members</span>
+<span class="sd">            allowed.</span>
+<span class="sd">            whoCanLeaveGroup (str): Setting for who can leave group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GroupsSettings</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">GROUPS_SETTINGS</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanAdd</span> <span class="o">=</span> <span class="n">whoCanAdd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanJoin</span> <span class="o">=</span> <span class="n">whoCanJoin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanViewMembership</span> <span class="o">=</span> <span class="n">whoCanViewMembership</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanViewGroup</span> <span class="o">=</span> <span class="n">whoCanViewGroup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanInvite</span> <span class="o">=</span> <span class="n">whoCanInvite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowExternalMembers</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">allowExternalMembers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whoCanLeaveGroup</span> <span class="o">=</span> <span class="n">whoCanLeaveGroup</span>
+
+<div class="viewcode-block" id="GroupsSettings.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings.from_json">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new GroupsSettingws object from a JSON object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (str): The unique Gsuite Group email.</span>
+<span class="sd">            settings(str): JSON string of a GroupsSettings Gsuites API response.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           GroupsSettings: A new GroupsSettings object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+            <span class="n">whoCanAdd</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanAdd&#39;</span><span class="p">),</span>
+            <span class="n">whoCanJoin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanJoin&#39;</span><span class="p">),</span>
+            <span class="n">whoCanViewMembership</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanViewMembership&#39;</span><span class="p">),</span>
+            <span class="n">whoCanViewGroup</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanViewGroup&#39;</span><span class="p">),</span>
+            <span class="n">whoCanInvite</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanInvite&#39;</span><span class="p">),</span>
+            <span class="n">allowExternalMembers</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowExternalMembers&#39;</span><span class="p">),</span>
+            <span class="n">whoCanLeaveGroup</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whoCanLeaveGroup&#39;</span><span class="p">))</span></div></div>
+</pre></div>

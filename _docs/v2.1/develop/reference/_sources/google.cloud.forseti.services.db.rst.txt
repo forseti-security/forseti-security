@@ -1,7 +1,0 @@
-google.cloud.forseti.services.db module
-=======================================
-
-.. automodule:: google.cloud.forseti.services.db
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,0 +1,97 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.billing_account"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.billing_account</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Billing Account Resource.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span>
+
+
+<div class="viewcode-block" id="BillingAccountLifecycleState"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.billing_account.html#google.cloud.forseti.common.gcp_type.billing_account.BillingAccountLifecycleState">[docs]</a><span class="k">class</span> <span class="nc">BillingAccountLifecycleState</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">LifecycleState</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents the Billing Account&#39;s LifecycleState.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BillingAccount"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.billing_account.html#google.cloud.forseti.common.gcp_type.billing_account.BillingAccount">[docs]</a><span class="k">class</span> <span class="nc">BillingAccount</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;BillingAccount Resource.&quot;&quot;&quot;</span>
+
+    <span class="n">RESOURCE_NAME_FMT</span> <span class="o">=</span> <span class="s1">&#39;billingAccounts/</span><span class="si">%s</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">billing_account_id</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">display_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">lifecycle_state</span><span class="o">=</span><span class="n">BillingAccountLifecycleState</span><span class="o">.</span><span class="n">UNSPECIFIED</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            billing_account_id (str): The billing account id.</span>
+<span class="sd">            full_name (str): The full resource name and ancestory.</span>
+<span class="sd">            data (str): Resource representation of the billing account.</span>
+<span class="sd">            name (str): The billing account&#39;s unique GCP name, with the format</span>
+<span class="sd">                &quot;billingAccounts/{id}&quot;.</span>
+<span class="sd">            display_name (str): The billing account&#39;s display name.</span>
+<span class="sd">            parent (Resource): The parent Resource.</span>
+<span class="sd">            lifecycle_state (LifecycleState): The billing accounts&#39;s lifecycle</span>
+<span class="sd">                state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BillingAccount</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">billing_account_id</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">BILLING_ACCOUNT</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">display_name</span><span class="o">=</span><span class="n">display_name</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span>
+            <span class="n">lifecycle_state</span><span class="o">=</span><span class="n">lifecycle_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="n">full_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+<div class="viewcode-block" id="BillingAccount.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.billing_account.html#google.cloud.forseti.common.gcp_type.billing_account.BillingAccount.from_json">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">json_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a billing account from a JSON string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (Resource): resource this billing account belongs to.</span>
+<span class="sd">            json_string (str): JSON string of a billing account GCP resource.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            BillingAccount: billing account resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">acct_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">acct_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">acct_id</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">full_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">billing_account/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span> <span class="n">acct_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">billing_account_id</span><span class="o">=</span><span class="n">acct_id</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">json_string</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">display_name</span><span class="o">=</span><span class="n">acct_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayName&#39;</span><span class="p">),</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span></div></div>
+</pre></div>
