@@ -149,7 +149,7 @@ sudo apt-get update -y
 sudo apt-get install -y git unzip
 
 # Forseti dependencies
-sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev build-essential
+sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python3-pip python3-dev build-essential
 
 USER=ubuntu
 USER_HOME=/home/ubuntu
@@ -175,12 +175,11 @@ git fetch --all
 {checkout_forseti_version}
 
 # Forseti dependencies
-pip install --upgrade pip==9.0.3
-pip install -q --upgrade setuptools wheel
-pip install -q --upgrade -r requirements.txt
+python3 -m pip install -q --upgrade setuptools wheel
+python3 -m pip install -q --upgrade -r requirements.txt
 
 # Install Forseti
-python setup.py install
+python3 setup.py install
 
 # Set ownership of the forseti project to $USER
 chown -R $USER {forseti_home}

@@ -13,6 +13,8 @@
 # limitations under the License.
 """API testing helper classes."""
 
+from builtins import str
+from builtins import object
 from collections import defaultdict
 from concurrent import futures
 import grpc
@@ -92,7 +94,7 @@ class ModelTestRunner(ApiTestRunner):
             node,
             parent,
             bool(not parent))
-        for root, tree in model.iteritems():
+        for root, tree in model.items():
             self._recursive_install_resources(root, tree, session, model_access, node)
 
     def _install_resources(self, model_view,
@@ -100,7 +102,7 @@ class ModelTestRunner(ApiTestRunner):
                            model_access):
         """Install resources."""
         with scoped_session as session:
-            for root, tree in model_view.iteritems():
+            for root, tree in model_view.items():
                 self._recursive_install_resources(root,
                                                   tree,
                                                   session,
@@ -112,9 +114,9 @@ class ModelTestRunner(ApiTestRunner):
         """Invert declarative membership model mapping."""
         if node not in parentship:
             parentship[node] = set()
-        for child in model.iterkeys():
+        for child in model.keys():
             parentship[child].add(node)
-        for root, tree in model.iteritems():
+        for root, tree in model.items():
             self._recursive_invert_membership(root, tree, parentship)
         return parentship
 
@@ -140,7 +142,7 @@ class ModelTestRunner(ApiTestRunner):
     def _install_memberships(self, model_view, scoped_session, model_access):
         """Install membership relation."""
         parent_relationship = defaultdict(set)
-        for root, tree in model_view.iteritems():
+        for root, tree in model_view.items():
             self._recursive_invert_membership(root, tree, parent_relationship)
 
         if self._cyclic(parent_relationship):
@@ -149,7 +151,7 @@ class ModelTestRunner(ApiTestRunner):
         with scoped_session as session:
             installed_members = set()
             while parent_relationship:
-                for child, parents in parent_relationship.iteritems():
+                for child, parents in parent_relationship.items():
                     if parents.issubset(installed_members):
                         installed_members.add(child)
                         model_access.add_group_member(
@@ -164,13 +166,13 @@ class ModelTestRunner(ApiTestRunner):
     def _install_roles(self, model_view, scoped_session, model_access):
         """Install roles."""
         with scoped_session as session:
-            for role, permissions in model_view.iteritems():
+            for role, permissions in model_view.items():
                 model_access.add_role_by_name(session, role, permissions)
 
     def _install_bindings(self, model_view, scoped_session, model_access):
         """Install bindings."""
         with scoped_session as session:
-            for resource_name, bindings in model_view.iteritems():
+            for resource_name, bindings in model_view.items():
                 policy = model_access.get_iam_policy(session, resource_name)
                 if policy['bindings']:
                     raise Exception('policy should have been empty')

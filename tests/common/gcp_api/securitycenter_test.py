@@ -15,7 +15,7 @@
 """Tests the Security Center API client."""
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
@@ -52,7 +52,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
             'fake finding',
             source_id=self.source_id
             )
-        self.assertEquals(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
+        self.assertEqual(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
 
     def test_create_findings_raises(self):
         """Test create cscc finding raises exception."""

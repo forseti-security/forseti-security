@@ -13,6 +13,7 @@
 # limitations under the License.
 """Slack webhook notifier to perform notifications."""
 
+from builtins import str
 import requests
 
 from google.cloud.forseti.common.util import logger
@@ -76,7 +77,7 @@ class SlackWebhook(base_notification.BaseNotification):
     def run(self):
         """Run the slack webhook notifier"""
         if not self.notification_config.get('webhook_url'):
-            LOGGER.warn('No url found, not running Slack notifier.')
+            LOGGER.warning('No url found, not running Slack notifier.')
             return
 
         for violation in self.violations:

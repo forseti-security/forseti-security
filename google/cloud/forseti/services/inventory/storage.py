@@ -14,6 +14,7 @@
 """Inventory storage implementation."""
 # pylint: disable=too-many-lines
 
+from builtins import object
 import json
 import enum
 
@@ -185,20 +186,20 @@ class InventoryIndex(BASE):
                      resource_type_input, details)
 
         # Lifecycle can be None if Forseti is installed to a non-org level.
-        for key in details.keys():
+        for key in list(details.keys()):
             if key is None:
                 continue
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
             details[new_key] = details.pop(key)
 
-        if len(details) == 1 and details.keys()[0] is None:
+        if len(details) == 1 and list(details.keys())[0] is None:
             return {}
 
         if len(details) == 1:
-            if 'ACTIVE' in details.keys()[0]:
+            if 'ACTIVE' in list(details.keys())[0]:
                 added_key_str = 'DELETE PENDING'
-            elif 'DELETE PENDING' in details.keys()[0]:
+            elif 'DELETE PENDING' in list(details.keys())[0]:
                 added_key_str = 'ACTIVE'
             added_key = ' - '.join([resource_type_input, added_key_str])
             details[added_key] = 0
@@ -281,7 +282,7 @@ class InventoryIndex(BASE):
 
         details = {}
 
-        for key, value in resource_types_with_details.items():
+        for key, value in list(resource_types_with_details.items()):
             if key == 'lifecycle':
                 details_function = self.get_lifecycle_state_details
             elif key == 'hidden':
@@ -664,8 +665,8 @@ class CaiTemporaryStore(object):
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
-            LOGGER.warn('Skipping insert of asset %s, name too long.',
-                        asset['name'])
+            LOGGER.warning('Skipping insert of asset %s, name too long.',
+                           asset['name'])
             return None
 
         if 'resource' in asset:
@@ -853,7 +854,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip())
+                row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.

@@ -38,7 +38,7 @@ fi
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
     echo "Building our Docker base image... "
-    docker build -t forseti/base -f install/docker/base .
+    docker build -t forseti/base -f install/docker/base --no-cache .
     echo "Building our Forseti image from the Docker base image... "
     docker build -t forseti/build -f install/docker/forseti --no-cache .
 else

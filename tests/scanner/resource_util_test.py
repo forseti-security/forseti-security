@@ -1,8 +1,9 @@
+from builtins import str
 from datetime import datetime
 import json
 # pylint says unittest goes before mock
 import unittest
-import mock
+import unittest.mock as mock
 
 from google.cloud.forseti.common.gcp_type import resource_util
 from tests.unittest_utils import ForsetiTestCase

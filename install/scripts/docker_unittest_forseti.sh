@@ -24,7 +24,7 @@ if [ ${TRAVIS+x} ]; then
     docker exec -it build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover --verbose -s . -p '*_test.py'"
 else
     # We are NOT on Travis.
-    docker exec -it build /bin/bash -c "python -m unittest discover --verbose -s . -p '*_test.py'"
+    docker exec -it build /bin/bash -c "python3 -m unittest discover --verbose -s . -p '*_test.py'"
 fi
 
 exit ${return_code}

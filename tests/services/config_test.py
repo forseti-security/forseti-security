@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import os
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests import unittest_utils
 from google.cloud.forseti.services.base import config

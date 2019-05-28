@@ -14,6 +14,7 @@
 
 """Rules-related classes."""
 
+from builtins import object
 from collections import namedtuple
 
 from google.cloud.forseti.scanner.audit import errors as audit_errors

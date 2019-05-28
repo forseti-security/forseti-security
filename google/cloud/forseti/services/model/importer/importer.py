@@ -16,10 +16,12 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
+from builtins import object
 import json
-from StringIO import StringIO
+from io import StringIO
 import traceback
 
+from future import standard_library
 from sqlalchemy.exc import SQLAlchemyError
 
 from google.cloud.forseti.common.util import logger
@@ -28,6 +30,8 @@ from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -1029,8 +1033,8 @@ class InventoryImporter(object):
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
 
-        self.session.add_all(self.permission_cache.values())
-        self.session.add_all(self.role_cache.values())
+        self.session.add_all(list(self.permission_cache.values()))
+        self.session.add_all(list(self.role_cache.values()))
 
     def _convert_service_config(self, service_config):
         """Convert Kubernetes Service Config to a database object.
@@ -1119,7 +1123,7 @@ class InventoryImporter(object):
         exists = role_name in self.role_cache
 
         if exists:
-            LOGGER.warn('Duplicate role_name: %s', role_name)
+            LOGGER.warning('Duplicate role_name: %s', role_name)
             return False
         return True
 

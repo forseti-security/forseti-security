@@ -14,7 +14,7 @@
 
 """Tests the GCP Resource 'key' functionality class."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
@@ -58,13 +58,13 @@ class KeyTest(ForsetiTestCase):
         from_url = lambda url: key.Key._from_url('Thing',
                                                  path_component_map,
                                                  url)
-        self.assertEqual(key_1, from_url(url_1))
-        self.assertEqual(key_2, from_url(url_2))
-        self.assertEqual(key_3, from_url(url_3))
-        self.assertEqual(key_4, from_url(url_4))
-        self.assertNotEqual(key_1, key_2)
-        self.assertNotEqual(key_1, key_3)
-        self.assertNotEqual(key_1, key_4)
+        self.assertEqual(vars(key_1), vars(from_url(url_1)))
+        self.assertEqual(vars(key_2), vars(from_url(url_2)))
+        self.assertEqual(vars(key_3), vars(from_url(url_3)))
+        self.assertEqual(vars(key_4), vars(from_url(url_4)))
+        self.assertNotEqual(vars(key_1), vars(key_2))
+        self.assertNotEqual(vars(key_1), vars(key_3))
+        self.assertNotEqual(vars(key_1), vars(key_4))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'xxx/yyy')
@@ -94,12 +94,12 @@ class KeyTest(ForsetiTestCase):
                         {'project_id': 'foo',
                          'name': 'baz',
                          'region': 'bar'})
-        self.assertEqual(key_1, obj_1.key)
-        self.assertEqual(key_1,
-                         backend_service.Key.from_url(url_1))
-        self.assertEqual(key_2, obj_2.key)
-        self.assertEqual(key_2,
-                         backend_service.Key.from_url(url_2))
+        self.assertCountEqual(vars(key_1), vars(obj_1.key))
+        self.assertEqual(vars(key_1),
+                         vars(backend_service.Key.from_url(url_1)))
+        self.assertEqual(vars(key_2), vars(obj_2.key))
+        self.assertEqual(vars(key_2),
+                         vars(backend_service.Key.from_url(url_2)))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'projects/foo')
@@ -134,12 +134,12 @@ class KeyTest(ForsetiTestCase):
                          'region': None,
                          'zone': 'us-central1-a',
                          'name': 'bar'})
-        self.assertEqual(key_1, obj_1.key)
-        self.assertEqual(key_1,
-                         instance_group.Key.from_url(url_1))
-        self.assertEqual(key_2, obj_2.key)
-        self.assertEqual(key_2,
-                         instance_group.Key.from_url(url_2))
+        self.assertEqual(vars(key_1), vars(obj_1.key))
+        self.assertEqual(vars(key_1),
+                         vars(instance_group.Key.from_url(url_1)))
+        self.assertEqual(vars(key_2), vars(obj_2.key))
+        self.assertEqual(vars(key_2),
+                         vars(instance_group.Key.from_url(url_2)))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'projects/foo/zones/bar')
@@ -171,9 +171,9 @@ class KeyTest(ForsetiTestCase):
                         {'project_id': 'foo',
                          'zone': 'us-central1-a',
                          'name': 'bar'})
-        self.assertEqual(key_1, obj_1.key)
-        self.assertEqual(key_1,
-                         instance.Key.from_url(url_1))
+        self.assertEqual(vars(key_1), vars(obj_1.key))
+        self.assertEqual(vars(key_1),
+                         vars(instance.Key.from_url(url_1)))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'zones/bar/instances/baz')
@@ -198,9 +198,9 @@ class KeyTest(ForsetiTestCase):
         key_1 = key.Key(instance_template.KEY_OBJECT_KIND,
                         {'project_id': 'foo',
                          'name': 'bar'})
-        self.assertEqual(key_1, obj_1.key)
-        self.assertEqual(key_1,
-                         instance_template.Key.from_url(url_1))
+        self.assertEqual(vars(key_1), vars(obj_1.key))
+        self.assertEqual(vars(key_1),
+                         vars(instance_template.Key.from_url(url_1)))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'projects/foo')
@@ -223,14 +223,14 @@ class KeyTest(ForsetiTestCase):
         key_2 = key.Key(network.KEY_OBJECT_KIND,
                         {'project_id': 'blah',
                          'name': 'bar'})
-        self.assertEqual(key_1,
-                         network.Key.from_url(url_1))
-        self.assertEqual(key_1,
-                         network.Key.from_url(url_1, project_id='blah'))
-        self.assertEqual(key_1,
-                         network.Key.from_url(url_1a, project_id='foo'))
-        self.assertEqual(key_2,
-                         network.Key.from_url(url_2, project_id='foo'))
+        self.assertEqual(vars(key_1),
+                         vars(network.Key.from_url(url_1)))
+        self.assertEqual(vars(key_1),
+                         vars(network.Key.from_url(url_1, project_id='blah')))
+        self.assertEqual(vars(key_1),
+                         vars(network.Key.from_url(url_1a, project_id='foo')))
+        self.assertEqual(vars(key_2),
+                         vars(network.Key.from_url(url_2, project_id='foo')))
 
         url_invalid_1 = ('https://www.googleapis.com/compute/v1/'
                          'projects/foo')

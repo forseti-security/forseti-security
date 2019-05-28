@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules engine for verifying KE Versions are allowed."""
 
+from builtins import object
 from collections import namedtuple
 import operator as op
 import threading
@@ -442,8 +443,9 @@ class Rule(object):
                 else None.
         """
         if not ke_cluster.server_config:
-            LOGGER.warn('Server config missing from ke cluster, cannot check '
-                        'if node versions are supported: %s', ke_cluster)
+            LOGGER.warning('Server config missing from ke cluster, '
+                           'cannot check if node versions are supported: %s',
+                           ke_cluster)
             return None
         supported_versions = ke_cluster.server_config.get('validNodeVersions')
         for nodepool in ke_cluster.node_pools:
@@ -467,8 +469,9 @@ class Rule(object):
                 else None.
         """
         if not ke_cluster.server_config:
-            LOGGER.warn('Server config missing from ke cluster, cannot check '
-                        'if master version is supported: %s', ke_cluster)
+            LOGGER.warning('Server config missing from ke cluster, '
+                           'cannot check if master version is supported: %s',
+                           ke_cluster)
             return None
 
         supported_versions = ke_cluster.server_config.get(

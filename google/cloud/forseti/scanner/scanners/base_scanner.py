@@ -14,10 +14,12 @@
 
 """Base scanner."""
 
+from builtins import object
 import abc
 import os
 import shutil
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -28,9 +30,8 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 LOGGER = logger.get_logger(__name__)
 
 
-class BaseScanner(object):
+class BaseScanner(with_metaclass(abc.ABCMeta, object)):
     """This is a base class skeleton for scanners."""
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
