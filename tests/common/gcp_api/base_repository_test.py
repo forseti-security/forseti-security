@@ -13,12 +13,13 @@
 # limitations under the License.
 
 """Tests the base repository classes."""
+from builtins import range
 import datetime
 import threading
 import unittest
 from googleapiclient import discovery
 from googleapiclient import http
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 from google.oauth2 import service_account
@@ -76,7 +77,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         """Verify set user agent sets the user agent only once."""
         http_mock = http.HttpMock()
         h = base.http_helpers.build_http(http=http_mock)
-        for _ in xrange(5):
+        for _ in range(5):
             h = base.http_helpers.build_http(http=h)
 
         _ = h.request('http://test.foo', 'GET')
@@ -110,7 +111,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
               version as the supported API.
         """
 
-        api_name = _supported_apis.SUPPORTED_APIS.keys()[0]
+        api_name = list(_supported_apis.SUPPORTED_APIS.keys())[0]
         supported_api = _supported_apis.SUPPORTED_APIS[api_name]
         mock_credentials = mock.MagicMock()
 
@@ -139,7 +140,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             * Instantiate the Base Client with the API name and version.
 
         Expect:
-            * Unsupported version will call LOGGER.warn().
+            * Unsupported version will call LOGGER.warning().
         """
 
         api_name = 'cloudresourcemanager'
@@ -157,7 +158,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         self.assertEqual((api_name, [provided_version]),
                          (repo_client.name, repo_client.versions))
 
-        mock_logger.warn.assert_called_with(
+        mock_logger.warning.assert_called_with(
             mock.ANY, api_name, provided_version)
 
     @mock.patch.object(discovery, 'build', autospec=True)
@@ -178,7 +179,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             * Instantiate the Base Client with the API name and version.
 
         Expect:
-            * Unsupported API will call LOGGER.warn().
+            * Unsupported API will call LOGGER.warning().
         """
 
         api_name = 'zoo'
@@ -193,7 +194,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         expected_repr = 'API: name=zoo, versions=[\'v1\', \'v2\']'
         self.assertEqual(expected_repr, '%s' % repo_client)
 
-        mock_logger.warn.assert_called_with(
+        mock_logger.warning.assert_called_with(
             mock.ANY, api_name)
 
     @mock.patch.object(discovery, 'build', autospec=True)

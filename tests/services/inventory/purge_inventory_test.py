@@ -14,7 +14,7 @@
 """Unit Tests: Purge inventory for Forseti Server."""
 
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.services.util.db import create_test_engine
@@ -112,10 +112,10 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api.purge(retention_days='0')
 
         inventory_indices = session.query(InventoryIndex).all()
-        self.assertEquals(0, len(inventory_indices))
+        self.assertEqual(0, len(inventory_indices))
 
         resources = session.query(Inventory).all()
-        self.assertEquals(0, len(resources))
+        self.assertEqual(0, len(resources))
 
     @mock.patch(
         'google.cloud.forseti.services.inventory.inventory.date_time',
@@ -131,10 +131,10 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api.purge(retention_days='-1')
 
         inventory_indices = session.query(InventoryIndex).all()
-        self.assertEquals(3, len(inventory_indices))
+        self.assertEqual(3, len(inventory_indices))
 
         resources = session.query(Inventory).all()
-        self.assertEquals(6, len(resources))
+        self.assertEqual(6, len(resources))
 
 
     @mock.patch(
@@ -152,10 +152,10 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api.purge(retention_days=None)
 
         inventory_indices = session.query(InventoryIndex).all()
-        self.assertEquals(3, len(inventory_indices))
+        self.assertEqual(3, len(inventory_indices))
 
         resources = session.query(Inventory).all()
-        self.assertEquals(6, len(resources))
+        self.assertEqual(6, len(resources))
 
     @mock.patch(
         'google.cloud.forseti.services.inventory.inventory.date_time',
@@ -175,10 +175,10 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api.purge(retention_days='30')
 
         inventory_indices = session.query(InventoryIndex).all()
-        self.assertEquals(3, len(inventory_indices))
+        self.assertEqual(3, len(inventory_indices))
 
         resources = session.query(Inventory).all()
-        self.assertEquals(6, len(resources))
+        self.assertEqual(6, len(resources))
 
     @mock.patch(
         'google.cloud.forseti.services.inventory.inventory.date_time',
@@ -195,14 +195,14 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api.purge(retention_days='5')
        
         inventory_indices = session.query(InventoryIndex).all()
-        self.assertEquals(1, len(inventory_indices))
+        self.assertEqual(1, len(inventory_indices))
         for i in inventory_indices:
-            self.assertEquals('one_day_old', i.id)
+            self.assertEqual('one_day_old', i.id)
 
         resources = session.query(Inventory).all()
-        self.assertEquals(2, len(resources))
+        self.assertEqual(2, len(resources))
         for i in resources:
-            self.assertEquals('one_day_old', i.inventory_index_id)
+            self.assertEqual('one_day_old', i.inventory_index_id)
 
 
 if __name__ == '__main__':

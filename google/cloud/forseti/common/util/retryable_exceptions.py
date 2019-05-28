@@ -14,24 +14,29 @@
 
 """Module to determine whether an exception should be retried."""
 
-import httplib
+import http.client
 import socket
 import ssl
-import urllib2
+import urllib.request
+import urllib.error
+import urllib.parse
+
+from future import standard_library
 import httplib2
 
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     errors as cv_errors
 )
 
+standard_library.install_aliases()
 
 RETRYABLE_EXCEPTIONS = (
-    httplib.ResponseNotReady,
-    httplib.IncompleteRead,
+    http.client.ResponseNotReady,
+    http.client.IncompleteRead,
     httplib2.ServerNotFoundError,
     socket.error,
     ssl.SSLError,
-    urllib2.URLError,  # include "no network connection"
+    urllib.error.URLError,  # include "no network connection"
 )
 
 CONFIG_VALIDATOR_EXCEPTIONS = (

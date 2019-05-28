@@ -14,7 +14,7 @@
 
 """Tests the IAM API client."""
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
@@ -56,7 +56,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.iam_api_client.get_curated_roles()
-        self.assertEquals(fake_iam.EXPECTED_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_curated_roles_raises(self):
@@ -74,7 +74,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         results = self.iam_api_client.get_organization_roles(
             fake_iam.FAKE_ORG_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_ORGANIZATION_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_ORGANIZATION_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_organization_roles_raises(self):
@@ -91,7 +91,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         results = self.iam_api_client.get_project_roles(
             fake_iam.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_PROJECT_ROLE_NAMES,
+        self.assertEqual(fake_iam.EXPECTED_PROJECT_ROLE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_project_roles_raises(self):
@@ -108,7 +108,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         result = self.iam_api_client.get_service_accounts(
             fake_iam.FAKE_PROJECT_ID)
 
-        self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNTS, result)
+        self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNTS, result)
 
     def test_get_service_accounts_raises(self):
         """Test get iam project service accounts permission denied."""
@@ -125,7 +125,26 @@ class IamTest(unittest_utils.ForsetiTestCase):
         result = self.iam_api_client.get_service_account_keys(
             fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
-        self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+        self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+
+    def test_get_service_account_keys_404_sa_not_found(self):
+        """Test get iam project service accounts not found."""
+        http_mocks.mock_http_response(fake_iam.SERVICE_ACCOUNT_NOT_FOUND,
+                                      '404')
+
+        result = self.iam_api_client.get_service_account_keys(
+            fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
+        self.assertEquals([], result)
+
+    def test_get_service_account_keys_404_raises(self):
+        """Test get iam project service accounts not found."""
+
+        http_mocks.mock_http_response(fake_iam.GENERAL_NOT_FOUND, '404')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.iam_api_client.get_service_account_keys(
+                fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
     def test_get_service_account_keys_key_type(self):
         """Test get iam project service accounts."""
@@ -136,7 +155,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
             result = self.iam_api_client.get_service_account_keys(
                 fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type=key_type)
 
-            self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+            self.assertEqual(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
     def test_get_service_account_keys_invalid_key_type(self):
         """Test get iam project service accounts with invalid key_type."""
@@ -146,14 +165,6 @@ class IamTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(ValueError):
             self.iam_api_client.get_service_account_keys(
                 fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type='Other')
-
-    def test_get_service_account_keys_raises(self):
-        """Test get iam project service accounts not found."""
-        http_mocks.mock_http_response(fake_iam.SERVICE_ACCOUNT_NOT_FOUND, '404')
-
-        with self.assertRaises(api_errors.ApiExecutionError):
-            self.iam_api_client.get_service_account_keys(
-                fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
     def test_get_service_account_iam_policy(self):
         """Test get iam project service accounts."""

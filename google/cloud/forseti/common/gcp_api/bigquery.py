@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for the BigQuery API client."""
+from builtins import object
 from httplib2 import HttpLib2Error
 from googleapiclient import errors
 

@@ -260,6 +260,16 @@ SERVICE_ACCOUNT_NOT_FOUND = """
 }
 """
 
+GENERAL_NOT_FOUND = """
+{
+ "error": {
+  "code": 404,
+  "message": "Some other message.",
+  "status": "NOT_FOUND"
+ }
+}
+"""
+
 PERMISSION_DENIED = """
 {
  "error": {

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Upload inventory summary to GCS."""
 
+from builtins import str
+from builtins import object
 from googleapiclient.errors import HttpError
 
 from google.cloud.forseti.common.util import date_time
@@ -181,7 +183,7 @@ class InventorySummary(object):
                 Example: [{resource_type, count}, {}, {}, ...]
         """
         template_data = []
-        for key, value in data.iteritems():
+        for key, value in data.items():
             template_data.append(dict(resource_type=key, count=value))
         return sorted(template_data, key=lambda k: k['resource_type'])
 

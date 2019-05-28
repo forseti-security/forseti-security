@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Big Query data sets."""
+from builtins import object
 import collections
 import enum
 import itertools
@@ -186,7 +187,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
                 # only one key should be set per member
                 num_fields_set = sum(
-                    [val is not None for val in fields.values()]
+                    [val is not None for val in list(fields.values())]
                 )
                 if num_fields_set != 1:
                     raise audit_errors.InvalidRulesSchemaError(

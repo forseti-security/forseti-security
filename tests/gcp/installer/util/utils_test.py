@@ -56,14 +56,14 @@ class UtilsTest(ForsetiTestCase):
             'orange': '5',
             'banana': '""'
         }
-        self.assertEquals(
+        self.assertEqual(
             utils.sanitize_conf_values(input_conf), expected_conf)
 
     def test_sanitize_conf_values_empty_input(self):
         """empty config values."""
         input_conf = {}
         expected_conf = {}
-        self.assertEquals(
+        self.assertEqual(
             utils.sanitize_conf_values(input_conf), expected_conf)
 
 

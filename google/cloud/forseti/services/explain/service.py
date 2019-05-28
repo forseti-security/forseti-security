@@ -14,6 +14,7 @@
 
 """ Explain gRPC service. """
 
+from builtins import object
 from collections import defaultdict
 
 from grpc import StatusCode
@@ -192,7 +193,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         etag = policy['etag']
         bindings = []
-        for key, value in policy['bindings'].iteritems():
+        for key, value in policy['bindings'].items():
             binding = explain_pb2.BindingOnResource()
             binding.role = key
             binding.members.extend(value)
@@ -278,7 +279,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         bindings, member_graph, resource_names = result
         memberships = []
-        for child, parents in member_graph.iteritems():
+        for child, parents in member_graph.items():
             memberships.append(
                 explain_pb2.Membership(
                     member=child,
@@ -340,7 +341,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request.resource_name,
             request.permission_names,
             request.expand_groups)
-        for role, members in mapping.iteritems():
+        for role, members in mapping.items():
             access = explain_pb2.Access(
                 role=role, resource=request.resource_name, members=members)
             yield access
@@ -396,7 +397,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             permissions_by_roles_map[role.name].append(permission.name)
 
         permissions_by_roles_list = []
-        for role, permissions in permissions_by_roles_map.iteritems():
+        for role, permissions in permissions_by_roles_map.items():
             permissions_by_roles_list.append(
                 explain_pb2.GetPermissionsByRolesReply.PermissionsByRole(
                     role=role, permissions=permissions))

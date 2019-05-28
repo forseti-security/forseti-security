@@ -15,11 +15,13 @@
 
 """Tests for google.cloud.forseti.enforcer.gce_firewall_enforcer."""
 
+from builtins import str
+from builtins import range
 import copy
 import json
 import threading
 import unittest
-import mock
+import unittest.mock as mock
 
 from googleapiclient import errors
 import parameterized
@@ -220,8 +222,8 @@ class FirewallRulesTest(ForsetiTestCase):
             'x' * (62 - len(rule['name'])) + '-' + rule['name']
             for rule in test_rules
         ]
-        self.assertItemsEqual(expected_rule_names,
-                              self.firewall_rules.rules.keys())
+        self.assertCountEqual(expected_rule_names,
+                              list(self.firewall_rules.rules.keys()))
 
     def test_add_rules_for_network_long_name_duplicate_rule(self):
         """Validate adding rules for two networks with similar long names.
@@ -252,15 +254,17 @@ class FirewallRulesTest(ForsetiTestCase):
                                    rule_name)
 
         # test_networks[1], use hashed name
-        expected_rule_names.append('hn-' + fe.hashlib.md5(test_networks[1])
+        expected_rule_names.append('hn-' + fe.hashlib.md5(test_networks[1].
+                                                          encode())
                                    .hexdigest() + '-' + rule_name)
 
         # test_networks[2], use hashed name
-        expected_rule_names.append('hn-' + fe.hashlib.md5(test_networks[2])
+        expected_rule_names.append('hn-' + fe.hashlib.md5(test_networks[2].
+                                                          encode())
                                    .hexdigest() + '-' + rule_name)
 
-        self.assertItemsEqual(expected_rule_names,
-                              self.firewall_rules.rules.keys())
+        self.assertCountEqual(expected_rule_names,
+                              list(self.firewall_rules.rules.keys()))
 
     def test_add_rules_for_network_is_idempotent(self):
         """Adding rules for a specific network doesn't modify the original.
@@ -291,7 +295,7 @@ class FirewallRulesTest(ForsetiTestCase):
         Expected Results:
           * No rules are added.
         """
-        test_rules = constants.EXPECTED_FIREWALL_RULES.values()
+        test_rules = list(constants.EXPECTED_FIREWALL_RULES.values())
         test_network = 'default'
 
         self.firewall_rules.add_rules(test_rules, network_name=test_network)
@@ -337,7 +341,7 @@ class FirewallRulesTest(ForsetiTestCase):
         Expected Results:
           * The two FirewallRules objects are equal.
         """
-        test_rules = constants.EXPECTED_FIREWALL_RULES.values()
+        test_rules = list(constants.EXPECTED_FIREWALL_RULES.values())
         self.firewall_rules.add_rules(test_rules)
 
         json_rules = self.firewall_rules.as_json()
@@ -504,7 +508,7 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
       for key in ingress_keys:
         new_rule = copy.deepcopy(self.test_rule)
         new_rule['direction'] = 'INGRESS'
-        new_rule[key] = range(257)
+        new_rule[key] = list(range(257))
         with self.assertRaises(fe.InvalidFirewallRuleError):
           self.firewall_rules._check_rule_before_adding(new_rule)
 
@@ -512,7 +516,7 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
       for key in egress_keys:
         new_rule = copy.deepcopy(self.test_rule)
         new_rule['direction'] = 'EGRESS'
-        new_rule[key] = range(257)
+        new_rule[key] = list(range(257))
         with self.assertRaises(fe.InvalidFirewallRuleError):
           self.firewall_rules._check_rule_before_adding(new_rule)
 
@@ -562,14 +566,14 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         Expected Results:
           * The current rules are deleted, no rules inserted or updated.
         """
-        self.current_rules.add_rules(constants.EXPECTED_FIREWALL_RULES.values())
+        self.current_rules.add_rules(list(constants.EXPECTED_FIREWALL_RULES.values()))
 
         changed_count = self.enforcer.apply_firewall(allow_empty_ruleset=True)
 
         self.assertEqual(len(self.current_rules.rules), changed_count)
         self.assertSameStructure(
-            sorted(self.enforcer.current_rules.rules.values()),
-            sorted(self.enforcer.get_deleted_rules()))
+            sorted(self.enforcer.current_rules.rules.values(), key=sorted),
+            sorted(self.enforcer.get_deleted_rules(), key=sorted))
         self.assertEqual([], self.enforcer.get_inserted_rules())
         self.assertEqual([], self.enforcer.get_updated_rules())
 
@@ -610,12 +614,12 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         self.assertEqual(7, changed_count)
 
         self.assertSameStructure(
-            sorted(self.enforcer.current_rules.rules.values()),
-            sorted(self.enforcer.get_deleted_rules()))
+            sorted(self.enforcer.current_rules.rules.values(), key=sorted),
+            sorted(self.enforcer.get_deleted_rules(), key=sorted))
 
         self.assertSameStructure(
-            sorted(self.expected_rules.rules.values()),
-            sorted(self.enforcer.get_inserted_rules()))
+            sorted(self.expected_rules.rules.values(), key=sorted),
+            sorted(self.enforcer.get_inserted_rules(), key=sorted))
 
         self.assertEqual([], self.enforcer.get_updated_rules())
 
@@ -1001,7 +1005,7 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
             'content-type': 'application/json'
         })
         response.reason = 'Duplicate Rule'
-        error_409 = errors.HttpError(response, '', uri='')
+        error_409 = errors.HttpError(response, ''.encode(), uri='')
         err = api_errors.ApiExecutionError(self.project, error_409)
 
         insert_function = mock.Mock(side_effect=err)

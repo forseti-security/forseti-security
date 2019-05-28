@@ -13,17 +13,24 @@
 # limitations under the License.
 
 """Rules engine for Blacklist of IP addresses."""
+
+from builtins import object
 import itertools
 import re
-import urllib2
+import urllib.request
+import urllib.error
+import urllib.parse
 import struct
 import socket
 
 from collections import namedtuple
+from future import standard_library
 
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -150,7 +157,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
             lists: first one is IP addresses,
             second one is network blocks
         """
-        data = urllib2.urlopen(url).read()
+        data = urllib.request.urlopen(url).read()
         ip_addresses = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
         netblocks = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$',
                                data, re.M)
@@ -220,10 +227,10 @@ class Rule(object):
             network = network_and_project.group(2)
 
             if not network_interface.access_configs:
-                LOGGER.warn('Unable to determine blacklist violation for '
-                            'network interface: %s, because it doesn\'t '
-                            'have external internet access.',
-                            network_interface.full_name)
+                LOGGER.warning('Unable to determine blacklist violation for '
+                               'network interface: %s, because it doesn\'t '
+                               'have external internet access.',
+                               network_interface.full_name)
                 continue
 
             for access_config in network_interface.access_configs:

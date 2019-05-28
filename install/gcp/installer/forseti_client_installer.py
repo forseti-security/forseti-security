@@ -15,9 +15,9 @@
 """Forseti CLI installer."""
 
 import time
-from forseti_installer import ForsetiInstaller
-from util import constants
-from util import gcloud
+from .forseti_installer import ForsetiInstaller
+from .util import constants
+from .util import gcloud
 
 
 class ForsetiClientInstaller(ForsetiInstaller):

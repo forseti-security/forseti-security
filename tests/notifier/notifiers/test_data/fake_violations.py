@@ -134,7 +134,7 @@ VIOLATIONS = {
     'iap_violations': [
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 47L,
+         'id': 47,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -148,7 +148,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_type': 'bucket',
          'resource_name': 'be-1-ext',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -158,7 +158,7 @@ VIOLATIONS = {
          'violation_type': 'IAP_VIOLATION'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 48L,
+         'id': 48,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -172,7 +172,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_name': 'be-1-ext',
          'resource_type': 'bucket',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -183,7 +183,7 @@ VIOLATIONS = {
     'iam_policy_violations': [
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 1L,
+         'id': 1,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -197,7 +197,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_name': 'be-1-ext',
          'resource_type': 'bucket',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -207,7 +207,7 @@ VIOLATIONS = {
          'violation_type': 'IAM_POLICY_VIOLATION'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 2L,
+         'id': 2,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -221,7 +221,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_type': 'bucket',
          'resource_name': 'be-1-ext',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',

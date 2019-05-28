@@ -16,7 +16,7 @@
 import collections
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.scanner.test_data import fake_location_scanner_data as data
 from tests.unittest_utils import ForsetiTestCase

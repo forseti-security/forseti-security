@@ -17,7 +17,7 @@ import os
 import unittest
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker
@@ -294,7 +294,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         """Validate load_cloud_asset handles an API error from CAI."""
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = PERMISSION_DENIED
+        content = PERMISSION_DENIED.encode()
         error_403 = errors.HttpError(response, content)
 
         self.mock_export_assets.side_effect = (
@@ -349,7 +349,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = PERMISSION_DENIED
+        content = PERMISSION_DENIED.encode()
         error_403 = errors.HttpError(response, content)
         self.mock_copy_file_from_gcs.side_effect = error_403
 
