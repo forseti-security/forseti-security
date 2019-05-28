@@ -750,6 +750,19 @@ class CaiTemporaryStore(object):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset['name'].split('/')[:-2])
 
+        elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] in ('k8s.io/Pod',
+                                     'rbac.authorization.k8s.io/Role',
+                                     'rbac.authorization.k8s.io/RoleBinding'):
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] in (
+                'rbac.authorization.k8s.io/ClusterRole',
+                'rbac.authorization.k8s.io/ClusterRoleBinding'):
+            return '/'.join(asset['name'].split('/')[:-4])
+
         # Known unparented asset types.
         if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
             LOGGER.debug('Could not determine parent name for %s', asset)

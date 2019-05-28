@@ -996,137 +996,158 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for folder in resources:
             yield folder
 
-    def iter_kubernetes_nodes(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_nodes(self, project_id, zone, cluster):
+        """Iterate k8s nodes in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of nodes.
         """
+        print('project id:', project_id)
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Node',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            .format(project_id, zone, cluster),
+            # .format(project_id.split('/')[5], project_id.split('/')[7],
+            #         project_id.split('/')[9]),
             self.session)
-        print('self link:', parent_id)
-        for folder in resources:
-            yield folder
+        print('project id:', project_id)
+        for node in resources:
+            yield node
 
-    def iter_kubernetes_pods(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
+        """Iterate k8s pods in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.;
+            namespace (str): The namespace name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of pods.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Pod',
-            '//k8s.io/Namespace/{}'.format(parent_id),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/'
+            'namespaces/{}'.format(project_id, zone, cluster, namespace),
             self.session)
-        for folder in resources:
-            yield folder
+        for pod in resources:
+            yield pod
 
-    def iter_kubernetes_namespaces(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_namespaces(self, project_id, zone, cluster):
+        """Iterate k8s namespaces in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of namespaces.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Namespace',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            .format(project_id, zone, cluster),
             self.session)
-        for folder in resources:
-            yield folder
+        for namespace in resources:
+            yield namespace
 
-    def iter_kubernetes_roles(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_roles(self, project_id, zone, cluster, namespace):
+        """Iterate k8s roles in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of roles.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/Role',
-            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/'
+            'namespaces/{}'.format(project_id, zone, cluster, namespace),
             self.session)
-        for folder in resources:
-            yield folder
+        for role in resources:
+            yield role
 
-    def iter_kubernetes_rolebindings(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_rolebindings(self,
+                                     project_id,
+                                     zone,
+                                     cluster,
+                                     namespace):
+        """Iterate k8s role bindings in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of role bindings.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/RoleBinding',
-            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/'
+            'namespaces/{}'.format(project_id, zone, cluster, namespace),
             self.session)
-        for folder in resources:
-            yield folder
+        for role_binding in resources:
+            yield role_binding
 
-    def iter_kubernetes_clusterroles(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_clusterroles(self, project_id, zone, cluster):
+        """Iterate k8s cluster roles in an organization from Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of cluster roles.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRole',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            .format(project_id, zone, cluster),
             self.session)
-        for folder in resources:
-            yield folder
+        for cluster_role in resources:
+            yield cluster_role
 
-    def iter_kubernetes_clusterrolebindings(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
+    def iter_kubernetes_clusterrolebindings(self, project_id, zone, cluster):
+        """Iterate k8s cluster role bindings in an organization from
+           Cloud Asset data.
 
         Args:
-            parent_id (str): id of the parent of the folder
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
 
         Yields:
-            dict: Generator of folders
+            dict: Generator of cluster role bindings.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/ClusterRoleBinding',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
-            .format(parent_id.split('/')[5], parent_id.split('/')[7],
-                    parent_id.split('/')[9]),
+            .format(project_id, zone, cluster),
             self.session)
-        for folder in resources:
-            yield folder
+        for cluster_role_binding in resources:
+            yield cluster_role_binding
 
     def iter_crm_projects(self, parent_type, parent_id):
         """Iterate Projects from Cloud Asset data.
