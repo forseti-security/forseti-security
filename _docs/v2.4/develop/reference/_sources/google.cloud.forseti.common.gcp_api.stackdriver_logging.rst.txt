@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.stackdriver\_logging module
-================================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.stackdriver_logging
-    :members:
-    :undoc-members:
-    :show-inheritance:

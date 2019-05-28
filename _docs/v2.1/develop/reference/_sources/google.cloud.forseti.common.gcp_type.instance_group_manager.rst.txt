@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.instance\_group\_manager module
-=====================================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.instance_group_manager
-    :members:
-    :undoc-members:
-    :show-inheritance:

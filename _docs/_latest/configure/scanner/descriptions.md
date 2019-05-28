@@ -15,8 +15,8 @@ multiple scanners in the same run.
 ## BigQuery dataset ACL scanner
 
 BigQuery datasets have access properties that can publicly expose your datasets.
-The BigQuery scanner supports a blacklist mode to ensure unauthorized users
-don't gain access to your datasets.
+The BigQuery scanner supports blacklist and whitelist modes to ensure unauthorized users
+don't gain access to your datasets, and only authorized users can gain access.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
 [`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
@@ -74,7 +74,7 @@ in place, users are now able to define customized policies easily without writin
 a new scanner.
 
 Read more about the Forseti Config Validator efforts and how to define customized 
-policies for the Config Validator scanner [here](https://github.com/forseti-security/config-validator/blob/master/docs/user_guide.md).
+policies for the Config Validator scanner [here](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
 
 ## Enabled APIs scanner
 
@@ -129,7 +129,8 @@ supports the following:
 
 * Whitelist, blacklist, and required modes.
 * Define if the scope of the rule inherits from parents or just self.
-* Access to specific organization, folder, project or bucket resource types.
+* Access to specific organization, billing account, folder, project, bucket and
+  dataset resource types. 
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
 [`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iam_rules.yaml)

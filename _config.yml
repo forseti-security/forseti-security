@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Basic directives.
+url: "https://forsetisecurity.org" # base hostname & protocol for the website
 custom_search_engine_id: 000816147753680702341:l05b0y1-8k0
 description: "Tools to secure Google Cloud Platform"
 exclude: ["Gemfile",
@@ -138,151 +139,6 @@ defaults:
       path: _faq/resource
     values:
       category: Google Cloud Platform Resource Coverage
-  - scope:
-      path: _docs/v2.0
-    values:
-      category: Overview (v2.0)
-      layout: docs
-  - scope:
-      path: _docs/v2.0/concepts
-    values:
-      category: Concepts (v2.0)
-  - scope:
-      path: _docs/v2.0/setup
-    values:
-      category: Setup (v2.0)
-  - scope:
-      path: _docs/v2.0/use
-    values:
-      category: Use (v2.0)
-  - scope:
-      path: _docs/v2.0/configure
-    values:
-      category: Configure (v2.0)
-  - scope:
-      path: _docs/v2.0/develop
-    values:
-      category: Develop (v2.0)
-  - scope:
-      path: _docs/v2.0/faq
-    values:
-      category: FAQ (v2.0)
-  - scope:
-      path: _docs/v2.1
-    values:
-      category: Overview (v2.1)
-      layout: docs
-  - scope:
-      path: _docs/v2.1/concepts
-    values:
-      category: Concepts (v2.1)
-  - scope:
-      path: _docs/v2.1/setup
-    values:
-      category: Setup (v2.1)
-  - scope:
-      path: _docs/v2.1/use
-    values:
-      category: Use (v2.1)
-  - scope:
-      path: _docs/v2.1/configure
-    values:
-      category: Configure (v2.1)
-  - scope:
-      path: _docs/v2.1/develop
-    values:
-      category: Develop (v2.1)
-  - scope:
-      path: _docs/v2.1/faq
-    values:
-      category: FAQ (v2.1)
-  - scope:
-      path: _docs/v2.2
-    values:
-      category: Overview (v2.2)
-      layout: docs
-  - scope:
-      path: _docs/v2.2/concepts
-    values:
-      category: Concepts (v2.2)
-  - scope:
-      path: _docs/v2.2/setup
-    values:
-      category: Setup (v2.2)
-  - scope:
-      path: _docs/v2.2/use
-    values:
-      category: Use (v2.2)
-  - scope:
-      path: _docs/v2.2/configure
-    values:
-      category: Configure (v2.2)
-  - scope:
-      path: _docs/v2.2/develop
-    values:
-      category: Develop (v2.2)
-  - scope:
-      path: _docs/v2.2/faq
-    values:
-      category: FAQ (v2.2)
-  - scope:
-      path: _docs/v2.3
-    values:
-      category: Overview (v2.3)
-      layout: docs
-  - scope:
-      path: _docs/v2.3/concepts
-    values:
-      category: Concepts (v2.3)
-  - scope:
-      path: _docs/v2.3/setup
-    values:
-      category: Setup (v2.3)
-  - scope:
-      path: _docs/v2.3/use
-    values:
-      category: Use (v2.3)
-  - scope:
-      path: _docs/v2.3/configure
-    values:
-      category: Configure (v2.3)
-  - scope:
-      path: _docs/v2.3/develop
-    values:
-      category: Develop (v2.3)
-  - scope:
-      path: _docs/v2.3/faq
-    values:
-      category: FAQ (v2.3)
-  - scope:
-      path: _docs/v2.4
-    values:
-      category: Overview (v2.4)
-      layout: docs
-  - scope:
-      path: _docs/v2.4/concepts
-    values:
-      category: Concepts (v2.4)
-  - scope:
-      path: _docs/v2.4/setup
-    values:
-      category: Setup (v2.4)
-  - scope:
-      path: _docs/v2.4/use
-    values:
-      category: Use (v2.4)
-  - scope:
-      path: _docs/v2.4/configure
-    values:
-      category: Configure (v2.4)
-  - scope:
-      path: _docs/v2.4/develop
-    values:
-      category: Develop (v2.4)
-  - scope:
-      path: _docs/v2.4/faq
-    values:
-      category: FAQ (v2.4)
   - scope:
       path: _docs/v2.5
     values:
@@ -574,3 +430,61 @@ defaults:
       path: _docs/v2.14/faq
     values:
       category: FAQ (v2.14)
+  - scope:
+      path: _docs/v2.15
+    values:
+      category: Overview (v2.15)
+      layout: docs
+  - scope:
+      path: _docs/v2.15/concepts
+    values:
+      category: Concepts (v2.15)
+  - scope:
+      path: _docs/v2.15/setup
+    values:
+      category: Setup (v2.15)
+  - scope:
+      path: _docs/v2.15/use
+    values:
+      category: Use (v2.15)
+  - scope:
+      path: _docs/v2.15/configure
+    values:
+      category: Configure (v2.15)
+  - scope:
+      path: _docs/v2.15/develop
+    values:
+      category: Develop (v2.15)
+  - scope:
+      path: _docs/v2.15/faq
+    values:
+      category: FAQ (v2.15)
+  - scope:
+      path: _docs/
+    values:
+      category: Overview ()
+      layout: docs
+  - scope:
+      path: _docs//concepts
+    values:
+      category: Concepts ()
+  - scope:
+      path: _docs//setup
+    values:
+      category: Setup ()
+  - scope:
+      path: _docs//use
+    values:
+      category: Use ()
+  - scope:
+      path: _docs//configure
+    values:
+      category: Configure ()
+  - scope:
+      path: _docs//develop
+    values:
+      category: Develop ()
+  - scope:
+      path: _docs//faq
+    values:
+      category: FAQ ()

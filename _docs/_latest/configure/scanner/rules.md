@@ -45,7 +45,8 @@ rules:
 * `resource`
   * `type`
     * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
+    * **Valid values**: One of `organization`, `billing_account`, `folder`,
+     `project`, `bucket` or `dataset`.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -1068,7 +1069,8 @@ rules:
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
-    * **Valid values**: Currently only supports `bucket`.
+    * **Valid values**: One of `bucket`, `cloudsqlinstance`, `dataset`, 
+      `instance`or `kubernetes_cluster`.
     
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
