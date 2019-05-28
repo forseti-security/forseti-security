@@ -72,7 +72,7 @@ def generate_model_handle():
         str: random bytes for handle
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return binascii.hexlify(os.urandom(16)).decode('utf-8')
 
 
 def generate_model_seed():
@@ -82,7 +82,7 @@ def generate_model_seed():
         str: random bytes
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return binascii.hexlify(os.urandom(16)).decode('utf-8')
 
 
 MODEL_BASE = declarative_base()
