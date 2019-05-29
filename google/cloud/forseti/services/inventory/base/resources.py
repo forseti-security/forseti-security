@@ -867,15 +867,15 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('container.googleapis.com'))
 
-    def kubernetes_api_enabled(self):
-        """Check if the kubernetes api is enabled.
-
-        Returns:
-            bool: if this API service is enabled on the project.
-        """
-        # Kubernetes API depends on billing being enabled
-        return (self.billing_enabled() and (self.is_api_enabled('k8s.io') or
-                self.is_api_enabled('rbac.authorization.k8s.io')))
+    # def kubernetes_api_enabled(self):
+    #     """Check if the kubernetes api is enabled.
+    #
+    #     Returns:
+    #         bool: if this API service is enabled on the project.
+    #     """
+    #     Kubernetes API depends on billing being enabled
+    #     return (self.billing_enabled() and (self.is_api_enabled('k8s.io') or
+    #         self.is_api_enabled('rbac.authorization.k8s.io')))
 
     def storage_api_enabled(self):
         """whether storage api is enabled.
