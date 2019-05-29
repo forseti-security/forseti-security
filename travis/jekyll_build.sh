@@ -27,7 +27,7 @@ JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build >> build.log 2 >&1
 kill %1
 
 bundle exec htmlproofer --check-img-http --check-html \
---url-swap forsetisecurity.org:localhost \
+--url-swap forsetisecurity.org:localhost,https:http \
 --check-favicon --report-missing-names --report-script-embeds \
 --url-ignore '/GoogleCloudPlatform/forseti-security/edit/,/maxcdn.bootstrapcdn.com/,/d3js.org/' \
 --file-ignore '/develop/reference/' './_www/www/'
