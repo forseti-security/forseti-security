@@ -69,31 +69,31 @@ steps below:
   1. Install both client and server by running the installer:
 
      ```bash
-     python install/gcp_installer.py
+     python3 install/gcp_installer.py
      ```
 
      If you don't plan to share your Forseti instance with other non-administrators, 
      you can choose to install the server instance only and access Forseti from there.
      ```bash
-     python install/gcp_installer.py --type=server
+     python3 install/gcp_installer.py --type=server
      ```
 
      Installing Forseti on multiple roots by specifying the roots using `--composite-root-resources` flag. 
      ```bash
      # Example command to have forseti running on project a and folder b.
-     python install/gcp_installer.py --composite-root-resources "projects/a,folders/b"
+     python3 install/gcp_installer.py --composite-root-resources "projects/a,folders/b"
      ```
      You can read more about the composite root resources [here]({% link _docs/latest/configure/general/non-org-root.md %}).
 
      To see additional configurations for the setup, run the following:
 
      ```bash
-     python install/gcp_installer.py -h
+     python3 install/gcp_installer.py -h
      ```
      Install Forseti in shared VPC by running the installer with additional flags.
      
      ```
-     python install/gcp_installer.py --vpc-host-project-id={VPC_HOST_PROJECT_ID} --vpc-host-network={VPC_HOST_NETWORK} --vpc-host-subnetwork={VPC_HOST_SUBNETWORK}
+     python3 install/gcp_installer.py --vpc-host-project-id={VPC_HOST_PROJECT_ID} --vpc-host-network={VPC_HOST_NETWORK} --vpc-host-subnetwork={VPC_HOST_SUBNETWORK}
      ```
 
   1. The installer will infer the necessary information to install Forseti.
