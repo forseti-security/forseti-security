@@ -1,0 +1,467 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.ke_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.ke_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Rules engine for checking arbitrary properties ofKE clusters.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">import</span> <span class="nn">jmespath</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">resource_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_mod</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="KeRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">KeRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for KE scanner.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KeRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span> <span class="o">=</span> <span class="n">snapshot_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="KeRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build KeRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">KeRuleBook</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="KeRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if KE cluster satisfies provided  rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): A KE Cluster object to check.</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="KeRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRuleBook">[docs]</a><span class="k">class</span> <span class="nc">KeRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for KE rules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (list): KE rule definition dicts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KeRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="KeRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KeRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource&#39;</span><span class="p">):</span>
+                <span class="n">resource_ids</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">)</span>
+                <span class="n">resource_type</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">resource_type</span> <span class="o">=</span> <span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span>
+                        <span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">))</span>
+                <span class="k">except</span> <span class="n">resource_errors</span><span class="o">.</span><span class="n">InvalidResourceTypeError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Missing resource type in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">resource_ids</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_ids</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Missing resource ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="n">rule_mode</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">rule_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;blacklist&#39;</span><span class="p">,</span> <span class="s1">&#39;whitelist&#39;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Unknown mode in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="n">rule_key</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">rule_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;Missing key in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="n">rule_values</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;values&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+                <span class="c1"># For each resource id associated with the rule, create a</span>
+                <span class="c1"># mapping of resource =&gt; rules.</span>
+                <span class="k">for</span> <span class="n">resource_id</span> <span class="ow">in</span> <span class="n">resource_ids</span><span class="p">:</span>
+                    <span class="n">gcp_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                        <span class="n">resource_id</span><span class="o">=</span><span class="n">resource_id</span><span class="p">,</span>
+                        <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_type</span><span class="p">)</span>
+
+                    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span>
+                        <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                        <span class="n">rule_index</span><span class="p">,</span>
+                        <span class="n">rule_mode</span><span class="p">,</span>
+                        <span class="n">rule_key</span><span class="p">,</span>
+                        <span class="n">rule_values</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                        <span class="n">gcp_resource</span><span class="p">,</span> <span class="n">ResourceRules</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">gcp_resource</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resource_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                        <span class="n">resource_rules</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+    <span class="c1"># pylint: enable=invalid-name</span>
+
+<div class="viewcode-block" id="KeRuleBook.get_resource_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRuleBook.get_resource_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the resource rules for resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): The gcp_type Resource find in the map.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResourceRules: A ResourceRules object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KeRuleBook.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.KeRuleBook.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find violations in the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: RuleViolation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Looking for KE violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">)</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">get_ancestors_from_full_name</span><span class="p">(</span>
+            <span class="n">ke_cluster</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Ancestors of resource: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">resource_ancestors</span><span class="p">)</span>
+
+        <span class="n">checked_wildcards</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">curr_resource</span> <span class="ow">in</span> <span class="n">resource_ancestors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">curr_resource</span><span class="p">:</span>
+                <span class="c1"># resource_ancestors will contain all the resources including</span>
+                <span class="c1"># the child resource, which has type kubernetes cluster and</span>
+                <span class="c1"># cannot be created (return None) as part of the ancestor path,</span>
+                <span class="c1"># we will skip the child as it&#39;s not part of the ancestor.</span>
+                <span class="k">continue</span>
+
+            <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">curr_resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+
+            <span class="n">wildcard_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">curr_resource</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">wildcard_resource</span> <span class="ow">in</span> <span class="n">checked_wildcards</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">checked_wildcards</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
+            <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">))</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Returning violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div></div>
+
+
+<div class="viewcode-block" id="ResourceRules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules">[docs]</a><span class="k">class</span> <span class="nc">ResourceRules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An association of a resource to rules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">resource</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): The resource to associate with the rule.</span>
+<span class="sd">            rules (set): rules to associate with the resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+
+<div class="viewcode-block" id="ResourceRules.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if the policy binding matches this rule&#39;s criteria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: RuleViolation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="n">rule_violations</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">ke_cluster</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rule_violations</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rule_violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare == with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (ResourceRules): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">resource</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.__ne__">[docs]</a>    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare != with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.ResourceRules.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of this node.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: debug string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;IapResourceRules&lt;resource=</span><span class="si">{}</span><span class="s1">, rules=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file, also finds violations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">rule_mode</span><span class="p">,</span> <span class="n">rule_key</span><span class="p">,</span> <span class="n">rule_values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions</span>
+<span class="sd">            rule_mode (str): blacklist or whitelist</span>
+<span class="sd">            rule_key (str): jmespath pointing to the desired key</span>
+<span class="sd">            rule_values (list): list of values, interpreted per mode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span> <span class="o">=</span> <span class="n">rule_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_key</span> <span class="o">=</span> <span class="n">rule_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span> <span class="o">=</span> <span class="n">rule_values</span>
+
+        <span class="c1"># compile right away to return exceptions asap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_jmespath</span> <span class="o">=</span> <span class="n">jmespath</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find KE violations in based on the rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Returns a list of RuleViolation named tuples</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">actual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_jmespath</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">as_dict</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jmespath</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">JMESPathError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;JMESPath error processing KE cluster </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">ke_cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">e</span>
+            <span class="p">)</span>
+
+            <span class="c1"># The resource data violated some assumption the user made</span>
+            <span class="c1"># about it.  So we cannot know if any violations occurred.</span>
+            <span class="k">return</span> <span class="n">violations</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;actual jmespath result: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span> <span class="o">==</span> <span class="s1">&#39;whitelist&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">actual</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_violation</span><span class="p">(</span>
+                    <span class="n">ke_cluster</span><span class="p">,</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> has value </span><span class="si">%s</span><span class="s1">, which is not in the whitelist (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rule_jmespath</span><span class="o">.</span><span class="n">expression</span><span class="p">,</span>
+                        <span class="n">actual</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">actual</span><span class="p">,</span>
+                <span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span> <span class="o">==</span> <span class="s1">&#39;blacklist&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">actual</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_violation</span><span class="p">(</span>
+                    <span class="n">ke_cluster</span><span class="p">,</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> has value </span><span class="si">%s</span><span class="s1">, which is in the blacklist (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rule_jmespath</span><span class="o">.</span><span class="n">expression</span><span class="p">,</span>
+                        <span class="n">actual</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">actual</span><span class="p">,</span>
+                <span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="Rule._make_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule._make_violation">[docs]</a>    <span class="k">def</span> <span class="nf">_make_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_cluster</span><span class="p">,</span> <span class="n">violation_reason</span><span class="p">,</span> <span class="n">actual</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a RuleViolation for the cluster.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ke_cluster (KeCluster): KE Cluster and ServerConfig data.</span>
+<span class="sd">            violation_reason (str): The violation details.</span>
+<span class="sd">            actual (object): The actual value of the jmespath expression.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: A new RuleViolation namedtuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">KE_CLUSTER</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="n">rule_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span><span class="p">,</span>
+            <span class="n">rule_values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span><span class="p">,</span>
+            <span class="n">actual_value</span><span class="o">=</span><span class="n">actual</span><span class="p">,</span>
+            <span class="n">violation_type</span><span class="o">=</span><span class="s1">&#39;KE_VIOLATION&#39;</span><span class="p">,</span>
+            <span class="n">violation_reason</span><span class="o">=</span><span class="n">violation_reason</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">cluster_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">ke_cluster</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule equals other Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Rule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_mode</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_mode</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_values</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_values</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.__ne__">[docs]</a>    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule is not equal to another Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="Rule.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.ke_rules_engine.html#google.cloud.forseti.scanner.audit.ke_rules_engine.Rule.__hash__">[docs]</a>    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a hash of the rule index.</span>
+
+<span class="sd">        For now, this will suffice since the rule index is assigned</span>
+<span class="sd">        automatically when the rules map is built, and the scanner</span>
+<span class="sd">        only handles one rule file at a time. Later on, we&#39;ll need to</span>
+<span class="sd">        revisit this hash method when we process multiple rule files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The hash of the rule index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># pylint: enable=inconsistent-return-statements</span>
+
+<span class="c1"># Rule violation.</span>
+<span class="c1"># resource_type: string</span>
+<span class="c1"># resource_id: string</span>
+<span class="c1"># rule_name: string</span>
+<span class="c1"># rule_index: int</span>
+<span class="c1"># violation_type: KE_VIOLATION</span>
+<span class="c1"># violation_reason: string</span>
+<span class="c1"># project_id: string</span>
+<span class="c1"># cluster_name: string</span>
+<span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span> <span class="p">[</span>
+    <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;full_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_mode&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rule_values&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;actual_value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;violation_reason&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cluster_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;resource_data&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;resource_name&#39;</span><span class="p">,</span>
+<span class="p">])</span>
+</pre></div>
