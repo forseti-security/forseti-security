@@ -1433,7 +1433,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 ### Steps to upgrade using Terraform
 
-1. Update the `version` inside `main.tf` file to `1.7.0`.
+1. Update the `version` inside `main.tf` file to `2.1.0`.
 1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
