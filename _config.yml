@@ -140,35 +140,6 @@ defaults:
     values:
       category: Google Cloud Platform Resource Coverage
   - scope:
-      path: _docs/v2.5
-    values:
-      category: Overview (v2.5)
-      layout: docs
-  - scope:
-      path: _docs/v2.5/concepts
-    values:
-      category: Concepts (v2.5)
-  - scope:
-      path: _docs/v2.5/setup
-    values:
-      category: Setup (v2.5)
-  - scope:
-      path: _docs/v2.5/use
-    values:
-      category: Use (v2.5)
-  - scope:
-      path: _docs/v2.5/configure
-    values:
-      category: Configure (v2.5)
-  - scope:
-      path: _docs/v2.5/develop
-    values:
-      category: Develop (v2.5)
-  - scope:
-      path: _docs/v2.5/faq
-    values:
-      category: FAQ (v2.5)
-  - scope:
       path: _docs/v2.6
     values:
       category: Overview (v2.6)
@@ -488,3 +459,32 @@ defaults:
       path: _docs//faq
     values:
       category: FAQ ()
+  - scope:
+      path: _docs/v2.16
+    values:
+      category: Overview (v2.16)
+      layout: docs
+  - scope:
+      path: _docs/v2.16/concepts
+    values:
+      category: Concepts (v2.16)
+  - scope:
+      path: _docs/v2.16/setup
+    values:
+      category: Setup (v2.16)
+  - scope:
+      path: _docs/v2.16/use
+    values:
+      category: Use (v2.16)
+  - scope:
+      path: _docs/v2.16/configure
+    values:
+      category: Configure (v2.16)
+  - scope:
+      path: _docs/v2.16/develop
+    values:
+      category: Develop (v2.16)
+  - scope:
+      path: _docs/v2.16/faq
+    values:
+      category: FAQ (v2.16)
