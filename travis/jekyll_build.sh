@@ -28,7 +28,7 @@ kill %1
 
 bundle exec htmlproofer --check-img-http --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
---internal_domains 'forsetisecurity.org' \
+--internal-domains 'forsetisecurity.org' \
 --url-ignore '/GoogleCloudPlatform/forseti-security/edit/,/maxcdn.bootstrapcdn.com/,/d3js.org/' \
 --file-ignore '/develop/reference/' './_www/www/'
 
