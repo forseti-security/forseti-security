@@ -170,7 +170,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
         content = base64.b64encode(file_content)
 
         attachment = mail.Attachment()
-        attachment.content = content
+        attachment.content = content.decode('utf-8')
         attachment.type = content_type
         attachment.filename = filename
         attachment.disposition = disposition
