@@ -130,8 +130,8 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             progress_queue.put('Error occurred during the '
-                               'notification process.')
-            progress_queue.put(traceback.format_exc())
+                               'notification process: \'{}\''.format(
+                                traceback.format_exc()))
             progress_queue.put(None)
 
 
