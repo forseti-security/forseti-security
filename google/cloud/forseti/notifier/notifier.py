@@ -16,6 +16,7 @@
 from builtins import str
 import importlib
 import inspect
+import traceback
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
@@ -78,6 +79,7 @@ def convert_to_timestamp(violations):
 
 
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 def run(inventory_index_id,
         scanner_index_id,
         progress_queue,
@@ -152,12 +154,20 @@ def run(inventory_index_id,
                             notifier['name'], resource['resource']))
                     progress_queue.put(log_message)
                     LOGGER.info(log_message)
-                    chosen_pipeline = find_notifiers(notifier['name'])
-                    notifiers.append(chosen_pipeline(
-                        resource['resource'], inventory_index_id,
-                        violation_map[resource['resource']], global_configs,
-                        notifier_configs, notifier.get('configuration')))
-
+                    try:
+                        chosen_pipeline = find_notifiers(notifier['name'])
+                        notifiers.append(chosen_pipeline(
+                            resource['resource'], inventory_index_id,
+                            violation_map[resource['resource']], global_configs,
+                            notifier_configs, notifier.get('configuration')))
+                    except Exception as e:  # pylint: disable=broad-except
+                        error_message = ('Error running \'{}\' notifier for '
+                                         'resource \'{}\':  \'{}\''.format(
+                                             notifier['name'],
+                                             resource['resource'],
+                                             traceback.format_exc()))
+                        progress_queue.put(error_message)
+                        LOGGER.exception(e)
             # Run the notifiers.
             for notifier in notifiers:
                 notifier.run()
