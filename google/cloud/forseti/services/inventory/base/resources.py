@@ -334,6 +334,8 @@ class Resource(object):
                     else:
                         res.try_accept(visitor, new_stack)
             except Exception as e:
+                # Use string phrases and not error codes since error codes
+                # can mean multiple things.
                 if (isinstance(e, api_errors.ApiExecutionError) and
                         any(error_str in str(e) for error_str
                             in skip_errors)):
