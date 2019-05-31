@@ -120,10 +120,9 @@ def run(model_name=None,
                 progress_queue.put('Running {}...'.format(
                     scanner.__class__.__name__))
             except Exception:  # pylint: disable=broad-except
-                log_message = 'Error running scanner: {}'.format(
-                    scanner.__class__.__name__)
-                progress_queue.put('{}: \'{}\''.format(
-                    log_message, traceback.format_exc()))
+                log_message = 'Error running scanner: {}: \'{}\''.format(
+                    scanner.__class__.__name__, traceback.format_exc())
+                progress_queue.put(log_message)
                 LOGGER.exception(log_message)
                 failed.append(scanner.__class__.__name__)
             else:
