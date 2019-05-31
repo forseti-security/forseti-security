@@ -163,9 +163,9 @@ def run(inventory_index_id,
                     except Exception as e:  # pylint: disable=broad-except
                         error_message = ('Error running \'{}\' notifier for '
                                          'resource \'{}\':  \'{}\''.format(
-                                               notifier['name'],
-                                               resource['resource'],
-                                               traceback.format_exc()))
+                                             notifier['name'],
+                                             resource['resource'],
+                                             traceback.format_exc()))
                         progress_queue.put(error_message)
                         LOGGER.exception(e)
             # Run the notifiers.
