@@ -1662,22 +1662,6 @@ def resource_iter_class_factory(api_method_name,
     return ResourceIteratorSubclass
 
 
-def kubernetes_iter_class_factory(api_method_name, resource_name):
-    """Factory function to generate ResourceIterator subclasses for Compute.
-
-    Args:
-        api_method_name (str): The method to call on the API client class to
-            iterate resources.
-        resource_name (str): The name of the resource to create from the
-            resource factory.
-
-    Returns:
-        class: A new class object.
-    """
-    return resource_iter_class_factory(
-        api_method_name, resource_name, api_method_arg_key='projectNumber')
-
-
 class ResourceManagerFolderIterator(resource_iter_class_factory(
         api_method_name='iter_crm_folders', resource_name='folder',
         api_method_arg_key='name')):
