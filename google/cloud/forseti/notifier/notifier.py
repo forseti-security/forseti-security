@@ -161,8 +161,8 @@ def run(inventory_index_id,
                             violation_map[resource['resource']], global_configs,
                             notifier_configs, notifier.get('configuration')))
                     except Exception as e:  # pylint: disable=broad-except
-                        progress_queue.put('Error running \'{}\' notifier for '
-                                           'resource \'{}\':  \'{}\''.format(
+                        progress_queue.put('Error running {} notifier for '
+                                           'resource {}: {}'.format(
                                                notifier['name'],
                                                resource['resource'],
                                                traceback.format_exc()))
