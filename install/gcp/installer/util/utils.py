@@ -374,6 +374,9 @@ def run_command(cmd_args, number_of_retry=5,
                            timeout_in_second + 10,
                            suppress_output=suppress_output)
 
+    if isinstance(out, bytes):
+        out = out.decode('utf-8')
+
     return proc.returncode, out, err
 
 
