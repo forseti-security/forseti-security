@@ -169,6 +169,7 @@ inventory:
         #    - compute.googleapis.com/VpnTunnel
         #    - container.googleapis.com/Cluster
         #    - dataproc.googleapis.com/Cluster
+        #    - dataproc.googleapis.com/NodePool
         #    - dataproc.googleapis.com/Job
         #    - dns.googleapis.com/ManagedZone
         #    - dns.googleapis.com/Policy
@@ -180,7 +181,6 @@ inventory:
         #    - spanner.googleapis.com/Instance
         #    - sqladmin.googleapis.com/Instance
         #    - storage.googleapis.com/Bucket
-        #    - container.googleapis.com/Cluster
         #    - k8s.io/Node
         #    - k8s.io/Pod
         #    - k8s.io/Namespace,

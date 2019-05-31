@@ -867,16 +867,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('container.googleapis.com'))
 
-    # def kubernetes_api_enabled(self):
-    #     """Check if the kubernetes api is enabled.
-    #
-    #     Returns:
-    #         bool: if this API service is enabled on the project.
-    #     """
-    #     Kubernetes API depends on billing being enabled
-    #     return (self.billing_enabled() and (self.is_api_enabled('k8s.io') or
-    #         self.is_api_enabled('rbac.authorization.k8s.io')))
-
     def storage_api_enabled(self):
         """whether storage api is enabled.
 
@@ -2245,14 +2235,6 @@ class KmsCryptoKeyVersionIterator(resource_iter_class_factory(
     """The Resource iterator implementation for KMS CryptoKeyVersion."""
 
 
-# class KubernetesClusterIterator(resource_iter_class_factory(
-#         api_method_name='iter_container_clusters',
-#         resource_name='kubernetes_cluster',
-#         api_method_arg_key='projectNumber',
-#         resource_validation_method_name='container_api_enabled')):
-#     """The Resource iterator implementation for Kubernetes Cluster."""
-
-
 class KubernetesClusterIterator(ResourceIterator):
     """The Resource iterator implementation for KubernetesCluster"""
 
@@ -2285,7 +2267,7 @@ class KubernetesNodeIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_nodes(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_node'].create_new(
@@ -2307,9 +2289,10 @@ class KubernetesPodIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_pods(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
-                    cluster=self.resource['name']):
+                    cluster=self.resource['name'],
+                    namespace=self.resource['namespace']):
                 yield FACTORIES['kubernetes_pod'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2329,7 +2312,7 @@ class KubernetesNamespaceIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_namespaces(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_namespace'].create_new(
@@ -2351,9 +2334,10 @@ class KubernetesRoleIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_roles(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
-                    cluster=self.resource['name']):
+                    cluster=self.resource['name'],
+                    namespace=self.resource['namespace']):
                 yield FACTORIES['kubernetes_role'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2373,9 +2357,10 @@ class KubernetesRoleBindingIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_rolebindings(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
-                    cluster=self.resource['name']):
+                    cluster=self.resource['name'],
+                    namespace=self.resource['namespace']):
                 yield FACTORIES['kubernetes_rolebinding'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2395,7 +2380,7 @@ class KubernetesClusterRoleIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrole'].create_new(
@@ -2417,7 +2402,7 @@ class KubernetesClusterRoleBindingIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_number=self.resource['id'],
+                    project_id=self.resource.parent()['id'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrolebinding'].create_new(
@@ -2603,12 +2588,18 @@ FACTORIES = {
         'cls': KubernetesCluster,
         'contains': [
             KubernetesNodeIterator,
-            KubernetesPodIterator,
             KubernetesNamespaceIterator,
-            KubernetesRoleIterator,
-            KubernetesRoleBindingIterator,
             KubernetesClusterRoleIterator,
             KubernetesClusterRoleBindingIterator,
+        ]}),
+
+    'kubernetes_namespace': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesCluster,
+        'contains': [
+            KubernetesPodIterator,
+            KubernetesRoleIterator,
+            KubernetesRoleBindingIterator,
         ]}),
 
     'appengine_app': ResourceFactory({
@@ -2913,11 +2904,6 @@ FACTORIES = {
     'kubernetes_pod': ResourceFactory({
         'dependsOn': ['project'],
         'cls': KubernetesPod,
-        'contains': []}),
-
-    'kubernetes_namespace': ResourceFactory({
-        'dependsOn': ['project'],
-        'cls': KubernetesNamespace,
         'contains': []}),
 
     'kubernetes_role': ResourceFactory({

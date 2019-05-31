@@ -751,16 +751,75 @@ class CaiTemporaryStore(object):
             return '/'.join(asset['name'].split('/')[:-2])
 
         elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
+            # KMS KeyRings are parented by a location under a project, but
+            # the location is not directly discoverable without iterating all
+            # locations, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all keyrings
+            # in all locations to fix this broken behavior.
+            #
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/nodes/
+            # gke-redditmobile-canary--default-pool-1388e059-z63i"
+            #
+            # Strip k8s/nodes/{NODE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
+            # default"
+            #
+            # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
             return '/'.join(asset['name'].split('/')[:-3])
 
-        elif asset['asset_type'] in ('k8s.io/Pod',
-                                     'rbac.authorization.k8s.io/Role',
+        elif asset['asset_type'] == 'k8s.io/Pod':
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
+            # kube-system/pods/kube-dns-autoscaler-67c97c87fb-k798l"
+            #
+            # Strip pods/{POD} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-2])
+
+        elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
                                      'rbac.authorization.k8s.io/RoleBinding'):
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
+            # kube-system/rbac.authorization.k8s.io/roles/
+            # extension-apiserver-authentication-reader"
+            #
+            # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
+            # parent.
+            #
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/
+            # namespaces/kube-public/rbac.authorization.k8s.io/rolebindings/
+            # system:controller:bootstrap-signer"
+            #
+            # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
+            # name to get the parent.
             return '/'.join(asset['name'].split('/')[:-3])
 
         elif asset['asset_type'] in (
                 'rbac.authorization.k8s.io/ClusterRole',
                 'rbac.authorization.k8s.io/ClusterRoleBinding'):
+            # Kubernetes ClusterRoles and ClusterRoleBindings are parented by a
+            # k8s under a cluster, but the k8 is not directly discoverable
+            # without iterating all k8s, so instead this creates an artificial
+            # parent at the cluster level, which acts as an aggregated list of
+            # all cluster roles and cluster role bindings in all k8s to fix this
+            # broken behavior.
+            #
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/
+            # rbac.authorization.k8s.io/clusterroles/cloud-provider"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterroles/
+            # {CLUSTERROLE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
+            # us-central1-b/clusters/redditmobile-canary-central/k8s/
+            # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/
+            # {CLUSTERROLEBINDING} off name to get the parent.
             return '/'.join(asset['name'].split('/')[:-4])
 
         # Known unparented asset types.

@@ -858,7 +858,28 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session)
         for cluster in resources:
+            node_pools = self._get_nodepools_for_cluster(cluster)
+            cluster['nodePools'] = sorted(node_pools,
+                                          key=lambda np: np['selfLink'])
             yield cluster
+
+    def iter_container_nodepools(self, project_number):
+        """Iterate Kubernetes Engine NodePool from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Kubernetes Engine NodePool resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'container.googleapis.com/NodePool',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for nodepool in resources:
+            yield nodepool
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
@@ -1007,16 +1028,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of nodes.
         """
-        print('project id:', project_id)
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Node',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
             .format(project_id, zone, cluster),
-            # .format(project_id.split('/')[5], project_id.split('/')[7],
-            #         project_id.split('/')[9]),
             self.session)
-        print('project id:', project_id)
         for node in resources:
             yield node
 
