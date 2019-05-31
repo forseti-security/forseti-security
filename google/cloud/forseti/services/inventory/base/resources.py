@@ -335,7 +335,7 @@ class Resource(object):
                         res.try_accept(visitor, new_stack)
             except Exception as e:
                 if (isinstance(e, api_errors.ApiExecutionError) and
-                        any(error_str in str(e.http_error) for error_str
+                        any(error_str in str(e) for error_str
                             in skip_errors)):
                     pass
                 else:
