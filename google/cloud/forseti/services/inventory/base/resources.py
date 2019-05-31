@@ -313,6 +313,9 @@ class Resource(object):
             visitor (Crawler): visitor instance.
             stack (list): resource hierarchy stack.
         """
+        skip_errors = ['Not found',
+                       'Unknown project id',
+                       'scheduled for deletion']
         stack = [] if not stack else stack
         self._stack = stack
         self._visitor = visitor
@@ -331,10 +334,14 @@ class Resource(object):
                     else:
                         res.try_accept(visitor, new_stack)
             except Exception as e:
-                LOGGER.exception(e)
-                self.add_warning(e)
-                visitor.on_child_error(e)
-
+                if (isinstance(e, api_errors.ApiExecutionError) and
+                        any(error_str in str(e.http_error) for error_str
+                            in skip_errors)):
+                    pass
+                else:
+                    LOGGER.exception(e)
+                    self.add_warning(e)
+                    visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
