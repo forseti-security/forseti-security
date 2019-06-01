@@ -75,7 +75,6 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/UrlMap',
     'compute.googleapis.com/VpnTunnel',
     'container.googleapis.com/Cluster',
-    'container.googleapis.com/NodePool',
     'dataproc.googleapis.com/Cluster',
     'dns.googleapis.com/ManagedZone',
     'dns.googleapis.com/Policy',
@@ -94,7 +93,6 @@ DEFAULT_ASSET_TYPES = [
     'rbac.authorization.k8s.io/RoleBinding',
     'rbac.authorization.k8s.io/ClusterRole',
     'rbac.authorization.k8s.io/ClusterRoleBinding',
-
 ]
 
 

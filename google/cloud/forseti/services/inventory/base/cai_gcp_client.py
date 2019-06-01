@@ -842,44 +842,23 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
     # Disabling pulling ke data from CAI since it's missing nodepools
     # attribute in the returned data. We can re-enable this once that
     # problem is resolved.
-    def iter_container_clusters(self, project_number):
-        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-
-        Yields:
-            dict: Generator of Kubernetes Engine Cluster resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'container.googleapis.com/Cluster',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for cluster in resources:
-            node_pools = self._get_nodepools_for_cluster(cluster)
-            cluster['nodePools'] = sorted(node_pools,
-                                          key=lambda np: np['selfLink'])
-            yield cluster
-
-    def iter_container_nodepools(self, project_number):
-        """Iterate Kubernetes Engine NodePool from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-
-        Yields:
-            dict: Generator of Kubernetes Engine NodePool resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'container.googleapis.com/NodePool',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for nodepool in resources:
-            yield nodepool
+    # def iter_container_clusters(self, project_number):
+    #     """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Kubernetes Engine Cluster resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'container.googleapis.com/Cluster',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for cluster in resources:
+    #         yield cluster
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.

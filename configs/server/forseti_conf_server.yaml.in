@@ -171,7 +171,6 @@ inventory:
         #    - compute.googleapis.com/UrlMap
         #    - compute.googleapis.com/VpnTunnel
         #    - container.googleapis.com/Cluster
-        #    - container.googleapis.com/NodePool
         #    - dataproc.googleapis.com/Cluster
         #    - dataproc.googleapis.com/Job
         #    - dns.googleapis.com/ManagedZone
