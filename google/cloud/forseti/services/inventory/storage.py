@@ -751,12 +751,6 @@ class CaiTemporaryStore(object):
             return '/'.join(asset['name'].split('/')[:-2])
 
         elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
-            # KMS KeyRings are parented by a location under a project, but
-            # the location is not directly discoverable without iterating all
-            # locations, so instead this creates an artificial parent at the
-            # project level, which acts as an aggregated list of all keyrings
-            # in all locations to fix this broken behavior.
-            #
             # "name":"//container.googleapis.com/projects/cicd-prod/zones/
             # us-central1-b/clusters/redditmobile-canary-central/k8s/nodes/
             # gke-redditmobile-canary--default-pool-1388e059-z63i"
