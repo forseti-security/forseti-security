@@ -174,6 +174,14 @@ if [ -z "$FLUENTD" ]; then
       bash install-logging-agent.sh
 fi
 
+# Install collectd if necessary.
+COLLECTD=$(ls /opt/stackdriver/collectd/sbin/stackdriver-collectd)
+if [ -z "$COLLECTD" ]; then
+      cd $USER_HOME
+      curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+      bash install-monitoring-agent.sh
+fi
+
 # Check whether Cloud SQL proxy is installed.
 CLOUD_SQL_PROXY=$(which cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
@@ -226,7 +234,7 @@ python3 setup.py install
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
 
-# Store the variables in /etc/profile.d/forseti_environment.sh 
+# Store the variables in /etc/profile.d/forseti_environment.sh
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
