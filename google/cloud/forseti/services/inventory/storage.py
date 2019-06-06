@@ -751,40 +751,38 @@ class CaiTemporaryStore(object):
             return '/'.join(asset['name'].split('/')[:-2])
 
         elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/nodes/
-            # gke-redditmobile-canary--default-pool-1388e059-z63i"
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/nodes/test-node"
             #
             # Strip k8s/nodes/{NODE} off name to get the parent.
             #
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
-            # default"
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace"
             #
             # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
             return '/'.join(asset['name'].split('/')[:-3])
 
         elif asset['asset_type'] == 'k8s.io/Pod':
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
-            # kube-system/pods/kube-dns-autoscaler-67c97c87fb-k798l"
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/pods/test-pod"
             #
             # Strip pods/{POD} off name to get the parent.
             return '/'.join(asset['name'].split('/')[:-2])
 
         elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
                                      'rbac.authorization.k8s.io/RoleBinding'):
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/namespaces/
-            # kube-system/rbac.authorization.k8s.io/roles/
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/rbac.authorization.k8s.io/roles/
             # extension-apiserver-authentication-reader"
             #
             # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
             # parent.
             #
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/
-            # namespaces/kube-public/rbac.authorization.k8s.io/rolebindings/
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace/
+            # rbac.authorization.k8s.io/rolebindings/
             # system:controller:bootstrap-signer"
             #
             # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
@@ -801,15 +799,15 @@ class CaiTemporaryStore(object):
             # all cluster roles and cluster role bindings in all k8s to fix this
             # broken behavior.
             #
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/
-            # rbac.authorization.k8s.io/clusterroles/cloud-provider"
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/rbac.authorization.k8s.io/
+            # clusterroles/cloud-provider"
             #
             # Strip k8s/rbac.authorization.k8s.io/clusterroles/
             # {CLUSTERROLE} off name to get the parent.
             #
-            # "name":"//container.googleapis.com/projects/cicd-prod/zones/
-            # us-central1-b/clusters/redditmobile-canary-central/k8s/
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/
             # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
             #
             # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/

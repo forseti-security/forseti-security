@@ -2219,24 +2219,12 @@ class KmsCryptoKeyVersionIterator(resource_iter_class_factory(
     """The Resource iterator implementation for KMS CryptoKeyVersion."""
 
 
-class KubernetesClusterIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
-
-    def iter(self):
-        """Resource iterator.
-
-        Yields:
-            Resource: KubernetesCluster created
-        """
-        gcp = self.client
-        try:
-            for data, metadata in gcp.iter_container_clusters(
-                    project_number=self.resource['projectNumber']):
-                yield FACTORIES['kubernetes_cluster'].create_new(
-                    data, metadata=metadata)
-        except ResourceNotSupported as e:
-            # API client doesn't support this resource, ignore.
-            LOGGER.debug(e)
+class KubernetesClusterIterator(resource_iter_class_factory(
+        api_method_name='iter_container_clusters',
+        resource_name='kubernetes_cluster',
+        api_method_arg_key='projectNumber',
+        resource_validation_method_name='container_api_enabled')):
+    """The Resource iterator implementation for Kubernetes Cluster."""
 
 
 class KubernetesNodeIterator(ResourceIterator):
@@ -2273,7 +2261,7 @@ class KubernetesPodIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_pods(
-                    project_id=self.resource.parent()['id'],
+                    project_id=self.resource.parent().parent()['id'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name'],
                     namespace=self.resource['namespace']):
@@ -2318,7 +2306,7 @@ class KubernetesRoleIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_roles(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name'],
                     namespace=self.resource['namespace']):
@@ -2341,7 +2329,7 @@ class KubernetesRoleBindingIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_rolebindings(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name'],
                     namespace=self.resource['namespace']):
@@ -2565,25 +2553,6 @@ FACTORIES = {
             ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
-        ]}),
-
-    'kubernetes_cluster': ResourceFactory({
-        'dependsOn': ['project'],
-        'cls': KubernetesCluster,
-        'contains': [
-            KubernetesNodeIterator,
-            KubernetesNamespaceIterator,
-            KubernetesClusterRoleIterator,
-            KubernetesClusterRoleBindingIterator,
-        ]}),
-
-    'kubernetes_namespace': ResourceFactory({
-        'dependsOn': ['kubernetes_cluster'],
-        'cls': KubernetesCluster,
-        'contains': [
-            KubernetesPodIterator,
-            KubernetesRoleIterator,
-            KubernetesRoleBindingIterator,
         ]}),
 
     'appengine_app': ResourceFactory({
@@ -2879,6 +2848,25 @@ FACTORIES = {
         'dependsOn': ['kms_cryptokey'],
         'cls': KmsCryptoKeyVersion,
         'contains': []}),
+
+    'kubernetes_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesCluster,
+        'contains': [
+            KubernetesNodeIterator,
+            KubernetesNamespaceIterator,
+            KubernetesClusterRoleIterator,
+            KubernetesClusterRoleBindingIterator,
+        ]}),
+
+    'kubernetes_namespace': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesCluster,
+        'contains': [
+            KubernetesPodIterator,
+            KubernetesRoleIterator,
+            KubernetesRoleBindingIterator,
+        ]}),
 
     'kubernetes_node': ResourceFactory({
         'dependsOn': ['project'],

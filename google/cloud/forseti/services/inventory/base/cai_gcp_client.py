@@ -1031,7 +1031,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'k8s.io/Pod',
-            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/'
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
             'namespaces/{}'.format(project_id, zone, cluster, namespace),
             self.session)
         for pod in resources:
@@ -1073,7 +1073,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'rbac.authorization.k8s.io/Role',
-            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/'
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
             'namespaces/{}'.format(project_id, zone, cluster, namespace),
             self.session)
         for role in resources:
