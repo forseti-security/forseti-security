@@ -47,7 +47,7 @@ The system python that comes with OS X does not allow certain packages
 separate python packages can be installed and managed.
 
   ```bash
-  brew install python@2
+  brew install python@3
   ```
 
 Install openssl:
@@ -69,7 +69,7 @@ create multiple environments to contain different modules and dependencies
 in different projects:
 
   ```bash
-  sudo pip install virtualenv
+  sudo pip3 install virtualenv
   ```
 
 Use the following command to create a virtualenv:
@@ -92,7 +92,7 @@ to create a fork of the Forseti code, and learn how to submit a pull request (PR
 Use the following command to install required build dependencies:
 
   ```bash
-  pip install -q --upgrade -r forseti-security/requirements.txt
+  pip3 install -q --upgrade -r forseti-security/requirements.txt
   ```
 
 ## Running the Python setup
@@ -102,7 +102,7 @@ Use the following commands to navigate to your cloned repository and run the Pyt
   ```bash
   cd forseti-security
 
-  python setup.py install
+  python3 setup.py install
   ```
 
 ## Configuring Forseti settings
@@ -173,7 +173,7 @@ system. Make sure to use the values from your terminal.
 If on Linux executing ``mkvirtualenv forseti-security`` results in
 ``bash: mkvirtualenv: command not found`` then try the following:
 
-``sudo pip install virtualenv virtualenvwrapper``
+``sudo pip3 install virtualenv virtualenvwrapper``
 
 Now attempt to make a virtual environment again.
 
@@ -197,7 +197,7 @@ You can also put these into your bash profile:
  
 ------------------
 
-If on Linux executing ``python setup.py install``
+If on Linux executing ``python3 setup.py install``
 results in ``EnvironmentError: mysql_config not found`` then
 try the following:
 
@@ -205,7 +205,7 @@ try the following:
 
 ------------------
 
-If on OS X executing ``python setup.py install``
+If on OS X executing ``python3 setup.py install``
 results in ``my_config.h`` not found, then try the following:
 
   [source](https://stackoverflow.com/a/51483898)
@@ -218,7 +218,7 @@ results in ``my_config.h`` not found, then try the following:
 
   sed -i -e 's/libs="$libs -l "/libs="$libs -lmysqlclient -lssl -lcrypto"/g' /usr/local/bin/mysql_config
 
-  pip install MySQL-python
+  pip3 install MySQL-python
 
   brew unlink mysql-connector-c
 
@@ -237,7 +237,7 @@ ImportError: No module named forseti.common.util
 Try to add a symlink from the source code to the virtual environment:
 
 ```bash
-cd <virtual environment>/lib/python2.7/site-packages/google/cloud
+cd <virtual environment>/lib/python3.6/site-packages/google/cloud
 
 ln -s <path to your git source code>/google/cloud/forseti forseti
 ```
