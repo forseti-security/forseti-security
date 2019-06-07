@@ -1407,21 +1407,22 @@ class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace',
     """The Resource implementation for Kubernetes Namespace."""
 
 
-class KubernetesRole(resource_class_factory('kubernetes_role', hash_key=True)):
+class KubernetesRole(k8_resource_class_factory('kubernetes_role',
+                                               hash_key=True)):
     """The Resource implementation for Kubernetes Role."""
 
 
-class KubernetesRoleBinding(resource_class_factory('kubernetes_rolebinding',
-                                                   hash_key=True)):
+class KubernetesRoleBinding(k8_resource_class_factory('kubernetes_rolebinding',
+                                                      hash_key=True)):
     """The Resource implementation for Kubernetes RoleBinding."""
 
 
-class KubernetesClusterRole(resource_class_factory('kubernetes_clusterrole',
-                                                   hash_key=True)):
+class KubernetesClusterRole(k8_resource_class_factory('kubernetes_clusterrole',
+                                                      hash_key=True)):
     """The Resource implementation for Kubernetes ClusterRole."""
 
 
-class KubernetesClusterRoleBinding(resource_class_factory(
+class KubernetesClusterRoleBinding(k8_resource_class_factory(
     'kubernetes_clusterrolebinding', hash_key=True)):
     """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
@@ -2282,7 +2283,7 @@ class KubernetesNodeIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_nodes(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_node'].create_new(
@@ -2327,7 +2328,7 @@ class KubernetesNamespaceIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_namespaces(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_namespace'].create_new(
@@ -2395,7 +2396,7 @@ class KubernetesClusterRoleIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrole'].create_new(
@@ -2417,7 +2418,7 @@ class KubernetesClusterRoleBindingIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_id=self.resource.parent()['projectId'],
+                    project_id=self.resource.parent().parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrolebinding'].create_new(
@@ -2912,32 +2913,32 @@ FACTORIES = {
         ]}),
 
     'kubernetes_node': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_cluster'],
         'cls': KubernetesNode,
         'contains': []}),
 
     'kubernetes_pod': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_namespace'],
         'cls': KubernetesPod,
         'contains': []}),
 
     'kubernetes_role': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_namespace'],
         'cls': KubernetesRole,
         'contains': []}),
 
     'kubernetes_rolebinding': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_namespace'],
         'cls': KubernetesRoleBinding,
         'contains': []}),
 
     'kubernetes_clusterrole': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_cluster'],
         'cls': KubernetesClusterRole,
         'contains': []}),
 
     'kubernetes_clusterrolebinding': ResourceFactory({
-        'dependsOn': ['project'],
+        'dependsOn': ['kubernetes_cluster'],
         'cls': KubernetesClusterRoleBinding,
         'contains': []}),
 
