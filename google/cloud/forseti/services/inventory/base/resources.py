@@ -548,6 +548,8 @@ def k8_resource_class_factory(resource_type, hash_key=False):
             Returns:
                 str: key of this resource.
             """
+            print('hash:', self.get('metadata').get('uid'))
+            self = self
             if hash_key:
                 # Resource does not have a globally unique ID, use size_t hash
                 # of uid under metadata key.
