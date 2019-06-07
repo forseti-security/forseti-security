@@ -517,6 +517,47 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
     return ResourceSubclass
 
 
+def k8_resource_class_factory(resource_type, hash_key=False):
+    """Factory function to generate Kubernetes Resource subclasses.
+
+    Args:
+        resource_type (str): The static Kubernetes resource type for this
+        subclass.
+        hash_key (bool): If true, use a hash of the key field data instead of
+            the value of the key field.
+
+    Returns:
+        class: A new class object.
+    """
+
+    class ResourceSubclass(Resource):
+        """Subclass of Resource."""
+
+        @staticmethod
+        def type():
+            """Get type of this resource.
+
+            Returns:
+                str: The static resource type for this subclass.
+            """
+            return resource_type
+
+        def key(self):
+            """Get key of this resource.
+
+            Returns:
+                str: key of this resource.
+            """
+            if hash_key:
+                # Resource does not have a globally unique ID, use size_t hash
+                # of uid under metadata key.
+                return size_t_hash(self.get('metadata').get('uid'))
+
+            return self.get('metadata').get('uid')
+
+    return ResourceSubclass
+
+
 # Fake composite resource class
 class CompositeRootResource(resource_class_factory('composite_root', None)):
     """The Composite Root fake resource."""
@@ -1349,37 +1390,39 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
                          self._data)
             return None
 
-# Kubernetes resource class
+# Kubernetes resource classes
 
 
-class KubernetesNode(resource_class_factory('kubernetes_node', 'id')):
+class KubernetesNode(k8_resource_class_factory('kubernetes_node',
+                                               hash_key=True)):
     """The Resource implementation for Kubernetes Node."""
 
 
-class KubernetesPod(resource_class_factory('kubernetes_pod', 'id')):
+class KubernetesPod(k8_resource_class_factory('kubernetes_pod', hash_key=True)):
     """The Resource implementation for Kubernetes Pod."""
 
 
-class KubernetesNamespace(resource_class_factory('kubernetes_namespace', 'id')):
+class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace',
+                                                    hash_key=True)):
     """The Resource implementation for Kubernetes Namespace."""
 
 
-class KubernetesRole(resource_class_factory('kubernetes_role', 'id')):
+class KubernetesRole(resource_class_factory('kubernetes_role', hash_key=True)):
     """The Resource implementation for Kubernetes Role."""
 
 
 class KubernetesRoleBinding(resource_class_factory('kubernetes_rolebinding',
-                                                   'id')):
+                                                   hash_key=True)):
     """The Resource implementation for Kubernetes RoleBinding."""
 
 
 class KubernetesClusterRole(resource_class_factory('kubernetes_clusterrole',
-                                                   'id')):
+                                                   hash_key=True)):
     """The Resource implementation for Kubernetes ClusterRole."""
 
 
 class KubernetesClusterRoleBinding(resource_class_factory(
-    'kubernetes_clusterrolebinding', 'id')):
+    'kubernetes_clusterrolebinding', hash_key=True)):
     """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
 
