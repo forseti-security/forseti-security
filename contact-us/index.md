@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Contact us
+title: Contact Us
 ---
 # {{ page.title }}
 
