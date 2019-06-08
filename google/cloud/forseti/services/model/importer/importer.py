@@ -80,6 +80,13 @@ GCP_TYPE_LIST = [
     'kms_cryptokeyversion',
     'kms_keyring',
     'kubernetes_cluster',
+    'kubernetes_clusterrole',
+    'kubernetes_clusterrolebinding',
+    'kubernetes_namespace',
+    'kubernetes_node',
+    'kubernetes_pod',
+    'kubernetes_role',
+    'kubernetes_rolebinding',
     'lien',
     'network',
     'pubsub_subscription',
@@ -599,6 +606,14 @@ class InventoryImporter(object):
             'kms_cryptokeyversion': self._convert_kms_ckv_resource,
             'kms_keyring': self._convert_kms_resource,
             'kubernetes_cluster': self._convert_kubernetes_cluster,
+            'kubernetes_clusterrole': self._convert_kubernetes_cluster_role,
+            'kubernetes_clusterrolebinding':
+                self.convert_kubernetes_cluster_role_binding,
+            'kubernetes_namespace': self._convert_kubernetes_namespace,
+            'kubernetes_node': self._convert_kubernetes_node,
+            'kubernetes_pod': self._convert_kubernetes_pod,
+            'kubernetes_role': self._convert_kubernetes_role,
+            'kubernetes_rolebinding': self._convert_kubernetes_rolebinding,
             'lien': self._convert_lien,
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
@@ -769,12 +784,90 @@ class InventoryImporter(object):
                                display_key='name')
 
     def _convert_kubernetes_cluster(self, cluster):
-        """Convert an AppEngine resource to a database object.
+        """Convert a Kubernetes Cluster resource to a database object.
 
         Args:
             cluster (dict): A Kubernetes cluster resource to store.
         """
-        self._convert_resource(cluster, cached=True)
+        self._convert_resource(cluster,
+                               cached=True,
+                               display_key='kubernetesClusterName')
+
+    def _convert_kubernetes_cluster_role(self, kubernetes_clusterrole):
+        """Convert a Kubernetes ClusterRole resource to a database object.
+
+        Args:
+            kubernetes_clusterrole (dict): A Kubernetes ClusterRole resource to
+            store.
+        """
+        self._convert_resource(kubernetes_clusterrole,
+                               cached=False,
+                               display_key='kubernetesClusterRole')
+
+    def convert_kubernetes_cluster_role_binding(self,
+                                                kubernetes_clusterrolebinding):
+        """Convert a Kubernetes ClusterRoleBinding resource to a database
+           object.
+
+        Args:
+            kubernetes_clusterrolebinding (dict): A Kubernetes
+            ClusterRoleBinding resource to store.
+        """
+        self._convert_resource(kubernetes_clusterrolebinding,
+                               cached=False,
+                               display_key='kubernetesClusterRoleBinding')
+
+    def _convert_kubernetes_namespace(self, kubernetes_namespace):
+        """Convert a Kubernetes Namespace resource to a database object.
+
+        Args:
+            kubernetes_namespace (dict): A Kubernetes Namespace resource to
+            store.
+        """
+        self._convert_resource(kubernetes_namespace,
+                               cached=True,
+                               display_key='kubernetesNamespace')
+
+    def _convert_kubernetes_node(self, kubernetes_node):
+        """Convert a Kubernetes Node resource to a database object.
+
+        Args:
+            kubernetes_node (dict): A Kubernetes Node resource to store.
+        """
+        self._convert_resource(kubernetes_node,
+                               cached=False,
+                               display_key='kubernetesNode')
+
+    def _convert_kubernetes_pod(self, kubernetes_pod):
+        """Convert a Kubernetes Pod resource to a database object.
+
+        Args:
+            kubernetes_pod (dict): A Kubernetes Pod resource to store.
+        """
+        self._convert_resource(kubernetes_pod,
+                               cached=False,
+                               display_key='kubernetesPod')
+
+    def _convert_kubernetes_role(self, kubernetes_role):
+        """Convert a Kubernetes Role resource to a database object.
+
+        Args:
+            kubernetes_role (dict): A Kubernetes Role resource to store.
+        """
+        self._convert_resource(kubernetes_role,
+                               cached=False,
+                               display_key='kubernetesRole')
+
+    def _convert_kubernetes_rolebinding(self, kubernetes_rolebinding):
+        """Convert a Kubernetes RoleBinding resource to a database object.
+
+        Args:
+            kubernetes_rolebinding (dict): A Kubernetes RoleBinding resource to
+            store.
+        """
+        self._convert_resource(kubernetes_rolebinding,
+                               cached=False,
+                               display_key='kubernetesRoleBinding')
 
     def _convert_lien(self, lien):
         """Convert a lien to a database object.
