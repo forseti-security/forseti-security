@@ -65,7 +65,7 @@ steps below:
       # the checkout command again.
       git checkout tags/v2.16.0
       
-      # Install `future` package if it doesn't already exist.
+      # Install `future` package if it doesn't already exist by running:
       pip3 install future
       ```
 
