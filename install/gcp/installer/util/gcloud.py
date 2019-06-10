@@ -760,6 +760,7 @@ def create_firewall_rule(rule_name,
     if return_code:
         print(err)
 
+
 def delete_firewall_rule(rule_name):
     """Delete a firewall rule for a specific gcp service account.
 
@@ -774,6 +775,7 @@ def delete_firewall_rule(rule_name):
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
         print(err)
+
 
 def enable_os_login(instance_name, zone):
     """Enable os login for the given VM instance.
@@ -873,7 +875,7 @@ def get_domain_from_organization_id(organization_id):
         str: Domain of the org.
     """
 
-    return_code, out, err = utils.run_command(
+    return_code, out, _ = utils.run_command(
         ['gcloud', 'organizations', 'describe', organization_id,
          '--format=json'], number_of_retry=0)
 
