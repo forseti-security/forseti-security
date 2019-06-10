@@ -607,15 +607,14 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
-def lookup_organization(resource_id, rtype='projects'):
+def lookup_organization(project_id):
     """Infer the organization from the resource's parent.
 
     Args:
-        resource_id (str): GCP resource id
-        rtype (str): GCP resource type
+        project_id (str): GCP project id.
 
     Returns:
-        str: GCP organization id
+        str: GCP organization id.
     """
 
     def _no_organization():
@@ -623,73 +622,24 @@ def lookup_organization(resource_id, rtype='projects'):
         print(constants.MESSAGE_NO_ORGANIZATION)
         sys.exit(1)
 
-    def _find_org_from_folder(folder_id):
-        """Find the organization from some folder.
+    return_code, out, err = utils.run_command(
+        ['gcloud', 'projects', 'get-ancestors', project_id, '--format=json'])
 
-        Args:
-            folder_id (str): The folder id, just a number.
+    if return_code:
+        print(err)
+        sys.exit(1)
 
-        Returns:
-            str: GCP organization id of the folder
-        """
-        cur_type = 'folders'
-        cur_id = folder_id
-        while cur_type != 'organizations':
-            ret_code, output, error = utils.run_command(
-                ['gcloud', 'alpha', 'resource-manager', 'folders',
-                 'describe', cur_id, '--format=json'])
-            if ret_code:
-                print(error)
-                _no_organization()
-            try:
-                folder = json.loads(output)
-                cur_type, cur_id = folder['parent'].split('/')
-                print('Check parent: %s' % folder['parent'])
-            except ValueError as verr:
-                print(verr)
-                _no_organization()
-        return cur_id
+    if isinstance(out, bytes):
+        out = out.decode()
 
-    if rtype == 'organizations':
-        organization_id = resource_id
-    elif rtype == 'folders':
-        organization_id = _find_org_from_folder(resource_id)
-    elif rtype == 'projects':
-        return_code, out, err = utils.run_command(
-            ['gcloud', 'projects', 'describe',
-             resource_id, '--format=json'])
+    resources = json.loads(out)
 
-        if isinstance(out, bytes):
-            out = out.decode()
-
-        if return_code:
-            print(err)
-            print('Error trying to find current organization from '
-                  'project! Exiting.')
-        try:
-            project = json.loads(out)
-            project_parent = project.get('parent')
-            if not project_parent:
-                _no_organization()
-            parent_type = project_parent['type']
-            parent_id = project_parent['id']
-        except ValueError:
-            print('Error retrieving organization id')
-            _no_organization()
-
-        if parent_type == 'folder':
-            organization_id = _find_org_from_folder(parent_id)
-        elif parent_type == 'organization':
-            organization_id = parent_id
-        else:
-            _no_organization()
-
-    else:
-        _no_organization()
-
-    if organization_id:
-        print('Organization id: %s' % organization_id)
-        return organization_id
+    for resource in resources:
+        if resource.get('type') == 'organization':
+            org_id = resource.get('id')
+            print('Organization id: %s' % org_id)
+            return org_id
+    _no_organization()
 
 
 def get_forseti_server_info():
@@ -925,13 +875,12 @@ def get_domain_from_organization_id(organization_id):
 
     return_code, out, err = utils.run_command(
         ['gcloud', 'organizations', 'describe', organization_id,
-         '--format=json'])
+         '--format=json'], number_of_retry=0)
 
     if isinstance(out, bytes):
         out = out.decode()
 
     if return_code:
-        print(err)
         print('Unable to retrieve domain from the organization.')
         return ''
 
