@@ -2283,7 +2283,7 @@ class KubernetesNodeIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_nodes(
-                    project_id=self.resource.parent().parent()['projectId'],
+                    project_id=self.resource.parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_node'].create_new(
@@ -2305,10 +2305,10 @@ class KubernetesPodIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_pods(
-                    project_id=self.resource.parent().parent()['id'],
-                    zone=self.resource['zone'],
-                    cluster=self.resource['name'],
-                    namespace=self.resource['namespace']):
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
                 yield FACTORIES['kubernetes_pod'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2328,7 +2328,7 @@ class KubernetesNamespaceIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_namespaces(
-                    project_id=self.resource.parent().parent()['projectId'],
+                    project_id=self.resource.parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_namespace'].create_new(
@@ -2351,9 +2351,9 @@ class KubernetesRoleIterator(ResourceIterator):
         try:
             for data, metadata in gcp.iter_k8s_roles(
                     project_id=self.resource.parent().parent()['projectId'],
-                    zone=self.resource['zone'],
-                    cluster=self.resource['name'],
-                    namespace=self.resource['namespace']):
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
                 yield FACTORIES['kubernetes_role'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2374,9 +2374,9 @@ class KubernetesRoleBindingIterator(ResourceIterator):
         try:
             for data, metadata in gcp.iter_k8s_rolebindings(
                     project_id=self.resource.parent().parent()['projectId'],
-                    zone=self.resource['zone'],
-                    cluster=self.resource['name'],
-                    namespace=self.resource['namespace']):
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
                 yield FACTORIES['kubernetes_rolebinding'].create_new(
                     data, metadata=metadata)
         except ResourceNotSupported as e:
@@ -2396,7 +2396,7 @@ class KubernetesClusterRoleIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_id=self.resource.parent().parent()['projectId'],
+                    project_id=self.resource.parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrole'].create_new(
@@ -2418,7 +2418,7 @@ class KubernetesClusterRoleBindingIterator(ResourceIterator):
         gcp = self.client
         try:
             for data, metadata in gcp.iter_k8s_clusterroles(
-                    project_id=self.resource.parent().parent()['projectId'],
+                    project_id=self.resource.parent()['projectId'],
                     zone=self.resource['zone'],
                     cluster=self.resource['name']):
                 yield FACTORIES['kubernetes_clusterrolebinding'].create_new(
