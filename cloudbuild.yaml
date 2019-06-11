@@ -1,0 +1,46 @@
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This defines the build steps of Forseti docker images. The google container
+# builder must be invoked against the root of the git directory.
+#
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security base container image
+  args: ['build', '--target', 'build', '-t', 'forseti/build', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Test presence of "forseti"
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti || exit 1']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Test presence of "forseti_enforcer"
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti_enforcer || exit 1']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Test presence of "forseti_server"
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti_server || exit 1']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Perform unit tests
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'python3 -m unittest discover --verbose -s . -p "*_test.py" || exit 1']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Perform pylint tests
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'pylint --rcfile=pylintrc google/ install/ || exit 1']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Perform flake8 tests
+  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'flake8 -v --doctests --max-line-length=80 --ignore=E501,E711,E722,F841,W504,W605 --exclude=*pb2*.py google/ || exit 1']
+timeout: 1200s

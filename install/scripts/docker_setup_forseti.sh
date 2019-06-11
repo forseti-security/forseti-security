@@ -15,7 +15,7 @@
 
 trap 'return_code=$?' ERR
 
-# Delete all running containers if we're not on Travis.
+# Delete all running containers if we're not on Travis for Google Cloud Build.
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers... "
@@ -38,9 +38,9 @@ fi
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
     echo "Building our Docker base image... "
-    docker build -t forseti/base -f install/docker/base --no-cache .
-    echo "Building our Forseti image from the Docker base image... "
-    docker build -t forseti/build -f install/docker/forseti --no-cache .
+    docker build --target build -t forseti/build .
+    # echo "Building our Forseti image from the Docker base image... "
+    # docker build -t forseti/build -f install/docker/forseti/Dockerfile .
 else
     echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi
