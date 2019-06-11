@@ -1423,7 +1423,7 @@ class KubernetesClusterRole(k8_resource_class_factory('kubernetes_clusterrole',
 
 
 class KubernetesClusterRoleBinding(k8_resource_class_factory(
-    'kubernetes_clusterrolebinding', hash_key=True)):
+        'kubernetes_clusterrolebinding', hash_key=True)):
     """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
 

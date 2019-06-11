@@ -31,20 +31,17 @@ from google.cloud.forseti.services.utils import to_type_name
 
 LOGGER = logger.get_logger(__name__)
 
-# TODO: alpha sort ths list.
 GCP_TYPE_LIST = [
-    'composite_root',
-    'organization',
-    'folder',
-    'project',
     'appengine_app',
+    'appengine_instance',
     'appengine_service',
     'appengine_version',
-    'appengine_instance',
     'backendservice',
+    'bigquery_table',
     'billing_account',
     'bucket',
     'cloudsqlinstance',
+    'composite_root',
     'compute_autoscaler',
     'compute_backendbucket',
     'compute_healthcheck',
@@ -70,6 +67,7 @@ GCP_TYPE_LIST = [
     'dns_managedzone',
     'dns_policy',
     'firewall',
+    'folder',
     'forwardingrule',
     'image',
     'instance',
@@ -89,16 +87,17 @@ GCP_TYPE_LIST = [
     'kubernetes_rolebinding',
     'lien',
     'network',
+    'organization',
+    'project',
     'pubsub_subscription',
     'pubsub_topic',
     'serviceaccount',
     'serviceaccount_key',
     'sink',
     'snapshot',
-    'spanner_instance',
     'spanner_database',
+    'spanner_instance',
     'subnetwork',
-    'bigquery_table',
 ]
 
 GSUITE_TYPE_LIST = [
@@ -606,9 +605,9 @@ class InventoryImporter(object):
             'kms_cryptokeyversion': self._convert_kms_ckv_resource,
             'kms_keyring': self._convert_kms_resource,
             'kubernetes_cluster': self._convert_kubernetes_cluster,
-            'kubernetes_clusterrole': self._convert_kubernetes_cluster_role,
+            'kubernetes_clusterrole': self._convert_kubernetes_clusterrole,
             'kubernetes_clusterrolebinding':
-                self.convert_kubernetes_cluster_role_binding,
+                self._convert_kubernetes_clusterrolebinding,
             'kubernetes_namespace': self._convert_kubernetes_namespace,
             'kubernetes_node': self._convert_kubernetes_node,
             'kubernetes_pod': self._convert_kubernetes_pod,
@@ -783,17 +782,17 @@ class InventoryImporter(object):
         self._convert_resource(resource, cached=True,
                                display_key='name')
 
-    def _convert_kubernetes_cluster(self, cluster):
+    def _convert_kubernetes_cluster(self, kubernetes_cluster):
         """Convert a Kubernetes Cluster resource to a database object.
 
         Args:
-            cluster (dict): A Kubernetes cluster resource to store.
+            kubernetes_cluster (dict): A Kubernetes cluster resource to store.
         """
-        self._convert_resource(cluster,
+        self._convert_resource(kubernetes_cluster,
                                cached=True,
                                display_key='kubernetesClusterName')
 
-    def _convert_kubernetes_cluster_role(self, kubernetes_clusterrole):
+    def _convert_kubernetes_clusterrole(self, kubernetes_clusterrole):
         """Convert a Kubernetes ClusterRole resource to a database object.
 
         Args:
@@ -804,8 +803,8 @@ class InventoryImporter(object):
                                cached=False,
                                display_key='kubernetesClusterRole')
 
-    def convert_kubernetes_cluster_role_binding(self,
-                                                kubernetes_clusterrolebinding):
+    def _convert_kubernetes_clusterrolebinding(self,
+                                               kubernetes_clusterrolebinding):
         """Convert a Kubernetes ClusterRoleBinding resource to a database
            object.
 
