@@ -16,7 +16,9 @@
 
 A stub to call install/gcp/gcp_installer.py which installs into GCP.
 """
-from gcp import gcp_installer  # pylint: disable=import-error
+# pylint: disable=import-error, useless-suppression
+from installer.gcp import gcp_installer
+# pylint: enable=import-error, useless-suppression
 
 
 if __name__ == '__main__':
