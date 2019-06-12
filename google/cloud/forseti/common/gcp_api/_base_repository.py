@@ -153,6 +153,7 @@ class BaseRepositoryClient(object):
                  use_rate_limiter=False,
                  read_only=False,
                  use_versioned_discovery_doc=False,
+                 inventory_config=None,
                  **kwargs):
         """Constructor.
 
@@ -170,6 +171,8 @@ class BaseRepositoryClient(object):
                 would modify a resource within the repository.
             use_versioned_discovery_doc (bool): When set to true, will use the
                 discovery doc with the version suffix in the filename.
+            inventory_config (object): Inventory configuration. If present, it
+                is used to customize the user-agent header.
             **kwargs (dict): Additional args such as version.
         """
         self._use_cached_http = False
@@ -190,8 +193,8 @@ class BaseRepositoryClient(object):
             self._rate_limiter = None
 
         self._read_only = read_only
-
         self.name = api_name
+        self.inventory_config = inventory_config
 
         # Look to see if the API is formally supported in Forseti.
         supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
@@ -262,7 +265,8 @@ class BaseRepositoryClient(object):
                                     credentials=self._credentials,
                                     rate_limiter=self._rate_limiter,
                                     use_cached_http=self._use_cached_http,
-                                    read_only=self._read_only)
+                                    read_only=self._read_only,
+                                    inventory_config=self.inventory_config)
 
 
 # pylint: enable=too-many-instance-attributes
@@ -312,7 +316,7 @@ class GCPRepository(object):
             read_only (bool): When set to true, disables any API calls that
                 would modify a resource within the repository.
             inventory_config(object): Inventory configuration. If present, it
-                is used to customize the user agent field in HTTP headers.
+                is used to customize the user-agent header.
         """
         self.gcp_service = gcp_service
         self.read_only = read_only
