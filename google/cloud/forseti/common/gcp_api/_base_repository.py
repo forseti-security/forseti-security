@@ -276,7 +276,7 @@ class GCPRepository(object):
                  entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
                  resource_path_template=None, rate_limiter=None,
-                 use_cached_http=True, read_only=False):
+                 use_cached_http=True, read_only=False, inventory_config=None):
         """Constructor.
 
         Args:
@@ -311,6 +311,8 @@ class GCPRepository(object):
                 is used for each request.
             read_only (bool): When set to true, disables any API calls that
                 would modify a resource within the repository.
+            inventory_config(object): Inventory configuration. If present, it
+                is used to customize the user agent field in HTTP headers.
         """
         self.gcp_service = gcp_service
         self.read_only = read_only
@@ -336,6 +338,7 @@ class GCPRepository(object):
         self._search_query_field = search_query_field
         self._resource_path_template = resource_path_template
         self._rate_limiter = rate_limiter
+        self._inventory_config = inventory_config
 
         self._use_cached_http = use_cached_http
         self._local = LOCAL_THREAD

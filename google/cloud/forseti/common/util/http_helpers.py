@@ -19,12 +19,14 @@ from google.cloud import forseti as forseti_security
 HTTP_REQUEST_TIMEOUT = 30.0
 
 
-def build_http(http=None):
+def build_http(http=None, inventory_config=None):
     """Set custom Forseti user agent and timeouts on a new http object.
 
     Args:
         http (object): An instance of httplib2.Http, or compatible, used for
             testing.
+        inventory_config (object): Inventory configuration. If present, it
+            is used to customize the user-agent header.
 
     Returns:
         httplib2.Http: An http object with the forseti user agent set.

@@ -103,8 +103,7 @@ def load_cloudasset_data(session, config):
     # Start by ensuring that there is no existing CAI data in storage.
     _clear_cai_data(session)
 
-    cloudasset_client = cloudasset.CloudAssetClient(
-        config.get_api_quota_configs())
+    cloudasset_client = cloudasset.CloudAssetClient(config)
     imported_assets = 0
 
     root_resources = []

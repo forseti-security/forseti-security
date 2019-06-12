@@ -22,6 +22,7 @@ from google.oauth2 import credentials
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_cloudasset_responses as fake_cloudasset
 from tests.common.gcp_api.test_data import http_mocks
+from google.cloud.forseti.services.base import config
 from google.cloud.forseti.common.gcp_api import cloudasset
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 
@@ -36,10 +37,16 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {
-            'cloudasset': {'max_calls': 1, 'period': 1.0}}
+        inventory_config = config.InventoryConfig(
+            root_resource_id="root",
+            gsuite_admin_email="admin@example.com",
+            api_quota_configs={
+                'cloudasset': {'max_calls': 1, 'period': 1.0}},
+            retention_days=1,
+            cai_configs=None
+        )
         cls.asset_api_client = cloudasset.CloudAssetClient(
-            global_configs=fake_global_configs, use_rate_limiter=False)
+            inventory_config=inventory_config, use_rate_limiter=False)
 
     @mock.patch.object(
         google.auth, 'default',
@@ -47,7 +54,15 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
-        asset_api_client = cloudasset.CloudAssetClient(global_configs={})
+        inventory_config = config.InventoryConfig(
+            root_resource_id="root",
+            gsuite_admin_email="admin@example.com",
+            api_quota_configs={},
+            retention_days=1,
+            cai_configs=None
+        )
+        asset_api_client = cloudasset.CloudAssetClient(
+            inventory_config=inventory_config)
         self.assertEqual(None, asset_api_client.repository._rate_limiter)
 
     def test_export_assets_folder(self):
