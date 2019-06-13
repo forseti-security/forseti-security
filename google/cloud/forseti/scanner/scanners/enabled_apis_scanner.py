@@ -136,7 +136,7 @@ class EnabledApisScanner(base_scanner.BaseScanner):
                          enabled_apis))
 
         if not enabled_apis_data:
-            LOGGER.warn('No Enabled APIs found.')
+            LOGGER.warning('No Enabled APIs found.')
             return []
 
         return enabled_apis_data

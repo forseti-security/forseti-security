@@ -14,6 +14,7 @@
 
 """ Crawler implementation. """
 
+from builtins import object
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 

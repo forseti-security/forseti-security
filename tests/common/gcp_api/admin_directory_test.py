@@ -14,7 +14,7 @@
 
 """Tests the Admin Directory  API client."""
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.auth import exceptions
 from google.oauth2 import credentials

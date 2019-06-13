@@ -15,6 +15,7 @@
 
 # pylint: disable=too-many-lines
 
+import itertools
 import threading
 
 from google.cloud.forseti.common.util import logger
@@ -45,7 +46,7 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
         dict: A resource dict with all bad keys replaced with good keys.
     """
     fixed_resource = {}
-    for key, value in resource.items():
+    for key, value in list(resource.items()):
         if isinstance(value, dict):
             # Recursively fix keys in sub dictionaries.
             value = _fixup_resource_keys(value, key_map)
@@ -305,8 +306,15 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'healthCheck': 'healthChecks',
             'resourceGroup': 'group'
         }
-        resources = self._iter_compute_resources('BackendService',
-                                                 project_number)
+
+        backendservice = self._iter_compute_resources('BackendService',
+                                                      project_number)
+
+        region_backendservice = self._iter_compute_resources(
+            'RegionBackendService', project_number)
+
+        resources = itertools.chain(backendservice, region_backendservice)
+
         for backendservice, metadata in resources:
             yield (
                 _fixup_resource_keys(backendservice, cai_to_gcp_key_map),
@@ -372,8 +380,16 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'ipAddress': 'IPAddress',
             'ipProtocol': 'IPProtocol',
         }
-        resources = self._iter_compute_resources('ForwardingRule',
-                                                 project_number)
+
+        forwardingrule_resources = self._iter_compute_resources(
+            'ForwardingRule', project_number)
+
+        global_forwardingrule_resources = self._iter_compute_resources(
+            'GlobalForwardingRule', project_number)
+
+        resources = itertools.chain(forwardingrule_resources,
+                                    global_forwardingrule_resources)
+
         for forwarding_rule, metadata in resources:
             yield (
                 _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map),
@@ -823,23 +839,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for vpntunnel in resources:
             yield vpntunnel
 
-    def iter_container_clusters(self, project_number):
-        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-
-        Yields:
-            dict: Generator of Kubernetes Engine Cluster resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'container.googleapis.com/Cluster',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for cluster in resources:
-            yield cluster
+    # Disabling pulling ke data from CAI since it's missing nodepools
+    # attribute in the returned data. We can re-enable this once that
+    # problem is resolved.
+    # def iter_container_clusters(self, project_number):
+    #     """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Kubernetes Engine Cluster resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'container.googleapis.com/Cluster',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for cluster in resources:
+    #         yield cluster
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.

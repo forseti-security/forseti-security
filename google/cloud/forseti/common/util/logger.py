@@ -102,7 +102,7 @@ def _map_logger(func):
     Args:
         func (function): Function to call on every logger.
     """
-    for logger in LOGGERS.itervalues():
+    for logger in LOGGERS.values():
         func(logger)
 
 

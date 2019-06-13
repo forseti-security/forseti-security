@@ -16,7 +16,7 @@
 import copy
 import os
 import unittest
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
@@ -127,7 +127,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
 
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
-        for item in storage.mem.values():
+        for item in list(storage.mem.values()):
             item_type = item.type()
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
@@ -419,6 +419,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
+            'backendservice': {'resource': 2},
             'cloudsqlinstance': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
@@ -441,6 +442,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
@@ -476,7 +478,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'appengine_app': {'resource': 2},
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
-            'backendservice': {'resource': 1},
+            'backendservice': {'resource': 2},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
@@ -505,7 +507,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
-            'forwardingrule': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 2},
@@ -514,7 +516,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
-            'kubernetes_cluster': {'resource': 1},
+            # 'kubernetes_cluster': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
@@ -614,6 +616,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'gsuite_groups_settings': {'resource': 4},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
             'lien': {'resource': 1},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
@@ -623,6 +626,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()

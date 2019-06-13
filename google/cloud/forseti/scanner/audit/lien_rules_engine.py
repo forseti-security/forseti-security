@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Liens."""
+from builtins import object
 import collections
 
 from google.cloud.forseti.common.gcp_type import resource_util

@@ -19,6 +19,7 @@ stored locally or in GCS) and compares a list of APIs  against the RuleBook to
 determine whether there are violations.
 """
 
+from builtins import object
 import collections
 import itertools
 import threading

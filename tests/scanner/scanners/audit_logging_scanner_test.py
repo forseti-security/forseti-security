@@ -13,9 +13,10 @@
 # limitations under the License.
 """Tests for AuditLoggingScanner."""
 
+from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_audit_logging_scanner_data as fasd
@@ -100,7 +101,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
         # _retrieve only returns projects.
         self.assertEqual(3, len(audit_logging_data))
 
-        for i in xrange(3):
+        for i in range(3):
             actual_project, actual_audit_configs = audit_logging_data[i]
             self.assertEqual(expected_projects[i], actual_project.full_name)
             self.assertEqual(expected_audit_configs[i],
@@ -122,7 +123,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in audit_logging_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         audit_logging_scanner.AuditLoggingScanner,

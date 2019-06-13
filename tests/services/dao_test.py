@@ -14,6 +14,8 @@
 
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
+from builtins import str
+from builtins import range
 from collections import defaultdict
 import unittest
 from sqlalchemy.orm.exc import NoResultFound
@@ -67,7 +69,7 @@ class DaoTest(ForsetiTestCase):
         'admin': set(),
     }
 
-    for prefix, expected_roles in expectations.iteritems():
+    for prefix, expected_roles in expectations.items():
       role_names = data_access.list_roles_by_prefix(session, prefix)
       self.assertEqual(expected_roles, set(role_names))
 
@@ -118,7 +120,7 @@ class DaoTest(ForsetiTestCase):
     for member, parents in memberships:
       data_access.add_group_member(session, member, parents)
 
-    for member, groups in checks.iteritems():
+    for member, groups in checks.items():
       res = data_access.reverse_expand_members(session, [member])
       res = [m.name for m in res]
       for group in groups:
@@ -429,7 +431,7 @@ class DaoTest(ForsetiTestCase):
       for check in bindings:
         self.assertTrue(check in bindings)
       self.assertEqual(set(member_graph.keys()), set(graph.keys()))
-      for key, value in member_graph.iteritems():
+      for key, value in member_graph.items():
         self.assertEqual(value, graph[key])
       self.assertEqual(check_ancestors, ancestors)
 
@@ -555,13 +557,13 @@ class DaoTest(ForsetiTestCase):
         'writer': [(u'r/res3', set([u'group/g3'])),],
     }
 
-    for role, access in expected_by_role.iteritems():
+    for role, access in expected_by_role.items():
       result = [r for r in (
           data_access.query_access_by_permission(session, role))]
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -579,14 +581,14 @@ class DaoTest(ForsetiTestCase):
         'writeonly': [(u'r/res3', set([u'group/g3'])),],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(session,
                                                  permission_name=perm))]
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -600,7 +602,7 @@ class DaoTest(ForsetiTestCase):
         ],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(session,
                                                  permission_name=perm,
@@ -608,7 +610,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -620,7 +622,7 @@ class DaoTest(ForsetiTestCase):
         ],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(
               session,
@@ -916,11 +918,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/u1',
+    self.assertEqual('user/u1',
                       data_access.get_member(session, 'user/u1')[0].name)
-    self.assertEquals('user/u6',
+    self.assertEqual('user/u6',
                       data_access.get_member(session, 'user/u6')[0].name)
 
     # Non-existing users should not be found
@@ -979,7 +981,7 @@ class DaoTest(ForsetiTestCase):
              u'r/r1r5', u'r/r1'},
     }
 
-    for test_val, comparison in tests.iteritems():
+    for test_val, comparison in tests.items():
       result = [r.type_name
                 for r in data_access.find_resource_path(session, test_val)]
       self.assertEqual(comparison, set(result))
@@ -1010,11 +1012,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3g1')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/g3g1u2',
+    self.assertEqual('user/g3g1u2',
                       data_access.get_member(session, 'user/g3g1u2')[0].name)
-    self.assertEquals('user/g2u3',
+    self.assertEqual('user/g2u3',
                       data_access.get_member(session, 'user/g2u3')[0].name)
 
     # Non-existing users should not be found
@@ -1035,7 +1037,7 @@ class DaoTest(ForsetiTestCase):
     def expand(resource):
         return [
             '/'.join(i.full_name.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
+            for i in list(data_access.expand_resources_by_type_names(session, [resource]).values())[0]
         ]
 
     self.assertEqual(set(expand('r/res1')),
@@ -1082,7 +1084,7 @@ class DaoTest(ForsetiTestCase):
     def expand(resource):
         return [
             '/'.join(i.full_name.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
+            for i in list(data_access.expand_resources_by_type_names(session, [resource]).values())[0]
         ]
 
     self.assertEqual(

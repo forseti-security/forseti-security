@@ -17,6 +17,7 @@
 See: https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
 """
 
+from builtins import object
 from google.cloud.forseti.common.util import parser
 
 

@@ -19,6 +19,7 @@ either stored locally or in GCS) and compares a resource's enabled audit logs
 against the RuleBook to determine whether there are violations.
 """
 
+from builtins import object
 import collections
 import itertools
 import threading
@@ -354,7 +355,7 @@ class Rule(object):
                 # services. Exemptions for individual services inherit
                 # exemptions for allServices (if configured).
                 if service == IamAuditConfig.ALL_SERVICES:
-                    applicable_services = configs.keys()
+                    applicable_services = list(configs.keys())
                 elif IamAuditConfig.ALL_SERVICES in configs:
                     applicable_services = [service, IamAuditConfig.ALL_SERVICES]
                 else:

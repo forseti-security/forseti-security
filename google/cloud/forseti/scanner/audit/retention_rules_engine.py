@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Bucket retention."""
+from builtins import object
 import collections
 import itertools
 import threading
@@ -403,7 +404,7 @@ class Rule(object):
             yield self.generate_table_violation(table)
         else:
             table_creation = table_dict['creationTime']
-            diff = long(table_expiration) - long(table_creation)
+            diff = int(table_expiration) - int(table_creation)
             if diff > self.max_retention * _MS_PER_DAY:
                 yield self.generate_table_violation(table)
 
@@ -425,7 +426,7 @@ class Rule(object):
             return
 
         table_creation = table_dict.get('creationTime')
-        diff = long(table_expiration) - long(table_creation)
+        diff = int(table_expiration) - int(table_creation)
         if diff < self.min_retention * _MS_PER_DAY:
             yield self.generate_table_violation(table)
 

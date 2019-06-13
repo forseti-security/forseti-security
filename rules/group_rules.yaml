@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Allow my company users and gmail users to be in my company groups.
+- name: Allow only my company users to be in my company groups.
   group_email: my_customer
   mode: whitelist
   conditions:
       # Must use quotes if the condition starts with @ symbol.
     - member_email: "@{DOMAIN}"
-    - member_email: "@gmail.com"
     # GCP Service Accounts
     # https://cloud.google.com/compute/docs/access/service-accounts
     #- member_email: "gserviceaccount.com"
