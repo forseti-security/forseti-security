@@ -16,7 +16,7 @@
 import copy
 import os
 import unittest
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
@@ -127,7 +127,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
 
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
-        for item in storage.mem.values():
+        for item in list(storage.mem.values()):
             item_type = item.type()
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})

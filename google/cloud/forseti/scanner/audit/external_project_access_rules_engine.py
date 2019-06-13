@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for external project access."""
+from builtins import object
 from collections import namedtuple
 import itertools
 import re
@@ -122,7 +123,7 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
                     rules=processed_rule)
-        if processed_rule not in self.resource_rules_map.keys():
+        if processed_rule not in list(self.resource_rules_map.keys()):
             self.resource_rules_map[rule_index] = rule
 
     def process_rule(self, rule_def, rule_index):
@@ -231,7 +232,7 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
         """
 
         rules_violated = []
-        for _, rule in self.resource_rules_map.iteritems():
+        for _, rule in self.resource_rules_map.items():
             violation = rule.find_violation(user_email,
                                             project_ancestry)
             # If violation is none, that means a whitelisted rule
@@ -280,7 +281,7 @@ class Rule(object):
             if resource in ancestry:
                 matched_resources.append(resource)
 
-        if 'users' in self.rules.keys():
+        if 'users' in list(self.rules.keys()):
             if user_email not in self.rules['users']:
                 applies_to_user = False
 

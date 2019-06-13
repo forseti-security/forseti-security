@@ -13,6 +13,7 @@
 # limitations under the License.
 """Fake Role scanner data."""
 
+from builtins import object
 import json
 import collections
 
@@ -56,7 +57,7 @@ PROJECT3 = project.Project(
     data='fake_project_data_12344321',
 )
 
-class FakeRoleDataCreater():
+class FakeRoleDataCreater(object):
     def __init__(self, name, permissions, parent):
         self._name = '%ss/%s/roles/%s'%(parent.type, parent.id, name)
         self.SetPermissions(permissions)

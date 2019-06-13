@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for Stackdriver Logging API client."""
+from builtins import object
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 

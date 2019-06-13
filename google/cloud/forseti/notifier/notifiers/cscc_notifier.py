@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Upload violations to GCS bucket as Findings."""
+from builtins import object
 import ast
 import json
 import tempfile

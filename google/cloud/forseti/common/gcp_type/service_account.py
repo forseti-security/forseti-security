@@ -19,6 +19,7 @@ https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
 https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts.keys
 """
 
+from builtins import object
 import json
 
 

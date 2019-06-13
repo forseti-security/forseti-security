@@ -191,13 +191,13 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
     except api_errors.ApiExecutionError as e:
-        LOGGER.warn('API Error getting cloud asset data: %s', e)
+        LOGGER.warning('API Error getting cloud asset data: %s', e)
         return None
     except api_errors.OperationTimeoutError as e:
-        LOGGER.warn('Timeout getting cloud asset data: %s', e)
+        LOGGER.warning('Timeout getting cloud asset data: %s', e)
         return None
     except ValueError as e:
-        LOGGER.warn('Invalid root resource id: %s', e)
+        LOGGER.warning('Invalid root resource id: %s', e)
         return None
 
     if 'error' in results:
@@ -209,7 +209,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
         return file_loader.copy_file_from_gcs(export_path)
     except errors.HttpError as e:
-        LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
+        LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
         return None
 
 

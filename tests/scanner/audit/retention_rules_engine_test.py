@@ -17,7 +17,7 @@
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -43,7 +43,7 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 def get_rules_engine_with_rule(rule):
     """Create a rule engine based on a yaml file string"""
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = rre.RetentionRulesEngine(
             rules_file_path=f.name)
@@ -88,7 +88,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_applies_to)
+            f.write(yaml_str_no_applies_to.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -110,7 +110,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_lack_min_max)
+            f.write(yaml_str_lack_min_max.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -134,7 +134,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_min_lgr_max)
+            f.write(yaml_str_min_lgr_max.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -158,7 +158,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_duplicate_applies_to)
+            f.write(yaml_str_duplicate_applies_to.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -177,7 +177,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_resource)
+            f.write(yaml_str_no_resource.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -199,7 +199,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_res_type)
+            f.write(yaml_str_no_res_type.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -220,7 +220,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_no_res_id)
+            f.write(yaml_str_no_res_id.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):

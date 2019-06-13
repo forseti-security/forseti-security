@@ -14,7 +14,7 @@
 
 """Tests the Project resource."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase

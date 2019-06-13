@@ -13,9 +13,13 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
+
+from builtins import object
 import json
-import StringIO
-import urlparse
+import io
+import urllib.parse
+
+from future import standard_library
 from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
@@ -26,6 +30,8 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import metadata_server
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 API_NAME = 'storage'
@@ -47,9 +53,9 @@ def get_bucket_and_path_from(full_path):
             does not look like a GCS bucket URL.
     """
     try:
-        parsed = urlparse.urlparse(full_path)
+        parsed = urllib.parse.urlparse(full_path)
     except AttributeError as e:
-        LOGGER.warn('Could not parse path %s: %s', full_path, e)
+        LOGGER.warning('Could not parse path %s: %s', full_path, e)
         parsed = None
 
     if not parsed or parsed.scheme != GCS_SCHEME:
@@ -298,10 +304,15 @@ class _StorageObjectsRepository(
             'object': object_name}
 
         media_request = self._build_request('get_media', verb_arguments)
+
+        if hasattr(self.http, 'data'):
+            if not isinstance(self.http.data, bytes):
+                self.http.data = self.http.data.encode()
+
         media_request.http = self.http
 
         file_content = ''
-        out_stream = StringIO.StringIO()
+        out_stream = io.BytesIO()
         try:
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
@@ -328,6 +339,11 @@ class _StorageObjectsRepository(
             'object': object_name}
 
         media_request = self._build_request('get_media', verb_arguments)
+
+        if hasattr(self.http, 'data'):
+            if not isinstance(self.http.data, bytes):
+                self.http.data = self.http.data.encode()
+
         media_request.http = self.http
 
         downloader = http.MediaIoBaseDownload(output_file, media_request)

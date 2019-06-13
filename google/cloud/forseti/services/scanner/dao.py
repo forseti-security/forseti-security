@@ -14,6 +14,7 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from builtins import object
 from collections import defaultdict
 import hashlib
 import json
@@ -342,8 +343,9 @@ def map_by_resource(violation_rows):
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
         except ValueError:
-            LOGGER.warn('Invalid violation data, unable to parse json for %s',
-                        v_data['violation_data'])
+            LOGGER.warning('Invalid violation data, unable to parse json '
+                           'for %s',
+                           v_data['violation_data'])
 
         # resource_data can be regular python string
         try:
@@ -386,9 +388,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
     try:
         # Group resources do not have full name.  Issue #1072
         violation_hash.update(
-            json.dumps(violation_full_name) +
-            json.dumps(resource_data, sort_keys=True) +
-            json.dumps(violation_data, sort_keys=True)
+            json.dumps(violation_full_name).encode() +
+            json.dumps(resource_data, sort_keys=True).encode() +
+            json.dumps(violation_data, sort_keys=True).encode()
         )
     except TypeError:
         LOGGER.exception('Cannot create hash for a violation: %s',

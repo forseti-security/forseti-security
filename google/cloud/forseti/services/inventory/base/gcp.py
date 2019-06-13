@@ -16,8 +16,10 @@
 # pylint: disable=invalid-name,too-many-lines
 # pylint: disable=too-many-public-methods,too-many-instance-attributes
 
+from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
@@ -70,9 +72,8 @@ class ResourceNotSupported(Exception):
     """Exception raised for resources not supported by the API client."""
 
 
-class ApiClient(object):
+class ApiClient(with_metaclass(abc.ABCMeta, object)):
     """The gcp api client interface"""
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def fetch_bigquery_dataset_policy(self, project_id,
@@ -1729,7 +1730,7 @@ class ApiClientImpl(ApiClient):
             if 'masterAuth' in cluster:
                 cluster['masterAuth'] = {
                     k: '[redacted]'
-                    for k in cluster['masterAuth'].keys()}
+                    for k in list(cluster['masterAuth'].keys())}
 
             yield cluster, None
 

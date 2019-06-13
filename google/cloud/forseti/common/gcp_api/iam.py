@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for IAM API client."""
+from builtins import object
 import json
 import re
 

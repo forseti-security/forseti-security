@@ -16,7 +16,7 @@
 """Tests for google.cloud.forseti.enforcer.enforcer."""
 
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import get_datafile_path
