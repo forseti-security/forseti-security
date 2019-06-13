@@ -64,6 +64,9 @@ steps below:
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
       git checkout tags/v2.16.0
+      
+      # Install `future` package if it doesn't already exist.
+      pip3 install future
       ```
 
   1. Install both client and server by running the installer:
