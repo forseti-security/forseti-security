@@ -19,7 +19,7 @@ from google.cloud import forseti as forseti_security
 HTTP_REQUEST_TIMEOUT = 30.0
 
 # Custom HTTP user-agent header suffix.
-_USER_AGENT_SUFFIX = ""
+_USER_AGENT_SUFFIX = ''
 
 
 def build_http(http=None):
@@ -50,8 +50,10 @@ def set_user_agent_suffix(suffix):
     Args:
       suffix(string): Suffix to be appended to the custom user agent header.
     """
+    # pylint: disable=global-statement
     global _USER_AGENT_SUFFIX
     _USER_AGENT_SUFFIX = suffix
+    # pylint: enable=global-statement
 
 
 def _set_user_agent(http, user_agent):

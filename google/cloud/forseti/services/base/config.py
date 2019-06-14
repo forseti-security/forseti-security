@@ -407,11 +407,12 @@ class ServiceConfig(AbstractServiceConfig):
 
             # TODO: Create Config classes to store scanner and notifier configs.
             forseti_scanner_config = forseti_config.get('scanner', {})
-            # The suffix is used to indicate which major feature is enabled for tracking purposes.
-            # For now only config validator is supported.
+            # The suffix is used to indicate which major feature is enabled for
+            # tracking purposes. For now only config validator is supported.
             user_agent_suffix = ''
             for scanner in forseti_scanner_config.get('scanners', {}):
-                if scanner.get('enabled') and scanner.get('name') == 'config_validator':
+                if (scanner.get('enabled') and
+                        scanner.get('name') == 'config_validator'):
                     user_agent_suffix = 'config-validator'
                     break
             http_helpers.set_user_agent_suffix(user_agent_suffix)
