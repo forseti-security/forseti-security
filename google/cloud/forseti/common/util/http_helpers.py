@@ -18,6 +18,9 @@ from google.cloud import forseti as forseti_security
 # Per request max wait timeout.
 HTTP_REQUEST_TIMEOUT = 30.0
 
+# Custom HTTP user-agent header suffix.
+_USER_AGENT_SUFFIX = ""
+
 
 def build_http(http=None):
     """Set custom Forseti user agent and timeouts on a new http object.
@@ -31,15 +34,27 @@ def build_http(http=None):
     """
     if not http:
         http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
-    user_agent = 'Python-httplib2/{} (gzip), {}/{}'.format(
+    user_agent = 'Python-httplib2/{} (gzip), {}/{} {}'.format(
         httplib2.__version__,
         forseti_security.__package_name__,
-        forseti_security.__version__)
+        forseti_security.__version__,
+        _USER_AGENT_SUFFIX).strip()
 
-    return set_user_agent(http, user_agent)
+    return _set_user_agent(http, user_agent)
 
 
-def set_user_agent(http, user_agent):
+def set_user_agent_suffix(suffix):
+    """Set custom user agent string suffix. Once set, this suffix will be used
+    in subsequent build_http() invocations.
+
+    Args:
+      suffix(string): Suffix to be appended to the custom user agent header.
+    """
+    global _USER_AGENT_SUFFIX
+    _USER_AGENT_SUFFIX = suffix
+
+
+def _set_user_agent(http, user_agent):
     """Set the user-agent on every request.
 
     Args:
