@@ -23,12 +23,13 @@ ENV HOME=/home/forseti \
 
 RUN groupadd -g 1000 forseti && \
     useradd -d ${HOME} -u 1000 -g forseti forseti && \
-    mkdir -p ${HOME}/forseti-security /forseti-security && \
-    chown -R forseti:forseti ${HOME} /forseti-security
+    mkdir -p ${HOME}/forseti-security && \
+    chown -R forseti:forseti ${HOME}
 
 # Install host dependencies.
 RUN apt-get update  && \
-    apt-get install -y libmariadbclient18 && \
+    apt-get install --no-install-recommends -y libmariadbclient18 && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${WORK_DIR}
