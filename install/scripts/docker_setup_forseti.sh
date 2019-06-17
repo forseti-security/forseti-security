@@ -39,8 +39,6 @@ fi
 if [ -x "$(command -v docker)" ]; then
     echo "Building our Docker base image... "
     docker build --target build -t forseti/build .
-    # echo "Building our Forseti image from the Docker base image... "
-    # docker build -t forseti/build -f install/docker/forseti/Dockerfile .
 else
     echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi

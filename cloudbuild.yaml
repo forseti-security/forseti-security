@@ -11,9 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This defines the build steps of Forseti docker images. The google container
-# builder must be invoked against the root of the git directory.
-#
+# Purpose - This Google Cloudbuild configuration mimics the same stesps found
+# in .travis.yml.  This could potentially be used in lieu of TravisCI
 
 steps:
 - name: 'gcr.io/cloud-builders/docker'

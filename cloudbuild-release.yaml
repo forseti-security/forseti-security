@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This defines the build steps of Forseti docker images. The google container
-# builder must be invoked against the root of the git directory.
-#
+# Purpose - This Google Cloudbuild configuration defines the steps necessary
+# for creating a new Forseti release container image: e.g.
+# gcr.io/forseti-security-container/forseti:2.xx.x and
+# gcr.io/forseti-security-container/forseti:latest
+
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security container image

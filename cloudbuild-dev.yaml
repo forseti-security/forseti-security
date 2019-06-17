@@ -11,10 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This defines the build steps of Forseti docker images. The google container
-# builder must be invoked against the root of the git directory.
-#
+# Purpose - This Google Cloudbuild configuration defines the steps
+# taken when a PR is merged into the "dev" branch.  It creates a new
+# base image, pre-build image, and final "dev" image.
+
 steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security dev container image
+  args: ['build', '--target', 'base', '-t', 'gcr.io/$PROJECT_ID/forseti-base:$BRANCH_NAME', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security pre-build container image
+  args: ['build', '--target', 'pre-build', '-t', 'gcr.io/$PROJECT_ID/forseti-base:$BRANCH_NAME', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security dev container image
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/forseti:$BRANCH_NAME', '.']
