@@ -16,7 +16,7 @@
 trap 'return_code=$?' ERR
 
 # Delete all running containers if we're not on Travis for Google Cloud Build.
-if [ -z ${TRAVIS+x} ]; then
+if [ -z ${TRAVIS+x} ] && [ -z ${BUILDER_OUTPUT+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers... "
     if [[ $(docker ps -a -q) ]]; then

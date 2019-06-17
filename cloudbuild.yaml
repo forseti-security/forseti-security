@@ -21,26 +21,23 @@ steps:
   args: ['build', '--target', 'build', '-t', 'forseti/build', '.']
 
 - name: 'gcr.io/cloud-builders/docker'
-  id: Test presence of "forseti"
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti || exit 1']
+  id: Setup the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_setup_forseti.sh']
 
 - name: 'gcr.io/cloud-builders/docker'
-  id: Test presence of "forseti_enforcer"
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti_enforcer || exit 1']
+  id: Run the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_run_forseti.sh']
 
 - name: 'gcr.io/cloud-builders/docker'
-  id: Test presence of "forseti_server"
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', '/usr/bin/test -e /home/forseti/.local/bin/forseti_server || exit 1']
+  id: Run the unit tests in the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_unittest_forseti.sh']
 
 - name: 'gcr.io/cloud-builders/docker'
-  id: Perform unit tests
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'python3 -m unittest discover --verbose -s . -p "*_test.py" || exit 1']
+  id: Run the pystyle tests in the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_pystyle_forseti.sh']
 
-- name: 'gcr.io/cloud-builders/docker'
-  id: Perform pylint tests
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'pylint --rcfile=pylintrc google/ install/ || exit 1']
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: Perform flake8 tests
-  args: ['run', '--entrypoint', '/bin/bash', 'forseti/build', '-c', 'flake8 -v --doctests --max-line-length=80 --ignore=E501,E711,E722,F841,W504,W605 --exclude=*pb2*.py google/ || exit 1']
 timeout: 1200s
