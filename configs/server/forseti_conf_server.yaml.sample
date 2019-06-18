@@ -179,7 +179,7 @@ inventory:
         #    - k8s.io/Namespace
         #    - pubsub.googleapis.com/Subscription
         #    - pubsub.googleapis.com/Topic
-        #    - rbac.authorization.k8s.io/Role,
+        #    - rbac.authorization.k8s.io/Role
         #    - rbac.authorization.k8s.io/RoleBinding
         #    - rbac.authorization.k8s.io/ClusterRole
         #    - rbac.authorization.k8s.io/ClusterRoleBinding

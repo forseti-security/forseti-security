@@ -534,8 +534,6 @@ def k8_resource_class_factory(resource_type):
     Args:
         resource_type (str): The static Kubernetes resource type for this
         subclass.
-        hash_key (bool): If true, use a hash of the key field data instead of
-            the value of the key field.
 
     Returns:
         class: A new class object.
