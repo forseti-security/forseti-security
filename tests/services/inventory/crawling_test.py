@@ -446,6 +446,16 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
+            'kubernetes_cluster': self._convert_kubernetes_cluster,
+            'kubernetes_clusterrole': self._convert_kubernetes_clusterrole,
+            'kubernetes_clusterrolebinding':
+                self._convert_kubernetes_clusterrolebinding,
+            'kubernetes_namespace': self._convert_kubernetes_namespace,
+            'kubernetes_node': self._convert_kubernetes_node,
+            'kubernetes_pod': self._convert_kubernetes_pod,
+            'kubernetes_role': self._convert_kubernetes_role,
+            'kubernetes_rolebinding': self._convert_kubernetes_rolebinding,
+
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'spanner_database': {'resource': 1},
