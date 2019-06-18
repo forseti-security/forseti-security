@@ -145,7 +145,7 @@ class SecurityCenterClient(object):
             LOGGER.exception(
                 'Unable to create CSCC finding: Resource: %s', finding)
             violation_data = (
-                finding.get('sourceProperties').get('violation_data'))
+                finding.get('source_properties').get('violation_data'))
             raise api_errors.ApiExecutionError(violation_data, e)
 
     def list_findings(self, source_id):
@@ -186,5 +186,5 @@ class SecurityCenterClient(object):
             LOGGER.exception(
                 'Unable to update CSCC finding: Resource: %s', finding)
             violation_data = (
-                finding.get('sourceProperties').get('violation_data'))
+                finding.get('source_properties').get('violation_data'))
             raise api_errors.ApiExecutionError(violation_data, e)
