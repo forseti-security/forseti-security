@@ -2276,7 +2276,7 @@ class KubernetesClusterIterator(resource_iter_class_factory(
 
 
 class KubernetesNodeIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesNode"""
 
     def iter(self):
         """Resource iterator.
@@ -2298,7 +2298,7 @@ class KubernetesNodeIterator(ResourceIterator):
 
 
 class KubernetesPodIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesPod"""
 
     def iter(self):
         """Resource iterator.
@@ -2321,7 +2321,7 @@ class KubernetesPodIterator(ResourceIterator):
 
 
 class KubernetesNamespaceIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesNamespace"""
 
     def iter(self):
         """Resource iterator.
@@ -2343,7 +2343,7 @@ class KubernetesNamespaceIterator(ResourceIterator):
 
 
 class KubernetesRoleIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesRole"""
 
     def iter(self):
         """Resource iterator.
@@ -2366,7 +2366,7 @@ class KubernetesRoleIterator(ResourceIterator):
 
 
 class KubernetesRoleBindingIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesRoleBinding"""
 
     def iter(self):
         """Resource iterator.
@@ -2389,7 +2389,7 @@ class KubernetesRoleBindingIterator(ResourceIterator):
 
 
 class KubernetesClusterRoleIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesClusterRole"""
 
     def iter(self):
         """Resource iterator.
@@ -2411,7 +2411,7 @@ class KubernetesClusterRoleIterator(ResourceIterator):
 
 
 class KubernetesClusterRoleBindingIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster"""
+    """The Resource iterator implementation for KubernetesClusterRoleBinding"""
 
     def iter(self):
         """Resource iterator.
