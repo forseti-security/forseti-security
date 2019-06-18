@@ -561,7 +561,6 @@ def k8_resource_class_factory(resource_type):
             """
             # Resource does not have a globally unique ID, use size_t hash
             # of uid under metadata key.
-            # return size_t_hash(self.get('metadata').get('uid'))
             return size_t_hash(self['metadata']['uid'])
 
     return ResourceSubclass
@@ -2899,7 +2898,6 @@ FACTORIES = {
         'dependsOn': ['kms_cryptokey'],
         'cls': KmsCryptoKeyVersion,
         'contains': []}),
-
 
     'kubernetes_cluster': ResourceFactory({
         'dependsOn': ['project'],

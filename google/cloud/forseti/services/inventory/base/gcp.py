@@ -2228,7 +2228,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Key Management Service is not supported by '
                                    'this API client')
 
-    def iter_k8s_nodes(self, project_id, zone, cluster):
+    def iter_kubernetes_nodes(self, project_id, zone, cluster):
         """Iterate k8s nodes in an organization from GCP API.
          Args:
             project_id (str): id of the project to query.
@@ -2240,19 +2240,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_k8s_namespaces(self, project_id, zone, cluster):
-        """Iterate k8s namespaces in an organization from GCP API.
-         Args:
-            project_id (str): id of the project to query.
-            zone (str): The zone the cluster is in.
-            cluster (str): The cluster name.
-         Raises:
-            ResourceNotSupported: Raised for all calls using this class.
-        """
-        raise ResourceNotSupported('Kubernetes resources are not supported '
-                                   'by this API client')
-
-    def iter_k8s_pods(self, project_id, zone, cluster, namespace):
+    def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
         """Iterate k8s pods in an organization from GCP API.
          Args:
             project_id (str): id of the project to query.
@@ -2265,7 +2253,19 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_k8s_roles(self, project_id, zone, cluster, namespace):
+    def iter_kubernetes_namespaces(self, project_id, zone, cluster):
+        """Iterate k8s namespaces in an organization from GCP API.
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+         Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Kubernetes resources are not supported '
+                                   'by this API client')
+
+    def iter_kubernetes_roles(self, project_id, zone, cluster, namespace):
         """Iterate k8s roles in an organization from GCP API.
          Args:
             project_id (str): id of the project to query.
@@ -2278,7 +2278,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_k8s_rolebindings(self, project_id, zone, cluster, namespace):
+    def iter_kubernetes_rolebindings(self, project_id, zone, cluster, namespace):
         """Iterate k8s role bindings in an organization from GCP API.
          Args:
             project_id (str): id of the project to query.
@@ -2291,7 +2291,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_k8s_clusterroles(self, project_id, zone, cluster):
+    def iter_kubernetes_clusterroles(self, project_id, zone, cluster):
         """Iterate k8s cluster roles in an organization from GCP API.
          Args:
             project_id (str): id of the project to query.
@@ -2303,7 +2303,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_k8s_clusterroles(self, project_id, zone, cluster):
+    def iter_kubernetes_clusterrolebindings(self, project_id, zone, cluster):
         """Iterate k8s cluster role bindings in an organization from GCP API.
            data.
          Args:
