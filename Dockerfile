@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Do not add forseti source in this file to avoid rebuilding base during development.
-
 ##### BEGIN BASE IMAGE #####
 FROM python:3.6-slim as base
 
