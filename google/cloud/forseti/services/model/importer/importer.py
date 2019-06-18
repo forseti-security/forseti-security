@@ -808,8 +808,8 @@ class InventoryImporter(object):
                                cached=False,
                                display_key='kubernetesClusterRole')
 
-    def _convert_kubernetes_cluster_role_binding(self,
-                                               kubernetes_clusterrolebinding):
+    def _convert_kubernetes_clusterrole_binding(self,
+                                                 kubernetes_clusterrolebinding):
         """Convert a Kubernetes ClusterRoleBinding resource to a database
            object.
 
