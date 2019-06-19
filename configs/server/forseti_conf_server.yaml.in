@@ -178,8 +178,15 @@ inventory:
         #    - dns.googleapis.com/Policy
         #    - iam.googleapis.com/Role
         #    - iam.googleapis.com/ServiceAccount
+        #    - k8s.io/Namespace
+        #    - k8s.io/Node
+        #    - k8s.io/Pod
         #    - pubsub.googleapis.com/Subscription
         #    - pubsub.googleapis.com/Topic
+        #    - rbac.authorization.k8s.io/ClusterRole
+        #    - rbac.authorization.k8s.io/ClusterRoleBinding
+        #    - rbac.authorization.k8s.io/Role
+        #    - rbac.authorization.k8s.io/RoleBinding
         #    - spanner.googleapis.com/Database
         #    - spanner.googleapis.com/Instance
         #    - sqladmin.googleapis.com/Instance
