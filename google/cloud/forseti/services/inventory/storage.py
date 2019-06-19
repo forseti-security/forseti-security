@@ -708,6 +708,7 @@ class CaiTemporaryStore(object):
             session.rollback()
             raise
 
+    # pylint: disable=too-many-return-statements
     @staticmethod
     def _get_parent_name(asset):
         """Determines the parent name from the resource data.
