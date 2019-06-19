@@ -36,10 +36,6 @@ standard_library.install_aliases()
 LOGGER = logger.get_logger(__name__)
 
 GCP_TYPE_LIST = [
-    'composite_root',
-    'organization',
-    'folder',
-    'project',
     'appengine_app',
     'appengine_instance',
     'appengine_service',
@@ -49,6 +45,7 @@ GCP_TYPE_LIST = [
     'billing_account',
     'bucket',
     'cloudsqlinstance',
+    'composite_root',
     'compute_autoscaler',
     'compute_backendbucket',
     'compute_healthcheck',
@@ -74,6 +71,7 @@ GCP_TYPE_LIST = [
     'dns_managedzone',
     'dns_policy',
     'firewall',
+    'folder',
     'forwardingrule',
     'image',
     'instance',
@@ -93,6 +91,8 @@ GCP_TYPE_LIST = [
     'kubernetes_rolebinding',
     'lien',
     'network',
+    'organization',
+    'project',
     'pubsub_subscription',
     'pubsub_topic',
     'serviceaccount',
