@@ -611,7 +611,7 @@ class InventoryImporter(object):
             'kubernetes_cluster': self._convert_kubernetes_cluster,
             'kubernetes_clusterrole': self._convert_kubernetes_clusterrole,
             'kubernetes_clusterrolebinding':
-                self._convert_kubernetes_crole_binding,
+                self._convert_kubernetes_crolebinding,
             'kubernetes_namespace': self._convert_kubernetes_namespace,
             'kubernetes_node': self._convert_kubernetes_node,
             'kubernetes_pod': self._convert_kubernetes_pod,
