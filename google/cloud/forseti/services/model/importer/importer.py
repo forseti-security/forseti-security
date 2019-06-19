@@ -808,7 +808,7 @@ class InventoryImporter(object):
                                cached=False,
                                display_key='kubernetesClusterRole')
 
-    def _convert_kubernetes_crole_binding(self, kubernetes_clusterrolebinding):
+    def _convert_kubernetes_crolebinding(self, kubernetes_clusterrolebinding):
         """Convert a Kubernetes ClusterRoleBinding resource to a database
            object.
 
