@@ -617,7 +617,6 @@ class InventoryImporter(object):
             'kubernetes_pod': self._convert_kubernetes_pod,
             'kubernetes_role': self._convert_kubernetes_role,
             'kubernetes_rolebinding': self._convert_kubernetes_rolebinding,
-
             'lien': self._convert_lien,
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
