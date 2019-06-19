@@ -446,7 +446,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
-            'kubernetes_cluster': {'resource': 1},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
             'kubernetes_clusterrole': {'resource': 1},
             'kubernetes_clusterrolebinding':
                 {'resource': 1},
