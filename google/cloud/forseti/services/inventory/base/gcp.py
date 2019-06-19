@@ -732,6 +732,84 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_kubernetes_nodes(self, project_id, zone, cluster):
+        """Iterate k8s nodes in a cluster from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
+        """Iterate k8s pods in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_namespaces(self, project_id, zone, cluster):
+        """Iterate k8s namespaces in a cluster from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_roles(self, project_id, zone, cluster, namespace):
+        """Iterate k8s roles in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_rolebindings(self,
+                                     project_id,
+                                     zone,
+                                     cluster,
+                                     namespace):
+        """Iterate k8s role bindings in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_clusterroles(self, project_id, zone, cluster):
+        """Iterate k8s cluster roles in a cluster from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_clusterrolebindings(self, project_id, zone, cluster):
+        """Iterate k8s cluster role bindings in a cluster from GCP API.
+           data.
+
+        Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name
+        """
+
+    @abc.abstractmethod
     def fetch_pubsub_subscription_iam_policy(self, name):
         """PubSub Subscription IAM policy from gcp API call.
 
@@ -2278,7 +2356,11 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
-    def iter_kubernetes_rolebindings(self, project_id, zone, cluster, namespace):
+    def iter_kubernetes_rolebindings(self,
+                                     project_id,
+                                     zone,
+                                     cluster,
+                                     namespace):
         """Iterate k8s role bindings in a namespace from GCP API.
          Args:
             project_id (str): id of the project to query.
