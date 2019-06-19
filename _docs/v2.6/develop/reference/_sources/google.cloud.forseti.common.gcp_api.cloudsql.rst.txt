@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.cloudsql module
-====================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.cloudsql
-    :members:
-    :undoc-members:
-    :show-inheritance:
