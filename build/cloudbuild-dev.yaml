@@ -17,7 +17,7 @@
 
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-security dev container image
+  id: Build forseti-security base container image
   args: ['build', '--target', 'base', '-t', 'gcr.io/$PROJECT_ID/forseti-base:$BRANCH_NAME', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security pre-build container image
