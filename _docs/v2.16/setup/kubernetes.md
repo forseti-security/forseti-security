@@ -143,4 +143,4 @@ https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.cronjob.template.yaml | Forseti CronJob Template
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.service.template.yaml | Forseti Server Cluster IP Service Deployment template
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.template.yaml | Forseti Server Deployment template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/k8s_setup_forseti.sh | Example script to spin up cluster and deploy Forseti to GKE
+https://github.com/forseti-security/forseti-security/blob/release-2.16.0/install/scripts/k8s_setup_forseti.sh | Example script to spin up cluster and deploy Forseti to GKE
