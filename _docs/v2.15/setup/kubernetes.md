@@ -77,7 +77,7 @@ Specify the variables
 If using the client, modify the client config file in the GCS bucket to point
 to the Forseti Server Cluster IP.
 
-[forseti-security/install/scripts/k8s_setup_forseti.sh](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/k8s_setup_forseti.sh)
+[forseti-security/install/scripts/k8s_setup_forseti.sh](https://github.com/forseti-security/forseti-security/blob/release-2.15.0/install/scripts/k8s_setup_forseti.sh)
 ```
 export FORSETI_SERVER_IP=10.43.240.3 # k8s Cluster IP for Forseti Server. Don't forget to manually add this to the Client config file in GCS bucket if using Client. 
 ```
@@ -143,4 +143,4 @@ https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.cronjob.template.yaml | Forseti CronJob Template
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.service.template.yaml | Forseti Server Cluster IP Service Deployment template
 https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/forseti.server.template.yaml | Forseti Server Deployment template
-https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/install/scripts/k8s_setup_forseti.sh | Example script to spin up cluster and deploy Forseti to GKE
+https://github.com/forseti-security/forseti-security/blob/release-2.15.0/install/scripts/k8s_setup_forseti.sh | Example script to spin up cluster and deploy Forseti to GKE
