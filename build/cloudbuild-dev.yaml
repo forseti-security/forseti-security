@@ -18,13 +18,16 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security base container image
-  args: ['build', '--target', 'base', '-t', 'gcr.io/$PROJECT_ID/forseti-base:$BRANCH_NAME', '.']
+  args: ['build', '--target', 'base', '-t', 'gcr.io/$PROJECT_ID/forseti-base:dev', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security pre-build container image
-  args: ['build', '--target', 'pre-build', '-t', 'gcr.io/$PROJECT_ID/forseti-base:$BRANCH_NAME', '.']
+  args: ['build', '--target', 'pre-build', '-t', 'gcr.io/$PROJECT_ID/forseti-prebuild:dev', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-security dev container image
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/forseti:$BRANCH_NAME', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/forseti:dev', '.']
+
 images:
-- gcr.io/$PROJECT_ID/forseti:$BRANCH_NAME
+- gcr.io/$PROJECT_ID/forseti:dev
+- gcr.io/$PROJECT_ID/forseti-base:dev
+- gcr.io/$PROJECT_ID/forseti-prebuild:dev
 timeout: 1200s
