@@ -14,10 +14,11 @@
 
 """Mock responses to GCP API calls, for testing."""
 
+from builtins import object
 import contextlib
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 from tests.services.inventory.test_data import mock_gcp_results as results
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 
@@ -317,7 +318,8 @@ def _mock_crm(has_org_access):
     def _mock_permission_denied(parentid):
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = results.GCP_PERMISSION_DENIED_TEMPLATE.format(id=parentid)
+        content = results.GCP_PERMISSION_DENIED_TEMPLATE.format(id=parentid).\
+            encode()
         error_403 = errors.HttpError(response, content)
         raise api_errors.ApiExecutionError(parentid, error_403)
 

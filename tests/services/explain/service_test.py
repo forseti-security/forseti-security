@@ -13,7 +13,7 @@
 # limitations under the License.
 """Unit Tests: Explain Service for Forseti Server."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.services.explain import service

@@ -15,7 +15,7 @@
 """Tests the EnforcedNetworkRulesEngine."""
 
 import unittest
-import mock
+import unittest.mock as mock
 import yaml
 
 from tests import unittest_utils

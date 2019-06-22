@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests the Forseti Server model service."""
 
+from builtins import object
 import unittest
 
 from tests.services.api_tests.api_tester import ModelTestRunner
@@ -430,7 +431,7 @@ class ExplainerTest(ForsetiTestCase):
                 role_names=['role/a', 'role/b'])
             rp_pairs = expand_message(response.permissionsbyroles,
                                       "role_permission")
-            self.assertEquals(rp_pairs, set([
+            self.assertEqual(rp_pairs, set([
                 'role/a permission/a',
                 'role/a permission/b',
                 'role/a permission/c',

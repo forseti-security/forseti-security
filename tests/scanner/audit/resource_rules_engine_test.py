@@ -17,7 +17,7 @@
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -31,7 +31,7 @@ from tests.scanner.test_data import fake_resource_scanner_data as data
 
 def get_rules_engine_with_rule(rule):
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = resource_rules_engine.ResourceRulesEngine(
             rules_file_path=f.name)

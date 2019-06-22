@@ -15,16 +15,22 @@
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
+from builtins import object
 import hashlib
-import httplib
+import http.client
 import json
 import operator
 import socket
 import ssl
 
+from future import standard_library
 import httplib2
+
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
+
+standard_library.install_aliases()
+
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -38,7 +44,7 @@ API_VERSION = 'v1'
 LOGGER = logger.get_logger(__name__)
 
 # What transient exceptions should be retried.
-RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,
+RETRY_EXCEPTIONS = (http.client.ResponseNotReady, http.client.IncompleteRead,
                     httplib2.ServerNotFoundError, socket.error, ssl.SSLError,)
 
 # Allowed items in a firewall rule.
@@ -156,7 +162,7 @@ def _is_successful(operation):
                 #     disappeared out from under us.
                 if err.get('code') in ['RESOURCE_ALREADY_EXISTS',
                                        'INVALID_FIELD_VALUE']:
-                    LOGGER.warn('Ignoring error: %s', err)
+                    LOGGER.warning('Ignoring error: %s', err)
                 else:
                     LOGGER.error('Operation has error: %s', err)
                     success = False
@@ -252,7 +258,7 @@ class FirewallRules(object):
             InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Can not import rules from the API into a FirewallRules '
                 'object with rules already added')
             return
@@ -261,7 +267,8 @@ class FirewallRules(object):
         for rule in firewall_rules:
             # Only include keys in the ALLOWED_RULE_ITEMS set.
             scrubbed_rule = dict(
-                [(k, v) for k, v in rule.items() if k in ALLOWED_RULE_ITEMS])
+                [(k, v) for k, v in list(rule.items()) if k
+                 in ALLOWED_RULE_ITEMS])
             self.add_rule(scrubbed_rule)
 
     def add_rules(self, rules, network_name=None):
@@ -338,7 +345,7 @@ class FirewallRules(object):
                         # could start with a number, so we prepend hn-
                         # (hashed network) to the name.
                         network_name = 'hn-' + hashlib.md5(
-                            network_name).hexdigest()
+                            network_name.encode()).hexdigest()
                         new_name = '%s-%s' % (
                             network_name[:(62 - len(new_rule['name']))],
                             new_rule['name'])
@@ -374,7 +381,7 @@ class FirewallRules(object):
             return self.rules
 
         filtered_rules = {}
-        for rule_name, rule in self.rules.items():
+        for rule_name, rule in list(self.rules.items()):
             if get_network_name_from_url(rule['network']) in networks:
                 filtered_rules[rule_name] = rule
 
@@ -392,7 +399,8 @@ class FirewallRules(object):
                 name.
         """
         rules = sorted(
-            self.rules.values(), key=operator.itemgetter('network', 'name'))
+            list(self.rules.values()), key=operator.itemgetter('network',
+                                                               'name'))
         return json.dumps(rules, sort_keys=True)
 
     def add_rules_from_json(self, json_rules):
@@ -416,8 +424,8 @@ class FirewallRules(object):
             InvalidFirewallRuleError: One or more rules failed validation.
         """
         if self.rules:
-            LOGGER.warn('Can not import from JSON into a FirewallRules object '
-                        'with rules already added')
+            LOGGER.warning('Can not import from JSON into a FirewallRules '
+                           'object with rules already added')
             return
 
         rules = json.loads(json_rules)
@@ -445,13 +453,16 @@ class FirewallRules(object):
             dict: A new rule dictionary with the lists sorted
         """
         sorted_rule = {}
-        for key, value in unsorted_rule.items():
+        value_key = None
+        for key, value in list(unsorted_rule.items()):
             if isinstance(value, list):
                 if value and isinstance(value[0], dict):  # List of dictionaries
                     for i, entry in enumerate(value):
                         value[i] = self._order_lists_in_rule(entry)
+                    value_key = list(value[0].keys())[0]
+                    value = sorted(value, key=lambda k: k[value_key])
 
-                sorted_rule[key] = sorted(value)
+                sorted_rule[key] = sorted(value, key=sorted)
             elif isinstance(value, dict):
                 sorted_rule[key] = self._order_lists_in_rule(value)
             else:
@@ -618,7 +629,7 @@ class FirewallEnforcer(object):
 
         self.project_sema = project_sema
         if operation_sema:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Operation semaphore is deprecated. Argument ignored.')
         self.operation_sema = None
 
@@ -716,7 +727,7 @@ class FirewallEnforcer(object):
             if not prechange_callback(self.project, self._rules_to_delete,
                                       self._rules_to_insert,
                                       self._rules_to_update):
-                LOGGER.warn(
+                LOGGER.warning(
                     'The Prechange Callback returned False for project %s, '
                     'changes will not be applied.', self.project)
                 return 0
@@ -879,8 +890,9 @@ class FirewallEnforcer(object):
                                 'for project %s.', self.project)
                     delete_before_insert = True
         else:
-            LOGGER.warn('Unknown firewall quota, switching to "delete first" '
-                        'rule update order for project %s.', self.project)
+            LOGGER.warning('Unknown firewall quota, switching to "delete '
+                           'first" rule update order for project %s.',
+                           self.project)
             delete_before_insert = True
 
         return delete_before_insert

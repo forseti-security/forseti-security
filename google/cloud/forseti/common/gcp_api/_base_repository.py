@@ -13,11 +13,15 @@
 # limitations under the License.
 
 """Base GCP client which uses the discovery API."""
+from builtins import str
+from builtins import object
 import json
 import logging
 import os
 import threading
-from urlparse import urljoin
+
+from urllib.parse import urljoin
+from future import standard_library
 
 import google_auth_httplib2
 import googleapiclient
@@ -36,6 +40,8 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 import google.oauth2.credentials
+
+standard_library.install_aliases()
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
@@ -86,8 +92,11 @@ def _create_service_api(credentials, service_name, version, is_private_api,
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING unless
     # debug is enabled.
-    if LOGGER.getEffectiveLevel() > logging.DEBUG:
-        logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    try:
+        if LOGGER.getEffectiveLevel() > logging.DEBUG:
+            logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    except Exception as e:  # pylint: disable=broad-except
+        LOGGER.debug('Logging cannot be set: %s', e)
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
@@ -187,8 +196,8 @@ class BaseRepositoryClient(object):
         # Look to see if the API is formally supported in Forseti.
         supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
         if not supported_api:
-            LOGGER.warn('API "%s" is not formally supported in Forseti, '
-                        'proceed at your own risk.', api_name)
+            LOGGER.warning('API "%s" is not formally supported in Forseti, '
+                           'proceed at your own risk.', api_name)
 
         # See if the version is supported by Forseti.
         # If no version is specified, use the supported API's default version.
@@ -199,9 +208,10 @@ class BaseRepositoryClient(object):
         if supported_api:
             for version in versions:
                 if version not in supported_api.get('supported_versions', []):
-                    LOGGER.warn('API "%s" version %s is not formally supported '
-                                'in Forseti, proceed at your own risk.',
-                                api_name, version)
+                    LOGGER.warning('API "%s" version %s is not formally '
+                                   'supported in Forseti, proceed at your '
+                                   'own risk.',
+                                   api_name, version)
 
         self.is_private_api = None
         if supported_api:
@@ -364,7 +374,7 @@ class GCPRepository(object):
         # Since we initially build our kwargs as a dictionary where one of the
         # keys is a variable (target), we need to convert keys to strings,
         # even though the variable in question is of type str.
-        method_args = {str(k): v for k, v in verb_arguments.iteritems()}
+        method_args = {str(k): v for k, v in verb_arguments.items()}
         return method(**method_args)
 
     def _build_next_request(self, verb, prior_request, prior_response):
@@ -519,6 +529,9 @@ class GCPRepository(object):
         Returns:
             dict: The response from the API.
         """
+        if hasattr(self.http, 'data'):
+            if isinstance(self.http.data, str):
+                self.http.data = self.http.data.encode()
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
             # interface the code has to be duplicated to handle the case where

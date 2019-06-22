@@ -14,6 +14,7 @@
 
 """BigQuery ACL Resource."""
 
+from builtins import object
 import json
 
 

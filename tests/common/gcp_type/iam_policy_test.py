@@ -14,6 +14,7 @@
 
 """Test the IamPolicy."""
 
+from builtins import filter
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase

@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """Enabled APIs Scanner Test"""
+from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_enabled_apis_scanner_data as feasd
@@ -70,7 +71,7 @@ class EnabledApisScannerTest(ForsetiTestCase):
 
         self.assertEqual(3, len(enabled_apis_data))
 
-        for i in xrange(3):
+        for i in range(3):
           actual_project, actual_enabled_apis = enabled_apis_data[i]
           self.assertEqual(expected_projects[i], actual_project.name)
           self.assertEqual(expected_enabled_apis[i], actual_enabled_apis)
@@ -91,7 +92,7 @@ class EnabledApisScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in enabled_apis_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         enabled_apis_scanner.EnabledApisScanner,

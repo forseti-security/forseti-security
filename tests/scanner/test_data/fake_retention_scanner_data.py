@@ -13,6 +13,7 @@
 # limitations under the License.
 """Fake Retention scanner data."""
 
+from builtins import object
 import json
 from datetime import datetime, timedelta
 import collections
@@ -124,7 +125,7 @@ def build_table_violations(table, rule_name):
         resource_data=table.data,
     )]
 
-class FakeBucketDataCreater():
+class FakeBucketDataCreater(object):
     def __init__(self, id, project):
         self._id = id
         self._parent = project
@@ -205,7 +206,7 @@ def get_fake_bucket_resource(fake_bucket_data_input):
 DEFAULT_TABLE_CREATE_TIME = 1560000000000
 
 
-class FakeTableDataCreater():
+class FakeTableDataCreater(object):
     def __init__(self, id, dataset):
         self._id = id
         self._parent = dataset

@@ -114,7 +114,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
             network_interfaces.append(ins.create_network_interfaces())
 
         if not network_interfaces:
-            LOGGER.warn('No VM network interfaces found.')
+            LOGGER.warning('No VM network interfaces found.')
             return []
 
         return network_interfaces

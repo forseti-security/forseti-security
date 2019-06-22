@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from builtins import object
 import threading
 
 import concurrent.futures
@@ -70,7 +71,7 @@ class BatchFirewallEnforcer(object):
         self._project_sema = project_sema
 
         if max_running_operations:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Max running operations is deprecated. Argument ignored.')
         self._max_running_operations = None
         self._local = LOCAL_THREAD
@@ -122,7 +123,7 @@ class BatchFirewallEnforcer(object):
             LOGGER.info('Simulating changes')
 
         if isinstance(project_policies, dict):
-            project_policies = project_policies.items()
+            project_policies = list(project_policies.items())
 
         self.enforcement_log.Clear()
         self.enforcement_log.summary.projects_total = len(project_policies)
@@ -151,7 +152,7 @@ class BatchFirewallEnforcer(object):
         self._summarize_results()
 
         if not projects_enforced_count:
-            LOGGER.warn('No projects enforced on the last run, exiting.')
+            LOGGER.warning('No projects enforced on the last run, exiting.')
 
         return self.enforcement_log
 

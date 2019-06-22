@@ -13,10 +13,11 @@
 # limitations under the License.
 """Tests for BigqueryScanner."""
 
+from builtins import range
 import collections
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.scanner.test_data import fake_bigquery_scanner_data as fbsd
 from tests.unittest_utils import ForsetiTestCase
@@ -106,7 +107,7 @@ class BigqueryScannerTest(ForsetiTestCase):
 
         self.assertEqual(2, len(bq_acl_data))
 
-        for i in xrange(2):
+        for i in range(2):
             self.assertEqual(expected_projects[i],
                              bq_acl_data[i].parent_project.full_name)
 
@@ -129,7 +130,7 @@ class BigqueryScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(d.parent_project, d.bigquery_acl) for d in bq_acl_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
 
 if __name__ == '__main__':

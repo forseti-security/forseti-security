@@ -16,6 +16,7 @@
 See: https://cloud.google.com/iam/reference/rest/v1/Policy
 """
 
+from builtins import object
 import re
 
 from google.cloud.forseti.common.gcp_type import errors
@@ -453,10 +454,10 @@ class IamAuditConfig(object):
         if not isinstance(other, type(self)):
             raise errors.InvalidIamAuditConfigError(
                 'Cannot merge, other is not of type \'IamAuditConfig\'')
-        for service_name, log_configs in other.service_configs.iteritems():
+        for service_name, log_configs in other.service_configs.items():
             if service_name not in self.service_configs:
                 self.service_configs[service_name] = {}
             service_config = self.service_configs[service_name]
-            for log_type, exemptions in log_configs.iteritems():
+            for log_type, exemptions in log_configs.items():
                 service_config[log_type] = exemptions.union(service_config.get(
                     log_type, set()))

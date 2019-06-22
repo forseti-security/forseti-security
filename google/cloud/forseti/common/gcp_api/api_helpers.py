@@ -133,7 +133,7 @@ def flatten_aggregated_list_results(paged_results, item_key):
     items = []
     for page in paged_results:
         aggregated_items = page.get('items', {})
-        for items_for_grouping in aggregated_items.values():
+        for items_for_grouping in list(aggregated_items.values()):
             for item in items_for_grouping.get(item_key, []):
                 items.append(item)
     return items

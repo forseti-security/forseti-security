@@ -14,7 +14,7 @@
 
 """Tests the RoleRulesEngine."""
 
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -30,7 +30,7 @@ from tests.unittest_utils import ForsetiTestCase
 def get_rules_engine_with_rule(rule):
     """Create a rule engine based on a yaml file string"""
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = rre.RoleRulesEngine(
             rules_file_path=f.name)
@@ -59,7 +59,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -81,7 +81,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -100,7 +100,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -120,7 +120,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -142,7 +142,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
@@ -164,7 +164,7 @@ rules:
 
 """
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_invalid_rule)
+            f.write(yaml_str_invalid_rule.encode())
             f.flush()
             rules_local_path = get_datafile_path(__file__, f.name)
             with self.assertRaises(InvalidRulesSchemaError):
