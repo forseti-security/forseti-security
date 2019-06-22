@@ -18,11 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import abc
 from multiprocessing.pool import ThreadPool
 import threading
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
@@ -54,13 +58,11 @@ def _validate_cai_enabled(cai_configs):
     return True
 
 
-class AbstractInventoryConfig(object):
+class AbstractInventoryConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def use_composite_root(self):
@@ -115,13 +117,11 @@ class AbstractInventoryConfig(object):
             service_config (object): Service configuration."""
 
 
-class AbstractServiceConfig(object):
+class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get_engine(self):
@@ -398,7 +398,8 @@ class ServiceConfig(AbstractServiceConfig):
                     # Default to disable CloudAsset Inventory if not configured.
                     forseti_inventory_config.get('cai', {'enabled': False}),
                     composite_root_resources=(
-                        forseti_inventory_config.get('composite_root_resources')
+                        forseti_inventory_config.get(
+                            'composite_root_resources')
                     )
                 )
             except ValueError as e:
@@ -406,7 +407,15 @@ class ServiceConfig(AbstractServiceConfig):
 
             # TODO: Create Config classes to store scanner and notifier configs.
             forseti_scanner_config = forseti_config.get('scanner', {})
-
+            # The suffix is used to indicate which major feature is enabled for
+            # tracking purposes. For now only config validator is supported.
+            user_agent_suffix = ''
+            for scanner in forseti_scanner_config.get('scanners', {}):
+                if (scanner.get('enabled') and
+                        scanner.get('name') == 'config_validator'):
+                    user_agent_suffix = 'config-validator'
+                    break
+            http_helpers.set_user_agent_suffix(user_agent_suffix)
             forseti_notifier_config = forseti_config.get('notifier', {})
 
             forseti_global_config = forseti_config.get('global', {})

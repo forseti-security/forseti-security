@@ -14,7 +14,7 @@
 """Scanner runner script test."""
 
 from datetime import datetime, timedelta
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 import unittest
 
@@ -87,9 +87,9 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
             with mock.patch.object(scanner, 'mark_scanner_index_complete') as closing_mock:
                 scanner.run('m1', mock.MagicMock(), mock_service_config)
                 self.assertTrue(init_mock.called)
-                self.assertEquals(1, init_mock.call_count)
+                self.assertEqual(1, init_mock.call_count)
                 self.assertTrue(closing_mock.called)
-                self.assertEquals(1, closing_mock.call_count)
+                self.assertEqual(1, closing_mock.call_count)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_init_scanner_index(self, mock_date_time):
@@ -99,8 +99,8 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
         expected_id = date_time.get_utc_now_microtimestamp(utc_now)
         db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == expected_id).one())
-        self.assertEquals(IndexState.RUNNING, db_row.scanner_status)
-        self.assertEquals(utc_now, db_row.created_at_datetime)
+        self.assertEqual(IndexState.RUNNING, db_row.scanner_status)
+        self.assertEqual(utc_now, db_row.created_at_datetime)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_mark_scanner_index_complete_no_failures(self, mock_date_time):
@@ -114,8 +114,8 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
             self.session, scanner_index_id, ['IamPolicyScanner'], [])
         db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
-        self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
-        self.assertEquals(end, db_row.completed_at_datetime)
+        self.assertEqual(IndexState.SUCCESS, db_row.scanner_status)
+        self.assertEqual(end, db_row.completed_at_datetime)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_mark_scanner_index_complete_only_failures(self, mock_date_time):
@@ -130,11 +130,11 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
             ['IamPolicyScanner', 'IapScanner'])
         db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
-        self.assertEquals(IndexState.FAILURE, db_row.scanner_status)
-        self.assertEquals(
+        self.assertEqual(IndexState.FAILURE, db_row.scanner_status)
+        self.assertEqual(
             'Scanner(s) with errors: IamPolicyScanner, IapScanner',
             db_row.scanner_index_errors)
-        self.assertEquals(end, db_row.completed_at_datetime)
+        self.assertEqual(end, db_row.completed_at_datetime)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_mark_scanner_index_complete_with_partial_failures(self, mock_date_time):
@@ -149,11 +149,11 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
             ['IamPolicyScanner', 'IapScanner'])
         db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
-        self.assertEquals(IndexState.PARTIAL_SUCCESS, db_row.scanner_status)
-        self.assertEquals(
+        self.assertEqual(IndexState.PARTIAL_SUCCESS, db_row.scanner_status)
+        self.assertEqual(
             'Scanner(s) with errors: IamPolicyScanner, IapScanner',
             db_row.scanner_index_errors)
-        self.assertEquals(end, db_row.completed_at_datetime)
+        self.assertEqual(end, db_row.completed_at_datetime)
 
 
 if __name__ == '__main__':

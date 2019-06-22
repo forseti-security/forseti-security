@@ -140,6 +140,7 @@ inventory:
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck
         #    - compute.googleapis.com/HttpsHealthCheck
@@ -151,6 +152,7 @@ inventory:
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project
+        #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
         #    - compute.googleapis.com/Snapshot
@@ -172,8 +174,15 @@ inventory:
         #    - dns.googleapis.com/Policy
         #    - iam.googleapis.com/Role
         #    - iam.googleapis.com/ServiceAccount
+        #    - k8s.io/Namespace
+        #    - k8s.io/Node
+        #    - k8s.io/Pod
         #    - pubsub.googleapis.com/Subscription
         #    - pubsub.googleapis.com/Topic
+        #    - rbac.authorization.k8s.io/ClusterRole
+        #    - rbac.authorization.k8s.io/ClusterRoleBinding
+        #    - rbac.authorization.k8s.io/Role
+        #    - rbac.authorization.k8s.io/RoleBinding
         #    - spanner.googleapis.com/Database
         #    - spanner.googleapis.com/Instance
         #    - sqladmin.googleapis.com/Instance

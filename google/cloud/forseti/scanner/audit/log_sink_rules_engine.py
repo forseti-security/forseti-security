@@ -20,6 +20,7 @@ RuleBook to determine whether there are violations. Log Sinks rules can be
 defined on organization, folder, billing_account and project.
 """
 
+from builtins import object
 import collections
 import itertools
 import re

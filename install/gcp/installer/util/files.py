@@ -15,12 +15,11 @@
 """ File utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 
-import ruamel.yaml
-
-import constants
-import utils
+from . import constants
+from . import utils
 
 
 def generate_deployment_templates(template_type, values, timestamp):
@@ -179,37 +178,3 @@ def copy_file_to_destination(file_path, output_path,
     if return_code:
         return False
     return True
-
-
-def read_yaml_file_from_local(file_path):
-    """Load file from local path.
-
-    Args:
-      file_path (str): The path to the file.
-
-    Returns:
-        dict: The parsed dict from the loaded file.
-
-    Raises:
-        YAMLError: Yaml error.
-    """
-
-    with open(os.path.abspath(file_path), 'r') as f:
-        try:
-            return ruamel.yaml.load(f, Loader=ruamel.yaml.RoundTripLoader)
-        except ruamel.yaml.YAMLError as yaml_error:
-            raise yaml_error
-
-
-def write_data_to_yaml_file(data, output_file_path):
-    """Write data to yaml file.
-
-    Args:
-        data (dict): A yaml data stream to parse.
-        output_file_path (str): Output file path.
-    """
-
-    with open(output_file_path, 'w') as outfile:
-        ruamel.yaml.dump(data, outfile,
-                         Dumper=ruamel.yaml.RoundTripDumper,
-                         indent=4)

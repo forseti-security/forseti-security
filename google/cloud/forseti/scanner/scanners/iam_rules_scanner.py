@@ -150,7 +150,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 }
 
                 yield {
-                    'resource_name': member,
+                    'resource_name': '{}/{}'.format(violation.resource_type,
+                                                    violation.resource_id),
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
                     'full_name': violation.full_name,
@@ -212,9 +213,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 if policy.parent.type not in IAM_TYPE_RESOURCE_MAP:
                     continue
 
-                policy_bindings = filter(None, [  # pylint: disable=bad-builtin
+                policy_bindings = [_f for _f in [
                     iam_policy.IamPolicyBinding.create_from(b)
-                    for b in json.loads(policy.data).get('bindings', [])])
+                    for b in json.loads(policy.data).get('bindings', [])] if _f]
 
                 resource_counts[policy.parent.type] += 1
                 resource_class = IAM_TYPE_RESOURCE_MAP[policy.parent.type]
@@ -225,7 +226,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                      policy, policy_bindings))
 
         if not policy_data:
-            LOGGER.warn('No policies found.')
+            LOGGER.warning('No policies found.')
             return [], 0
 
         return policy_data, resource_counts

@@ -14,6 +14,8 @@
 
 """Rules engine for resource locations."""
 
+from builtins import str
+from builtins import object
 import collections
 import enum
 import re

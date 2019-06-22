@@ -121,8 +121,9 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             bucket_acls = []
-
-            for gcs_policy in data_access.scanner_iter(session, 'gcs_policy'):
+            gcs_policies = [policy for policy in
+                            data_access.scanner_iter(session, 'gcs_policy')]
+            for gcs_policy in gcs_policies:
                 bucket = gcs_policy.parent
                 project_id = bucket.parent.name
                 acls = json.loads(gcs_policy.data)

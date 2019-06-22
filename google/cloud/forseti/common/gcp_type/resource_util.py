@@ -203,7 +203,7 @@ def type_from_name(resource_name):
     if not resource_name:
         return None
 
-    for (resource_type, metadata) in _RESOURCE_TYPE_MAP.iteritems():
+    for (resource_type, metadata) in _RESOURCE_TYPE_MAP.items():
         if resource_name.startswith(metadata['plural'].lower()):
             return resource_type
 

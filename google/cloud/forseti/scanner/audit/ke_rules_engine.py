@@ -14,6 +14,7 @@
 
 """Rules engine for checking arbitrary properties ofKE clusters."""
 
+from builtins import object
 from collections import namedtuple
 import threading
 
