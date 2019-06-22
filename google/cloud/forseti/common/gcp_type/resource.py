@@ -89,7 +89,8 @@ class ResourceType(object):
         LIEN,
         LOG_SINK,
         CRYPTO_KEY,
-        KEY_RING
+        KEY_RING,
+        DATASET
     ])
 
     @classmethod
