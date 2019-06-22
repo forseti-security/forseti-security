@@ -19,13 +19,10 @@ from __future__ import print_function
 
 import argparse
 import datetime
-import site
 
 
 def run():
     """Run the steps for the gcloud setup."""
-
-    site.main() # Load up the package
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)

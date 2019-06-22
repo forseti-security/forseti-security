@@ -157,7 +157,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
             lists: first one is IP addresses,
             second one is network blocks
         """
-        data = urllib.request.urlopen(url).read()
+        data = urllib.request.urlopen(url).read().decode('utf-8')
         ip_addresses = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
         netblocks = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$',
                                data, re.M)

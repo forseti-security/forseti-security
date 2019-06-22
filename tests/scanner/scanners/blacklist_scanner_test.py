@@ -38,7 +38,7 @@ class BlacklistScannerTest(ForsetiTestCase):
            'blacklist_rules_engine.urllib.request.urlopen')
     def test_get_blacklist_url(self, mock_urlopen):
         a = Mock()
-        a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1]
+        a.read.side_effect = [str.encode(fbsd.FAKE_BLACKLIST_SOURCE_1)]
         mock_urlopen.return_value = a
 
         output = bre.BlacklistRuleBook.get_and_parse_blacklist('')
@@ -51,8 +51,8 @@ class BlacklistScannerTest(ForsetiTestCase):
     def test_build_rule_book_from_local_yaml_file_works(self, mock_urlopen):
         """Test that a RuleBook is built correctly with a yaml file."""
         a = Mock()
-        a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1,
-                              fbsd.FAKE_BLACKLIST_SOURCE_2]
+        a.read.side_effect = [str.encode(fbsd.FAKE_BLACKLIST_SOURCE_1),
+                              str.encode(fbsd.FAKE_BLACKLIST_SOURCE_2)]
         mock_urlopen.return_value = a
 
         rules_local_path = get_datafile_path(__file__, 'blacklist_test_rule.yaml')
@@ -66,8 +66,8 @@ class BlacklistScannerTest(ForsetiTestCase):
            'blacklist_rules_engine.urllib.request.urlopen')
     def test_blacklist_scanner_all_match(self, mock_urlopen):
         a = Mock()
-        a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1,
-                              fbsd.FAKE_BLACKLIST_SOURCE_2]
+        a.read.side_effect = [str.encode(fbsd.FAKE_BLACKLIST_SOURCE_1),
+                              str.encode(fbsd.FAKE_BLACKLIST_SOURCE_2)]
         mock_urlopen.return_value = a
 
         rules_local_path = get_datafile_path(__file__, 'blacklist_test_rule.yaml')
