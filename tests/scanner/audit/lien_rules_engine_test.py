@@ -14,10 +14,11 @@
 
 """Tests the LienRulesEngine."""
 
+from builtins import object
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -61,7 +62,7 @@ def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
     rule = rule_tmpl.format(id=rid, restrictions=restrictions)
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = lien_rules_engine.LienRulesEngine(
             rules_file_path=f.name)
@@ -122,7 +123,7 @@ class LienRulesEngineTest(ForsetiTestCase):
 
         liens = []
 
-        for lid, restrictions in id_to_restrictions.iteritems():
+        for lid, restrictions in id_to_restrictions.items():
             lien_dict = {
                 'name': 'liens/' + lid,
                 'parent': 'projects/p1',

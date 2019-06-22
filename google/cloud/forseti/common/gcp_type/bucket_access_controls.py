@@ -13,6 +13,7 @@
 # limitations under the License.
 """A Bucket ACL Resource."""
 
+from builtins import object
 import json
 
 

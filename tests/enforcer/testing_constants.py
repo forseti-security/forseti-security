@@ -16,7 +16,7 @@
 
 from datetime import datetime
 import json
-import mock
+import unittest.mock as mock
 from tests.unittest_utils import ForsetiTestCase
 import google.auth
 from google.cloud.forseti.common.gcp_api import compute

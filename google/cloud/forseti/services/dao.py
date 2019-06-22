@@ -17,6 +17,8 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 
+from builtins import next
+from builtins import object
 import binascii
 import collections
 import hmac
@@ -70,7 +72,7 @@ def generate_model_handle():
         str: random bytes for handle
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return binascii.hexlify(os.urandom(16)).decode('utf-8')
 
 
 def generate_model_seed():
@@ -80,7 +82,7 @@ def generate_model_seed():
         str: random bytes
     """
 
-    return binascii.hexlify(os.urandom(16))
+    return binascii.hexlify(os.urandom(16)).decode('utf-8')
 
 
 MODEL_BASE = declarative_base()
@@ -325,8 +327,10 @@ def define_model(model_name, dbengine, model_seed):
             """
             serialized_ctr = struct.pack('>I', self.policy_update_counter)
             msg = binascii.hexlify(serialized_ctr)
-            msg += self.full_name
-            return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
+            msg += self.full_name.encode()
+            seed = (model_seed if isinstance(model_seed, bytes)
+                    else model_seed.encode())
+            return hmac.new(seed, msg).hexdigest()
 
         def __repr__(self):
             """String representation.
@@ -619,7 +623,7 @@ def define_model(model_name, dbengine, model_seed):
                 'projectowner': 'roles/owner',
                 'projectviewer': 'roles/viewer'}
             for parent_member in cls.list_group_members(
-                    session, '', member_types=member_type_map.keys()):
+                    session, '', member_types=list(member_type_map.keys())):
                 member_type, project_id = parent_member.split('/')
                 role = member_type_map[member_type]
                 try:
@@ -821,9 +825,9 @@ def define_model(model_name, dbengine, model_seed):
                 """
 
                 root = None
-                for parent in resource_hierarchy.iterkeys():
+                for parent in resource_hierarchy.keys():
                     is_root = True
-                    for children in resource_hierarchy.itervalues():
+                    for children in resource_hierarchy.values():
                         if parent in children:
                             is_root = False
                             break
@@ -832,7 +836,7 @@ def define_model(model_name, dbengine, model_seed):
                 chain = [root]
                 cur = root
                 while len(resource_hierarchy[cur]) == 1:
-                    cur = iter(resource_hierarchy[cur]).next()
+                    cur = next(iter(resource_hierarchy[cur]))
                     chain.append(cur)
                 return chain
 
@@ -933,7 +937,7 @@ def define_model(model_name, dbengine, model_seed):
                 r_type_names)
 
             res_exp = {k.type_name: [v.type_name for v in values]
-                       for k, values in expansion.iteritems()}
+                       for k, values in expansion.items()}
 
             return [(binding.role_name,
                      res_exp[binding.resource_type_name])
@@ -1161,7 +1165,7 @@ def define_model(model_name, dbengine, model_seed):
                 Raises:
                 """
 
-                return {k: v for k, v in policy.iteritems() if k != 'etag'}
+                return {k: v for k, v in policy.items() if k != 'etag'}
 
             def calculate_diff(policy, old_policy):
                 """Calculate the grant/revoke difference between policies.
@@ -1176,7 +1180,7 @@ def define_model(model_name, dbengine, model_seed):
                 """
 
                 diff = collections.defaultdict(list)
-                for role, members in filter_etag(policy).iteritems():
+                for role, members in filter_etag(policy).items():
                     if role in old_policy:
                         for member in members:
                             if member not in old_policy[role]:
@@ -1188,7 +1192,7 @@ def define_model(model_name, dbengine, model_seed):
             grants = calculate_diff(policy, old_policy)
             revocations = calculate_diff(old_policy, policy)
 
-            for role, members in revocations.iteritems():
+            for role, members in revocations.items():
                 bindings = (
                     session.query(Binding)
                     .filter((Binding.resource_type_name ==
@@ -1200,7 +1204,7 @@ def define_model(model_name, dbengine, model_seed):
                 for binding in bindings:
                     session.delete(binding)
 
-            for role, members in grants.iteritems():
+            for role, members in grants.items():
                 inserted = False
                 existing_bindings = (
                     session.query(Binding)
@@ -1349,8 +1353,8 @@ def define_model(model_name, dbengine, model_seed):
                 try:
                     permission_names.remove(existing_permission.name)
                 except KeyError:
-                    LOGGER.warn('existing_permissions.name = %s, KeyError',
-                                existing_permission.name)
+                    LOGGER.warning('existing_permissions.name = %s, KeyError',
+                                   existing_permission.name)
 
             new_permissions = [Permission(name=n) for n in permission_names]
             for perm in new_permissions:
@@ -2162,7 +2166,8 @@ class ModelManager(object):
         Raises:
             KeyError: model handle not available
         """
-
+        if isinstance(handle, bytes):
+            handle = handle.decode('utf-8')
         if handle not in [m.handle for m in self.models()]:
             error_message = 'handle={}, available={}'.format(
                 handle,
@@ -2352,7 +2357,7 @@ def create_engine(*args, **kwargs):
     """
 
     sqlite_enforce_fks = 'sqlite_enforce_fks'
-    forward_kwargs = {k: v for k, v in kwargs.iteritems()}
+    forward_kwargs = {k: v for k, v in kwargs.items()}
     is_sqlite = False
     for arg in args:
         if 'sqlite' in arg:

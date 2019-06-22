@@ -14,6 +14,7 @@
 
 """Forseti installer config object."""
 
+from builtins import object
 import datetime
 import hashlib
 

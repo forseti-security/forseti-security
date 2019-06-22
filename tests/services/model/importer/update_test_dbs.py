@@ -23,7 +23,7 @@ PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
 import os
 import shutil
 import time
-import mock
+import unittest.mock as mock
 
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks

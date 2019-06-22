@@ -17,7 +17,7 @@
 import collections
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import tempfile
 
 from tests.scanner.test_data import fake_retention_scanner_data as frsd
@@ -141,7 +141,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, 'bucket')
 
@@ -227,7 +227,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, resource_type='bucket')
 
@@ -308,7 +308,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
@@ -393,7 +393,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
@@ -464,7 +464,7 @@ rules:
         _mock_bucket = get_mock_table_retention(table_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(resource_type='bigquery_table')
 

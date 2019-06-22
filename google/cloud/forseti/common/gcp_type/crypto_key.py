@@ -30,7 +30,7 @@ LOGGER = logger.get_logger(__name__)
 class CryptoKey(resource.Resource):
     """Represents the CryptoKey resource."""
 
-    # pylint: disable=too-many-instance-attributes, too-many-arguments, expression-not-assigned
+    # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
             self, crypto_key_name=None, crypto_key_full_name=None,
             crypto_key_parent_type_name=None, crypto_key_type=None,
@@ -58,7 +58,7 @@ class CryptoKey(resource.Resource):
             resource_id=crypto_key_name,
             name=crypto_key_name,
             parent=crypto_key_parent_type_name,
-            resource_type=resource.ResourceType.CRYPTO_KEY),
+            resource_type=resource.ResourceType.CRYPTO_KEY)
         self.crypto_key_full_name = crypto_key_full_name
         self.crypto_key_type = crypto_key_type
         self.primary_version = primary_version

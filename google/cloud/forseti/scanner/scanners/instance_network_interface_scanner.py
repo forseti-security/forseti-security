@@ -136,7 +136,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
                 network_interfaces.append(ins.create_network_interfaces())
 
         if not network_interfaces:
-            LOGGER.warn('No VM network interfaces found. Exiting.')
+            LOGGER.warning('No VM network interfaces found. Exiting.')
             return None, 0
 
         return network_interfaces

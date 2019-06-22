@@ -13,9 +13,10 @@
 # limitations under the License.
 """Tests for LogSinkScanner."""
 
+from builtins import range
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.scanner.test_data import fake_log_sink_scanner_data as flsd
 from tests.unittest_utils import ForsetiTestCase
@@ -108,7 +109,7 @@ class LogSinkScannerTest(ForsetiTestCase):
         self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(parent, data) for parent, data in log_sink_data])
 
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(['viol-1', 'viol-2', 'viol-3'], violations)
 
     @mock.patch.object(
         log_sink_scanner.LogSinkScanner,
