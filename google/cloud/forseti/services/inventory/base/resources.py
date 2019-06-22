@@ -528,6 +528,42 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
     return ResourceSubclass
 
 
+def k8_resource_class_factory(resource_type):
+    """Factory function to generate Kubernetes Resource subclasses.
+
+    Args:
+        resource_type (str): The static Kubernetes resource type for this
+        subclass.
+
+    Returns:
+        class: A new class object.
+    """
+
+    class ResourceSubclass(Resource):
+        """Subclass of Resource."""
+
+        @staticmethod
+        def type():
+            """Get type of this resource.
+
+            Returns:
+                str: The static resource type for this subclass.
+            """
+            return resource_type
+
+        def key(self):
+            """Get key of this resource.
+
+            Returns:
+                str: key of this resource.
+            """
+            # Resource does not have a globally unique ID, use size_t hash
+            # of uid under metadata key.
+            return size_t_hash(self['metadata']['uid'])
+
+    return ResourceSubclass
+
+
 # Fake composite resource class
 class CompositeRootResource(resource_class_factory('composite_root', None)):
     """The Composite Root fake resource."""
@@ -1360,6 +1396,39 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
             LOGGER.debug('selfLink not found or contains no zones: %s',
                          self._data)
             return None
+
+# Kubernetes resource classes
+
+
+class KubernetesNode(k8_resource_class_factory('kubernetes_node')):
+    """The Resource implementation for Kubernetes Node."""
+
+
+class KubernetesPod(k8_resource_class_factory('kubernetes_pod')):
+    """The Resource implementation for Kubernetes Pod."""
+
+
+class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace')):
+    """The Resource implementation for Kubernetes Namespace."""
+
+
+class KubernetesRole(k8_resource_class_factory('kubernetes_role')):
+    """The Resource implementation for Kubernetes Role."""
+
+
+class KubernetesRoleBinding(k8_resource_class_factory(
+        'kubernetes_rolebinding')):
+    """The Resource implementation for Kubernetes RoleBinding."""
+
+
+class KubernetesClusterRole(k8_resource_class_factory(
+        'kubernetes_clusterrole')):
+    """The Resource implementation for Kubernetes ClusterRole."""
+
+
+class KubernetesClusterRoleBinding(k8_resource_class_factory(
+        'kubernetes_clusterrolebinding')):
+    """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
 
 # Stackdriver Logging resource classes
@@ -2206,6 +2275,163 @@ class KubernetesClusterIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Kubernetes Cluster."""
 
 
+class KubernetesNodeIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesNode"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_nodes(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_node'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesPodIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesPod"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_pods(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_pod'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesNamespaceIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesNamespace"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_namespaces(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_namespace'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesRole"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_roles(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_role'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesRoleBindingIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesRoleBinding"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_rolebindings(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_rolebinding'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesClusterRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesClusterRole"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_clusterroles(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_clusterrole'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesClusterRoleBindingIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesClusterRoleBinding"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_clusterrolebindings(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_clusterrolebinding'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class LoggingBillingAccountSinkIterator(resource_iter_class_factory(
         api_method_name='iter_stackdriver_billing_account_sinks',
         resource_name='logging_sink',
@@ -2673,6 +2899,50 @@ FACTORIES = {
     'kubernetes_cluster': ResourceFactory({
         'dependsOn': ['project'],
         'cls': KubernetesCluster,
+        'contains': [
+            KubernetesNodeIterator,
+            KubernetesNamespaceIterator,
+            KubernetesClusterRoleIterator,
+            KubernetesClusterRoleBindingIterator,
+        ]}),
+
+    'kubernetes_namespace': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesNamespace,
+        'contains': [
+            KubernetesPodIterator,
+            KubernetesRoleIterator,
+            KubernetesRoleBindingIterator,
+        ]}),
+
+    'kubernetes_node': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesNode,
+        'contains': []}),
+
+    'kubernetes_pod': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesPod,
+        'contains': []}),
+
+    'kubernetes_role': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesRole,
+        'contains': []}),
+
+    'kubernetes_rolebinding': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesRoleBinding,
+        'contains': []}),
+
+    'kubernetes_clusterrole': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesClusterRole,
+        'contains': []}),
+
+    'kubernetes_clusterrolebinding': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesClusterRoleBinding,
         'contains': []}),
 
     'logging_sink': ResourceFactory({
