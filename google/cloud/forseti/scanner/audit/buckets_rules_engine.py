@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Bucket acls."""
+from builtins import object
 from collections import namedtuple
 import itertools
 import json

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Rules engine for forwarding rules engine"""
+from builtins import str
+from builtins import object
 from collections import namedtuple
 
 from google.cloud.forseti.common.gcp_type.resource import ResourceType

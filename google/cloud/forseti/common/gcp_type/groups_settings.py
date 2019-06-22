@@ -30,7 +30,7 @@ LOGGER = logger.get_logger(__name__)
 class GroupsSettings(resource.Resource):
     """Represents the GroupsSettings resource."""
 
-    # pylint: disable=expression-not-assigned, invalid-name
+    # pylint: disable=invalid-name
     def __init__(
             self, email, whoCanAdd=None, whoCanJoin=None,
             whoCanViewMembership=None, whoCanViewGroup=None, whoCanInvite=None,
@@ -51,7 +51,7 @@ class GroupsSettings(resource.Resource):
         super(GroupsSettings, self).__init__(
             resource_id=email,
             name=email,
-            resource_type=resource.ResourceType.GROUPS_SETTINGS),
+            resource_type=resource.ResourceType.GROUPS_SETTINGS)
         self.whoCanAdd = whoCanAdd
         self.whoCanJoin = whoCanJoin
         self.whoCanViewMembership = whoCanViewMembership

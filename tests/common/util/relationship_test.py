@@ -15,7 +15,7 @@
 """Tests the RelationshipUtil."""
 
 from tests.unittest_utils import ForsetiTestCase
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.common.util import relationship
@@ -35,7 +35,7 @@ class RelationshipUtilTest(ForsetiTestCase):
                 mock_starting_resource,
                 'organization/org1/'))
 
-        self.assertEquals(1, len(resource_ancestors))
+        self.assertEqual(1, len(resource_ancestors))
 
         # resource is project
         mock_starting_resource.type = 'project'
@@ -45,10 +45,10 @@ class RelationshipUtilTest(ForsetiTestCase):
                 mock_starting_resource,
                 'organization/org1/folder/folder2/project/project3/'))
 
-        self.assertEquals(3, len(resource_ancestors))
-        self.assertEquals(mock_starting_resource, resource_ancestors[0])
-        self.assertEquals('folder2', resource_ancestors[1].id)
-        self.assertEquals('org1', resource_ancestors[2].id)        
+        self.assertEqual(3, len(resource_ancestors))
+        self.assertEqual(mock_starting_resource, resource_ancestors[0])
+        self.assertEqual('folder2', resource_ancestors[1].id)
+        self.assertEqual('org1', resource_ancestors[2].id)
 
         # resource has multiple folders, and subproject resources
         mock_starting_resource.type = 'firewall'        
@@ -59,12 +59,12 @@ class RelationshipUtilTest(ForsetiTestCase):
                 ('organization/org1/folder/folder2/folder/folder3/'
                  'project/project4/firewall/firewall5/')))
         
-        self.assertEquals(5, len(resource_ancestors))
-        self.assertEquals(mock_starting_resource, resource_ancestors[0])
-        self.assertEquals('project4', resource_ancestors[1].id)
-        self.assertEquals('folder3', resource_ancestors[2].id)
-        self.assertEquals('folder2', resource_ancestors[3].id)        
-        self.assertEquals('org1', resource_ancestors[4].id)
+        self.assertEqual(5, len(resource_ancestors))
+        self.assertEqual(mock_starting_resource, resource_ancestors[0])
+        self.assertEqual('project4', resource_ancestors[1].id)
+        self.assertEqual('folder3', resource_ancestors[2].id)
+        self.assertEqual('folder2', resource_ancestors[3].id)
+        self.assertEqual('org1', resource_ancestors[4].id)
 
 
 if __name__ == '__main__':

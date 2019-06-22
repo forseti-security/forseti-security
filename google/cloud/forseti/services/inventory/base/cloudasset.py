@@ -79,9 +79,16 @@ DEFAULT_ASSET_TYPES = [
     'dns.googleapis.com/ManagedZone',
     'dns.googleapis.com/Policy',
     'iam.googleapis.com/Role',
+    'k8s.io/Namespace',
+    'k8s.io/Node',
+    'k8s.io/Pod',
     'iam.googleapis.com/ServiceAccount',
     'pubsub.googleapis.com/Subscription',
     'pubsub.googleapis.com/Topic',
+    'rbac.authorization.k8s.io/ClusterRole',
+    'rbac.authorization.k8s.io/ClusterRoleBinding',
+    'rbac.authorization.k8s.io/Role',
+    'rbac.authorization.k8s.io/RoleBinding',
     'spanner.googleapis.com/Database',
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',
@@ -184,13 +191,13 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
     except api_errors.ApiExecutionError as e:
-        LOGGER.warn('API Error getting cloud asset data: %s', e)
+        LOGGER.warning('API Error getting cloud asset data: %s', e)
         return None
     except api_errors.OperationTimeoutError as e:
-        LOGGER.warn('Timeout getting cloud asset data: %s', e)
+        LOGGER.warning('Timeout getting cloud asset data: %s', e)
         return None
     except ValueError as e:
-        LOGGER.warn('Invalid root resource id: %s', e)
+        LOGGER.warning('Invalid root resource id: %s', e)
         return None
 
     if 'error' in results:
@@ -202,7 +209,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
         return file_loader.copy_file_from_gcs(export_path)
     except errors.HttpError as e:
-        LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
+        LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
         return None
 
 

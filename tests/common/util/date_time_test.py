@@ -16,7 +16,7 @@
 
 from datetime import datetime
 
-import mock
+import unittest.mock as mock
 import unittest
 from datetime import datetime
 
