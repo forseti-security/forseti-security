@@ -1,0 +1,330 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.external_project_access_scanner"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.external_project_access_scanner</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;External project access scanner.&quot;&quot;&quot;</span>
+
+<span class="c1"># pylint: disable=line-too-long</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">google.auth.exceptions</span> <span class="k">import</span> <span class="n">RefreshError</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api.errors</span> <span class="k">import</span> <span class="n">ApiExecutionError</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">api_helpers</span> <span class="c1"># noqa=E501</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource_util</span> <span class="c1"># noqa=E501</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api.cloud_resource_manager</span> <span class="k">import</span> <span class="n">CloudResourceManagerClient</span> <span class="c1"># noqa=E501</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.storage</span> <span class="k">import</span> <span class="n">DataAccess</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory.storage</span> <span class="k">import</span> <span class="n">Storage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">external_project_access_rules_engine</span> <span class="k">as</span> <span class="n">epa_rules_engine</span> <span class="c1"># noqa=E501</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners</span> <span class="k">import</span> <span class="n">base_scanner</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">SCOPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;https://www.googleapis.com/auth/cloudplatformprojects.readonly&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="_get_inventory_storage"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner._get_inventory_storage">[docs]</a><span class="k">def</span> <span class="nf">_get_inventory_storage</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates an open inventory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (object): db session.</span>
+<span class="sd">        inventory_index_id (int): The inventory index</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Storage: storage object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inventory_storage</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">inventory_storage</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">inventory_storage</span></div>
+
+
+<div class="viewcode-block" id="get_user_emails"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.get_user_emails">[docs]</a><span class="k">def</span> <span class="nf">get_user_emails</span><span class="p">(</span><span class="n">service_config</span><span class="p">,</span> <span class="n">member_types</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves the list of user email addresses from inventory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        service_config (dict): The service configuration</span>
+<span class="sd">        member_types (list): Member types to query in storage. This</span>
+<span class="sd">            defaults to &#39;gsuite_user&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of list of user e-mail addresses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">member_types</span><span class="p">:</span>
+        <span class="n">member_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gsuite_user&#39;</span><span class="p">]</span>
+
+    <span class="n">emails</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">service_config</span><span class="o">.</span><span class="n">scoped_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">inventory_index_id</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">DataAccess</span><span class="o">.</span><span class="n">get_latest_inventory_index_id</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+        <span class="n">inventory_storage</span> <span class="o">=</span> <span class="n">_get_inventory_storage</span><span class="p">(</span><span class="n">session</span><span class="p">,</span>
+                                                   <span class="n">inventory_index_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">inventory_row</span> <span class="ow">in</span> <span class="n">inventory_storage</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">type_list</span><span class="o">=</span><span class="n">member_types</span><span class="p">):</span>
+            <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inventory_row</span><span class="o">.</span><span class="n">get_resource_data</span><span class="p">()[</span><span class="s1">&#39;primaryEmail&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">emails</span></div>
+
+
+<div class="viewcode-block" id="extract_project_ids"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.extract_project_ids">[docs]</a><span class="k">def</span> <span class="nf">extract_project_ids</span><span class="p">(</span><span class="n">crm_client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract a list of project ID&#39;s</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        crm_client (CloudResourceManagerClient):</span>
+<span class="sd">            An authenticated CRM client</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Project ID&#39;s as strings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">project_response</span> <span class="o">=</span> <span class="n">crm_client</span><span class="o">.</span><span class="n">get_projects</span><span class="p">()</span>
+
+    <span class="n">projects</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span><span class="n">project_response</span><span class="p">,</span> <span class="s1">&#39;projects&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">project</span><span class="p">[</span><span class="s1">&#39;projectId&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="memoize_ancestry"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.memoize_ancestry">[docs]</a><span class="k">def</span> <span class="nf">memoize_ancestry</span><span class="p">(</span><span class="n">ancestry_function</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=C0301</span>
+    <span class="sd">&quot;&quot;&quot;A decorator function to intelligently retrieve project ancestries, only if necessary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ancestry_function (function): The ancestry</span>
+<span class="sd">            retrieval function.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        function: The helper</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">discovered_ancestries</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># pylint: disable=W9011,W9012,C0111</span>
+
+    <span class="k">def</span> <span class="nf">helper</span><span class="p">(</span><span class="n">crm_client</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">project_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">discovered_ancestries</span><span class="p">:</span>
+            <span class="n">discovered_ancestries</span><span class="p">[</span><span class="n">project_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">ancestry_function</span><span class="p">(</span><span class="n">crm_client</span><span class="p">,</span> <span class="n">project_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">discovered_ancestries</span><span class="p">[</span><span class="n">project_id</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">helper</span></div>
+
+
+<div class="viewcode-block" id="get_project_ancestry"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.get_project_ancestry">[docs]</a><span class="nd">@memoize_ancestry</span>
+<span class="k">def</span> <span class="nf">get_project_ancestry</span><span class="p">(</span><span class="n">crm_client</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get project ancestry as a list of type Resource.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        crm_client (CloudResourceManagerClient):</span>
+<span class="sd">            crm client</span>
+<span class="sd">        project_id (str): A project ID</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Resource objects defining the ancestry</span>
+<span class="sd">            chain from the Project to the Organization</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ancestries</span> <span class="o">=</span> <span class="n">crm_client</span><span class="o">.</span><span class="n">get_project_ancestry</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+    <span class="n">ancestry_resources</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">resource_util</span><span class="o">.</span><span class="n">cast_to_gcp_resources</span><span class="p">(</span><span class="n">ancestries</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ancestry_resources</span></div>
+
+
+<div class="viewcode-block" id="get_project_ancestries"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.get_project_ancestries">[docs]</a><span class="k">def</span> <span class="nf">get_project_ancestries</span><span class="p">(</span><span class="n">crm_client</span><span class="p">,</span> <span class="n">project_id_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the ancestries from a list of project ID&#39;s</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        crm_client (CloudResourceManagerClient):</span>
+<span class="sd">            crm client</span>
+<span class="sd">        project_id_list (list): A list of project ID&#39;s</span>
+<span class="sd">            as strings</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of lists ofResource objects</span>
+<span class="sd">            defining the ancestrychain from the Project</span>
+<span class="sd">            to the Organization</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ancestry_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">project_id</span> <span class="ow">in</span> <span class="n">project_id_list</span><span class="p">:</span>
+        <span class="n">ancestry_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_project_ancestry</span><span class="p">(</span><span class="n">crm_client</span><span class="p">,</span>
+                                                  <span class="n">project_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ancestry_list</span></div>
+
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner">[docs]</a><span class="k">class</span> <span class="nc">ExternalProjectAccessScanner</span><span class="p">(</span><span class="n">base_scanner</span><span class="o">.</span><span class="n">BaseScanner</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scanner for external project access.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">scanner_configs</span><span class="p">,</span> <span class="n">service_config</span><span class="p">,</span>
+                 <span class="n">model_name</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            scanner_configs (dict): Scanner configurations.</span>
+<span class="sd">            service_config (ServiceConfig): Forseti 2.0 service configs</span>
+<span class="sd">            model_name (str): name of the data model</span>
+<span class="sd">            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.</span>
+<span class="sd">            rules (str): Fully-qualified path and filename of the rules file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExternalProjectAccessScanner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span>
+            <span class="n">scanner_configs</span><span class="p">,</span>
+            <span class="n">service_config</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">,</span>
+            <span class="n">snapshot_timestamp</span><span class="p">,</span>
+            <span class="n">rules</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory_configs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">get_inventory_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">epa_rules_engine</span><span class="o">.</span><span class="n">ExternalProjectAccessRulesEngine</span><span class="p">(</span>
+                <span class="n">rules_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span>
+                <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inventory_configs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ancestries</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner._output_results"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner._output_results">[docs]</a>    <span class="k">def</span> <span class="nf">_output_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Output results.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            all_violations (list): A list of violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_violations</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results_to_db</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner._find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner._find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">_find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ancestries_by_user</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find violations in the policies.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ancestries_by_user (dict): The project ancestries collected</span>
+<span class="sd">                                               from the scanner</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of ExternalProjectAccess violations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finding project access violations...&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">user_mail</span><span class="p">,</span> <span class="n">project_ancestries</span> <span class="ow">in</span> <span class="n">ancestries_by_user</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">project_ancestry</span> <span class="ow">in</span> <span class="n">project_ancestries</span><span class="p">:</span>
+                <span class="n">violations</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
+                        <span class="n">user_mail</span><span class="p">,</span> <span class="n">project_ancestry</span><span class="p">))</span>
+                <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_violations</span></div>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner._flatten_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner._flatten_violations">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_flatten_violations</span><span class="p">(</span><span class="n">violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flatten RuleViolations into a dict for each RuleViolation member.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (list): The RuleViolations to flatten.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Iterator of RuleViolations as a dict per member.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+            <span class="n">rule_ancestors_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_data</span><span class="p">[</span><span class="s1">&#39;ancestor_resources&#39;</span><span class="p">]:</span>
+                <span class="n">rule_ancestors_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ancestor</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="n">violation_data</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                <span class="s1">&#39;member&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">member</span><span class="p">,</span>
+                <span class="s1">&#39;rule_ancestors&#39;</span><span class="p">:</span> <span class="n">rule_ancestors_names</span>
+            <span class="p">}</span>
+
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span>
+                <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+                <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                <span class="s1">&#39;rule_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                <span class="s1">&#39;violation_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_type</span><span class="p">,</span>
+                <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="n">violation_data</span><span class="p">,</span>
+                <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_data</span>
+            <span class="p">}</span></div>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner._get_crm_client"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner._get_crm_client">[docs]</a>    <span class="k">def</span> <span class="nf">_get_crm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_email</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a user scoped CloudResourceManagerClient.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_email (str): The e-mail address of the</span>
+<span class="sd">                user.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CloudResourceManagerClient: crm client</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user_scoped_credential</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_delegated_credential</span><span class="p">(</span><span class="n">user_email</span><span class="p">,</span> <span class="n">SCOPES</span><span class="p">))</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="n">CloudResourceManagerClient</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inventory_configs</span><span class="o">.</span><span class="n">get_api_quota_configs</span><span class="p">(),</span>
+            <span class="n">credentials</span><span class="o">=</span><span class="n">user_scoped_credential</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">client</span></div>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner._retrieve"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner._retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve the project ancestries for all users.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: User project relationship.</span>
+<span class="sd">            {&quot;user1@example.com&quot;: [[Project(&quot;1234&quot;), Organization(&quot;1234567&quot;)],</span>
+<span class="sd">                                  [Project(&quot;12345&quot;), Folder(&quot;ABCDEFG&quot;),</span>
+<span class="sd">                                  Organization(&quot;1234567&quot;)]],</span>
+<span class="sd">             &quot;user2@example.com&quot;: [[Project(&quot;1234&quot;), Organization(&quot;34567&quot;)],</span>
+<span class="sd">                                  [Project(&quot;12345&quot;), Folder(&quot;ABCDEFG&quot;),</span>
+<span class="sd">                                  Organization(&quot;1234567&quot;)]]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># This dictionary is the result of the scan.  The key</span>
+        <span class="c1"># is the user ID.  The value is a list of lists of ancestries.</span>
+        <span class="n">user_to_project_ancestries_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">user_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">user_emails</span> <span class="o">=</span> <span class="n">get_user_emails</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">user_email</span> <span class="ow">in</span> <span class="n">user_emails</span><span class="p">:</span>
+            <span class="n">user_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">user_crm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_crm_client</span><span class="p">(</span><span class="n">user_email</span><span class="p">)</span>
+
+                <span class="n">project_ids</span> <span class="o">=</span> <span class="n">extract_project_ids</span><span class="p">(</span><span class="n">user_crm_client</span><span class="p">)</span>
+                <span class="n">ancestries</span> <span class="o">=</span> <span class="n">get_project_ancestries</span><span class="p">(</span><span class="n">user_crm_client</span><span class="p">,</span>
+                                                    <span class="n">project_ids</span><span class="p">)</span>
+
+                <span class="n">user_to_project_ancestries_map</span><span class="p">[</span><span class="n">user_email</span><span class="p">]</span> <span class="o">=</span> <span class="n">ancestries</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">RefreshError</span><span class="p">,</span> <span class="n">ApiExecutionError</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Unable to access project ancestry </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span>
+                             <span class="n">user_email</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Remove when instrumentation is implemented.</span>
+        <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;It took </span><span class="si">%f</span><span class="s1"> seconds to query projects for </span><span class="si">%d</span><span class="s1"> users&#39;</span><span class="p">,</span>
+                     <span class="n">elapsed_time</span><span class="p">,</span>
+                     <span class="n">user_count</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">user_to_project_ancestries_map</span></div>
+
+<div class="viewcode-block" id="ExternalProjectAccessScanner.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.external_project_access_scanner.html#google.cloud.forseti.scanner.scanners.external_project_access_scanner.ExternalProjectAccessScanner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Entry point to run the scanner.&quot;&quot;&quot;</span>
+        <span class="n">user_to_project_ancestries_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve</span><span class="p">()</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_violations</span><span class="p">(</span><span class="n">user_to_project_ancestries_map</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div></div>
+</pre></div>
