@@ -13,20 +13,22 @@
 # limitations under the License.
 
 """Forseti CLI."""
+from __future__ import print_function
 
+from builtins import object
 from argparse import ArgumentParser
 import json
 import os
 import sys
 
 import grpc
+
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
 from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
-
 
 LOGGER = logger.get_logger(__name__)
 
@@ -44,8 +46,7 @@ class DefaultParser(ArgumentParser):
         Args:
             message (str): Error message.
         """
-        if message:
-            sys.stderr.write('Argument error: %s.\n' % message)
+        del message
         self.print_usage()
         sys.exit(2)
 
@@ -351,7 +352,6 @@ def define_notifier_parser(parent):
     )
 
 
-# pylint: disable=too-many-locals
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -618,7 +618,7 @@ class JsonOutput(Output):
             Args:
                 obj (object): Object to write as json
         """
-        print MessageToJson(obj, including_default_value_fields=True)
+        print(MessageToJson(obj, including_default_value_fields=True))
 
 
 def run_config(_, config, output, config_env):
@@ -633,7 +633,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        print config_env
+        print(config_env)
 
     def do_set_endpoint():
         """Set a config item."""
@@ -1012,7 +1012,7 @@ class DefaultConfigParser(object):
             config (obj): Configuration to store.
         """
 
-        with file(get_config_path(), 'w+') as outfile:
+        with open(get_config_path(), 'w+') as outfile:
             json.dump(config, outfile)
 
     @classmethod
@@ -1024,11 +1024,11 @@ class DefaultConfigParser(object):
         """
 
         try:
-            with file(get_config_path()) as infile:
+            with open(get_config_path()) as infile:
                 return DefaultConfig(json.load(infile))
         except IOError:
-            LOGGER.warn('IOError - trying to open configuration'
-                        ' file located at %s', get_config_path())
+            LOGGER.warning('IOError - trying to open configuration '
+                           'file located at %s', get_config_path())
             return DefaultConfig()
 
 
@@ -1055,7 +1055,7 @@ class DefaultConfig(dict):
         self.DEFAULT['endpoint'] = self.get_default_endpoint()
 
         # Initialize default values
-        for key, value in self.DEFAULT.iteritems():
+        for key, value in self.DEFAULT.items():
             if key not in self:
                 self[key] = value
 
@@ -1082,7 +1082,6 @@ class DefaultConfig(dict):
                         'endpoint instead, endpoint: %s',
                         conf_path,
                         self.DEFAULT_ENDPOINT)
-
         return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):
@@ -1174,8 +1173,8 @@ def main(args=None,
     output = outputs[config.out_format]()
     try:
         services[config.service](client, config, output, config_env)
-    except ValueError as e:
-        parser.error(e.message)
+    except (KeyError, ValueError) as e:
+        parser.error(str(e))
     except grpc.RpcError as e:
         grpc_status_code = e.code()  # pylint: disable=no-member
         if grpc_status_code == grpc.StatusCode.UNAVAILABLE:
@@ -1187,11 +1186,11 @@ def main(args=None,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n')
         else:
-            print 'Error occurred on the server side, message: {}'.format(e)
+            print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:
-        print ('Model must be specified before running this command. '
-               'You can specify a model to use with command '
-               '"forseti model use <MODEL_NAME>".')
+        print('Model must be specified before running this command. '
+              'You can specify a model to use with command '
+              '"forseti model use <MODEL_NAME>".')
     return config
 
 

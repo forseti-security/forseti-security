@@ -20,6 +20,7 @@ From the top forseti-security dir, run:
 
 PYTHONPATH=. python tests/services/inventory/update_cai_dumps.py
 """
+from builtins import object
 import json
 import os
 
@@ -215,16 +216,16 @@ def serviceaccount(item):
                          item.get_iam_policy())
 
 
-def kubernetes_cluster(item):
-    parent = item.parent()
-    name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
-            'clusters/{}'.format(parent['projectId'],
-                                 item['zone'],
-                                 item['name']))
-    asset_type = 'container.googleapis.com/Cluster'
-    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-        parent['projectNumber'])
-    return _create_asset(name, asset_type, parent_name, item.data(), None)
+# def kubernetes_cluster(item):
+#     parent = item.parent()
+#     name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
+#             'clusters/{}'.format(parent['projectId'],
+#                                  item['zone'],
+#                                  item['name']))
+#     asset_type = 'container.googleapis.com/Cluster'
+#     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+#         parent['projectNumber'])
+#     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
 def _create_compute_asset(item, asset_type):
@@ -290,7 +291,6 @@ def subnetwork(item):
     return _create_compute_asset(item, 'compute.googleapis.com/Subnetwork')
 
 
-
 CAI_TYPE_MAP = {
     'organization': organization,
     'folder': folder,
@@ -312,7 +312,7 @@ CAI_TYPE_MAP = {
     'instancegroup': instancegroup,
     'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
-    'kubernetes_cluster': kubernetes_cluster,
+    # 'kubernetes_cluster': kubernetes_cluster,
     'network': network,
     'role': role,
     'serviceaccount': serviceaccount,
@@ -320,12 +320,14 @@ CAI_TYPE_MAP = {
     'subnetwork': subnetwork,
 }
 
+
 def write_data(data, destination):
     """Write data to destination."""
     with open(destination, 'w') as f:
         for line in data:
             f.write(line)
             f.write('\n')
+
 
 def convert_item_to_assets(item):
     """Convert the data in an item to Asset protos in json format."""
@@ -352,7 +354,7 @@ def main():
                         progresser,
                         config,
                         parallel=False)
-            for item in storage.mem.values():
+            for item in list(storage.mem.values()):
                 (resource, iam_policy) = convert_item_to_assets(item)
                 if resource:
                     resources.append(resource)

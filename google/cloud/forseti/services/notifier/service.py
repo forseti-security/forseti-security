@@ -14,12 +14,18 @@
 
 """Notifier gRPC service. """
 
-from Queue import Queue
+from builtins import object
+from queue import Queue
 
+import traceback
+
+from future import standard_library
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.common.util import logger
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -124,7 +130,8 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             progress_queue.put('Error occurred during the '
-                               'notification process.')
+                               'notification process: \'{}\''.format(
+                                   traceback.format_exc()))
             progress_queue.put(None)
 
 

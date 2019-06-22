@@ -14,6 +14,7 @@
 
 """Builds the scanners to run."""
 
+from builtins import object
 import importlib
 import inspect
 

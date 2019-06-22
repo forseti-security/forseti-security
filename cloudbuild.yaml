@@ -1,0 +1,42 @@
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Purpose - This Google Cloudbuild configuration mimics the same stesps found
+# in .travis.yml.  This could potentially be used in lieu of TravisCI
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security base container image
+  args: ['build', '--target', 'build', '-t', 'forseti/build', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Setup the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_setup_forseti.sh']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Run the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_run_forseti.sh']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Run the unit tests in the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_unittest_forseti.sh']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Run the pystyle tests in the Forseti container
+  entrypoint: "bash"
+  args: ['install/scripts/docker_pystyle_forseti.sh']
+
+timeout: 1200s

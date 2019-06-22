@@ -14,6 +14,7 @@
 
 """Config Validator Data Converter."""
 
+from builtins import range
 import json
 
 from google.iam.v1.policy_pb2 import Policy
@@ -127,7 +128,7 @@ def cleanup_dict(raw_dict):
     Args:
         raw_dict (dict): Dict to clean up.
     """
-    for key, value in raw_dict.items():
+    for key, value in list(raw_dict.items()):
         if not value:
             raw_dict[key] = None
         elif isinstance(value, list):

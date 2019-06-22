@@ -15,7 +15,7 @@
 """Tests the AppEngine client."""
 import unittest
 from googleapiclient import errors
-import mock
+import unittest.mock as mock
 import httplib2
 import google.auth
 from google.oauth2 import credentials
@@ -56,7 +56,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '404',
             'content-type': 'application/json'})
         response.reason = 'Not Found'
-        error = errors.HttpError(response, fae.APP_NOT_FOUND, uri='')
+        error = errors.HttpError(response, fae.APP_NOT_FOUND.encode(), uri='')
         self.assertTrue(ae._is_status_not_found(error))
 
     def test_is_status_not_found_403(self):
@@ -64,7 +64,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '403',
             'content-type': 'application/json'})
         response.reason = 'Permission Denied'
-        error = errors.HttpError(response, fae.PERMISSION_DENIED, uri='')
+        error = errors.HttpError(response, fae.PERMISSION_DENIED.encode(), uri='')
         self.assertFalse(ae._is_status_not_found(error))
 
     def test_get_app(self):
@@ -110,7 +110,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fae.LIST_SERVICES_RESPONSE)
         response = self.ae_api_client.list_services(fae.FAKE_PROJECT_ID)
 
-        self.assertEquals(fae.EXPECTED_SERVICE_NAMES,
+        self.assertEqual(fae.EXPECTED_SERVICE_NAMES,
                           [r.get('name') for r in response])
 
     def test_list_services_not_found(self):
@@ -155,7 +155,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         response = self.ae_api_client.list_versions(
             fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
 
-        self.assertEquals(fae.EXPECTED_VERSION_NAMES,
+        self.assertEqual(fae.EXPECTED_VERSION_NAMES,
                           [r.get('name') for r in response])
 
     def test_list_versions_not_found(self):
@@ -202,7 +202,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         response = self.ae_api_client.list_instances(
             fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
 
-        self.assertEquals(fae.EXPECTED_INSTANCE_NAMES,
+        self.assertEqual(fae.EXPECTED_INSTANCE_NAMES,
                           [r.get('name') for r in response])
 
     def test_list_instances_not_found(self):

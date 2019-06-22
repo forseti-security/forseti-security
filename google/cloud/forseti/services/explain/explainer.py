@@ -14,6 +14,7 @@
 
 """ Explain API. """
 
+from builtins import object
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)

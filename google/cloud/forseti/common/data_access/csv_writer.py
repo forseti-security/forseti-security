@@ -488,7 +488,7 @@ def normalize_nested_dicts(row):
         dict: A row with nested dicts transformed to json string.
     """
     new_row = {}
-    for key, value in row.items():
+    for key, value in list(row.items()):
         if isinstance(value, dict):
             new_row[key] = json.dumps(value, sort_keys=True)
         else:
@@ -531,5 +531,5 @@ def write_csv(resource_name, data, write_header=False):
 
         # Remove the csv file after loading.
         os.remove(csv_file.name)
-    except (IOError, OSError, csv.Error) as e:
+    except (OSError, csv.Error) as e:
         raise CSVFileError(resource_name, e)

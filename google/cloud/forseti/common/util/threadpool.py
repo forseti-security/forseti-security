@@ -14,12 +14,16 @@
 
 """ Thread pool implementation for async job distribution. """
 
-from Queue import Queue
+from builtins import range
+from builtins import object
+from queue import Queue
 from threading import Thread
 from threading import Lock
 
+from future import standard_library
 from google.cloud.forseti.common.util import logger
 
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 

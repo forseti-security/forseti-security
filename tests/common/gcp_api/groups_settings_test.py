@@ -14,7 +14,7 @@
 
 """Tests the Stackdriver Logging API client."""
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
@@ -54,7 +54,7 @@ class GroupsSettingsTest(unittest_utils.ForsetiTestCase):
 
 	    results = self.groups_settings_api_client.get_groups_settings(
 	        fake_groups_settings.FAKE_EMAIL)
-	    self.assertEquals(results['description'] , fake_groups_settings.FAKE_DESCRIPTION)
+	    self.assertEqual(results['description'] , fake_groups_settings.FAKE_DESCRIPTION)
 
     def test_get_groups_settings_raises(self):
         """Test get groups settings error if group does not exist."""

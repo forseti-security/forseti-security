@@ -174,6 +174,14 @@ if [ -z "$FLUENTD" ]; then
       bash install-logging-agent.sh
 fi
 
+# Install collectd if necessary.
+COLLECTD=$(ls /opt/stackdriver/collectd/sbin/stackdriver-collectd)
+if [ -z "$COLLECTD" ]; then
+      cd $USER_HOME
+      curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+      bash install-monitoring-agent.sh
+fi
+
 # Check whether Cloud SQL proxy is installed.
 CLOUD_SQL_PROXY=$(which cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
@@ -202,9 +210,8 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip install --upgrade pip==9.0.3
-pip install -q --upgrade setuptools wheel
-pip install -q --upgrade -r requirements.txt
+python3 -m pip install -q --upgrade setuptools wheel
+python3 -m pip install -q --upgrade -r requirements.txt
 
 # Setup Forseti logging
 touch /var/log/forseti.log
@@ -219,7 +226,7 @@ logrotate /etc/logrotate.conf
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/install/gcp/scripts/run_forseti.sh
 
 # Install Forseti
-python setup.py install
+python3 setup.py install
 
 # Export variables required by initialize_forseti_services.sh.
 {export_initialize_vars}
@@ -227,7 +234,7 @@ python setup.py install
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
 
-# Store the variables in /etc/profile.d/forseti_environment.sh 
+# Store the variables in /etc/profile.d/forseti_environment.sh
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
@@ -237,7 +244,7 @@ gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
 # Download the Newest Config Validator constraints from GCS
 rm -rf {forseti_home}/policy-library
-gsutil cp -r gs://{scanner_bucket}/policy-library {forseti_home}/policy-library
+gsutil cp -r gs://{scanner_bucket}/policy-library {forseti_home}/
 
 # Start Forseti service depends on vars defined above.
 bash ./install/gcp/scripts/initialize_forseti_services.sh
@@ -248,7 +255,7 @@ systemctl start config-validator
 sleep 5
 
 echo "Attempting to update database schema, if necessary."
-python $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
+python3 $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
 
 systemctl start forseti
 echo "Success! The Forseti API server has been started."
