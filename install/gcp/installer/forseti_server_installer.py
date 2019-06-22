@@ -223,7 +223,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             resource_root_id = self.resource_root_id
 
         return {
-            'CAI_ENABLED': 'organizations' in self.resource_root_id,
+            'CAI_ENABLED': True,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
@@ -240,18 +240,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        if self.composite_root_resources:
-            # split element 0 into type and id
-            rtype, rid = self.composite_root_resources[0].split('/')
-
-            organization_id = gcloud.lookup_organization(rid, rtype)
-        else:
-            organization_id = self.resource_root_id.split('/')[-1]
-
-        domain = gcloud.get_domain_from_organization_id(organization_id)
+        domain = gcloud.get_domain_from_organization_id(self.organization_id)
 
         return {
-            'ORGANIZATION_ID': organization_id,
+            'ORGANIZATION_ID': self.organization_id,
             'DOMAIN': domain
         }
 
