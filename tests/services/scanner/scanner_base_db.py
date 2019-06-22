@@ -7,7 +7,7 @@ from __future__ import print_function
 from datetime import datetime
 from datetime import timedelta
 import os
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.util import date_time

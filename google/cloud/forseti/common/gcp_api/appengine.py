@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for AppEngine API client."""
+from builtins import object
 import json
 from googleapiclient import errors
 from httplib2 import HttpLib2Error

@@ -17,11 +17,11 @@
 from datetime import datetime
 from datetime import timedelta
 import hashlib
-from itertools import izip
+
 import json
 import os
 import unittest
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.scanner import scanner_base_db
@@ -66,7 +66,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                 'violation_data', 'violation_hash', 'resource_data',
                 'created_at_datetime']
 
-        for fake, saved in izip(scanner_base_db.FAKE_VIOLATIONS,
+        for fake, saved in zip(scanner_base_db.FAKE_VIOLATIONS,
                                 saved_violations):
             for key in keys:
                 if key == 'scanner_index_id':
@@ -75,7 +75,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                     expected_key_value = fake.get(key)
                 saved_key_value = getattr(saved, key)
                 if key == 'violation_data':
-                    self.assertEquals(
+                    self.assertEqual(
                         expected_key_value,
                         json.loads(saved_key_value),
                         'The key value of "%s" differs:\nExpected: %s'
@@ -97,7 +97,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                                               type(saved_key_value))
                     )
                 else:
-                    self.assertEquals(
+                    self.assertEqual(
                         expected_key_value, saved_key_value,
                         'The key value of "%s" differs:\nExpected: %s'
                         '\nFound: %s' % (key, expected_key_value,
@@ -127,6 +127,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
+             'violation_message': u'',
              'rule_index': 111,
              'rule_name': u'disallow_all_ports_111',
              'violation_data': (
@@ -143,6 +144,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',
+             'violation_message': u'',
              'rule_index': 222,
              'rule_name': u'disallow_all_ports_222',
              'violation_data': (
@@ -169,9 +171,9 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         """Test _create_violation_hash."""
         test_hash = hashlib.new('sha512')
         test_hash.update(
-            json.dumps(self.test_violation_full_name) +
-            json.dumps(self.test_inventory_data) +
-            json.dumps(self.test_violation_data)
+            json.dumps(self.test_violation_full_name).encode() +
+            json.dumps(self.test_inventory_data).encode() +
+            json.dumps(self.test_violation_data).encode()
         )
         expected_hash = test_hash.hexdigest()
 
@@ -217,7 +219,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
             self.test_violation_data)
-        self.assertEquals(expected_hash, returned_hash)
+        self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
         expected_hash = ('f8813c34ab225002fb2c04ee392691b4e37c9a0eee1a08b277c36'
@@ -227,7 +229,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             None,
             self.test_inventory_data,
             self.test_violation_data)
-        self.assertEquals(expected_hash, returned_hash)
+        self.assertEqual(expected_hash, returned_hash)
 
     def test_get_latest_scanner_index_id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
@@ -250,7 +252,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.session.add(index2)
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
-        self.assertEquals(
+        self.assertEqual(
             expected_id, scanner_dao.get_latest_scanner_index_id(
                 self.session, expected_id))
 
@@ -271,7 +273,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
-        self.assertEquals(
+        self.assertEqual(
             expected_id,
             scanner_dao.get_latest_scanner_index_id(
                 self.session, expected_id, IndexState.FAILURE))
@@ -300,9 +302,9 @@ class ScannerIndexTest(ForsetiTestCase):
         mock_date_time.return_value = utc_now
         expected_id = date_time.get_utc_now_microtimestamp(utc_now)
         db_row = scanner_dao.ScannerIndex.create(expected_id)
-        self.assertEquals(expected_id, db_row.id)
-        self.assertEquals(utc_now, db_row.created_at_datetime)
-        self.assertEquals(IndexState.CREATED, db_row.scanner_status)
+        self.assertEqual(expected_id, db_row.id)
+        self.assertEqual(utc_now, db_row.created_at_datetime)
+        self.assertEqual(IndexState.CREATED, db_row.scanner_status)
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_scanner_index_complete(self, mock_date_time):
@@ -314,24 +316,24 @@ class ScannerIndexTest(ForsetiTestCase):
         expected_id = date_time.get_utc_now_microtimestamp(start)
 
         db_row = scanner_dao.ScannerIndex.create(expected_id)
-        self.assertEquals(expected_id, db_row.id)
+        self.assertEqual(expected_id, db_row.id)
         db_row.complete()
-        self.assertEquals(end, db_row.completed_at_datetime)
-        self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
+        self.assertEqual(end, db_row.completed_at_datetime)
+        self.assertEqual(IndexState.SUCCESS, db_row.scanner_status)
 
     def test_scanner_index_add_warning(self):
         """`ScannerIndex` add_warning() works as expected."""
         db_row = scanner_dao.ScannerIndex.create('aaa')
         db_row.add_warning(self.session, '1st warning')
         db_row.add_warning(self.session, '2nd warning')
-        self.assertEquals(
+        self.assertEqual(
             '1st warning\n2nd warning\n', db_row.scanner_index_warnings)
 
     def test_scanner_index_set_error(self):
         """`ScannerIndex` set_error() works as expected."""
         db_row = scanner_dao.ScannerIndex.create('aaa')
         db_row.set_error(self.session, 'scanner error!')
-        self.assertEquals('scanner error!', db_row.scanner_index_errors)
+        self.assertEqual('scanner error!', db_row.scanner_index_errors)
 
 
 class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
@@ -341,14 +343,14 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(inv_index_id=self.inv_index_id2)
         actual_data = self.violation_access.list()
-        self.assertEquals(2 * len(scanner_base_db.FAKE_VIOLATIONS),
+        self.assertEqual(2 * len(scanner_base_db.FAKE_VIOLATIONS),
                           len(actual_data))
 
     def test_list_with_inv_index_single_successful_scan(self):
         self.populate_db(inv_index_id=self.inv_index_id1)
         actual_data = self.violation_access.list(
             inv_index_id=self.inv_index_id1)
-        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+        self.assertEqual(len(scanner_base_db.FAKE_VIOLATIONS),
                           len(actual_data))
 
     def test_list_with_inv_index_single_failed_scan(self):
@@ -357,7 +359,7 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             inv_index_id=self.inv_index_id1)
-        self.assertEquals(0, len(actual_data))
+        self.assertEqual(0, len(actual_data))
 
     def test_list_with_inv_index_multi_mixed_success_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
@@ -366,17 +368,17 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             inv_index_id=self.inv_index_id1)
-        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+        self.assertEqual(len(scanner_base_db.FAKE_VIOLATIONS),
                           len(actual_data))
         for violation in actual_data:
-            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+            self.assertEqual(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_inv_index_multi_all_success_scan(self):
         self.populate_db(inv_index_id=self.inv_index_id2)
         self.populate_db(inv_index_id=self.inv_index_id2)
         actual_data = self.violation_access.list(
             inv_index_id=self.inv_index_id2)
-        self.assertEquals(2 * len(scanner_base_db.FAKE_VIOLATIONS),
+        self.assertEqual(2 * len(scanner_base_db.FAKE_VIOLATIONS),
                           len(actual_data))
 
     def test_list_with_inv_index_multi_all_failed_scan(self):
@@ -388,16 +390,16 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             inv_index_id=self.inv_index_id1)
-        self.assertEquals(0, len(actual_data))
+        self.assertEqual(0, len(actual_data))
 
     def test_list_with_scnr_index_single_successful_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+        self.assertEqual(len(scanner_base_db.FAKE_VIOLATIONS),
                           len(actual_data))
         for violation in actual_data:
-            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+            self.assertEqual(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_single_failed_scan(self):
         scanner_index_id = self.populate_db(
@@ -405,7 +407,7 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(0, len(actual_data))
+        self.assertEqual(0, len(actual_data))
 
     def test_list_with_scnr_index_multi_mixed_success_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
@@ -414,20 +416,20 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
+        self.assertEqual(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
                          )
         for violation in actual_data:
-            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+            self.assertEqual(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_multi_all_success_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(inv_index_id=self.inv_index_id3)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
+        self.assertEqual(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
                          )
         for violation in actual_data:
-            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+            self.assertEqual(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_multi_all_failed_scan(self):
         scanner_index_id = self.populate_db(
@@ -438,7 +440,7 @@ class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
         )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(0, len(actual_data))
+        self.assertEqual(0, len(actual_data))
 
     def test_list_with_both_indices(self):
         scanner_index_id = self.populate_db(

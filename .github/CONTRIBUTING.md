@@ -51,18 +51,18 @@ To submit a pull request for Forseti, follow the process below:
 
       # Assign the original repository to a remote called "upstream".
       # Using HTTPS
-      $ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+      $ git remote add upstream https://github.com/forseti-security/forseti-security.git
 
       # Using SSH
-      $ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+      $ git remote add upstream git@github.com:forseti-security/forseti-security.git
 
       # Verify new upstream remote is added correctly.
       $ git remote -v
 
       origin  git@github.com:YOUR_FORK (fetch)
       origin  git@github.com:YOUR_FORK (push)
-      upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
-      upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
+      upstream  git@github.com:forseti-security/forseti-security.git (fetch)
+      upstream  git@github.com:forseti-security/forseti-security.git (push)
       ```
 
   1. Fetch the latest changes from upstream into your cloned repository:

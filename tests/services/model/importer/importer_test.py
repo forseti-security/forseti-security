@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
+from __future__ import print_function
 
-import mock
+from builtins import object
+import unittest.mock as mock
 import os
 import shutil
 import tempfile
@@ -95,7 +97,7 @@ class ImporterTest(ForsetiTestCase):
             # segments.
             for policy in self.data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
-                        len(filter(None, policy.full_name.split('/'))) % 2)
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
             gcs_policies = list(
                 self.data_access.scanner_iter(session, 'gcs_policy'))
@@ -124,7 +126,7 @@ class ImporterTest(ForsetiTestCase):
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(
+        self.assertEqual(
             {'pristine': True,
              'source': 'inventory',
              'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
@@ -163,7 +165,7 @@ class ImporterTest(ForsetiTestCase):
             # segments.
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
-                        len(filter(None, policy.full_name.split('/'))) % 2)
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
             # Verify that two projects are in the inventory after import.
             projects = list(data_access.scanner_iter(session, 'project'))
@@ -176,7 +178,7 @@ class ImporterTest(ForsetiTestCase):
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(
+        self.assertEqual(
             {'pristine': True,
              'source': 'inventory',
              'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
@@ -236,7 +238,7 @@ class ImporterTest(ForsetiTestCase):
 
 
         action.assert_called_once_with(1, 2)
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -270,7 +272,7 @@ class ImporterTest(ForsetiTestCase):
 
         calls = [mock.call(1, 2), mock.call(4, 5)]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -305,7 +307,7 @@ class ImporterTest(ForsetiTestCase):
                                                    flush_count)
 
         action.assert_called_once_with('not_tuple')
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -338,7 +340,7 @@ class ImporterTest(ForsetiTestCase):
                                                    flush_count)
         calls = [mock.call('data'), mock.call('data1')]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)

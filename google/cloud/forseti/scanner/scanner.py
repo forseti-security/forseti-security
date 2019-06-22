@@ -13,6 +13,8 @@
 # limitations under the License.
 """GCP Resource scanner."""
 
+import traceback
+
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner_builder
@@ -118,8 +120,8 @@ def run(model_name=None,
                 progress_queue.put('Running {}...'.format(
                     scanner.__class__.__name__))
             except Exception:  # pylint: disable=broad-except
-                log_message = 'Error running scanner: {}'.format(
-                    scanner.__class__.__name__)
+                log_message = 'Error running scanner: {}: \'{}\''.format(
+                    scanner.__class__.__name__, traceback.format_exc())
                 progress_queue.put(log_message)
                 LOGGER.exception(log_message)
                 failed.append(scanner.__class__.__name__)

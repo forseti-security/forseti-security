@@ -14,6 +14,7 @@
 
 """Rules engine for firewall rules."""
 
+from builtins import object
 import itertools
 import threading
 from collections import namedtuple

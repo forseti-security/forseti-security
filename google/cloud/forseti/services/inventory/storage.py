@@ -14,6 +14,7 @@
 """Inventory storage implementation."""
 # pylint: disable=too-many-lines
 
+from builtins import object
 import json
 import enum
 
@@ -185,20 +186,20 @@ class InventoryIndex(BASE):
                      resource_type_input, details)
 
         # Lifecycle can be None if Forseti is installed to a non-org level.
-        for key in details.keys():
+        for key in list(details.keys()):
             if key is None:
                 continue
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
             details[new_key] = details.pop(key)
 
-        if len(details) == 1 and details.keys()[0] is None:
+        if len(details) == 1 and list(details.keys())[0] is None:
             return {}
 
         if len(details) == 1:
-            if 'ACTIVE' in details.keys()[0]:
+            if 'ACTIVE' in list(details.keys())[0]:
                 added_key_str = 'DELETE PENDING'
-            elif 'DELETE PENDING' in details.keys()[0]:
+            elif 'DELETE PENDING' in list(details.keys())[0]:
                 added_key_str = 'ACTIVE'
             added_key = ' - '.join([resource_type_input, added_key_str])
             details[added_key] = 0
@@ -281,7 +282,7 @@ class InventoryIndex(BASE):
 
         details = {}
 
-        for key, value in resource_types_with_details.items():
+        for key, value in list(resource_types_with_details.items()):
             if key == 'lifecycle':
                 details_function = self.get_lifecycle_state_details
             elif key == 'hidden':
@@ -664,8 +665,8 @@ class CaiTemporaryStore(object):
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
-            LOGGER.warn('Skipping insert of asset %s, name too long.',
-                        asset['name'])
+            LOGGER.warning('Skipping insert of asset %s, name too long.',
+                           asset['name'])
             return None
 
         if 'resource' in asset:
@@ -707,6 +708,7 @@ class CaiTemporaryStore(object):
             session.rollback()
             raise
 
+    # pylint: disable=too-many-return-statements
     @staticmethod
     def _get_parent_name(asset):
         """Determines the parent name from the resource data.
@@ -749,6 +751,70 @@ class CaiTemporaryStore(object):
               asset['asset_type'].startswith('spanner.googleapis.com/')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset['name'].split('/')[:-2])
+
+        elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/nodes/test-node"
+            #
+            # Strip k8s/nodes/{NODE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace"
+            #
+            # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] == 'k8s.io/Pod':
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/pods/test-pod"
+            #
+            # Strip pods/{POD} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-2])
+
+        elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
+                                     'rbac.authorization.k8s.io/RoleBinding'):
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/rbac.authorization.k8s.io/roles/
+            # extension-apiserver-authentication-reader"
+            #
+            # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
+            # parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace/
+            # rbac.authorization.k8s.io/rolebindings/
+            # system:controller:bootstrap-signer"
+            #
+            # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
+            # name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] in (
+                'rbac.authorization.k8s.io/ClusterRole',
+                'rbac.authorization.k8s.io/ClusterRoleBinding'):
+            # Kubernetes ClusterRoles and ClusterRoleBindings are parented by a
+            # k8s under a cluster, but the k8 is not directly discoverable
+            # without iterating all k8s, so instead this creates an artificial
+            # parent at the cluster level, which acts as an aggregated list of
+            # all cluster roles and cluster role bindings in all k8s to fix this
+            # broken behavior.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/rbac.authorization.k8s.io/
+            # clusterroles/cloud-provider"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterroles/
+            # {CLUSTERROLE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/
+            # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/
+            # {CLUSTERROLEBINDING} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-4])
 
         # Known unparented asset types.
         if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
@@ -853,7 +919,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip())
+                row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.
