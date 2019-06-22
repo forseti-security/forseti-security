@@ -77,7 +77,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'rule_index': 0,
                 'rule_name': violation.constraint,
                 'violation_type': self.VIOLATION_TYPE,
-                'violation_data': json_format.MessageToJson(
+                'violation_data': json_format.MessageToDict(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
                 'violation_message': violation.message
