@@ -1476,6 +1476,14 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE` 
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-9` for Forseti client.
+1. Assign role `roles/monitoring.metricWriter` to the service account on the project level.   
+```
+gcloud projects add-iam-policy-binding {ORGANIZATION_ID} --member=serviceAccount:{SERVICE_ACCOUNT_NAME}@{PROJECT_ID}.iam.gserviceaccount.com --role=roles/monitoring.metricWriter
+```
+Example:  
+```
+gcloud projects add-iam-policy-binding 1234567890 --member=serviceAccount:forseti-server-gcp-ea370bd@my_gcp_project.iam.gserviceaccount.com --role=roles/monitoring.metricWriter
+```
 1. Configuration file `forseti_conf_server.yaml` updates: 
    **Inventory**
    - Add Kubernetes resources as Cloud Asset Inventory assets.
