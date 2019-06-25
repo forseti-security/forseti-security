@@ -39,6 +39,10 @@ BIGQUERY_TESTS = [
      make_iam_policy('roles/bigquery.dataViewer', ['allAuthenticatedUsers']),
      [{'role': 'READER', 'specialGroup': 'allAuthenticatedUsers'}]),
 
+    ('dataViewer-allUsers',
+     make_iam_policy('roles/bigquery.dataViewer', ['allUsers']),
+     [{'role': 'READER', 'specialGroup': 'allUsers'}]),
+
     ('dataViewer-User',
      make_iam_policy('roles/bigquery.dataViewer', ['user:test@forseti.test']),
      [{'role': 'READER', 'userByEmail': 'test@forseti.test'}]),
