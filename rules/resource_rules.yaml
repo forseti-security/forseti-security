@@ -16,9 +16,13 @@
 # are not currently supported. If there is an exact match for the `resource_id`
 # AND a wildcard, the exact match node is given preference.
 
+
+# Note: please use the id of the resource (such as organization id,
+# folder id, project id, etc.) when specifying the resource ids.
+
 # rules:
-#   # Note: please use the id of the resource (such as organization id,
-#   # folder id, project id, etc.) when specifying the resource ids.
+#   name: Project resource trees.
+#   mode: required
 #   resource_types:
 #   - 'project'
 #   - 'bucket'
