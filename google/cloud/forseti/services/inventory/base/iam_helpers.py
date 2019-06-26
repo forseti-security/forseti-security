@@ -58,6 +58,7 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
     # Map iam policy member type to bigquery access policy member type.
     special_group_to_iam_member_map = {
         'allAuthenticatedUsers': 'allAuthenticatedUsers',
+        'allUsers': 'allUsers',
         'projectWriters': 'projectEditor',
         'projectOwners': 'projectOwner',
         'projectReaders': 'projectViewer',
@@ -134,6 +135,7 @@ def convert_iam_to_bigquery_policy(iam_policy):
     # from the IAM policy binding is used.
     iam_to_access_policy_member_map = {
         'allAuthenticatedUsers': ('specialGroup', 'allAuthenticatedUsers'),
+        'allUsers': ('specialGroup', 'allUsers'),
         'projectEditor': ('specialGroup', 'projectWriters'),
         'projectOwner': ('specialGroup', 'projectOwners'),
         'projectViewer': ('specialGroup', 'projectReaders'),
