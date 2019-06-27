@@ -21,7 +21,7 @@
 # folder id, project id, etc.) when specifying the resource ids.
 
 # rules:
-#   name: Project resource trees.
+# - name: Project resource trees.
 #   mode: required
 #   resource_types:
 #   - 'project'
