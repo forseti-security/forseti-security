@@ -2505,8 +2505,7 @@ class SpannerInstanceIterator(resource_iter_class_factory(
 class StorageBucketIterator(resource_iter_class_factory(
         api_method_name='iter_storage_buckets',
         resource_name='storage_bucket',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='storage_api_enabled')):
+        api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Storage Bucket."""
 
 

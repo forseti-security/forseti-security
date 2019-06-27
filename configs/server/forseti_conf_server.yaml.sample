@@ -22,6 +22,7 @@ inventory:
     # service account before they can be included in the inventory.
     #
     # Forseti Explain is not supported with a composite root at this time.
+    #
     # Resources can exist in multiple organizations.
     #
     #composite_root_resources:
@@ -211,7 +212,7 @@ scanner:
 
     # Enable the scanners as default to true when integrated for Forseti 2.0.
 
-     scanners:
+    scanners:
         - name: audit_logging
           enabled: false
         - name: bigquery
@@ -274,7 +275,7 @@ notifier:
                 data_format: csv
                 # gcs_path should begin with "gs://"
                 gcs_path: ''
-            # Slack webhook pipeline
+            # Slack webhook pipeline.
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
             # Add the provided URL in the configuration below in `webhook_url`.
@@ -298,7 +299,7 @@ notifier:
     violation:
       cscc:
         enabled: true
-        # Cloud SCC API uses a new source_id. It is unique per
+        # Cloud SCC uses a source_id. It is unique per
         # organization and must be generated via a self-registration process.
         # The format is: organizations/ORG_ID/sources/SOURCE_ID
         source_id:
@@ -312,4 +313,3 @@ notifier:
         gcs_path: gs://MY_BUCKET/inventory_summary
       email_summary:
         enabled: true
-
