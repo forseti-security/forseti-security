@@ -97,7 +97,7 @@ rules:
         operator: '='
       - major: '1.13'
         minor: '6-gke.13'
-        operator: '='
+        operator: '>='
 
 # Example rules.
 #  - name: Only allow supported versions of 1.9 on projects under folder 123456
