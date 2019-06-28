@@ -82,6 +82,12 @@ def define_inventory_parser(parent):
         help='Emit additional information for debugging.',
     )
 
+    create_inventory_parser.add_argument(
+        '--enable_tracing',
+        action='store_true',
+        help='Emit additional information for tracing.',
+    )
+
     delete_inventory_parser = action_subparser.add_parser(
         'delete',
         help='Delete an inventory')
@@ -232,6 +238,39 @@ def define_server_parser(parent):
               'a path that the server has access to (e.g. a path in '
               'the server vm or a gcs path starts with gs://).')
     )
+
+    tracing_parser = action_subparser.add_parser(
+        'tracing',
+        help='Current Tracing mode.')
+
+    tracing_subparser = tracing_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    # set_tracing = tracing_subparser.add_parser(
+    #     'set',
+    #     help='Set the tracing mode.'
+    # )
+    #
+    # set_tracing.add_argument(
+    #     'tracing',
+    #     choices=['enable', 'disable'])
+
+    # tracing_parser.add_argument(
+    #     'tracing',
+    #     choices=['enable', 'disable'])
+
+    _ = tracing_subparser.add_parser(
+        'get',
+        help='Get the tracing mode.')
+
+    _ = tracing_subparser.add_parser(
+        'enable',
+        help='Enable tracing mode.')
+
+    _ = tracing_subparser.add_parser(
+        'disable',
+        help='Disable tracing mode.')
 
 
 def define_model_parser(parent):
@@ -728,10 +767,27 @@ def run_server(client, config, output, _):
         """Get the configuration of the server."""
         output.write(client.get_server_configuration())
 
+    def do_get_tracing():
+        """Get the current tracing mode."""
+        output.write(client.get_tracing())
+
+    def do_set_tracing_enable():
+        """Set the tracing mode to enable."""
+        output.write(client.set_tracing_enable('TRUE'))
+
+    def do_set_tracing_disable():
+        """Set the tracing mode to disable."""
+        output.write(client.set_tracing_enable('FALSE'))
+
     actions = {
         'log_level': {
             'get': do_get_log_level,
             'set': do_set_log_level
+        },
+        'tracing': {
+            'get': do_get_tracing,
+            'enable': do_set_tracing_enable,
+            'disable': do_set_tracing_disable
         },
         'configuration': {
             'get': do_get_configuration,
@@ -798,7 +854,8 @@ def run_model(client, config, output, config_env):
         result = client.new_model('inventory',
                                   config.name,
                                   int(config.inventory_index_id),
-                                  config.background)
+                                  config.background,
+                                  config.enable_tracing)
         output.write(result)
 
     def do_use_model():

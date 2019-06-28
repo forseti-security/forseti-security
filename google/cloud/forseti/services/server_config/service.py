@@ -21,6 +21,7 @@ import logging
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.opencensus import tracing
 
 
 LOGGER = logger.get_logger(__name__)
@@ -132,6 +133,77 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
 
         return server_pb2.GetServerConfigurationReply(
             configuration=json.dumps(forseti_config, sort_keys=True))
+
+    def GetTracing(self, request, _):
+        """Get tracing mode.
+
+        Args:
+            request (GetTracingRequest): The tracing request.
+            _ (object): Context of the request.
+
+        Returns:
+            GetTracingReply: The GetLogLevelReply grpc object.
+        """
+        del request
+
+        tracing_mode = tracing.OPENCENSUS_ENABLED
+
+        LOGGER.info('Retrieving tracing mode, tracing_mode = %s',
+                    tracing_mode)
+
+        return server_pb2.GetTracingReply(tracing_mode=str(tracing_mode))
+
+    def SetTracingEnable(self, request, _):
+        """Tracing Enable.
+
+        Args:
+            request (SetTracingEnableRequest): The grpc request object.
+            _ (object): Context of the request.
+
+        Returns:
+            SetTracingEnableReply: The SetTracingEnableReply grpc object.
+        """
+        err_msg = ''
+
+        try:
+            LOGGER.info('Enabling tracing, tracing_mode = %s',
+                        request.enable_tracing)
+            tracing.set_tracing_mode(bool(request.enable_tracing))
+            tracing.conditional_import_modues(bool(request.enable_tracing))
+        except Exception as e:  # pylint: disable=broad-except
+            LOGGER.exception(e)
+            err_msg = e.message
+
+        is_success = not err_msg
+
+        return server_pb2.SetTracingEnableReply(is_success=is_success,
+                                                error_message=err_msg)
+
+    def SetTracingDisable(self, request, _):
+        """Disable Tracing.
+
+        Args:
+            request (SetTracingDisableRequest): The grpc request object.
+            _ (object): Context of the request.
+
+        Returns:
+            SetTracingDisableReply: The SetTracingDisableReply grpc object.
+        """
+        err_msg = ''
+
+        try:
+            LOGGER.info('Disabling tracing, tracing_mode = %s',
+                        request.disable_tracing)
+            tracing.set_tracing_mode(bool(request.disable_tracing))
+            tracing.conditional_import_modues(bool(request.disable_tracing))
+        except Exception as e:  # pylint: disable=broad-except
+            LOGGER.exception(e)
+            err_msg = e.message
+
+        is_success = not err_msg
+
+        return server_pb2.SetTracingDisableReply(is_success=is_success,
+                                                 error_message=err_msg)
 
 
 class GrpcServerConfigFactory(object):

@@ -28,6 +28,15 @@ service Server {
 
   rpc ReloadServerConfiguration(ReloadServerConfigurationRequest)
     returns (ReloadServerConfigurationReply) {}
+
+  rpc GetTracing(GetTracingRequest) returns (GetTracingReply) {}
+
+  rpc SetTracingEnable(SetTracingEnableRequest)
+    returns (SetTracingEnableReply) {}
+
+  rpc SetTracingDisable(SetTracingDisableRequest)
+    returns (SetTracingDisableReply) {}
+
 }
 
 message SetLogLevelRequest {
@@ -68,3 +77,28 @@ message PingRequest {
 message PingReply {
   string data = 1;
 }
+
+message GetTracingRequest {}
+
+message GetTracingReply {
+  string tracing_mode = 1;
+}
+
+message SetTracingEnableRequest {
+  string enable_tracing = 1;
+}
+
+message SetTracingEnableReply {
+  bool is_success = 1;
+  string error_message = 2;
+}
+
+message SetTracingDisableRequest {
+  string disable_tracing = 1;
+}
+
+message SetTracingDisableReply {
+  bool is_success = 1;
+  string error_message = 2;
+}
+

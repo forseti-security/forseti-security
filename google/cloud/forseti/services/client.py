@@ -83,6 +83,7 @@ def create_interceptors(endpoint):
     """
     interceptors = []
     if tracing.OPENCENSUS_ENABLED:
+        tracing.conditional_import_modues(tracing.OPENCENSUS_ENABLED)
         # It's okay for this to be enabled on the client, even if the tracing
         # flag is disabled on the server.
         interceptors.append(tracing.create_client_interceptor(endpoint))
@@ -225,6 +226,41 @@ class ServerConfigClient(ForsetiClient):
         """
         request = server_pb2.GetServerConfigurationRequest()
         return self.stub.GetServerConfiguration(request)
+
+    def get_tracing(self):
+        """Gets the current tracing mode
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_pb2.GetTracingRequest()
+        return self.stub.GetTracing(request)
+
+    def set_tracing_enable(self, tracing_mode):
+        """Enables tracing.
+
+        Args:
+            tracing_mode (str): The updated tracing mode.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_pb2.SetTracingEnableRequest(
+            enable_tracing=tracing_mode)
+        return self.stub.SetTracingEnable(request)
+
+    def set_tracing_disable(self, tracing_mode):
+        """Disables tracing.
+
+        Args:
+            tracing_mode (str): The updated tracing_mode.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_pb2.SetTracingDisableRequest(
+            disable_tracing=tracing_mode)
+        return self.stub.SetTracingDisable(request)
 
 
 class NotifierClient(ForsetiClient):
