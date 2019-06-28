@@ -30,6 +30,8 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize \
     as init_storage
 
+from google.cloud.forseti.common.opencensus import tracing
+
 standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
@@ -170,7 +172,8 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-
+    tracer = getattr(service_config, 'tracer', None)
+    tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -179,13 +182,15 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 tracer=tracer)
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
             raise
         else:
             storage.commit()
+            tracing.end_span(tracer, result=result)
         return result
 
 
@@ -208,6 +213,7 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
+@tracing.traced(methods=['create'], context=True)
 class Inventory(object):
     """Inventory API implementation."""
 

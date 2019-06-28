@@ -29,6 +29,8 @@ from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
 
+from google.cloud.forseti.common.opencensus import tracing
+
 standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
@@ -37,7 +39,8 @@ LOGGER = logger.get_logger(__name__)
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables=None):
+    def __init__(self, storage, progresser, api_client, variables=None,
+                 tracer=None):
         """Initialize
 
         Args:
@@ -45,6 +48,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
+            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
             variables (dict): config variables
         """
         super(CrawlerConfig, self).__init__()
@@ -52,13 +56,14 @@ class CrawlerConfig(crawler.CrawlerConfig):
         self.progresser = progresser
         self.variables = {} if not variables else variables
         self.client = api_client
+        self.tracer = tracer
 
 
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, threads=10,
-                 variables=None):
+                 variables=None, tracer=None):
         """Initialize
 
         Args:
@@ -66,6 +71,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
+            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
             threads (int): how many threads to use
             variables (dict): config variables
         """
@@ -75,8 +81,10 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
+        self.tracer = tracer
 
 
+@tracing.traced(methods=['visit', 'update', 'run', 'write'])
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -102,6 +110,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
 
+    # pylint: disable=protected-access
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -111,7 +120,12 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-
+        attrs = {
+            'id': resource._data.get('name', None),
+            'parent': resource._data.get('parent', None),
+            'type': resource.__class__.__name__,
+            'success': True
+        }
         progresser = self.config.progresser
         try:
 
@@ -127,9 +141,13 @@ class Crawler(crawler.Crawler):
         except Exception as e:
             LOGGER.exception(e)
             progresser.on_error(e)
+            attrs['exception'] = e
+            attrs['success'] = False
             raise
         else:
             progresser.on_new_object(resource)
+        finally:
+            tracing.set_span_attributes(self.config.tracer, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
@@ -361,10 +379,12 @@ def _root_resource_factory(config, client):
     return resources.from_root_id(client, config.get_root_resource_id())
 
 
+@tracing.trace()
 def run_crawler(storage,
                 progresser,
                 config,
-                parallel=True):
+                parallel=True,
+                tracer=None):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -372,6 +392,7 @@ def run_crawler(storage,
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (opencensus.trace.Tracer): OpenCensus tracer.
 
     Returns:
         QueueProgresser: The progresser implemented in inventory
@@ -381,8 +402,20 @@ def run_crawler(storage,
         parallel = False
 
     client = _api_client_factory(storage, config, parallel)
-    crawler_impl = _crawler_factory(storage, progresser, client, parallel)
     resource = _root_resource_factory(config, client)
+
+    if parallel:
+        crawler_config = ParallelCrawlerConfig(storage,
+                                               progresser,
+                                               client,
+                                               tracer=tracer)
+        crawler_impl = ParallelCrawler(crawler_config)
+    else:
+        crawler_config = CrawlerConfig(storage,
+                                       progresser,
+                                       client,
+                                       tracer=tracer)
+        crawler_impl = ParallelCrawler(crawler_config)
 
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
