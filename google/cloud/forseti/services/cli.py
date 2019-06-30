@@ -777,7 +777,7 @@ def run_server(client, config, output, _):
 
     def do_set_tracing_disable():
         """Set the tracing mode to disable."""
-        output.write(client.set_tracing_enable('FALSE'))
+        output.write(client.set_tracing_disable('FALSE'))
 
     actions = {
         'log_level': {

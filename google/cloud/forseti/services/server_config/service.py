@@ -169,7 +169,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
             LOGGER.info('Enabling tracing, tracing_mode = %s',
                         request.enable_tracing)
             tracing.set_tracing_mode(bool(request.enable_tracing))
-            tracing.conditional_import_modues(bool(request.enable_tracing))
+            tracing.conditional_import_modules()
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             err_msg = e.message
@@ -194,8 +194,8 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         try:
             LOGGER.info('Disabling tracing, tracing_mode = %s',
                         request.disable_tracing)
-            tracing.set_tracing_mode(bool(request.disable_tracing))
-            tracing.conditional_import_modues(bool(request.disable_tracing))
+            tracing.set_tracing_mode(False)
+            tracing.conditional_import_modules()
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             err_msg = e.message

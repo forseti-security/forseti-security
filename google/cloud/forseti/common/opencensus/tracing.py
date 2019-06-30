@@ -28,8 +28,10 @@ def set_tracing_mode(tracing_mode):
     OPENCENSUS_ENABLED = tracing_mode
 
 
-def conditional_import_modues(OPENCENSUS_ENABLED):
+def conditional_import_modules():
+    global OPENCENSUS_ENABLED
     if OPENCENSUS_ENABLED:
+        print('OPENCENSUS_ENABLED:', OPENCENSUS_ENABLED)
         try:
             global async_
             from opencensus.common.transports import async_
@@ -54,9 +56,10 @@ def conditional_import_modues(OPENCENSUS_ENABLED):
             OPENCENSUS_ENABLED = True
         except ImportError:
             LOGGER.warning(
-                'Cannot enable tracing because the `opencensus` library was not '
-                'found. Run `pip install .[tracing]` to install tracing libraries.')
-            OPENCENSUS_ENABLED = False
+                'Cannot enable tracing because the `opencensus` library was '
+                'not found. Run `pip install .[tracing]` to install tracing '
+                'libraries.')
+            # OPENCENSUS_ENABLED = False
         except Exception as e:
             LOGGER.warning('Exception:', e)
 

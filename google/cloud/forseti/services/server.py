@@ -63,8 +63,8 @@ def serve(endpoint,
         forseti_db_connect_string (str): Forseti database string
         config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
-        enable_console_log (bool): Enable console logging.
         enable_tracing (bool): Enable gRPC tracing.
+        enable_console_log (bool): Enable console logging.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -96,7 +96,7 @@ def serve(endpoint,
 
     interceptors = create_interceptors(enable_tracing)
 
-     # Register services & start server
+    # Register services & start server
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers),
         interceptors=interceptors)
