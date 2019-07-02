@@ -29,7 +29,7 @@ control access to its highly privileged permissions. Assign a billing account to
 Install the required APIs for Forseti Security using the following command:
 
 ```bash
-gcloud beta service-management enable <API URI>
+gcloud services enable <API URI>
 ```
 
 {% include docs/latest/required-apis.md %}
