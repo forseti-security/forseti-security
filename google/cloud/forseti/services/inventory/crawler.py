@@ -339,7 +339,7 @@ def _api_client_factory(storage, config, parallel):
     return gcp.ApiClientImpl(client_config)
 
 
-def _crawler_factory(storage, progresser, client, parallel):
+def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
     Args:
@@ -347,17 +347,19 @@ def _crawler_factory(storage, progresser, client, parallel):
         progresser (object): Progresser to notify status updates.
         client (object): The API client instance.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
 
     Returns:
         Union[Crawler, ParallelCrawler]:
             The initialized crawler implementation class.
     """
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client,
+                                                tracer=tracer)
         return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
-    crawler_config = CrawlerConfig(storage, progresser, client)
+    crawler_config = CrawlerConfig(storage, progresser, client, tracer=tracer)
     return Crawler(crawler_config)
 
 
@@ -383,8 +385,7 @@ def _root_resource_factory(config, client):
 def run_crawler(storage,
                 progresser,
                 config,
-                parallel=True,
-                tracer=None):
+                parallel=True):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -402,20 +403,8 @@ def run_crawler(storage,
         parallel = False
 
     client = _api_client_factory(storage, config, parallel)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel)
     resource = _root_resource_factory(config, client)
-
-    if parallel:
-        crawler_config = ParallelCrawlerConfig(storage,
-                                               progresser,
-                                               client,
-                                               tracer=tracer)
-        crawler_impl = ParallelCrawler(crawler_config)
-    else:
-        crawler_config = CrawlerConfig(storage,
-                                       progresser,
-                                       client,
-                                       tracer=tracer)
-        crawler_impl = ParallelCrawler(crawler_config)
 
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.

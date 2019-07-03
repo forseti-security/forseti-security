@@ -96,7 +96,7 @@ def serve(endpoint,
 
     interceptors = create_interceptors(enable_tracing)
 
-     # Register services & start server
+    # Register services & start server
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers),
         interceptors=interceptors)
