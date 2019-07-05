@@ -233,6 +233,26 @@ def define_server_parser(parent):
               'the server vm or a gcs path starts with gs://).')
     )
 
+    tracing_parser = action_subparser.add_parser(
+        'tracing',
+        help='Current Tracing mode.')
+
+    tracing_subparser = tracing_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    _ = tracing_subparser.add_parser(
+        'get',
+        help='Get the tracing mode.')
+
+    _ = tracing_subparser.add_parser(
+        'enable',
+        help='Enable tracing mode.')
+
+    _ = tracing_subparser.add_parser(
+        'disable',
+        help='Disable tracing mode.')
+
 
 def define_model_parser(parent):
     """Define the model service parser.
@@ -728,10 +748,27 @@ def run_server(client, config, output, _):
         """Get the configuration of the server."""
         output.write(client.get_server_configuration())
 
+    def do_get_tracing():
+        """Get the current tracing mode."""
+        output.write(client.get_tracing())
+
+    def do_set_tracing_enable():
+        """Set the tracing mode to enable."""
+        output.write(client.set_tracing_enable('TRUE'))
+
+    def do_set_tracing_disable():
+        """Set the tracing mode to disable."""
+        output.write(client.set_tracing_disable('FALSE'))
+
     actions = {
         'log_level': {
             'get': do_get_log_level,
             'set': do_set_log_level
+        },
+        'tracing': {
+            'get': do_get_tracing,
+            'enable': do_set_tracing_enable,
+            'disable': do_set_tracing_disable
         },
         'configuration': {
             'get': do_get_configuration,
