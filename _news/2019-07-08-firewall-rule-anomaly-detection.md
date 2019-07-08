@@ -4,7 +4,7 @@ author: Joe Cheuk
 ---
 
 Among security professionals, one way to identify a breach or spurious entity is to detect 
-anomalies and abnormalities in customer’ usage trend. Recently, we launched the 
+anomalies and abnormalities in customer usage trend. Recently, we launched the 
 “Forseti Intelligent Agents” experimental initiative to identify anomalies,  enable systems 
 to take advantage of common user usage patterns, and identify other outlier data points. 
 In this way, we hope to help security specialists for whom it’s otherwise cumbersome and 
