@@ -206,7 +206,7 @@ setup and configure.
 
 #### Prerequisites
 1. [Install]({% link _docs/latest/setup/install.md %})
-or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14. 
+or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14+. 
 1. The person performing the onboarding needs the following org-level IAM roles:
 - `Organization Admin`
 - `Security Center Admin`

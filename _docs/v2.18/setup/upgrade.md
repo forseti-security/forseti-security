@@ -899,6 +899,9 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE` 
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-9` for Forseti client.
+1. Rule files updates:
+   - Update [ke_rules.yaml](https://github.com/forseti-security/forseti-security/blob/release-2.18.0/rules/ke_rules.yaml#L89-L100)
+     under `rules/` in your Forseti server GCS bucket to include the latest vulnerable ke versions.
 
 ### Steps to upgrade using Terraform
 
@@ -906,6 +909,9 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
+1. Rule files updates:
+   - Update [ke_rules.yaml](https://github.com/forseti-security/forseti-security/blob/release-2.18.0/rules/ke_rules.yaml#L89-L100)
+     under `rules/` in your Forseti server GCS bucket to include the latest vulnerable ke versions.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.17.0 to 2.18.0" content=upgrading_2_17_0_to_2_18_0 uid=19 %}
