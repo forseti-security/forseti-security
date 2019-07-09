@@ -1,0 +1,93 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.errors module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.errors">
+<span id="google-cloud-forseti-common-gcp-api-errors-module"></span><h1>google.cloud.forseti.common.gcp_api.errors module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.errors" title="Permalink to this headline">¶</a></h1>
+<p>API errors.</p>
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.ApiExecutionError">
+<em class="property">exception </em><code class="descname">ApiExecutionError</code><span class="sig-paren">(</span><em>resource_name</em>, <em>e</em>, <em>resource_key=None</em>, <em>resource_value=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#ApiExecutionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.ApiExecutionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Error for API executions.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.errors.ApiExecutionError.CUSTOM_ERROR_MESSAGE">
+<code class="descname">CUSTOM_ERROR_MESSAGE</code><em class="property"> = 'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.ApiExecutionError.CUSTOM_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.ApiInitializationError">
+<em class="property">exception </em><code class="descname">ApiInitializationError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#ApiInitializationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.ApiInitializationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Error initializing the API.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.ApiNotEnabledError">
+<em class="property">exception </em><code class="descname">ApiNotEnabledError</code><span class="sig-paren">(</span><em>error_url</em>, <em>e</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#ApiNotEnabledError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.ApiNotEnabledError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>The requested API is not enabled on this project.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.errors.ApiNotEnabledError.CUSTOM_ERROR_MESSAGE">
+<code class="descname">CUSTOM_ERROR_MESSAGE</code><em class="property"> = 'GCP API Error; API not enabled, turn it on at {0}:\n{1}'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.ApiNotEnabledError.CUSTOM_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.Error">
+<em class="property">exception </em><code class="descname">Error</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base Error class.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.InvalidBucketPathError">
+<em class="property">exception </em><code class="descname">InvalidBucketPathError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#InvalidBucketPathError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.InvalidBucketPathError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Invalid GCS bucket path.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.OperationTimeoutError">
+<em class="property">exception </em><code class="descname">OperationTimeoutError</code><span class="sig-paren">(</span><em>project_id</em>, <em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#OperationTimeoutError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.OperationTimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Operation timed out before completing.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.errors.OperationTimeoutError.CUSTOM_ERROR_MESSAGE">
+<code class="descname">CUSTOM_ERROR_MESSAGE</code><em class="property"> = 'GCP operation on project {0} timed out before completing, Operation name: {1}'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.OperationTimeoutError.CUSTOM_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.PaginationNotSupportedError">
+<em class="property">exception </em><code class="descname">PaginationNotSupportedError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#PaginationNotSupportedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.PaginationNotSupportedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Paged Query was issued against an API that does not support paging.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.UnsupportedApiError">
+<em class="property">exception </em><code class="descname">UnsupportedApiError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#UnsupportedApiError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.UnsupportedApiError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Error for unsupported API.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.gcp_api.errors.UnsupportedApiVersionError">
+<em class="property">exception </em><code class="descname">UnsupportedApiVersionError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/errors.html#UnsupportedApiVersionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.errors.UnsupportedApiVersionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.gcp_api.errors.Error" title="google.cloud.forseti.common.gcp_api.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.errors.Error</span></code></a></p>
+<p>Error for unsupported API version.</p>
+</dd></dl>
+
+</div>
+

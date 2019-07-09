@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.role\_scanner module
+==========================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.role_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:

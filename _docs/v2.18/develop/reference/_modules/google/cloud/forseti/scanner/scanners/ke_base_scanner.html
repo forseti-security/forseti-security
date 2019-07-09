@@ -1,0 +1,232 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.ke_base_scanner"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.ke_base_scanner</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;KE Base scanner.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">ke_cluster</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">project</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners.base_scanner</span> <span class="k">import</span> <span class="n">BaseScanner</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ke_scanner_factory"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.ke_base_scanner.html#google.cloud.forseti.scanner.scanners.ke_base_scanner.ke_scanner_factory">[docs]</a><span class="k">def</span> <span class="nf">ke_scanner_factory</span><span class="p">(</span><span class="n">scanner_name</span><span class="p">,</span> <span class="n">rules_engine_cls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Factory function for instantiating KeBaseScanner subclasses</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scanner_name (str): a human-readable name for the subclass to</span>
+<span class="sd">            fill in log messages.</span>
+<span class="sd">        rules_engine_cls (BaseRulesEngine): a BaseRulesEngine subclass</span>
+<span class="sd">            to implement the rules engine for the scanner subclass.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: if rules_engine_cls isn&#39;t a BaseRulesEngine</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        class: a subclass of KeBaseScanner.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">rules_engine_cls</span><span class="p">,</span> <span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;rules_engine_cls must be derived from BaseRulesEngine&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">KeBaseScanner</span><span class="p">(</span><span class="n">BaseScanner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Common base class to implement KE scanners.&quot;&quot;&quot;</span>
+
+        <span class="c1"># some subclasses support additional violation fields.  This list</span>
+        <span class="c1"># contains the names of these optional properties.  These</span>
+        <span class="c1"># properties will be added to violations if they are found.</span>
+        <span class="n">_EXTRA_VIOLATION_FIELDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;node_pool_name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># subclasses should set this to a friendlyish name.  It&#39;s used to</span>
+        <span class="c1"># fill in log messages.</span>
+        <span class="n">_SCANNER_NAME</span> <span class="o">=</span> <span class="n">scanner_name</span>
+
+        <span class="c1"># subclasses should set this to the class that implements their</span>
+        <span class="c1"># rule engine.</span>
+        <span class="n">_RULES_ENGINE_CLS</span> <span class="o">=</span> <span class="n">rules_engine_cls</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">scanner_configs</span><span class="p">,</span> <span class="n">service_config</span><span class="p">,</span>
+                     <span class="n">model_name</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                global_configs (dict): Global configurations.</span>
+<span class="sd">                scanner_configs (dict): Scanner configurations.</span>
+<span class="sd">                service_config (ServiceConfig): Forseti 2.0 service configs</span>
+<span class="sd">                model_name (str): name of the data model</span>
+<span class="sd">                snapshot_timestamp (str): Timestamp, formatted as</span>
+<span class="sd">                    YYYYMMDDTHHMMSSZ.</span>
+<span class="sd">                rules (str): Fully-qualified path and filename of the rules</span>
+<span class="sd">                    file.</span>
+
+<span class="sd">            Raises:</span>
+<span class="sd">                NotImplementedError: subclasses must provide class variables</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_RULES_ENGINE_CLS</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="s1">&#39;Only subclasses of KeBaseScanner can be instantiated&#39;</span>
+                <span class="p">)</span>
+
+            <span class="nb">super</span><span class="p">(</span><span class="n">KeBaseScanner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+                <span class="n">global_configs</span><span class="p">,</span>
+                <span class="n">scanner_configs</span><span class="p">,</span>
+                <span class="n">service_config</span><span class="p">,</span>
+                <span class="n">model_name</span><span class="p">,</span>
+                <span class="n">snapshot_timestamp</span><span class="p">,</span>
+                <span class="n">rules</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_RULES_ENGINE_CLS</span><span class="p">(</span>
+                <span class="n">rules_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span>
+                <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_configs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_flatten_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Flatten RuleViolations into a dict for each RuleViolation member.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                violations (list): The RuleViolations to flatten.</span>
+
+<span class="sd">            Yields:</span>
+<span class="sd">                dict: Iterator of RuleViolations as a dict per member.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+                <span class="n">violation_data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;violation_reason&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_reason</span><span class="p">,</span>
+                    <span class="s1">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                    <span class="s1">&#39;cluster_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">cluster_name</span><span class="p">,</span>
+                    <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                <span class="p">}</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_extra_violation_data</span><span class="p">(</span><span class="n">violation</span><span class="p">,</span> <span class="n">violation_data</span><span class="p">)</span>
+
+                <span class="k">yield</span> <span class="p">{</span>
+                    <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span>
+                    <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+                    <span class="s1">&#39;resource_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span>
+                    <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                    <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                    <span class="s1">&#39;rule_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                    <span class="s1">&#39;violation_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_type</span><span class="p">,</span>
+                    <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="n">violation_data</span><span class="p">,</span>
+                    <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_data</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="k">def</span> <span class="nf">_fill_extra_violation_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violation</span><span class="p">,</span> <span class="n">violation_data</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Allow KE scanner subclasses to provide additional data.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                violation (RuleViolation): the violation being processed.</span>
+<span class="sd">                violation_data (dict): dict to be modified with the</span>
+<span class="sd">                additional data.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_EXTRA_VIOLATION_FIELDS</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">violation</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+                    <span class="n">violation_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">violation</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_output_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_violations</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Output results.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                all_violations (list): All violations</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">all_violations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_flatten_violations</span><span class="p">(</span><span class="n">all_violations</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_results_to_db</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ke_clusters</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Find violations in the policies.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                ke_clusters (list): Clusters to find violations in.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list: All violations.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">all_violations</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;Finding ke cluster </span><span class="si">%s</span><span class="s1"> violations...&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_SCANNER_NAME</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">ke_clusters</span><span class="p">:</span>
+                <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
+                    <span class="n">cluster</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+                <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">all_violations</span>
+
+        <span class="k">def</span> <span class="nf">_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Runs the data collection.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list: KE Cluster data.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">model_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">model_manager</span>
+            <span class="n">scoped_session</span><span class="p">,</span> <span class="n">data_access</span> <span class="o">=</span> <span class="n">model_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">scoped_session</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="n">ke_clusters</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">data_access</span><span class="o">.</span><span class="n">scanner_iter</span><span class="p">(</span>
+                        <span class="n">session</span><span class="p">,</span> <span class="s1">&#39;kubernetes_cluster&#39;</span><span class="p">):</span>
+                    <span class="n">proj</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span>
+                        <span class="n">project_id</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">full_name</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">ke_clusters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">ke_cluster</span><span class="o">.</span><span class="n">KeCluster</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span>
+                            <span class="n">proj</span><span class="p">,</span>
+                            <span class="n">cluster</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+            <span class="c1"># Retrieve the service config via a separate query because session</span>
+            <span class="c1"># in the middle of yield_per() can not support simultaneous queries.</span>
+            <span class="k">with</span> <span class="n">scoped_session</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">ke_clusters</span><span class="p">:</span>
+                    <span class="n">position</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">cluster</span><span class="o">.</span><span class="n">full_name</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;kubernetes_cluster&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">ke_cluster_type_name</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">cluster</span><span class="o">.</span><span class="n">full_name</span><span class="p">[</span><span class="n">position</span><span class="p">:][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                    <span class="n">service_config</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_access</span><span class="o">.</span><span class="n">scanner_iter</span><span class="p">(</span>
+                        <span class="n">session</span><span class="p">,</span> <span class="s1">&#39;kubernetes_service_config&#39;</span><span class="p">,</span>
+                        <span class="n">parent_type_name</span><span class="o">=</span><span class="n">ke_cluster_type_name</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="n">cluster</span><span class="o">.</span><span class="n">server_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">service_config</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">ke_clusters</span>
+
+        <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Run, the entry point for this scanner.&quot;&quot;&quot;</span>
+            <span class="n">ke_clusters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve</span><span class="p">()</span>
+            <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_violations</span><span class="p">(</span><span class="n">ke_clusters</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_results</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">KeBaseScanner</span></div>
+</pre></div>
