@@ -1,0 +1,423 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.bigquery_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.bigquery_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Rules engine for Big Query data sets.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_mod</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">regular_exp</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">relationship</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Mode"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.Mode">[docs]</a><span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule modes.&quot;&quot;&quot;</span>
+    <span class="n">WHITELIST</span> <span class="o">=</span> <span class="s1">&#39;whitelist&#39;</span>
+    <span class="n">BLACKLIST</span> <span class="o">=</span> <span class="s1">&#39;blacklist&#39;</span></div>
+
+
+<span class="c1"># Rule definition wrappers.</span>
+<span class="c1"># TODO: allow for multiple dataset ids.</span>
+<span class="n">RuleReference</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;RuleReference&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_ids&#39;</span><span class="p">,</span> <span class="s1">&#39;bindings&#39;</span><span class="p">])</span>
+<span class="n">Binding</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Binding&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;members&#39;</span><span class="p">])</span>
+<span class="n">Member</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;Member&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;user_email&#39;</span><span class="p">,</span> <span class="s1">&#39;special_group&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="BigqueryRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">BigqueryRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for Big Query data sets&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BigqueryRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BigqueryRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build BigqueryRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">BigqueryRuleBook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="BigqueryRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_project</span><span class="p">,</span> <span class="n">bq_acl</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether Big Query datasets violate rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent_project (Project): parent project the acl belongs to.</span>
+<span class="sd">            bq_acl (BigqueryAccessControls): Object containing ACL data.</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+
+        <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
+            <span class="n">parent_project</span><span class="p">,</span> <span class="n">bq_acl</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="BigqueryRulesEngine.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRulesEngine.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (dict): rule definitions dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BigqueryRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook">[docs]</a><span class="k">class</span> <span class="nc">BigqueryRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for Big Query dataset resources.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitons dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BigqueryRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BigqueryRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigqueryRuleBook._build_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook._build_rule">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_build_rule</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rule: rule for the given definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dataset_id</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_ids&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">dataset_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
+
+        <span class="c1"># Check `dataset_id` for backwards compatibility.</span>
+        <span class="c1"># TODO: stop supporting this.</span>
+        <span class="k">if</span> <span class="s1">&#39;dataset_id&#39;</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="n">dataset_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;dataset_id&#39;</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Missing dataset_ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+        <span class="n">bindings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># TODO: stop supporting this.</span>
+        <span class="n">binding</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_binding_from_old_syntax</span><span class="p">(</span><span class="n">rule_def</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">binding</span><span class="p">:</span>
+            <span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>
+
+        <span class="c1"># Default mode to blacklist for backwards compatibility as that was</span>
+        <span class="c1"># the behaviour before mode was configurable.</span>
+        <span class="c1"># TODO: make mode required?</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="p">(</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;blacklist&#39;</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">raw_binding</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bindings&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="s1">&#39;role&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">raw_binding</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Missing role in binding in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="n">raw_binding</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="s1">&#39;members&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">raw_binding</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Missing members in binding in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+            <span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">raw_member</span> <span class="ow">in</span> <span class="n">raw_binding</span><span class="p">[</span><span class="s1">&#39;members&#39;</span><span class="p">]:</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">field</span><span class="p">:</span> <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="n">raw_member</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span>
+                        <span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;user_email&#39;</span><span class="p">,</span> <span class="s1">&#39;special_group&#39;</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+
+                <span class="c1"># only one key should be set per member</span>
+                <span class="n">num_fields_set</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">num_fields_set</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;At most one member field may be set in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">rule_index</span><span class="p">))</span>
+                <span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Member</span><span class="p">(</span><span class="o">**</span><span class="n">fields</span><span class="p">))</span>
+
+            <span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Binding</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">members</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bindings</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Missing bindings in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">Rule</span><span class="p">(</span><span class="n">rule_name</span><span class="o">=</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                    <span class="n">rule_index</span><span class="o">=</span><span class="n">rule_index</span><span class="p">,</span>
+                    <span class="n">rule_reference</span><span class="o">=</span><span class="n">RuleReference</span><span class="p">(</span>
+                        <span class="n">dataset_ids</span><span class="o">=</span><span class="n">dataset_ids</span><span class="p">,</span>
+                        <span class="n">bindings</span><span class="o">=</span><span class="n">bindings</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="BigqueryRuleBook._get_binding_from_old_syntax"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook._get_binding_from_old_syntax">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_binding_from_old_syntax</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a binding for configs set with the old syntax.</span>
+
+<span class="sd">        Default fields to glob as default as that is what the fields used to be</span>
+<span class="sd">        set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          rule_def (dict): raw rule definition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Binding: If an old style config field is set, returns a single binding</span>
+<span class="sd">            with a single member.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;user_email&#39;</span><span class="p">,</span> <span class="s1">&#39;special_group&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Binding</span><span class="p">(</span>
+                    <span class="n">role</span><span class="o">=</span><span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span>
+                        <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span>
+                    <span class="n">members</span><span class="o">=</span><span class="p">[</span><span class="n">Member</span><span class="p">(</span>
+                        <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span>
+                            <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span>
+                        <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span>
+                            <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span>
+                        <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span>
+                            <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user_email&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span>
+                        <span class="n">regular_exp</span><span class="o">.</span><span class="n">escape_and_globify</span><span class="p">(</span>
+                            <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;special_group&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span>
+                    <span class="p">)]</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="BigqueryRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">raw_resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="n">resource_ids</span> <span class="o">=</span> <span class="n">raw_resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">resource_ids</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_ids</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Missing resource ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+            <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_rule</span><span class="p">(</span><span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">)</span>
+
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="n">raw_resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">resource_id</span> <span class="ow">in</span> <span class="n">resource_ids</span><span class="p">:</span>
+                <span class="n">resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                    <span class="n">resource_id</span><span class="o">=</span><span class="n">resource_id</span><span class="p">,</span>
+                    <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_type</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="p">[</span><span class="n">resource</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigqueryRuleBook.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.BigqueryRuleBook.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">bq_acl</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find acl violations in the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (gcp_type): The GCP resource associated with the acl.</span>
+<span class="sd">                This is where we start looking for rule violations and</span>
+<span class="sd">                we move up the resource hierarchy (if permitted by the</span>
+<span class="sd">                resource&#39;s &quot;inherit_from_parents&quot; property).</span>
+<span class="sd">            bq_acl (BigqueryAccessControls): The acl to compare the rules</span>
+<span class="sd">                against.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            iterable: A generator of the rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">()</span>
+
+        <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">relationship</span><span class="o">.</span><span class="n">find_ancestors</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">full_name</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resource_ancestors</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="n">violations</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">bq_acl</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">violations</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file.</span>
+<span class="sd">       Also finds violations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rule_violation_attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;resource_name&#39;</span><span class="p">,</span> <span class="s1">&#39;full_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_id&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;special_group&#39;</span><span class="p">,</span> <span class="s1">&#39;user_email&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;view&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;resource_data&#39;</span><span class="p">]</span>
+    <span class="n">frozen_rule_attributes</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">rule_violation_attributes</span><span class="p">)</span>
+    <span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+        <span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+        <span class="n">frozen_rule_attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">rule_reference</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">            rule_reference (RuleReference): The rules from the file and</span>
+<span class="sd">              corresponding values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_reference</span> <span class="o">=</span> <span class="n">rule_reference</span>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find BigQuery acl violations in the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            namedtuple: Returns RuleViolation named tuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">has_applicable_rules</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_reference</span><span class="o">.</span><span class="n">bindings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_binding_applicable</span><span class="p">(</span><span class="n">binding</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">has_applicable_rules</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">binding</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+                <span class="n">rule_regex_and_vals</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">domain</span><span class="p">),</span>
+                    <span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">user_email</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">user_email</span><span class="p">),</span>
+                    <span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">group_email</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">group_email</span><span class="p">),</span>
+                    <span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">special_group</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">special_group</span><span class="p">),</span>
+                <span class="p">]</span>
+
+                <span class="c1"># Note: bindings should only have 1 member field set, so at most</span>
+                <span class="c1"># one of the regex value pairs should be non-None. However,</span>
+                <span class="c1"># old style configs had to set all fields, so for backwards</span>
+                <span class="c1"># compatibility we have to check all.</span>
+                <span class="c1"># TODO: Once we are no longer  supporting backwards</span>
+                <span class="c1"># compatibility, just match the first non-None pair and break.</span>
+                <span class="n">sub_matches</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">rule_regex_and_vals</span>
+                    <span class="k">if</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">]</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">sub_matches</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">sub_matches</span><span class="p">))</span>
+
+        <span class="n">has_violation</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_reference</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">Mode</span><span class="o">.</span><span class="n">BLACKLIST</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_reference</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">Mode</span><span class="o">.</span><span class="n">WHITELIST</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_applicable_rules</span> <span class="ow">and</span> <span class="n">has_violation</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">RuleViolation</span><span class="p">(</span>
+                <span class="n">resource_name</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">dataset_id</span><span class="p">,</span>
+                <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">DATASET</span><span class="p">,</span>
+                <span class="n">resource_id</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">dataset_id</span><span class="p">,</span>
+                <span class="n">full_name</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                <span class="n">violation_type</span><span class="o">=</span><span class="s1">&#39;BIGQUERY_VIOLATION&#39;</span><span class="p">,</span>
+                <span class="n">dataset_id</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">dataset_id</span><span class="p">,</span>
+                <span class="n">role</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">role</span><span class="p">,</span>
+                <span class="n">special_group</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">special_group</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">user_email</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">user_email</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">domain</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">domain</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">group_email</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">group_email</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">view</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">view</span><span class="p">,</span>
+                <span class="n">resource_data</span><span class="o">=</span><span class="n">bigquery_acl</span><span class="o">.</span><span class="n">json</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule._is_binding_applicable"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.bigquery_rules_engine.html#google.cloud.forseti.scanner.audit.bigquery_rules_engine.Rule._is_binding_applicable">[docs]</a>    <span class="k">def</span> <span class="nf">_is_binding_applicable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the binding is applicable to the acl.</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">            binding (Binding): rules binding to check against.</span>
+<span class="sd">            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.</span>
+<span class="sd">         Returns:</span>
+<span class="sd">            bool: True if the rules are applicable to the given acl, False</span>
+<span class="sd">                otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># only one dataset needs to match, so union all dataset ids into one</span>
+        <span class="c1"># regex expression</span>
+        <span class="n">dataset_ids_matched</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+            <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_reference</span><span class="o">.</span><span class="n">dataset_ids</span><span class="p">),</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">dataset_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">role_matched</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">role</span><span class="p">,</span> <span class="n">bigquery_acl</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataset_ids_matched</span> <span class="ow">and</span> <span class="n">role_matched</span></div></div>
+</pre></div>

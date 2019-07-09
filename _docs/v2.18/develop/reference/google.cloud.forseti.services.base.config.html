@@ -1,0 +1,657 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.base.config module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.base.config">
+<span id="google-cloud-forseti-services-base-config-module"></span><h1>google.cloud.forseti.services.base.config module<a class="headerlink" href="#module-google.cloud.forseti.services.base.config" title="Permalink to this headline">¶</a></h1>
+<p>Base classes required for handling configuration of the gRPC server.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig">
+<em class="property">class </em><code class="descname">AbstractInventoryConfig</code><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for service configuration.</p>
+<p>This class is used to implement dependency injection for the gRPC
+services.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_api_quota_configs">
+<code class="descname">get_api_quota_configs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_api_quota_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_api_quota_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the per API quota configs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_asset_types">
+<code class="descname">get_cai_asset_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_cai_asset_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_asset_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the GCS bucket path to store the CAI data dumps in.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_enabled">
+<code class="descname">get_cai_enabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_cai_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the cloudasset API should be used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_gcs_path">
+<code class="descname">get_cai_gcs_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_cai_gcs_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_gcs_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the GCS bucket path to store the CAI data dumps in.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_timeout">
+<code class="descname">get_cai_timeout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_cai_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_cai_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the timeout in seconds for calls to the Cloud Asset API.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_composite_root_resources">
+<code class="descname">get_composite_root_resources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_composite_root_resources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_composite_root_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the composite root resource ids.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_gsuite_admin_email">
+<code class="descname">get_gsuite_admin_email</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_gsuite_admin_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_gsuite_admin_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns gsuite admin email.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_retention_days_configs">
+<code class="descname">get_retention_days_configs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_retention_days_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_retention_days_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the days of inventory data to retain.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_root_resource_id">
+<code class="descname">get_root_resource_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_root_resource_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_root_resource_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the root resource id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_service_config">
+<code class="descname">get_service_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.get_service_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.get_service_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the service config.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.set_service_config">
+<code class="descname">set_service_config</code><span class="sig-paren">(</span><em>service_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.set_service_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.set_service_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach a service configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_config</strong> (<em>object</em>) – Service configuration.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractInventoryConfig.use_composite_root">
+<code class="descname">use_composite_root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractInventoryConfig.use_composite_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig.use_composite_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if inventory is configured to use a composite root resource.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig">
+<em class="property">class </em><code class="descname">AbstractServiceConfig</code><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for service configuration.</p>
+<p>This class is used to implement dependency injection for the gRPC
+services.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig.client">
+<code class="descname">client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig.client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an API client.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig.get_engine">
+<code class="descname">get_engine</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig.get_engine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig.get_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the database engine.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig.get_storage_class">
+<code class="descname">get_storage_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig.get_storage_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig.get_storage_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class used for the inventory storage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig.run_in_background">
+<code class="descname">run_in_background</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig.run_in_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig.run_in_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a function in a thread pool in the background.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>func</strong> (<em>Function</em>) – Function to be executed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.AbstractServiceConfig.scoped_session">
+<code class="descname">scoped_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#AbstractServiceConfig.scoped_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig.scoped_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scoped session.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig">
+<em class="property">class </em><code class="descname">InventoryConfig</code><span class="sig-paren">(</span><em>root_resource_id</em>, <em>gsuite_admin_email</em>, <em>api_quota_configs</em>, <em>retention_days</em>, <em>cai_configs</em>, <em>composite_root_resources=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.base.config.AbstractInventoryConfig" title="google.cloud.forseti.services.base.config.AbstractInventoryConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.base.config.AbstractInventoryConfig</span></code></a></p>
+<p>Implements composed dependency injection for the inventory.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_api_quota_configs">
+<code class="descname">get_api_quota_configs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_api_quota_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_api_quota_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the per API quota configs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The API quota configurations.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_cai_asset_types">
+<code class="descname">get_cai_asset_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_cai_asset_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_asset_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of Asset Types to include in the CAI export.</p>
+<p>The full list of supported asset types is at:
+<a class="reference external" href="https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview">https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>The list of asset types to include, or None if all asset</dt>
+<dd>types should be included.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_cai_enabled">
+<code class="descname">get_cai_enabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_cai_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the cloudasset API should be used for the inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Whether CAI should be integrated with the inventory or not.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_cai_gcs_path">
+<code class="descname">get_cai_gcs_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_cai_gcs_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_gcs_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the GCS bucket path to store the CAI data dumps in.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The GCS bucket path for CAI data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_cai_timeout">
+<code class="descname">get_cai_timeout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_cai_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_cai_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the timeout in seconds for calls to the Cloud Asset API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Timeout in seconds, defaults to 3600 seconds.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_composite_root_resources">
+<code class="descname">get_composite_root_resources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_composite_root_resources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_composite_root_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the composite root resource ids.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>The list of root resources defined in the configuration or</dt>
+<dd>None.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_gsuite_admin_email">
+<code class="descname">get_gsuite_admin_email</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_gsuite_admin_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_gsuite_admin_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the gsuite admin email to use.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Gsuite admin email.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_retention_days_configs">
+<code class="descname">get_retention_days_configs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_retention_days_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_retention_days_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the days of inventory data to retain.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The days of inventory data to retain.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_root_resource_id">
+<code class="descname">get_root_resource_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_root_resource_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_root_resource_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the configured root resource id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Root resource id if defined, else None.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.get_service_config">
+<code class="descname">get_service_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.get_service_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.get_service_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the attached service configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Service configuration.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.set_service_config">
+<code class="descname">set_service_config</code><span class="sig-paren">(</span><em>service_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.set_service_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.set_service_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach a service configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_config</strong> (<em>object</em>) – Service configuration.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.InventoryConfig.use_composite_root">
+<code class="descname">use_composite_root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#InventoryConfig.use_composite_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.InventoryConfig.use_composite_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if inventory is configured to use a composite root resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if using a composite root, else False.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig">
+<em class="property">class </em><code class="descname">ServiceConfig</code><span class="sig-paren">(</span><em>forseti_config_file_path</em>, <em>forseti_db_connect_string</em>, <em>endpoint</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.base.config.AbstractServiceConfig" title="google.cloud.forseti.services.base.config.AbstractServiceConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.base.config.AbstractServiceConfig</span></code></a></p>
+<p>Implements composed dependency injection to Forseti Server services.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig._read_from_config">
+<code class="descname">_read_from_config</code><span class="sig-paren">(</span><em>config_file_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig._read_from_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig._read_from_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read from the forseti configuration file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config_file_path</strong> (<em>str</em>) – Forseti server config file path</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(Forseti server configuration, Error message)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple(dict, str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.client">
+<code class="descname">client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an API client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">API client to use against services.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_engine">
+<code class="descname">get_engine</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_engine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the database engine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Database engine object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_forseti_config">
+<code class="descname">get_forseti_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_forseti_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_forseti_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Forseti config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Forseti config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_global_config">
+<code class="descname">get_global_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_global_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_global_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the global config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Global config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_inventory_config">
+<code class="descname">get_inventory_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_inventory_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_inventory_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the inventory config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Inventory config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_notifier_config">
+<code class="descname">get_notifier_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_notifier_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_notifier_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the notifier config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Notifier config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_scanner_config">
+<code class="descname">get_scanner_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_scanner_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_scanner_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the scanner config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Scanner config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.get_storage_class">
+<code class="descname">get_storage_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.get_storage_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.get_storage_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the storage class used to access the inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Type of a storage implementation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.run_in_background">
+<code class="descname">run_in_background</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.run_in_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.run_in_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a function in a thread pool in the background.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>func</strong> (<em>Function</em>) – Function to be executed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.scoped_session">
+<code class="descname">scoped_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.scoped_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.scoped_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scoped session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A scoped session.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.base.config.ServiceConfig.update_configuration">
+<code class="descname">update_configuration</code><span class="sig-paren">(</span><em>config_file_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#ServiceConfig.update_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config.ServiceConfig.update_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the inventory, scanner, global and notifier configurations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config_file_path</strong> (<em>str</em>) – Forseti server config file path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(Configuration was updated, Error message)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple(bool, str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.base.config._validate_cai_enabled">
+<code class="descname">_validate_cai_enabled</code><span class="sig-paren">(</span><em>cai_configs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/base/config.html#_validate_cai_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.base.config._validate_cai_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies if CloudAsset Inventory can be used for this inventory config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cai_configs</strong> (<em>dict</em>) – Settings for the Cloud AssetInventory API</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if CAI is supported and enabled by configuration, else False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
