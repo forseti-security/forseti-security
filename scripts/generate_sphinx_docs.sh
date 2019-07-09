@@ -79,7 +79,7 @@ function copy_sphinx_docs_into_jekyll_docs() {
 
     # Copy generated docs from container into Jekyll
     docker cp \
-      "${container_id}":/forseti-security/build/sphinx/html/. \
+      "${container_id}":/home/forseti/forseti-security/build/sphinx/html/. \
       _docs/_latest/develop/reference
 
     docker rm "${container_id}"
