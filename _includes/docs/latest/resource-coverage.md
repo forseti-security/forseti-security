@@ -60,6 +60,13 @@
 | [G Suite Group Members](https://developers.google.com/admin-sdk/directory/v1/reference/members) |
 | [G Suite Users](https://developers.google.com/admin-sdk/directory/v1/reference/users) |
 | [Kubernetes Engine Clusters](https://cloud.google.com/kubernetes-engine/docs/reference/rest/) |
+| [Kubernetes Engine Node](https://kubernetes.io/docs/concepts/architecture/nodes/)|
+| [Kubernetes Engine Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)|
+| [Kubernetes Engine Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)|
+| [Kubernetes Engine Role](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)|
+| [Kubernetes Engine RoleBinding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)|
+| [Kubernetes Engine ClusterRole](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)|
+| [Kubernetes Engine ClusterRoleBinding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)|
 | [Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) |
 | [Liens](https://cloud.google.com/resource-manager/reference/rest/v1/liens) |
 | [Load Balancer Forwarding Rules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules#resource) |
