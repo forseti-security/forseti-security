@@ -26,9 +26,12 @@
 | [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
 | [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Compute Engine AutoScalers](https://cloud.google.com/compute/docs/reference/rest/v1/autoscalers) |
+| [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)|
 | [Compute Engine Backend Buckets](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets) |
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices) |
 | [Compute Engine Disks](https://cloud.google.com/compute/docs/reference/latest/disks) |
+| [Compute Engine Forwarding Rules](https://cloud.google.com/compute/docs/reference/rest/v1/forwardingRules)|
+| [Compute Engine Global Forwarding Rules](https://cloud.google.com/compute/docs/reference/rest/v1/forwardingRules)|
 | [Compute Engine Health Checks](https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks) |
 | [Compute Engine Http Health Checks](https://cloud.google.com/compute/docs/reference/rest/v1/httpHealthChecks) |
 | [Compute Engine Https Health Checks](https://cloud.google.com/compute/docs/reference/rest/v1/httpsHealthChecks) |
@@ -39,6 +42,7 @@
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
 | [Compute Engine Licenses](https://cloud.google.com/compute/docs/reference/rest/v1/licenses/get) |
 | [Compute Engine Projects](https://cloud.google.com/compute/docs/reference/rest/v1/projects) |
+| [Compute Engine Region Backend Service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)|
 | [Compute Engine Routers](https://cloud.google.com/compute/docs/reference/rest/v1/routers) |
 | [Compute Engine Snapshots](https://cloud.google.com/compute/docs/reference/latest/snapshots) |
 | [Compute Engine SSL Certificates](https://cloud.google.com/compute/docs/reference/rest/v1/sslCertificates) |
