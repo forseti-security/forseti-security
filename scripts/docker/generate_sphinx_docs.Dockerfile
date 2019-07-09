@@ -14,8 +14,8 @@
 
 FROM forseti/build
 
-RUN pip3 install sphinx==1.7.7 --user
+RUN pip install sphinx==1.7.7 --user
 RUN sphinx-apidoc -P -F -M -e -o . google *.eggs/
 COPY data/conf.py data/index.rst ./
 COPY data/*.html _templates/
-RUN python3 setup.py build_sphinx
+RUN python setup.py build_sphinx
