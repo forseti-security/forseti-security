@@ -592,7 +592,7 @@ All modes share the same first-level rule structure:
     The `destinationRanges` is required for `egress` rules.
     
 
-* `verify_policies` (*only for `blacklist` and `whitelist` modes*) TODO
+* `verify_policies` (*only for `blacklist` and `whitelist` modes*)  
   * **Description**: Policies to verify on firewall rules when scanning.
   * **Content**:  
     * `allowed`:

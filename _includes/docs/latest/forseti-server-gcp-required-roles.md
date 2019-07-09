@@ -16,6 +16,7 @@
 
  * `roles/cloudsql.client` (server)
  * `roles/logging.logWriter` (server, client)
+ * `roles/monitoring.metricWriter` (server)
  * `roles/storage.objectViewer` (server, client)
  * `roles/storage.objectCreator` (server)
 
