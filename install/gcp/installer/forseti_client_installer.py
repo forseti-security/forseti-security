@@ -67,7 +67,6 @@ class ForsetiClientInstaller(ForsetiInstaller):
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
                 self.config.identifier)
-            
             gcloud.enable_os_login(instance_name, self.server_zone)
             # Create firewall rules.
             self.create_firewall_rules()
