@@ -1,0 +1,7 @@
+google.cloud.forseti.common.util.email.base\_email\_connector module
+====================================================================
+
+.. automodule:: google.cloud.forseti.common.util.email.base_email_connector
+    :members:
+    :undoc-members:
+    :show-inheritance:

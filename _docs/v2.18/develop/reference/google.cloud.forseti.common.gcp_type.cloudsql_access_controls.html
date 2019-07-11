@@ -1,0 +1,89 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.cloudsql_access_controls module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.cloudsql_access_controls">
+<span id="google-cloud-forseti-common-gcp-type-cloudsql-access-controls-module"></span><h1>google.cloud.forseti.common.gcp_type.cloudsql_access_controls module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.cloudsql_access_controls" title="Permalink to this headline">¶</a></h1>
+<p>A CloudSQL ACL Resource.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl">
+<em class="property">class </em><code class="descname">CloudSqlAccessControl</code><span class="sig-paren">(</span><em>project_id</em>, <em>instance_name</em>, <em>full_name</em>, <em>ipv4_enabled</em>, <em>authorized_networks</em>, <em>require_ssl</em>, <em>raw_json</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_access_controls.html#CloudSqlAccessControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>CloudSQL IP Configuration (access ACLs) Resource.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_access_controls.html#CloudSqlAccessControl.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash of properties.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hash of the class properties.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">hash</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>project_id</em>, <em>instance_name</em>, <em>full_name</em>, <em>acl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_access_controls.html#CloudSqlAccessControl.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new CloudSqlAccessControl object from dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>instance_name</strong> (<em>str</em>) – The CloudSQL instance name.</li>
+<li><strong>full_name</strong> (<em>str</em>) – The full resource name and ancestory.</li>
+<li><strong>acl</strong> (<em>dict</em>) – The CloudSQL ACL.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new CloudSqlAccessControl object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl" title="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl">CloudSqlAccessControl</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>project_id</em>, <em>full_name</em>, <em>instance_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/cloudsql_access_controls.html#CloudSqlAccessControl.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new CloudSqlAccessControl object from json data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – the project id.</li>
+<li><strong>full_name</strong> (<em>str</em>) – The full resource name and ancestory.</li>
+<li><strong>instance_data</strong> (<em>str</em>) – The json data for the CloudSQL instance.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new CloudSqlAccessControl object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl" title="google.cloud.forseti.common.gcp_type.cloudsql_access_controls.CloudSqlAccessControl">CloudSqlAccessControl</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

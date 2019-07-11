@@ -1,0 +1,91 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.log_sink module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.log_sink">
+<span id="google-cloud-forseti-common-gcp-type-log-sink-module"></span><h1>google.cloud.forseti.common.gcp_type.log_sink module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.log_sink" title="Permalink to this headline">¶</a></h1>
+<p>Stackdriver Log Sink/Export Resource.</p>
+<p>See <a class="reference external" href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/sinks">https://cloud.google.com/logging/docs/reference/v2/rest/v2/sinks</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink">
+<em class="property">class </em><code class="descname">LogSink</code><span class="sig-paren">(</span><em>sink_id</em>, <em>destination</em>, <em>sink_filter</em>, <em>include_children</em>, <em>writer_identity</em>, <em>parent</em>, <em>raw_json</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/log_sink.html#LogSink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_type.resource.Resource</span></code></a></p>
+<p>Log Sink Resource.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 208</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>parent</em>, <em>sink_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/log_sink.html#LogSink.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new LogSink object from dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parent</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The parent resource of this sink.</li>
+<li><strong>sink_dict</strong> (<em>dict</em>) – Log Sink dictionary.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new LogSink object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink" title="google.cloud.forseti.common.gcp_type.log_sink.LogSink">LogSink</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_type.log_sink.LogSink.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>parent</em>, <em>sink_json</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/log_sink.html#LogSink.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new LogSink object from a JSON encoding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parent</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The parent resource of this sink.</li>
+<li><strong>sink_json</strong> (<em>str</em>) – The JSON encoding of the log sink.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new LogSink object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.log_sink.LogSink" title="google.cloud.forseti.common.gcp_type.log_sink.LogSink">LogSink</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
