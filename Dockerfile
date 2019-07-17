@@ -26,7 +26,7 @@ RUN groupadd -g 1000 forseti && \
 
 # Install host dependencies.
 RUN apt-get update  && \
-    apt-get install --no-install-recommends -y libmariadbclient18 && \
+    apt-get install --no-install-recommends -y libmariadb3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
