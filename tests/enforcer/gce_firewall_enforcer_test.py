@@ -1509,7 +1509,7 @@ class FirewallRulesAreEqualTest(ForsetiTestCase):
 def _GenerateTestRule(name):
     return {
         'name': name,
-        'network': ('https://www.googleapis.com/compute/beta/projects/'
+        'network': ('https://www.googleapis.com/compute/v1/projects/'
                     'test-project/global/networks/fake-network'),
         'description': 'fake rule description',
         'direction': 'INGRESS',
