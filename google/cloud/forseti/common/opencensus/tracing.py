@@ -63,6 +63,7 @@ def conditional_import_modules():
             OPENCENSUS_ENABLED = False
         except Exception as e:
             LOGGER.warning('Exception:', e)
+            OPENCENSUS_ENABLED = False
 
 
 def create_client_interceptor(endpoint):
