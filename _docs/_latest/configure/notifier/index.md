@@ -237,9 +237,9 @@ the UI or API:
 1. Enable the  API connector config to Cloud SCC by configuring the following fields in 
 your Terraform configuration:
 
-  * `cscc_violations_enabled:`
+  * `cscc_violations_enabled`
     * **Description**: Whether to send notification to Cloud SCC.
-    * **Valid values**: one of valid `true` or `false`
+    * **Valid values**: One of valid `true` or `false`
   
   * `cscc_source_id`
     * **Description**: ID from the Cloud SCC beta on-boarding. **This must be added**
