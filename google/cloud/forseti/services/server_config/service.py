@@ -20,7 +20,6 @@ import logging
 
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
-from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 
 
@@ -146,6 +145,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         """
         del request
 
+        from google.cloud.forseti.common.opencensus import tracing
         tracing_mode = tracing.OPENCENSUS_ENABLED
 
         LOGGER.info('Retrieving tracing mode, tracing_mode = %s',
@@ -163,13 +163,12 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         Returns:
             SetTracingEnableReply: The SetTracingEnableReply grpc object.
         """
+        from google.cloud.forseti.common.opencensus import tracing
         err_msg = ''
-
         try:
             LOGGER.info('Enabling tracing, tracing_mode = %s',
                         request.enable_tracing)
-            tracing.set_tracing_mode(bool(request.enable_tracing))
-            tracing.conditional_import_modules()
+            tracing.set_tracing_mode(True)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             err_msg = str(e)
@@ -189,13 +188,11 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         Returns:
             SetTracingDisableReply: The SetTracingDisableReply grpc object.
         """
+        from google.cloud.forseti.common.opencensus import tracing
         err_msg = ''
-
         try:
-            LOGGER.info('Disabling tracing, tracing_mode = %s',
-                        request.disable_tracing)
+            LOGGER.info('Disabling tracing')
             tracing.set_tracing_mode(False)
-            tracing.conditional_import_modules()
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             err_msg = e.message

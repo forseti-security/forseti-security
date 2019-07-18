@@ -52,7 +52,6 @@ def serve(endpoint,
           config_file_path,
           log_level,
           enable_console_log,
-          enable_tracing,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -64,7 +63,6 @@ def serve(endpoint,
         config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
-        enable_tracing (bool): Enable gRPC tracing.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -77,6 +75,11 @@ def serve(endpoint,
 
     if enable_console_log:
         logger.enable_console_log()
+
+    # Enable tracing
+    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
+    enable_tracing = True if enable_tracing == "True" else False
+    tracing.set_tracing_mode(enable_tracing)
 
     factories = []
     for service in services:
@@ -115,8 +118,10 @@ def serve(endpoint,
 
 def create_interceptors(enable_tracing):
     """Create gRPC server interceptors.
+
      Args:
         enable_tracing (bool): If True, enable the trace interceptor.
+
      Returns:
         tuple: A tuple of gRPC interceptors.
     """
@@ -192,10 +197,6 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
-    parser.add_argument(
-        '--enable-tracing',
-        action='store_true',
-        help='Toggle OpenCensus tracing on / off.')
 
     args = vars(parser.parse_args())
 
@@ -211,8 +212,7 @@ def main():
           args['forseti_db'],
           args['config_file_path'],
           args['log_level'],
-          args['enable_console_log'],
-          args['enable_tracing'])
+          args['enable_console_log'])
 
 
 if __name__ == '__main__':
