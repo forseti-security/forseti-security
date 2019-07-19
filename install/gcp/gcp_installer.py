@@ -84,8 +84,6 @@ def run():
     from .installer.forseti_client_installer import ForsetiClientInstaller
     from .installer.configs.client_config import ClientConfig
     from .installer.configs.server_config import ServerConfig
-    from .installer.util import utils
-
     client_config = ClientConfig(**args)
     server_config = ServerConfig(**args)
 
