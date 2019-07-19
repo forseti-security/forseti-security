@@ -49,6 +49,7 @@ def set_tracing_mode(mode):
         mode (boolean): True if enabled, False otherwise.
     """
     OPENCENSUS_ENABLED = mode
+    LOGGER.info('Tracing mode: %s', OPENCENSUS_ENABLED)
 
 
 def create_client_interceptor(endpoint):

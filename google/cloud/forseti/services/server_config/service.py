@@ -195,7 +195,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
             tracing.set_tracing_mode(False)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
-            err_msg = e.message
+            err_msg = e
 
         is_success = not err_msg
 
