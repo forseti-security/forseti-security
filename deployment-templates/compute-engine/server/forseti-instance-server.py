@@ -225,9 +225,6 @@ logrotate /etc/logrotate.conf
 # Change the access level of configs/ rules/ and run_forseti.sh
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/install/gcp/scripts/run_forseti.sh
 
-# Install instrumentation libs
-pip install .[tracing]
-
 # Install Forseti
 python3 setup.py install
 

@@ -178,9 +178,6 @@ git fetch --all
 python3 -m pip install -q --upgrade setuptools wheel
 python3 -m pip install -q --upgrade -r requirements.txt
 
-# Install instrumentation libs
-pip install .[tracing]
-
 # Install Forseti
 python3 setup.py install
 
@@ -190,7 +187,7 @@ chown -R $USER {forseti_home}
 # Export variables
 {persist_forseti_vars}
 
-# Store the variables in /etc/profile.d/forseti_environment.sh 
+# Store the variables in /etc/profile.d/forseti_environment.sh
 # so all the users will have access to them
 echo "echo '{persist_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
