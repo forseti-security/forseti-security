@@ -337,7 +337,7 @@ def _api_client_factory(storage, config, parallel, tracer=None):
     return gcp.ApiClientImpl(client_config)
 
 
-@tracer.trace()
+@tracing.trace()
 def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
@@ -361,7 +361,7 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     return Crawler(crawler_config)
 
 
-@tracer.trace()
+@tracing.trace()
 def _root_resource_factory(config, client, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
