@@ -22,40 +22,39 @@ Forseti's code.
 viewing traces in GCP console will keep you informed about the time taken for 
 operations between client and server to complete, such as to create an inventory
 or data model. This is critical in analysing and debugging latency issues. 
-* Foresti tracing is optional and is disabled by default. To enable tracing,
-tracing dependencies (OpenCensus and google-cloud-trace) need to be installed.
-Those optional dependencies can be installed by running:
+* Foresti tracing is optional and is disabled by default. 
+* Steps to enable tracing:
+1. Install tracing dependencies (OpenCensus and google-cloud-trace) by running:
    ```
    cd forseti-security  
    pip install opencensus==0.2.0  
    pip install google-cloud-trace==0.19.0    
    ```
-gRPC flags have been added to enable/disable tracing from the Server VM.
-* After installing the dependencies, tracing can be enabled by running:
+2. Set the environment variable by running:
     ```
-    forseti server tracing enable
-    ``` 
-* Tracing mode can be retrieved by running:
+    export FORSETI_ENABLE_TRACING=True
     ```
-    forseti server tracing get
-    ``` 
-* Tracing can be disabled by running:
+3. Restart the server by running:
+    ```
+    sudo systemctl restart forseti.service
+    ```
+Tracing is enabled and inventory can be created at this time. Forseti will send
+traces using the StackdriverExporter by default, and are viewable in GCP console
+under `Trace`.
+* Tracing can be disabled at runtime by running:
     ```
     forseti server tracing disable
-    ``` 
+    ```
+* If the tracing was disabled at runtime, it can be re-enabled by running:
+    ```
+    forseti server tracing enable
+    ```
+* Tracing mode at any time can be retrieved by running:
+    ```
+    forseti server tracing get
+    ```
 * Dependencies can be uninstalled by running:
-    ```bash
+    ```
     pip uninstall opencensus    
     pip uninstall google-cloud-trace
     ```
-
-**Sampling**
-* Forseti will trace 100% of requests by default.
-* Sampling percentage will be made configurable in future releases.
-
-**Exporters**
-* Forseti will send traces using the StackdriverExporter by default, and are
-viewable in GCP console.
-* However OpenCensus supports variety of exporters such as Zipkin, Jaeger etc.
-* Feel free to add support for the exporter of your choice in the meantime, and 
-please contribute back!
