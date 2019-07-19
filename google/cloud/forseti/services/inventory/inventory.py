@@ -176,6 +176,7 @@ def run_inventory(service_config,
     tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
+        LOGGER.debug("Tracing context: %s", tracer.span_context)
         try:
             progresser.inventory_index_id = storage.inventory_index.id
             progresser.final_message = True if background else False

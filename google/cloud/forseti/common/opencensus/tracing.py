@@ -32,6 +32,9 @@ try:
     from opencensus.trace.samplers import always_on
     from opencensus.trace.tracer import Tracer
     from opencensus.trace.span import SpanKind
+    LOGGER.debug(
+        'Tracing libraries successfully installed.'
+        'Tracing modules succesfully imported.')
     OPENCENSUS_ENABLED = True
 except ImportError:
     LOGGER.warning(
@@ -74,7 +77,8 @@ def create_server_interceptor(extras=True):
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    LOGGER.debug(execution_context.get_opencensus_tracer().span_context)
+    ctx = execution_context.get_opencensus_tracer().span_context
+    LOGGER.debug('Tracing context: %s', ctx)
     return interceptor
 
 
@@ -94,7 +98,7 @@ def trace_integrations(integrations=None):
         integrations,
         tracer)
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
-    LOGGER.debug(tracer.span_context)
+    LOGGER.debug('Tracing context: %s', tracer.span_context)
     return integrated_libraries
 
 

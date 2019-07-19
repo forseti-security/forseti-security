@@ -77,7 +77,7 @@ def serve(endpoint,
     if enable_console_log:
         logger.enable_console_log()
 
-    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING")
+    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
     enable_tracing = True if enable_tracing == "True" else False
 
     factories = []
