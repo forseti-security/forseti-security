@@ -166,7 +166,7 @@ def end_span(tracer, **kwargs):
         return
 
     set_span_attributes(tracer, **kwargs)
-    LOGGER.debug(tracer.span_context)
+    LOGGER.debug('Trace context: %s', tracer.span_context)
     tracer.end_span()
 
 
