@@ -190,8 +190,8 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-    tracing.end_span(tracer, result=result)
-    return result
+        tracing.end_span(tracer, result=result)
+        return result
 
 
 def run_import(client, model_name, inventory_index_id, background):
