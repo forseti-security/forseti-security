@@ -32,8 +32,8 @@ SUPPORTED_APIS = {
         'supported_versions': ['v2']
     },
     'cloudasset': {
-        'default_version': 'v1beta1',
-        'supported_versions': ['v1beta1'],
+        'default_version': 'v1',
+        'supported_versions': ['v1'],
     },
     'cloudbilling': {
         'default_version': 'v1',
@@ -51,6 +51,10 @@ SUPPORTED_APIS = {
         'default_version': 'v1',
         'supported_versions': ['v1', 'v1beta1']
     },
+    'groupssettings': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
+    },
     'iam': {
         'default_version': 'v1',
         'supported_versions': ['v1']
@@ -60,9 +64,8 @@ SUPPORTED_APIS = {
         'supported_versions': ['v2']
     },
     'securitycenter': {
-        'default_version': 'v1alpha3',
-        'supported_versions': ['v1alpha3'],
-        'is_private_api': True,
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'servicemanagement': {
         'default_version': 'v1',

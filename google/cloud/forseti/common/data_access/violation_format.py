@@ -14,6 +14,7 @@
 
 """Provides formatting functions for violations"""
 
+from builtins import str
 import json
 
 
@@ -49,7 +50,7 @@ def format_violation(violation):
            rule_name,
            violation.rule_index,
            violation.violation_type,
-           json.dumps(violation.violation_data))
+           json.dumps(violation.violation_data, sort_keys=True))
 
 
 # TODO: refactor groups scanner to use the generic violations format
@@ -71,7 +72,8 @@ def format_groups_violation(violation):
     if group_email:
         group_email = group_email[:255]
 
-    violated_rule_names = json.dumps(violation.violated_rule_names)
+    violated_rule_names = json.dumps(
+        violation.violated_rule_names, sort_keys=True)
 
     yield (member_email,
            group_email,

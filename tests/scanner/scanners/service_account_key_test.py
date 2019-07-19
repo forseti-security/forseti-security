@@ -14,8 +14,9 @@
 
 """Service Account Key Scanner Tests."""
 
+from builtins import object
 import unittest
-import mock
+import unittest.mock as mock
 from datetime import datetime, timedelta
 
 from tests import unittest_utils
@@ -79,14 +80,14 @@ UN_ROTATED_KEY_DATA = """
  "validBeforeTime": "%s"}
 """ % (UN_ROTATED_KEY_NAME, KEY_TIME_MORE_THAN_MAX_AGE, VALID_BEFORE_TIME)
 
-RESOURCE_DATA = "{'key_id': u'999999999999999999999', " \
-                "'key_algorithm': u'KEY_ALG_RSA_2048', " \
-                "'valid_after_time': u'%s', " \
-                "'valid_before_time': u'%s', " \
-                "'full_name': u'organization/12345/project/foo/serviceaccount" \
-                "/123456789012345678901/serviceaccount_key" \
-                "/999999999999999999999/'}" % (KEY_TIME_MORE_THAN_MAX_AGE,
-                                               VALID_BEFORE_TIME)
+RESOURCE_DATA = ('{"full_name": "organization/12345/project/foo/serviceaccount/'
+                 '123456789012345678901/serviceaccount_key/'
+                 '999999999999999999999/", '
+                 '"key_algorithm": "KEY_ALG_RSA_2048", '
+                 '"key_id": "999999999999999999999", '
+                 '"valid_after_time": "%s", '
+                 '"valid_before_time": "%s"}') % (KEY_TIME_MORE_THAN_MAX_AGE,
+                                                  VALID_BEFORE_TIME)
 
 EXPECTED_VIOLATION = {'rule_name': 'Service account keys not rotated (older than 100 days)',
                       'resource_data': RESOURCE_DATA,

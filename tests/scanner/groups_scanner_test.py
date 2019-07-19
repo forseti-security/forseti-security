@@ -14,8 +14,9 @@
 
 """Scanner runner script test."""
 
-import pickle
-import mock
+from builtins import str
+import json
+import unittest.mock as mock
 
 import anytree
 import unittest
@@ -40,9 +41,21 @@ class GroupsScannerTest(ForsetiTestCase):
         Returns:
             attr: String of the attribute to render.
         """
-        return anytree.RenderTree(
-            starting_node,
-            style=anytree.AsciiStyle()).by_attr(attr)
+        rows = []
+        for pre, fill, node in anytree.RenderTree(starting_node,
+                                                  style=anytree.AsciiStyle()):
+            value = getattr(node, attr, "")
+            if isinstance(value, (list, tuple)):
+                lines = value
+            else:
+                lines = str(value).split("\n")
+            rows.append(u"%s%s" % (pre,
+                                   json.dumps(lines[0], sort_keys=True)))
+            for line in lines[1:]:
+                rows.append(u"%s%s" % (fill,
+                                       json.dumps(line, sort_keys=True)))
+
+        return '\n'.join(rows)
 
     def _create_mock_service_config(self):
         mock_data_access = mock.MagicMock()
@@ -68,23 +81,23 @@ class GroupsScannerTest(ForsetiTestCase):
         scanner = groups_scanner.GroupsScanner(
             {}, {}, mock_service_config, '', '', '')
         root = scanner._build_group_tree()
-        self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root, 'member_email'))
 
         # test rules will be associated to the correct nodes
         with open('tests/scanner/test_data/fake_group_rules.yaml', 'r') as f:
             rules = yaml.load(f)
         root_with_rules = scanner._apply_all_rules(root, rules)
-        self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root_with_rules, 'member_email'))
-        self.assertEquals(fake_data.EXPECTED_RULES_IN_TREE,
+        self.assertEqual(fake_data.EXPECTED_RULES_IN_TREE,
                           self._render_ascii(root_with_rules, 'rules'))
 
         # test violations are found correctly
         all_violations = scanner._find_violations(root_with_rules)
-        self.assertEquals(3, len(all_violations))
+        self.assertEqual(3, len(all_violations))
         for violation in all_violations:
-            self.assertEquals('christy@yahoo.com', violation.member_email)
+            self.assertEqual('christy@yahoo.com', violation.member_email)
 
 
 if __name__ == '__main__':

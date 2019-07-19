@@ -13,6 +13,7 @@
 # limitations under the License.
 """Installing test models against a session."""
 
+from builtins import object
 from collections import defaultdict
 from google.cloud.forseti.services import utils
 
@@ -55,7 +56,11 @@ class ModelCreatorClient(object):
 
     def set_iam_policy(self, full_resource_name, policy):
         return self.data_access.set_iam_policy(
-            self.session, utils.full_to_type_name(full_resource_name), policy)
+            self.session, utils.full_to_type_name(full_resource_name), policy,
+            update_members=True)
+
+    def expand_special_members(self):
+        self.data_access.expand_special_members(self.session)
 
     def commit(self):
         self.session.commit()
@@ -80,20 +85,20 @@ class ModelCreator(object):
         """Install resources."""
 
         client.add_resource(node, parent, bool(not parent))
-        for root, tree in model.iteritems():
+        for root, tree in model.items():
             self._recursive_install_resources(root, tree, client, node)
 
     def _install_resources(self, model_view, client):
         """Install resources."""
-        for root, tree in model_view.iteritems():
+        for root, tree in model_view.items():
             self._recursive_install_resources(root, tree, client, '')
 
     def _recursive_invert_membership(self, node, model, parentship):
         if node not in parentship:
             parentship[node] = set()
-        for child in model.iterkeys():
+        for child in model.keys():
             parentship[child].add(node)
-        for root, tree in model.iteritems():
+        for root, tree in model.items():
             self._recursive_invert_membership(root, tree, parentship)
         return parentship
 
@@ -116,7 +121,7 @@ class ModelCreator(object):
 
     def _install_memberships(self, model_view, client):
         parent_relationship = defaultdict(set)
-        for root, tree in model_view.iteritems():
+        for root, tree in model_view.items():
             self._recursive_invert_membership(root, tree, parent_relationship)
 
         if self._cyclic(parent_relationship):
@@ -124,7 +129,7 @@ class ModelCreator(object):
 
         installed_members = set()
         while len(parent_relationship) > 0:
-            for child, parents in parent_relationship.iteritems():
+            for child, parents in parent_relationship.items():
                 if parents.issubset(installed_members):
                     break
 
@@ -133,14 +138,15 @@ class ModelCreator(object):
             parent_relationship.pop(child)
 
     def _install_roles(self, model_view, client):
-        for role, permissions in model_view.iteritems():
+        for role, permissions in model_view.items():
             client.add_role(role, permissions)
 
     def _install_bindings(self, model_view, client):
-        for resource_name, bindings in model_view.iteritems():
+        for resource_name, bindings in model_view.items():
             reply = client.get_iam_policy(resource_name)
             if len(reply.policy.bindings) > 0:
                 raise Exception('policy should have been empty')
             client.set_iam_policy(resource_name,
                                   {'bindings': bindings,
                                    'etag': reply.policy.etag})
+        client.expand_special_members()

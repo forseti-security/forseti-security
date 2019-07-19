@@ -15,7 +15,7 @@
 """Tests the LogSinkRulesEngine."""
 
 import unittest
-import mock
+import unittest.mock as mock
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 
@@ -255,7 +255,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 rule_index=0,
                 violation_type='LOG_SINK_VIOLATION',
                 sink_destination=('^bigquery\\.googleapis\\.com\\/projects\\/'
-                                  'my\\-audit\\-logs\\/datasets\\/.+$'),
+                                  'my\\-audit\\-logs\\/datasets\\/.*$'),
                 sink_filter=('^logName\\:\\"logs\\/'
                              'cloudaudit\\.googleapis\\.com\\"$'),
                 sink_include_children='*',
@@ -269,7 +269,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 rule_name='Require a PubSub sink in folder-56 projects.',
                 rule_index=3,
                 violation_type='LOG_SINK_VIOLATION',
-                sink_destination='^pubsub\\.googleapis\\.com\\/.+$',
+                sink_destination='^pubsub\\.googleapis\\.com\\/.*$',
                 sink_filter='^$',
                 sink_include_children='*',
                 resource_data=''

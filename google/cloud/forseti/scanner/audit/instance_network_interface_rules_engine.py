@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for NetworkInterface."""
+from builtins import object
 from collections import namedtuple
 import itertools
 import re
@@ -195,7 +196,7 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
         Return:
             list: resource_rules_map values
         """
-        return self.resource_rules_map.values()
+        return list(self.resource_rules_map.values())
 
 
 class Rule(object):

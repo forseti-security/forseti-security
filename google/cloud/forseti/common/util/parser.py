@@ -65,9 +65,9 @@ def format_timestamp(timestamp_str, datetime_formatter):
         formatted_timestamp = (
             dateutil_parser.parse(timestamp_str).strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
-        LOGGER.warn('Unable to parse/format timestamp: %s\n,'
-                    ' datetime_formatter: %s\n%s',
-                    timestamp_str, datetime_formatter, e)
+        LOGGER.warning('Unable to parse/format timestamp: %s\n, '
+                       'datetime_formatter: %s\n%s',
+                       timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp
 
@@ -82,7 +82,7 @@ def json_stringify(obj_to_jsonify):
         str: The json-stringified dict.
     """
     # TODO: We should probably try and catch something here.
-    return json.dumps(obj_to_jsonify)
+    return json.dumps(obj_to_jsonify, sort_keys=True)
 
 
 def json_unstringify(json_to_objify, default=None):

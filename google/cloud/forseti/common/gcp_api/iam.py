@@ -13,6 +13,10 @@
 # limitations under the License.
 
 """Wrapper for IAM API client."""
+from builtins import object
+import json
+import re
+
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -432,6 +436,29 @@ class IAMClient(object):
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails.
         """
+        def _service_account_not_found(error):
+            """Checks if the error is due to the SA not found in the project.
+
+            Args:
+                error (Exception): The error to check.
+
+            Returns:
+                bool: If the error is due to SA not found.
+            """
+            sa_not_found_pattern = '^Service account .*? does not exist.$'
+            if isinstance(error, errors.HttpError):
+                if (str(error.resp.status) == '404' and
+                        error.resp.get('content-type', '')
+                        .startswith('application/json')):
+
+                    error_resp = json.loads(error.content.decode('utf-8'))
+                    error_details = error_resp.get('error', {})
+                    error_message = error_details.get('message', '')
+                    LOGGER.debug(error_message)
+                    if re.match(sa_not_found_pattern, error_message):
+                        return True
+            return False
+
         try:
             kwargs = {}
             if key_type:
@@ -449,6 +476,9 @@ class IAMClient(object):
                          name, key_type, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
+            if _service_account_not_found(e):
+                LOGGER.debug('Service account %s doesn\'t exist', name)
+                return []
             api_exception = api_errors.ApiExecutionError(
                 'serviceAccountKeys', e, 'name', name)
             LOGGER.exception(api_exception)

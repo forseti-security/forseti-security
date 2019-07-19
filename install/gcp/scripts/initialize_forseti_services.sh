@@ -36,19 +36,27 @@ SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
-FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
+FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?charset=utf8"
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 FORSETI_COMMAND+=" --enable-tracing"
 
+CONFIG_VALIDATOR_COMMAND="${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer"
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='${FORSETI_HOME}/policy-library/policies'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${FORSETI_HOME}/policy-library/lib'"
+CONFIG_VALIDATOR_COMMAND+=" -port=50052"
+
+# Update the permission of the config validator.
+sudo chmod ugo+x ${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer
+
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
-
 
 # Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
 [Unit]
 Description=Forseti API Server
+Wants=cloudsqlproxy.service
 [Service]
 User=ubuntu
 Restart=always
@@ -56,11 +64,24 @@ RestartSec=3
 ExecStart=$FORSETI_COMMAND
 [Install]
 WantedBy=multi-user.target
-Wants=cloudsqlproxy.service
 EOF
 )"
 echo "$API_SERVICE" > /tmp/forseti.service
 sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
+
+# Config Validator Service.
+CONFIG_VALIDATOR_SERVICE="$(cat << EOF
+[Unit]
+Description=Config Validator API Server
+[Service]
+User=ubuntu
+ExecStart=$CONFIG_VALIDATOR_COMMAND
+[Install]
+WantedBy=multi-user.target
+EOF
+)"
+echo "$CONFIG_VALIDATOR_SERVICE" > /tmp/config_validator.service
+sudo mv /tmp/config_validator.service /lib/systemd/system/config-validator.service
 
 # By default, Systemd starts the executable stated in ExecStart= as root.
 # See github issue #1761 for why this neds to be run as root.
@@ -83,6 +104,7 @@ sudo mv /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
 # proxy and block on the Forseti API server.
 FOREGROUND_RUNNER="$(cat << EOF
 $SQL_PROXY_COMMAND &&
+$CONFIG_VALIDATOR_COMMAND &&
 $FORSETI_COMMAND
 EOF
 )"
@@ -96,6 +118,7 @@ echo "immediately by running the following:"
 echo ""
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
+echo "    systemctl start config-validator"
 echo ""
 echo "Additionally, the Forseti server can be run in the foreground by using"
 echo "the foreground runner script: /usr/bin/forseti-foreground.sh"

@@ -14,6 +14,7 @@
 
 """ Explain gRPC service. """
 
+from builtins import object
 from collections import defaultdict
 
 from grpc import StatusCode
@@ -104,6 +105,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         return explain_pb2.PingReply(data=request.data)
 
+    @autoclose_stream
     def ListResources(self, request, context):
         """Lists resources in the model.
 
@@ -111,20 +113,22 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of list of resources
+        Yields:
+            object: proto message of a generator of resources
         """
-        reply = explain_pb2.ListResourcesReply()
+        reply = explain_pb2.Resource()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         resources = self.explainer.list_resources(handle,
                                                   request.prefix)
-        reply.full_resource_names.extend([r.type_name for r in resources])
-        return reply
+        for resource in resources:
+            yield explain_pb2.Resource(
+                full_resource_name=resource.type_name)
 
+    @autoclose_stream
     def ListGroupMembers(self, request, context):
         """Lists members in the model.
 
@@ -132,21 +136,22 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of list of members
+        Yields:
+            object: proto message of a generator of members.
         """
-        reply = explain_pb2.ListGroupMembersReply()
+        reply = explain_pb2.GroupMember()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         member_names = self.explainer.list_group_members(handle,
                                                          request.prefix)
 
-        reply.member_names.extend(member_names)
-        return reply
+        for member in member_names:
+            yield explain_pb2.GroupMember(member_name=member)
 
+    @autoclose_stream
     def ListRoles(self, request, context):
         """List roles from the model.
 
@@ -154,18 +159,18 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of list of roles
+        Yields:
+            object: proto message of a generator of roles.
         """
-        reply = explain_pb2.ListRolesReply()
+        reply = explain_pb2.Role()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle, request.prefix)
-        reply.role_names.extend(role_names)
-        return reply
+        for role in role_names:
+            yield explain_pb2.Role(role_name=role)
 
     def GetIamPolicy(self, request, context):
         """Gets the policy for a resource.
@@ -188,7 +193,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         etag = policy['etag']
         bindings = []
-        for key, value in policy['bindings'].iteritems():
+        for key, value in policy['bindings'].items():
             binding = explain_pb2.BindingOnResource()
             binding.role = key
             binding.members.extend(value)
@@ -222,6 +227,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.result = authorized
         return reply
 
+    @autoclose_stream
     def ExplainDenied(self, request, context):
         """Provides information on how to grant access.
 
@@ -229,13 +235,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of explain denied result
+        Yields:
+            object: Generator of proto message of explain denied result.
         """
-        reply = explain_pb2.ExplainDeniedReply()
+        reply = explain_pb2.BindingStrategy()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.explain_denied(model_name,
@@ -243,15 +249,11 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                                            request.resources,
                                                            request.permissions,
                                                            request.roles)
-
-        strategies = []
         for overgranting, bindings in binding_strategies:
             strategy = explain_pb2.BindingStrategy(overgranting=overgranting)
             strategy.bindings.extend([explain_pb2.Binding(
                 member=b[1], resource=b[2], role=b[0]) for b in bindings])
-            strategies.append(strategy)
-        reply.strategies.extend(strategies)
-        return reply
+            yield strategy
 
     def ExplainGranted(self, request, context):
         """Provides information on why a member has access to a resource.
@@ -261,7 +263,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             context (object): gRPC context.
 
         Returns:
-            object: proto message of explain granted result
+            object: proto message of explain granted result.
         """
         reply = explain_pb2.ExplainGrantedReply()
 
@@ -277,7 +279,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         bindings, member_graph, resource_names = result
         memberships = []
-        for child, parents in member_graph.iteritems():
+        for child, parents in member_graph.items():
             memberships.append(
                 explain_pb2.Membership(
                     member=child,
@@ -317,6 +319,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                      role=role,
                                      resource=resource)
 
+    @autoclose_stream
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource.
 
@@ -324,13 +327,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of access tuples by resource
+        Yields:
+            object: Generator of proto message of access tuples by resource.
         """
-        reply = explain_pb2.GetAccessByResourcesReply()
+        reply = explain_pb2.Access()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         mapping = self.explainer.get_access_by_resources(
@@ -338,15 +341,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request.resource_name,
             request.permission_names,
             request.expand_groups)
-        accesses = []
-        for role, members in mapping.iteritems():
-            access = explain_pb2.GetAccessByResourcesReply.Access(
+        for role, members in mapping.items():
+            access = explain_pb2.Access(
                 role=role, resource=request.resource_name, members=members)
-            accesses.append(access)
+            yield access
 
-        reply.accesses.extend(accesses)
-        return reply
-
+    @autoclose_stream
     def GetAccessByMembers(self, request, context):
         """Returns resources which can be accessed by the specified members.
 
@@ -354,27 +354,23 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             request (object): gRPC request.
             context (object): gRPC context.
 
-        Returns:
-            object: proto message of access tuples by members
+        Yields:
+            object: Generator of proto message of access tuples by members.
         """
-        reply = explain_pb2.GetAccessByMembersReply()
+        reply = explain_pb2.Access()
 
         if not self.is_supported:
-            return self._set_not_supported_status(context, reply)
+            yield self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
-        accesses = []
         for role, resources in \
                 self.explainer.get_access_by_members(model_name,
                                                      request.member_name,
                                                      request.permission_names,
                                                      request.expand_resources):
-            access = explain_pb2.GetAccessByMembersReply.Access(
+            access = explain_pb2.MemberAccess(
                 role=role, resources=resources, member=request.member_name)
-            accesses.append(access)
-
-        reply.accesses.extend(accesses)
-        return reply
+            yield access
 
     def GetPermissionsByRoles(self, request, context):
         """Returns permissions for the specified roles.
@@ -401,7 +397,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             permissions_by_roles_map[role.name].append(permission.name)
 
         permissions_by_roles_list = []
-        for role, permissions in permissions_by_roles_map.iteritems():
+        for role, permissions in permissions_by_roles_map.items():
             permissions_by_roles_list.append(
                 explain_pb2.GetPermissionsByRolesReply.PermissionsByRole(
                     role=role, permissions=permissions))

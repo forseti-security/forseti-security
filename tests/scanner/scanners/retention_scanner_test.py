@@ -17,7 +17,7 @@
 import collections
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import tempfile
 
 from tests.scanner.test_data import fake_retention_scanner_data as frsd
@@ -31,7 +31,8 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
     """Create violations for expected violation list"""
-    lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
+    lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule(),
+                               sort_keys=True)
 
     return rre.RuleViolation(
         resource_id=bucket_id,
@@ -51,6 +52,9 @@ def get_mock_bucket_retention(bucket_data):
     def _mock_bucket_retention(_=None, resource_type='bucket'):
         """Creates a list of GCP resource mocks retrieved by the scanner"""
 
+        if resource_type == 'bigquery_table':
+            return []
+
         if resource_type != 'bucket':
             raise ValueError(
                 'unexpected resource type: got %s, bucket',
@@ -63,6 +67,29 @@ def get_mock_bucket_retention(bucket_data):
 
         return ret
     return _mock_bucket_retention
+
+
+def get_mock_table_retention(table_data):
+    """Get the mock function for testcases"""
+
+    def _mock_table_retention(_=None, resource_type='bigquery_table'):
+        """Creates a list of GCP resource mocks retrieved by the scanner"""
+
+        if resource_type == 'bucket':
+            return []
+
+        if resource_type != 'bigquery_table':
+            raise ValueError(
+                'unexpected resource type: got %s, table',
+                resource_type,
+            )
+
+        ret = []
+        for data in table_data:
+            ret.append(frsd.get_fake_table_resource(data))
+
+        return ret
+    return _mock_table_retention
 
 
 class RetentionScannerTest(ForsetiTestCase):
@@ -114,7 +141,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, 'bucket')
 
@@ -200,7 +227,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(None, resource_type='bucket')
 
@@ -281,7 +308,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
@@ -366,7 +393,7 @@ rules:
         _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(rule_yaml)
+            f.write(rule_yaml.encode())
             f.flush()
             _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
@@ -399,3 +426,58 @@ rules:
             ])
 
             self.assertEqual(expected_violations, set(all_violations))
+
+    def test_table_retention(self):
+        """Test yaml file that includes more than one rules that works on the same project"""
+
+        rule_yaml = """
+rules:
+  - name: project 5 max 90 on table
+    applies_to:
+      - bigquery_table
+    resource:
+      - type: table
+        resource_ids:
+          - "def-project-5:ds01.fake-table-01"
+    maximum_retention: 100
+
+"""
+
+        table_test_data=[
+            frsd.FakeTableDataInput(
+                table_id='fake-table-01',
+                dataset=frsd.DATASET1,
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+110 * rre._MS_PER_DAY
+            ),
+            frsd.FakeTableDataInput(
+                table_id='fake-table-02',
+                dataset=frsd.DATASET1,
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+89 * rre._MS_PER_DAY
+            ),
+            frsd.FakeTableDataInput(
+                table_id='fake-table-03',
+                dataset=frsd.DATASET1,
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+91 * rre._MS_PER_DAY
+            ),
+        ]
+
+        _mock_bucket = get_mock_table_retention(table_test_data)
+
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(rule_yaml.encode())
+            f.flush()
+            _fake_bucket_list = _mock_bucket(resource_type='bigquery_table')
+
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
+
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
+
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
+
+            all_lifecycle_info = self.scanner.run()

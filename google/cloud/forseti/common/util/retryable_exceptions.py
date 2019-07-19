@@ -14,21 +14,33 @@
 
 """Module to determine whether an exception should be retried."""
 
-import httplib
+import http.client
 import socket
 import ssl
-import urllib2
+import urllib.request
+import urllib.error
+import urllib.parse
 
+from future import standard_library
 import httplib2
 
+from google.cloud.forseti.scanner.scanners.config_validator_util import (
+    errors as cv_errors
+)
+
+standard_library.install_aliases()
 
 RETRYABLE_EXCEPTIONS = (
-    httplib.ResponseNotReady,
-    httplib.IncompleteRead,
+    http.client.ResponseNotReady,
+    http.client.IncompleteRead,
     httplib2.ServerNotFoundError,
     socket.error,
     ssl.SSLError,
-    urllib2.URLError,  # include "no network connection"
+    urllib.error.URLError,  # include "no network connection"
+)
+
+CONFIG_VALIDATOR_EXCEPTIONS = (
+    cv_errors.ConfigValidatorServerUnavailableError,
 )
 
 
@@ -42,3 +54,16 @@ def is_retryable_exception(e):
         bool: True for exceptions to retry. False otherwise.
     """
     return isinstance(e, RETRYABLE_EXCEPTIONS)
+
+
+def is_retryable_exception_cv(e):
+    """Whether exception should be retried for Config Validator communications.
+
+    Args:
+        e (Exception): Exception object.
+
+    Returns:
+        bool: True for exceptions to retry. False otherwise.
+    """
+
+    return isinstance(e, CONFIG_VALIDATOR_EXCEPTIONS)

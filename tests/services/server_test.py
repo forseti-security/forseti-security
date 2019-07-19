@@ -13,10 +13,10 @@
 # limitations under the License.
 """Unit Tests: Forseti Server."""
 
-import mock
+from builtins import object
 import argparse
-import os
 import unittest
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services import server
@@ -29,121 +29,6 @@ class NameSpace(object):
 
 class ServerTest(ForsetiTestCase):
     """Test Forseti Server."""
-
-    TEST_RESOURCE_DIR_PATH = os.path.join(
-        os.path.dirname(__file__), 'test_data')
-
-    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
-                mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
-    def test_server_config_update_bad_default_path(self, test_patch):
-        test_patch.return_value = None
-
-        config_file_path = ''
-        db_conn_str = ''
-        endpoint = ''
-
-        config = server.ServiceConfig(config_file_path, db_conn_str, endpoint)
-
-        is_success, err_msg = config.update_configuration()
-
-        has_err_msg = len(err_msg) > 0
-
-        self.assertFalse(is_success)
-
-        self.assertTrue(has_err_msg)
-
-    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
-                mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
-    def test_server_config_update_good_default_bad_update_path(self, test_patch):
-        test_patch.return_value = None
-
-        config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
-                                        'forseti_conf_server.yaml')
-        db_conn_str = ''
-        endpoint = ''
-        config = server.ServiceConfig(config_file_path, db_conn_str, endpoint)
-
-        is_success, err_msg = config.update_configuration()
-
-        has_err_msg = len(err_msg) > 0
-
-        self.assertTrue(is_success)
-
-        self.assertFalse(has_err_msg)
-
-        # Examine the contents in scanner config.
-
-        for scanner in config.get_scanner_config().get('scanners'):
-            # All the scanners are set to true in the default config file.
-            self.assertTrue(scanner.get('enabled'))
-
-        # Test update config with bad file path.
-
-        is_success, err_msg = config.update_configuration(
-            'this_is_a_bad_path.xyz')
-
-        has_err_msg = len(err_msg) > 0
-
-        self.assertFalse(is_success)
-
-        self.assertTrue(has_err_msg)
-
-        # Make sure if the new path is bad, we still keep the good changes
-        # from the default path, we can verify by examining the contents in
-        # the scanner config and see if it's the same as above.
-
-        for scanner in config.get_scanner_config().get('scanners'):
-            # All the scanners are set to true in the default config file.
-            self.assertTrue(scanner.get('enabled'))
-
-    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
-                mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
-    def test_server_config_update_good_default_and_update_path(self, test_patch):
-        test_patch.return_value = None
-
-        config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
-                                        'forseti_conf_server.yaml')
-        db_conn_str = ''
-        endpoint = ''
-        config = server.ServiceConfig(config_file_path, db_conn_str, endpoint)
-
-        _, _ = config.update_configuration()
-
-        new_config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
-                                            'forseti_conf_server_new.yaml')
-
-        is_success, err_msg = config.update_configuration(new_config_file_path)
-
-        has_err_msg = len(err_msg) > 0
-
-        self.assertTrue(is_success)
-
-        self.assertFalse(has_err_msg)
-
-        # Examine the contents in scanner config.
-
-        for scanner in config.get_scanner_config().get('scanners'):
-            # All the scanners are set to false in the new config file.
-            self.assertFalse(scanner.get('enabled'))
-
-        # Test update again with default path will replace the changes.
-
-        is_success, err_msg = config.update_configuration()
-
-        has_err_msg = len(err_msg) > 0
-
-        self.assertTrue(is_success)
-
-        self.assertFalse(has_err_msg)
-
-        # Examine the contents in scanner config.
-
-        for scanner in config.get_scanner_config().get('scanners'):
-            # All the scanners are set to true in the default config file.
-            self.assertTrue(scanner.get('enabled'))
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     @mock.patch.object(argparse.ArgumentParser, 'print_usage')
@@ -162,7 +47,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -182,7 +67,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -202,7 +87,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -226,7 +111,7 @@ class ServerTest(ForsetiTestCase):
                 mock_access.return_value = False
                 with self.assertRaises(SystemExit) as e:
                     server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -251,7 +136,7 @@ class ServerTest(ForsetiTestCase):
                 mock_access.return_value = True
                 with self.assertRaises(SystemExit) as e:
                     server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
 

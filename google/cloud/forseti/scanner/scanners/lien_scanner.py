@@ -100,7 +100,6 @@ class LienScanner(base_scanner.BaseScanner):
 
                 parent_resource_to_liens[proj].append(lien.Lien.from_json(
                     parent=proj,
-                    name=lien_resource.name,
                     json_string=lien_resource.data))
 
             return parent_resource_to_liens
@@ -118,7 +117,7 @@ class LienScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding lien violations...')
 
-        for parent_resource, liens in parent_resource_to_liens.iteritems():
+        for parent_resource, liens in parent_resource_to_liens.items():
             violations = list(self.rules_engine.find_violations(
                 parent_resource, liens))
             LOGGER.debug(violations)

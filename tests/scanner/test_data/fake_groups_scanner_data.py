@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from MySQLdb.constants.REFRESH import STATUS
+from builtins import object
+import MySQLdb
 
 """Test data for groups scanner tests.
 
@@ -37,7 +38,7 @@ group: ddddd@mycompany.com
   member: bbbbb@mycompany.com
 """
 
-class FakeGroup:
+class FakeGroup(object):
     def __init__(self, name, member_name, type):
         self.name = name
         self.member_name = member_name
@@ -52,7 +53,7 @@ ALL_GROUPS = (
 )
 
 
-class FakeMember:
+class FakeMember(object):
     def __init__(self, name, member_name, type, starting_node):
         self.name = name
         self.member_name = member_name
@@ -94,60 +95,60 @@ ALL_GROUP_MEMBERS = [
 ]
 
 EXPECTED_MEMBERS_IN_TREE = (
-"""my_customer
-|-- aaaaa@mycompany.com
-|   |-- adam@mycompany.com
-|   |-- abby@mycompany.com
-|   +-- amelia@mycompany.com
-|-- bbbbb@mycompany.com
-|   |-- bob@mycompany.com
-|   |-- beth@mycompany.com
-|   |-- charlie@mycompany.com
-|   |-- cassy@mycompany.com
-|   +-- christy@yahoo.com
-|-- ccccc@mycompany.com
-|   |-- charlie@mycompany.com
-|   |-- cassy@mycompany.com
-|   +-- christy@yahoo.com
-+-- ddddd@mycompany.com
-    |-- david@mycompany.com
-    |-- daisy@mycompany.com
-    |-- bob@mycompany.com
-    |-- beth@mycompany.com
-    |-- charlie@mycompany.com
-    |-- cassy@mycompany.com
-    +-- christy@yahoo.com"""
+'''"my_customer"
+|-- "aaaaa@mycompany.com"
+|   |-- "adam@mycompany.com"
+|   |-- "abby@mycompany.com"
+|   +-- "amelia@mycompany.com"
+|-- "bbbbb@mycompany.com"
+|   |-- "bob@mycompany.com"
+|   |-- "beth@mycompany.com"
+|   |-- "charlie@mycompany.com"
+|   |-- "cassy@mycompany.com"
+|   +-- "christy@yahoo.com"
+|-- "ccccc@mycompany.com"
+|   |-- "charlie@mycompany.com"
+|   |-- "cassy@mycompany.com"
+|   +-- "christy@yahoo.com"
++-- "ddddd@mycompany.com"
+    |-- "david@mycompany.com"
+    |-- "daisy@mycompany.com"
+    |-- "bob@mycompany.com"
+    |-- "beth@mycompany.com"
+    |-- "charlie@mycompany.com"
+    |-- "cassy@mycompany.com"
+    +-- "christy@yahoo.com"'''
 )
 
 EXPECTED_RULES_IN_TREE = (
-"""{'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
-|   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
-|-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
-|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
-|   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
-+-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}""")
+"""{"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "aaaaa@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in AAAAA group."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "aaaaa@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in AAAAA group."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "aaaaa@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in AAAAA group."}
+|   +-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|       {"conditions": [{"member_email": "@gmail.com"}], "group_email": "aaaaa@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in AAAAA group."}
+|-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   +-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "ccccc@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in CCCCC group."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "ccccc@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in CCCCC group."}
+|   |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|   |   {"conditions": [{"member_email": "@gmail.com"}], "group_email": "ccccc@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in CCCCC group."}
+|   +-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+|       {"conditions": [{"member_email": "@gmail.com"}], "group_email": "ccccc@mycompany.com", "mode": "whitelist", "name": "Allow gmail users to be in CCCCC group."}
++-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    |-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}
+    +-- {"conditions": [{"member_email": "@mycompany.com"}], "group_email": "my_customer", "mode": "whitelist", "name": "Allow my company users to be in my company groups."}""")

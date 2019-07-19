@@ -34,36 +34,34 @@ NAMESPACE_PACKAGES = [
 
 REQUIRED_PACKAGES = [
     # Installation related.
-    'anytree>=2.1.4',
-    'futures>=3.0.5',
-    'google-api-python-client>=1.6.1',
-    'google-auth>=1.4.1',
-    'google-auth-httplib2>=0.0.3',
-    'Jinja2>=2.9.5',
-    'jmespath>=0.9.3',
-    'MySQL-python>=1.2.5',
-    'netaddr>=0.7.19',
-    'PyYAML>=3.12',
-    'pygraph>=0.2.1',
-    'python-dateutil>=2.7.3',
-    'ratelimiter>=1.1.0',
-    'retrying>=1.3.3',
-    'requests[security]>=2.18.4',
-    'sendgrid>=3.6.3',
-    'simple-crypt>=4.1.7',
-    'unicodecsv>=0.14.1',
+    'anytree==2.4.3',
+    'google-api-python-client==1.7.7',
+    'google-auth==1.6.2',
+    'google-auth-httplib2==0.0.3',
+    'Jinja2==2.10.1',
+    'jmespath==0.9.3',
+    'mysqlclient==1.4.2.post1',
+    'netaddr==0.7.19',
+    'pyyaml==4.2b4',
+    'python-graph-core==1.8.2',
+    'python-dateutil==2.7.5',
+    'ratelimiter==1.2.0.post0',
+    'retrying==1.3.3',
+    'requests[security]==2.21.0',
+    'sendgrid==5.6.0',
+    'simple-crypt==4.1.7',
+    'unicodecsv==0.14.1',
     # Setup related.
-    'grpcio',
-    'grpcio-tools',
-    'protobuf>=3.2.0',
+    'grpcio==1.18.0',
+    'grpcio-tools==1.18.0',
+    'protobuf==3.7.1',
     # Testing related.
-    'mock>=2.0.0',
-    'parameterized>=0.6.1',
+    'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
-    'pylint',
-    'pylint-quotes',
-    'SQLAlchemy>=1.1.9,<1.3.0',
-    'sqlalchemy-migrate>=0.11.0'
+    'pylint==1.9.4',
+    'pylint-quotes==0.2.1',
+    'SQLAlchemy==1.2.18',
+    'sqlalchemy-migrate==0.11.0'
 ]
 
 OPTIONAL_PACKAGES = {
@@ -76,9 +74,8 @@ OPTIONAL_PACKAGES = {
 if sys.version_info < (2, 7):
     sys.exit('Sorry, Python < 2.7 is not supported.')
 
-if sys.version_info.major > 2:
-    sys.exit('Sorry, Python 3 is not supported.')
-
+if sys.version_info.major < 3:
+    sys.exit('Sorry, Python 2 is not supported.')
 
 def build_forseti_protos(clean_only=False):
     """Clean and optionally Build protos.
@@ -120,7 +117,7 @@ setup(
     description='Forseti Security tools',
     author='Google LLC.',
     author_email='opensource@google.com',
-    url='https://github.com/GoogleCloudPlatform/forseti-security',
+    url='https://github.com/forseti-security/forseti-security',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

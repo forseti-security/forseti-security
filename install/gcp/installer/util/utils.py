@@ -18,7 +18,10 @@ This has been tested with python 2.7.
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import input
+from builtins import range
 import os
 import re
 import sys
@@ -26,7 +29,7 @@ import subprocess
 import threading
 import time
 
-import constants
+from . import constants
 
 
 def id_from_name(name):
@@ -190,7 +193,7 @@ def checkout_git_branch():
         for (i, branch) in enumerate(branches):
             print('[%s] %s' % (i+1, branch[len('origin/'):]))
         try:
-            choice_index = int(raw_input(
+            choice_index = int(input(
                 'Enter your numerical choice: ').strip())
         except ValueError:
             print('Invalid input choice, try again.')
@@ -254,11 +257,8 @@ def generate_service_acct_info(prefix, installation_type,
     return service_account_email, service_account_name
 
 
-def infer_version(advanced_mode):
+def infer_version():
     """Infer the Forseti version, or ask user to input one not listed.
-
-    Args:
-        advanced_mode (bool): Whether or not the installer is in advanced mode.
 
     Returns:
         str: Selected Forseti branch.
@@ -272,24 +272,6 @@ def infer_version(advanced_mode):
               '#installation-and-deployment for more information.')
         sys.exit(1)
 
-    if not advanced_mode:
-        return cur_version
-
-    user_choice = 'n'
-
-    while user_choice != 'y' and user_choice != 'n':
-        user_choice = raw_input(
-            'Install Forseti branch/tag %s? (y/n) '
-            % cur_version).lower().strip()
-
-    if user_choice == 'n':
-        branch = checkout_git_branch()
-        if branch:
-            cur_version = branch
-        else:
-            print('No branch/tag was chosen; using %s' % cur_version)
-
-    print('Forseti branch/tag: %s' % cur_version)
     return cur_version
 
 
@@ -319,7 +301,7 @@ def get_choice_id(choices, print_function):
         for (i, choice) in enumerate(choices):
             print_function(i, choice)
 
-        choice_input = raw_input(
+        choice_input = input(
             'Enter the number of your choice: ').strip()
 
         try:
@@ -392,6 +374,9 @@ def run_command(cmd_args, number_of_retry=5,
                            timeout_in_second + 10,
                            suppress_output=suppress_output)
 
+    if isinstance(out, bytes):
+        out = out.decode('utf-8')
+
     return proc.returncode, out, err
 
 
@@ -405,7 +390,7 @@ def sanitize_conf_values(conf_values):
     Returns:
         dict: The sanitized values.
     """
-    for key in conf_values.keys():
+    for key in list(conf_values.keys()):
         if not conf_values[key]:
             conf_values[key] = '""'
     return conf_values
@@ -441,5 +426,5 @@ def start_loading(max_loading_time, exit_condition_checker=None,
         dots = '.' * (i % max_number_of_dots)
         sys.stdout.write('\r{}{}{} '.format(erase_line, message, dots))
         sys.stdout.flush()
-    print ('time limit reached')
+    print('time limit reached')
     return False

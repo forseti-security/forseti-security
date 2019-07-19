@@ -15,13 +15,14 @@
 
 """Tests for google.cloud.forseti.enforcer.project_enforcer."""
 
+from builtins import range
 import copy
 from datetime import datetime
 import json
 import unittest
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 
 from tests.enforcer import testing_constants as constants
 
@@ -45,14 +46,14 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
             project_id=self.project)
 
         self.expected_rules = copy.deepcopy(
-            constants.EXPECTED_FIREWALL_RULES.values())
+            list(constants.EXPECTED_FIREWALL_RULES.values()))
 
         response_403 = httplib2.Response({
             'status': '403',
             'content-type': 'application/json'
         })
         response_403.reason = 'Failed'
-        self.error_403 = errors.HttpError(response_403, '', uri='')
+        self.error_403 = errors.HttpError(response_403, ''.encode(), uri='')
 
         self.addCleanup(mock.patch.stopall)
 
@@ -555,7 +556,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         ]
 
         with mock.patch.object(self.gce_api_client,
-                               'update_firewall_rule') as mock_updater:
+                               'patch_firewall_rule') as mock_updater:
             mock_updater.return_value = {
                 'status': 'DONE',
                 'name': 'test-net-allow-corp-internal-0',
@@ -749,7 +750,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
                               'https://console.developers.google.com/iam-admin/'
                               'projects?pendingDeletion=true to undelete the '
                               'project.')
-        error_deleted_403 = errors.HttpError(deleted_403, '', uri='')
+        error_deleted_403 = errors.HttpError(deleted_403, ''.encode(), uri='')
         err = api_errors.ApiExecutionError(self.project, error_deleted_403)
 
         self.gce_api_client.get_networks.side_effect = err
@@ -783,7 +784,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
             'content-type': 'application/json'
         })
         deleted_400.reason = 'Invalid value for project: %s' % self.project
-        error_deleted_400 = errors.HttpError(deleted_400, '', uri='')
+        error_deleted_400 = errors.HttpError(deleted_400, ''.encode(), uri='')
         err = api_errors.ApiExecutionError(self.project, error_deleted_400)
 
         self.gce_api_client.get_firewall_rules.side_effect = err
@@ -823,7 +824,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
             'overview?project=1 then retry. If you enabled this API recently,'
             'wait a few minutes for the action to propagate to our systems and '
             'retry.')
-        error_api_disabled_403 = errors.HttpError(api_disabled_403, '', uri='')
+        error_api_disabled_403 = errors.HttpError(api_disabled_403, ''.encode(), uri='')
         err = api_errors.ApiNotEnabledError(
             'https://console.developers.google.com/apis/api/compute_component/',
             error_api_disabled_403)

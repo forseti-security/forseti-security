@@ -14,6 +14,7 @@
 
 """Server Config gRPC service. """
 
+from builtins import object
 import json
 import logging
 
@@ -86,7 +87,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
             logger.set_logger_level(logger.LOGLEVELS[request.log_level])
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
-            err_msg = e.message
+            err_msg = str(e)
 
         is_success = not err_msg
 
@@ -130,7 +131,7 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         forseti_config = self.service_config.get_forseti_config()
 
         return server_pb2.GetServerConfigurationReply(
-            configuration=json.dumps(forseti_config))
+            configuration=json.dumps(forseti_config, sort_keys=True))
 
 
 class GrpcServerConfigFactory(object):

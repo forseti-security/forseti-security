@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for CloudSQL acls."""
+from builtins import object
 from collections import namedtuple
 import itertools
 import json
@@ -146,7 +147,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
                 ipv4_enabled=True,
                 authorized_networks=escape_and_globify(authorized_networks),
                 require_ssl=require_ssl,
-                raw_json=json.dumps(rule_def)
+                raw_json=json.dumps(rule_def, sort_keys=True)
             )
 
             rule = Rule(rule_name=rule_def.get('name'),

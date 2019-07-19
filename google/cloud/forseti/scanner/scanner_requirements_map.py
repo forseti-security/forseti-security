@@ -34,6 +34,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',
          'rules_filename': 'bucket_rules.yaml'},
+    'config_validator':
+        {'module_name': 'config_validator_scanner',
+         'class_name': 'ConfigValidatorScanner',
+         'rule_filename': ''},
     'cloudsql_acl':
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
@@ -58,6 +62,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
+    'groups_settings':
+        {'module_name': 'groups_settings_scanner',
+         'class_name': 'GroupsSettingsScanner',
+         'rules_filename': 'groups_settings_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
@@ -78,6 +86,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',
          'rules_filename': 'ke_rules.yaml'},
+    'kms_scanner':
+        {'module_name': 'kms_scanner',
+         'class_name': 'KMSScanner',
+         'rules_filename': 'kms_rules.yaml'},
     'lien':
         {'module_name': 'lien_scanner',
          'class_name': 'LienScanner',
@@ -90,10 +102,18 @@ REQUIREMENTS_MAP = {
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
          'rules_filename': 'log_sink_rules.yaml'},
+    'resource':
+        {'module_name': 'resource_scanner',
+         'class_name': 'ResourceScanner',
+         'rules_filename': 'resource_rules.yaml'},
     'retention':
         {'module_name': 'retention_scanner',
          'class_name': 'RetentionScanner',
          'rules_filename': 'retention_rules.yaml'},
+    'role':
+        {'module_name': 'role_scanner',
+         'class_name': 'RoleScanner',
+         'rules_filename': 'role_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',

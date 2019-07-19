@@ -14,6 +14,7 @@
 
 """Wrapper for Compute API client."""
 # pylint: disable=too-many-lines
+from builtins import object
 import json
 import logging
 import os
@@ -142,9 +143,12 @@ def _debug_operation_response_time(project_id, operation):
         operation (dict): The last Operation resource returned from the
             API server.
     """
-    if LOGGER.getEffectiveLevel() > logging.DEBUG:
-        # Don't compute times if DEBUG logging is not enabled.
-        return
+    try:
+        if LOGGER.getEffectiveLevel() > logging.DEBUG:
+            # Don't compute times if DEBUG logging is not enabled.
+            return
+    except Exception as e:  # pylint: disable=broad-except
+        LOGGER.debug('DEBUG logging exception: %s', e)
 
     try:
         op_insert_timestamp = date_time.get_unix_timestamp_from_string(
@@ -392,8 +396,11 @@ class _ComputeDisksRepository(repository_mixins.AggregatedListQueryMixin,
     # pylint: enable=arguments-differ
 
 
+# Resources with full CRUD support will have more than 7 ancestors with mixins.
+# pylint: disable=too-many-ancestors
 class _ComputeFirewallsRepository(repository_mixins.ListQueryMixin,
                                   repository_mixins.InsertResourceMixin,
+                                  repository_mixins.PatchResourceMixin,
                                   repository_mixins.UpdateResourceMixin,
                                   repository_mixins.DeleteResourceMixin,
                                   _base_repository.GCPRepository):
@@ -409,6 +416,7 @@ class _ComputeFirewallsRepository(repository_mixins.ListQueryMixin,
             component='firewalls', entity_field='firewall',
             resource_path_template='{project}/global/firewalls/{firewall}',
             **kwargs)
+# pylint: enable=too-many-ancestors
 
 
 class _ComputeForwardingRulesRepository(
@@ -769,7 +777,7 @@ class ComputeClient(object):
             else:
                 err = api_errors.ApiExecutionError(project_id, e)
 
-            LOGGER.warn(err)
+            LOGGER.warning(err)
             raise err
 
     def get_firewall_rules(self, project_id):
@@ -830,7 +838,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout deleting firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -841,7 +849,8 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Deleting firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
     def insert_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
@@ -884,7 +893,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout inserting firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -895,16 +904,19 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Inserting firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
-    def update_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
-                             retry_count=0, timeout=0):
-        """Update a firewall rule.
+    def patch_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
+                            retry_count=0, timeout=0):
+        """Patch a firewall rule.
 
         Args:
           project_id (str): The project id.
-          rule (dict): The firewall rule dict to update.
+          rule (dict): The firewall rule dict to patch, only fields defined in
+              the dict will be modified. The 'name' key is a required field and
+              must match an existing rule.
           uuid (str): An optional UUID to identify this request. If the same
               request is resent to the API, it will ignore the additional
               requests. If uuid is not set, one will be generated for the
@@ -920,6 +932,71 @@ class ComputeClient(object):
             https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
 
         Raises:
+            ApiNotEnabledError: The api is not enabled.
+            ApiExecutionError: The api returned an error.
+            KeyError: The 'name' key is missing from the rule dict.
+            OperationTimeoutError: Raised if the operation times out.
+        """
+        repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
+        try:
+            results = repository.patch(project_id, target=rule['name'],
+                                       data=rule, requestId=uuid)
+            if blocking:
+                results = self.wait_for_completion(project_id, results, timeout)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error patching firewall rule %s: %s', rule['name'], e)
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+        except api_errors.OperationTimeoutError as e:
+            LOGGER.warning(
+                'Timeout patching firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.patch_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
+
+        LOGGER.info(
+            'Patching firewall rule %s on project %s. Rule: %s, '
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
+        return results
+
+    def update_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
+                             retry_count=0, timeout=0):
+        """Update a firewall rule.
+
+        *NOTE*: Update only works for INGRESS rules, do not use for EGRESS
+                rules. Patch should be used for all rule updates.
+
+        Args:
+          project_id (str): The project id.
+          rule (dict): The firewall rule dict to update. The 'name' key is a
+              required field and must match an existing rule.
+          uuid (str): An optional UUID to identify this request. If the same
+              request is resent to the API, it will ignore the additional
+              requests. If uuid is not set, one will be generated for the
+              request.
+          blocking (bool): If true, don't return until the async operation
+              completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
+          timeout (float): If greater than 0 and blocking is True, then raise an
+              exception if timeout seconds pass before the operation completes.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            ApiNotEnabledError: The api is not enabled.
+            ApiExecutionError: The api returned an error.
+            KeyError: The 'name' key is missing from the rule dict.
             OperationTimeoutError: Raised if the operation times out.
         """
         repository = self.repository.firewalls
@@ -938,7 +1015,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Timeout updating firewall rule %s: %s', rule['name'], e)
             if retry_count:
                 retry_count -= 1
@@ -949,7 +1026,8 @@ class ComputeClient(object):
 
         LOGGER.info(
             'Updating firewall rule %s on project %s. Rule: %s, '
-            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
         return results
 
     def get_forwarding_rules(self, project_id, region=None):

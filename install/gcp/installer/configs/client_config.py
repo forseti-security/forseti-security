@@ -14,7 +14,7 @@
 
 """Forseti installer CLI config object."""
 
-from config import Config
+from .config import Config
 
 
 class ClientConfig(Config):

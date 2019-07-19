@@ -13,12 +13,13 @@
 # limitations under the License.
 """Tests the Forseti Server explain service."""
 
+from builtins import object
 import unittest
 
 from grpc._channel import _Rendezvous
 
+from tests.services import test_models
 from tests.services.api_tests.api_tester import ModelTestRunner
-from tests.services.api_tests.model_test import MODEL
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
@@ -58,7 +59,7 @@ def create_tester(inventory_config):
 
     """
     return ModelTestRunner(
-        MODEL, TestServiceConfig(inventory_config),
+        test_models.COMPLEX_MODEL, TestServiceConfig(inventory_config),
         [
             GrpcExplainerFactory,
             GrpcInventoryFactory,
@@ -83,11 +84,14 @@ class ExplainerTest(ForsetiTestCase):
                                  'role/a',
                                  'role/b',
                                  'role/c',
-                                 'role/d'
+                                 'role/d',
+                                 'roles/owner',
+                                 'roles/editor',
+                                 'roles/viewer',
                                  ])
-            actual_reply = client.explain.list_roles('')
+            actual_reply = set(r.role_name for r in client.explain.list_roles(''))
             self.assertEqual(expected_reply,
-                             set(actual_reply.role_names))
+                             actual_reply)
 
         setup.run(test)
 
@@ -103,7 +107,7 @@ class ExplainerTest(ForsetiTestCase):
             self.assertRaisesRegexp(
                 _Rendezvous,
                 'FAILED_PRECONDITION',
-                client.explain.list_roles,
+                lambda r: list(client.explain.list_roles('')),
                 '')
 
         setup.run(test)

@@ -13,8 +13,10 @@
 # limitations under the License.
 """Notifier runner."""
 
+from builtins import str
 import importlib
 import inspect
+import traceback
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
@@ -76,14 +78,19 @@ def convert_to_timestamp(violations):
     return violations
 
 
-# pylint: disable=too-many-branches,too-many-statements
-def run(inventory_index_id, progress_queue, service_config=None):
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
+def run(inventory_index_id,
+        scanner_index_id,
+        progress_queue,
+        service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
         inventory_index_id (int64): Inventory index id.
+        scanner_index_id (int64): Scanner index id.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
     Returns:
@@ -93,13 +100,19 @@ def run(inventory_index_id, progress_queue, service_config=None):
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
-    violations = None
     with service_config.scoped_session() as session:
-        if not inventory_index_id:
+        if scanner_index_id:
             inventory_index_id = (
-                DataAccess.get_latest_inventory_index_id(session))
-        scanner_index_id = scanner_dao.get_latest_scanner_index_id(
-            session, inventory_index_id)
+                DataAccess.get_inventory_index_id_by_scanner_index_id(
+                    session,
+                    scanner_index_id))
+        else:
+            if not inventory_index_id:
+                inventory_index_id = (
+                    DataAccess.get_latest_inventory_index_id(session))
+            scanner_index_id = scanner_dao.get_latest_scanner_index_id(
+                session, inventory_index_id)
+
         if not scanner_index_id:
             LOGGER.error(
                 'No success or partial success scanner index found for '
@@ -141,12 +154,20 @@ def run(inventory_index_id, progress_queue, service_config=None):
                             notifier['name'], resource['resource']))
                     progress_queue.put(log_message)
                     LOGGER.info(log_message)
-                    chosen_pipeline = find_notifiers(notifier['name'])
-                    notifiers.append(chosen_pipeline(
-                        resource['resource'], inventory_index_id,
-                        violation_map[resource['resource']], global_configs,
-                        notifier_configs, notifier['configuration']))
-
+                    try:
+                        chosen_pipeline = find_notifiers(notifier['name'])
+                        notifiers.append(chosen_pipeline(
+                            resource['resource'], inventory_index_id,
+                            violation_map[resource['resource']], global_configs,
+                            notifier_configs, notifier.get('configuration')))
+                    except Exception as e:  # pylint: disable=broad-except
+                        error_message = ('Error running \'{}\' notifier for '
+                                         'resource \'{}\':  \'{}\''.format(
+                                             notifier['name'],
+                                             resource['resource'],
+                                             traceback.format_exc()))
+                        progress_queue.put(error_message)
+                        LOGGER.exception(e)
             # Run the notifiers.
             for notifier in notifiers:
                 notifier.run()
@@ -156,25 +177,12 @@ def run(inventory_index_id, progress_queue, service_config=None):
             if violation_configs:
                 if violation_configs.get('cscc').get('enabled'):
                     source_id = violation_configs.get('cscc').get('source_id')
-                    if source_id:
-                        # beta mode
-                        LOGGER.debug(
-                            'Running CSCC notifier with beta API. source_id: '
-                            '%s', source_id)
-                        (cscc_notifier.CsccNotifier(inventory_index_id)
-                         .run(violations_as_dict, source_id=source_id))
-                    else:
-                        # alpha mode
-                        LOGGER.debug('Running CSCC notifier with alpha API.')
-                        gcs_path = (
-                            violation_configs.get('cscc').get('gcs_path'))
-                        mode = violation_configs.get('cscc').get('mode')
-                        organization_id = (
-                            violation_configs.get('cscc').get(
-                                'organization_id'))
-                        (cscc_notifier.CsccNotifier(inventory_index_id)
-                         .run(violations_as_dict, gcs_path, mode,
-                              organization_id))
+                    # beta mode
+                    LOGGER.debug(
+                        'Running CSCC notifier with beta API. source_id: '
+                        '%s', source_id)
+                    (cscc_notifier.CsccNotifier(inventory_index_id)
+                     .run(violations_as_dict, source_id=source_id))
 
         InventorySummary(service_config, inventory_index_id).run()
 

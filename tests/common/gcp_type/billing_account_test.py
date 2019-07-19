@@ -14,13 +14,22 @@
 
 """Tests the Billing Account resource"""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import billing_account
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import resource_util
+
+
+_BILLING_ACCT_JSON = """
+{
+  "name": "billingAccounts/000000-111111-222222",
+  "open": true,
+  "displayName": "My Billing Account",
+  "masterBillingAccount": "billingAccounts/001122-AABBCC-DDEEFF"
+}"""
 
 
 class BillingAccountTest(ForsetiTestCase):
@@ -72,6 +81,19 @@ class BillingAccountTest(ForsetiTestCase):
         self.assertEqual('billingAccounts/000000-111111-222222',
                          ancestors[0].name)
         self.assertEqual('organizations/234', ancestors[1].name)
+
+    def test_billing_account_from_json(self):
+        """Tests creation of a billing account from a JSON string."""
+        billing_acct = billing_account.BillingAccount.from_json(
+            self.org_234, _BILLING_ACCT_JSON)
+        self.assertEqual('000000-111111-222222', billing_acct.id)
+        self.assertEqual('billing_account', billing_acct.type)
+        self.assertEqual('billingAccounts/000000-111111-222222',
+                         billing_acct.name)
+        self.assertEqual(
+            'organization/234/billing_account/000000-111111-222222/',
+            billing_acct.full_name)
+
 
 if __name__ == '__main__':
     unittest.main()

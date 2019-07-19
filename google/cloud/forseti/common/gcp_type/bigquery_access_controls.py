@@ -14,6 +14,7 @@
 
 """BigQuery ACL Resource."""
 
+from builtins import object
 import json
 
 
@@ -73,7 +74,7 @@ class BigqueryAccessControls(object):
             group_email=acl.get('groupByEmail'),
             role=acl.get('role', ''),
             view=acl.get('view', {}),
-            raw_json=json.dumps(acl)
+            raw_json=json.dumps(acl, sort_keys=True)
         )
 
     @staticmethod

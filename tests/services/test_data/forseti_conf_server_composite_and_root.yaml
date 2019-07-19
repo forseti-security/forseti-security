@@ -1,0 +1,15 @@
+# Bad configuration with both root_resource_id and composite_root_resources.
+
+##############################################################################
+
+inventory:
+
+    root_resource_id: "organizations/1234567890"
+
+    composite_root_resources:
+        - "folders/12345"
+        - "folders/45678"
+        - "projects/98765"
+        - "organizations/56789"
+
+##############################################################################

@@ -1,0 +1,58 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Rule Keys:
+# name: The unique name describing the rule
+# mode: Depending on whether you want to allow or block in a given situation,
+# mode can be whitelist or blacklist
+# resource: A mapping of resources that this rule applies to.
+#  * type: The type of resource, can be organization, folder, or project.
+#  * resource_ids: A list of one or more numeric ids to match, or '*' for all.
+# key: The configuration of cryptokey that this rule applies to.
+#  * name: The unique name describing the cryptographic key. '*' is also
+# supported to capture all the keys in a organization/folder/project.
+#  * state: Denotes the state of a key version. Optional, if not included
+# state is not compared.
+#  * protection_level: Indicates whether cryptographic operations are performed
+# in software or in Hardware Security Module (HSM). Optional, if not provided
+# protection_level is not
+# compared.
+#  * algorithm: Denotes the algorithm of that key. Optional, if not provided
+# algorithm is not compared.
+#  * purpose: Defines the cryptographic abilities of the key. Optional, if not
+# provided purpose is not compared.
+#  * rotation_range: Denotes the range of the nextRotationTime of multiple keys
+# in a project. Optional, if not provided nextRotationTime of cryptographic keys
+# is not compared.
+#  * rotation_period: Denotes the time period to rotate a key. Optional, if
+# not provided rotation_range is not compared.
+#  * labels: Allows you to group your keys. Optional, if not provided labels are
+# not compared.
+
+rules:
+  - name: All crypto keys with following config should be rotated in 100 days
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key:
+       - rotation_period: 100 #days
+         algorithms:
+         - GOOGLE_SYMMETRIC_ENCRYPTION
+         protection_level: SOFTWARE
+         purpose:
+         - ENCRYPT_DECRYPT
+         state:
+         - ENABLED

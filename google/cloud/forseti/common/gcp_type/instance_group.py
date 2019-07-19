@@ -18,6 +18,7 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroups
 """
 
+from builtins import object
 import json
 import os
 
@@ -73,7 +74,8 @@ class InstanceGroup(object):
                   'size': instance_group.get('size'),
                   'subnetwork': instance_group.get('subnetwork'),
                   'zone': instance_group.get('zone'),
-                  'raw_instance_group': json.dumps(instance_group)}
+                  'raw_instance_group': json.dumps(
+                      instance_group, sort_keys=True)}
 
         return cls(**kwargs)
 
@@ -111,8 +113,9 @@ class InstanceGroup(object):
             'zone': self.zone}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
-        return json.dumps(resource_dict)
+        resource_dict = dict((k, v) for k, v in
+                             list(resource_dict.items()) if v)
+        return json.dumps(resource_dict, sort_keys=True)
 
     @property
     def json(self):

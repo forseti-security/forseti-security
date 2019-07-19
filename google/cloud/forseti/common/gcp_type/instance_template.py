@@ -18,6 +18,7 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
 """
 
+from builtins import object
 import json
 
 from google.cloud.forseti.common.gcp_type import key
@@ -58,7 +59,8 @@ class InstanceTemplate(object):
                   'name': instance_template.get('name'),
                   'description': instance_template.get('description'),
                   'properties': instance_template.get('properties', {}),
-                  'raw_instance_template': json.dumps(instance_template)}
+                  'raw_instance_template': json.dumps(
+                      instance_template, sort_keys=True)}
 
         return cls(**kwargs)
 
@@ -90,8 +92,9 @@ class InstanceTemplate(object):
             'properties': self.properties}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
-        return json.dumps(resource_dict)
+        resource_dict = dict((k, v) for k, v in
+                             list(resource_dict.items()) if v)
+        return json.dumps(resource_dict, sort_keys=True)
 
     @property
     def json(self):

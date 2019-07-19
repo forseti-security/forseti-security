@@ -18,6 +18,7 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers
 """
 
+from builtins import object
 import json
 
 
@@ -73,7 +74,8 @@ class InstanceGroupManager(object):
                   'target_pools': igm.get('targetPools', []),
                   'target_size': igm.get('targetSize'),
                   'zone': igm.get('zone'),
-                  'raw_instance_group_manager': json.dumps(igm)}
+                  'raw_instance_group_manager': json.dumps(
+                      igm, sort_keys=True)}
 
         return cls(**kwargs)
 
@@ -113,8 +115,9 @@ class InstanceGroupManager(object):
             'zone': self.zone}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
-        return json.dumps(resource_dict)
+        resource_dict = dict((k, v) for k, v in
+                             list(resource_dict.items()) if v)
+        return json.dumps(resource_dict, sort_keys=True)
 
     @property
     def json(self):

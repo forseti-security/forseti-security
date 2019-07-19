@@ -14,19 +14,23 @@
 
 """Crawler implementation."""
 
-from Queue import Empty
-from Queue import Queue
+from builtins import str
+from builtins import range
+from queue import Empty
+from queue import Queue
 import threading
 import time
 
+from future import standard_library
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
-
 from google.cloud.forseti.common.opencensus import tracing
+
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -215,7 +219,7 @@ class ParallelCrawler(Crawler):
     def _start_workers(self):
         """Start a pool of worker threads for processing the dispatch queue."""
         self._shutdown_event.clear()
-        for _ in xrange(self.config.threads):
+        for _ in range(self.config.threads):
             worker = threading.Thread(target=self._process_queue)
             worker.daemon = True
             worker.start()
@@ -302,6 +306,81 @@ class ParallelCrawler(Crawler):
 
 
 @tracing.trace()
+def _api_client_factory(storage, config, parallel, tracer=None):
+    """Creates the proper initialized API client based on the configuration.
+
+    Args:
+        storage (object): Storage implementation to use.
+        config (object): Inventory configuration on server.
+        parallel (bool): If true, use the parallel crawler implementation.
+
+    Returns:
+        Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
+            The initialized api client implementation class.
+    """
+    client_config = config.get_api_quota_configs()
+    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    asset_count = 0
+    if config.get_cai_enabled():
+        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
+        LOGGER.info('%s total assets loaded from Cloud Asset data.',
+                    asset_count)
+
+    if asset_count:
+        engine = config.get_service_config().get_engine()
+        return cai_gcp_client.CaiApiClientImpl(client_config,
+                                               engine,
+                                               parallel,
+                                               storage.session)
+
+    # Default to the non-CAI implementation
+    return gcp.ApiClientImpl(client_config)
+
+
+@tracer.trace()
+def _crawler_factory(storage, progresser, client, parallel, tracer=None):
+    """Creates the proper initialized crawler based on the configuration.
+
+    Args:
+        storage (object): Storage implementation to use.
+        progresser (object): Progresser to notify status updates.
+        client (object): The API client instance.
+        parallel (bool): If true, use the parallel crawler implementation.
+        tracer (opencensus.trace.Tracer): OpenCensus tracer.
+
+    Returns:
+        Union[Crawler, ParallelCrawler]:
+            The initialized crawler implementation class.
+    """
+    if parallel:
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client, tracer=tracer)
+        return ParallelCrawler(parallel_config)
+
+    # Default to the non-parallel crawler
+    crawler_config = CrawlerConfig(storage, progresser, client, tracer=tracer)
+    return Crawler(crawler_config)
+
+
+@tracer.trace()
+def _root_resource_factory(config, client, tracer=None):
+    """Creates the proper initialized crawler based on the configuration.
+
+    Args:
+        config (object): Inventory configuration on server.
+        client (object): The API client instance.
+        tracer (opencensus.trace.Tracer): OpenCensus tracer.
+
+    Returns:
+        Resource: The initialized root resource.
+    """
+    if config.use_composite_root():
+        composite_root_resources = config.get_composite_root_resources()
+        return resources.CompositeRootResource.create(composite_root_resources)
+
+    # Default is a single resource as root.
+    return resources.from_root_id(client, config.get_root_resource_id())
+
+
 def run_crawler(storage,
                 progresser,
                 config,
@@ -312,47 +391,20 @@ def run_crawler(storage,
     Args:
         storage (object): Storage implementation to use.
         progresser (object): Progresser to notify status updates.
-        config (object): Inventory configuration on server
+        config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
         tracer (opencensus.trace.Tracer): OpenCensus tracer.
 
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    engine = config.get_service_config().get_engine()
-    if parallel and 'sqlite' in str(engine):
+    if parallel and 'sqlite' in str(config.get_service_config().get_engine()):
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
-    client_config = config.get_api_quota_configs()
-    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
-    asset_count = 0
-    if config.get_cai_enabled():
-        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
-        LOGGER.info('%s total assets loaded from Cloud Asset data.',
-                    asset_count)
 
-    if config.get_cai_enabled() and asset_count:
-        client = cai_gcp_client.CaiApiClientImpl(client_config,
-                                                 engine,
-                                                 parallel,
-                                                 storage.session)
-    else:
-        client = gcp.ApiClientImpl(client_config)
-
-    root_id = config.get_root_resource_id()
-    resource = resources.from_root_id(client, root_id)
-    if parallel:
-        crawler_config = ParallelCrawlerConfig(storage,
-                                               progresser,
-                                               client,
-                                               tracer=tracer)
-        crawler_impl = ParallelCrawler(crawler_config)
-    else:
-        crawler_config = CrawlerConfig(storage,
-                                       progresser,
-                                       client,
-                                       tracer=tracer)
-        crawler_impl = Crawler(crawler_config)
+    client = _api_client_factory(storage, config, parallel, tracer=tracer)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel, tracer=tracer)
+    resource = _root_resource_factory(config, client, tracer=tracer)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()

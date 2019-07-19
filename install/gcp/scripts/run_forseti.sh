@@ -25,6 +25,13 @@ set -x
 sudo gsutil cp gs://${SCANNER_BUCKET}/configs/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}
 sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
+# Download the Newest Config Validator constraints from GCS.
+sudo rm -rf ${FORSETI_HOME}/policy-library
+sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${FORSETI_HOME}/
+
+# Restart the config validator service to pick up the latest policy.
+sudo systemctl restart config-validator
+
 if [ ! -f "${FORSETI_SERVER_CONF}" ]; then
     echo "Forseti conf not found, exiting."
     exit 1
@@ -32,9 +39,6 @@ fi
 
 # Reload the server configuration settings
 forseti server configuration reload
-
-# Wait until the service is started
-sleep 10s
 
 # Set the output format to json
 forseti config format json
@@ -48,7 +52,6 @@ MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."
 forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
-sleep 5s
 
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
@@ -64,20 +67,20 @@ echo "Using model ${MODEL_NAME} to run scanner"
 forseti model use ${MODEL_NAME}
 # Sometimes there's a lag between when the model
 # successfully saves to the database.
-sleep 10s
+sleep 5s
+
 echo "Forseti config: $(forseti config show)"
 
 # Run scanner command
 echo "Running Forseti scanner."
-forseti scanner run
+scanner_command=`forseti scanner run`
+scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
 echo "Finished running Forseti scanner."
-sleep 10s
 
 # Run notifier command
 echo "Running Forseti notifier."
-forseti notifier run
+forseti notifier run --scanner_index_id ${scanner_index_id}
 echo "Finished running Forseti notifier."
-sleep 10s
 
 # Clean up the model tables
 echo "Cleaning up model tables"

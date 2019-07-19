@@ -15,68 +15,36 @@
 """ GCP Installer.
 This has been tested with python 2.7.
 """
+from __future__ import print_function
 
 import argparse
 import datetime
-import site
-import sys
-
-from installer.util.utils import run_command
-
-INSTALLER_REQUIRED_PACKAGES = [
-    'ruamel.yaml'
-]
-
-
-def install(package_name):
-    """Install package.
-    Args:
-        package_name (str): Name of the package to install.
-    """
-    # pip's python api is deprecated, we will run the pip command
-    # through subprocess directly instead.
-    return_code, _, err = run_command(
-        ['pip', 'install', package_name, '--user'])
-
-    if return_code:
-        print 'Error installing package {}'.format(package_name)
-        print err
-        sys.exit(1)
-
-
-def install_required_packages():
-    """Install required packages."""
-    for package in INSTALLER_REQUIRED_PACKAGES:
-        install(package)
 
 
 def run():
     """Run the steps for the gcloud setup."""
 
-    # We need to install all the required packages before importing our modules
-    # Installing required packages
-    install_required_packages()
-    site.main() # Load up the package
-
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
     parser.add_argument('--service-account-key-file',
                         help=('Absolute path and filename for service account '
                               'key file'))
-    parser.add_argument('--advanced',
-                        action='store_true',
-                        help='Advanced setup mode (more options)')
-    parser.add_argument('--dry-run',
-                        action='store_true',
-                        help=('Generate config files but do not modify '
-                              'GCP infrastructure (i.e. do not actually '
-                              'set up Forseti)'))
     parser.add_argument('--type',
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
+    parser.add_argument('--composite-root-resources',
+                        help='The resource ids to be inventoried.\n'
+                             'Without this flag, the entire org '
+                             'will be attempted.\n'
+                             'Resources must be comma-separated and '
+                             'in the form type/id,\nwhere type is '
+                        'one of organizations, folders, or projects.')
+    parser.add_argument('--project-id',
+                        help='The project id for the forseti installaltion.')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
@@ -112,10 +80,10 @@ def run():
     args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     # import installers and configs
-    from installer.forseti_server_installer import ForsetiServerInstaller
-    from installer.forseti_client_installer import ForsetiClientInstaller
-    from installer.configs.client_config import ClientConfig
-    from installer.configs.server_config import ServerConfig
+    from .installer.forseti_server_installer import ForsetiServerInstaller
+    from .installer.forseti_client_installer import ForsetiClientInstaller
+    from .installer.configs.client_config import ClientConfig
+    from .installer.configs.server_config import ServerConfig
     client_config = ClientConfig(**args)
     server_config = ServerConfig(**args)
 

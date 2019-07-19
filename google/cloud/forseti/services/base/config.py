@@ -18,11 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import abc
 from multiprocessing.pool import ThreadPool
 import threading
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
@@ -33,11 +37,10 @@ from google.cloud.forseti.services.inventory.storage import Storage
 LOGGER = logger.get_logger(__name__)
 
 
-def _validate_cai_enabled(root_resource_id, cai_configs):
+def _validate_cai_enabled(cai_configs):
     """Verifies if CloudAsset Inventory can be used for this inventory config.
 
     Args:
-        root_resource_id (str): Root resource to start crawling from
         cai_configs (dict): Settings for the Cloud AssetInventory API
 
     Returns:
@@ -52,26 +55,27 @@ def _validate_cai_enabled(root_resource_id, cai_configs):
                      'bucket.')
         return False
 
-    if not root_resource_id.startswith('organizations/'):
-        LOGGER.debug('CloudAsset Inventory only supported when with an '
-                     'organization root resource. Disabling CloudAsset '
-                     'Inventory.')
-        return False
-
     return True
 
 
-class AbstractInventoryConfig(dict):
+class AbstractInventoryConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
 
-    __metaclass__ = abc.ABCMeta
+    @abc.abstractmethod
+    def use_composite_root(self):
+        """Checks if inventory is configured to use a composite root resource.
+        """
 
     @abc.abstractmethod
     def get_root_resource_id(self):
         """Returns the root resource id."""
+
+    @abc.abstractmethod
+    def get_composite_root_resources(self):
+        """Returns the composite root resource ids."""
 
     @abc.abstractmethod
     def get_gsuite_admin_email(self):
@@ -98,6 +102,10 @@ class AbstractInventoryConfig(dict):
         """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
+    def get_cai_timeout(self):
+        """Returns the timeout in seconds for calls to the Cloud Asset API."""
+
+    @abc.abstractmethod
     def get_service_config(self):
         """Returns the service config."""
 
@@ -109,13 +117,11 @@ class AbstractInventoryConfig(dict):
             service_config (object): Service configuration."""
 
 
-class AbstractServiceConfig(object):
+class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get_engine(self):
@@ -150,8 +156,7 @@ class InventoryConfig(AbstractInventoryConfig):
                  api_quota_configs,
                  retention_days,
                  cai_configs,
-                 *args,
-                 **kwargs):
+                 composite_root_resources=None):
         """Initialize.
 
         Args:
@@ -160,24 +165,60 @@ class InventoryConfig(AbstractInventoryConfig):
             api_quota_configs (dict): API quota configs
             retention_days (int): Days of inventory tables to retain
             cai_configs (dict): Settings for the Cloud AssetInventory API
-            *args: args when creating InventoryConfig
-            **kwargs: kwargs when creating InventoryConfig
+            composite_root_resources (list): The list of resources to use crawl
+                using a composite root.
+
+        Raises:
+            ValueError: Raised if neither or both root_resource_id and
+                composite_root_resources are set.
         """
-        super(InventoryConfig, self).__init__(*args, **kwargs)
+        super(InventoryConfig, self).__init__()
+        if root_resource_id and composite_root_resources:
+            err = ValueError(
+                'Both root_resource_id and composite_root_resources defined in '
+                'the server inventory configuration. Only one may be set.')
+            LOGGER.error(err)
+            raise err
+
+        if not root_resource_id and not composite_root_resources:
+            err = ValueError(
+                'Neither root_resource_id nor composite_root_resources defined '
+                'in the server inventory configuration. One must be set.')
+            LOGGER.error(err)
+            raise err
+
         self.service_config = None
         self.root_resource_id = root_resource_id
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
         self.retention_days = retention_days
         self.cai_configs = cai_configs
+        self.composite_root_resources = composite_root_resources
+
+    def use_composite_root(self):
+        """Checks if inventory is configured to use a composite root resource.
+
+        Returns:
+            bool: True if using a composite root, else False.
+        """
+        return not self.root_resource_id
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
 
         Returns:
-            str: Root resource id.
+            str: Root resource id if defined, else None.
         """
         return self.root_resource_id
+
+    def get_composite_root_resources(self):
+        """Returns the composite root resource ids.
+
+        Returns:
+            list: The list of root resources defined in the configuration or
+                None.
+        """
+        return self.composite_root_resources
 
     def get_gsuite_admin_email(self):
         """Return the gsuite admin email to use.
@@ -221,7 +262,7 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             bool: Whether CAI should be integrated with the inventory or not.
         """
-        return _validate_cai_enabled(self.root_resource_id, self.cai_configs)
+        return _validate_cai_enabled(self.cai_configs)
 
     def get_cai_gcs_path(self):
         """Returns the GCS bucket path to store the CAI data dumps in.
@@ -230,6 +271,14 @@ class InventoryConfig(AbstractInventoryConfig):
             str: The GCS bucket path for CAI data.
         """
         return self.cai_configs.get('gcs_path', '')
+
+    def get_cai_timeout(self):
+        """Returns the timeout in seconds for calls to the Cloud Asset API.
+
+        Returns:
+            int: Timeout in seconds, defaults to 3600 seconds.
+        """
+        return self.cai_configs.get('api_timeout', 3600)
 
     def get_service_config(self):
         """Return the attached service configuration.
@@ -266,8 +315,12 @@ class ServiceConfig(AbstractServiceConfig):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
+
+        # Enable pool_pre_ping to ensure that disconnected or errored
+        # connections are dropped and recreated before use.
         self.engine = create_engine(forseti_db_connect_string,
-                                    pool_recycle=3600)
+                                    pool_recycle=3600,
+                                    pool_pre_ping=True)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
@@ -335,18 +388,34 @@ class ServiceConfig(AbstractServiceConfig):
 
             # Setting up individual configurations
             forseti_inventory_config = forseti_config.get('inventory', {})
-            inventory_config = InventoryConfig(
-                forseti_inventory_config.get('root_resource_id', ''),
-                forseti_inventory_config.get('domain_super_admin_email', ''),
-                forseti_inventory_config.get('api_quota', {}),
-                forseti_inventory_config.get('retention_days', -1),
-                # Default to disable CloudAsset Inventory if not configured.
-                forseti_inventory_config.get('cai', {'enabled': False}),
-            )
+            try:
+                inventory_config = InventoryConfig(
+                    forseti_inventory_config.get('root_resource_id'),
+                    forseti_inventory_config.get('domain_super_admin_email',
+                                                 ''),
+                    forseti_inventory_config.get('api_quota', {}),
+                    forseti_inventory_config.get('retention_days', -1),
+                    # Default to disable CloudAsset Inventory if not configured.
+                    forseti_inventory_config.get('cai', {'enabled': False}),
+                    composite_root_resources=(
+                        forseti_inventory_config.get(
+                            'composite_root_resources')
+                    )
+                )
+            except ValueError as e:
+                return False, str(e)
 
             # TODO: Create Config classes to store scanner and notifier configs.
             forseti_scanner_config = forseti_config.get('scanner', {})
-
+            # The suffix is used to indicate which major feature is enabled for
+            # tracking purposes. For now only config validator is supported.
+            user_agent_suffix = ''
+            for scanner in forseti_scanner_config.get('scanners', {}):
+                if (scanner.get('enabled') and
+                        scanner.get('name') == 'config_validator'):
+                    user_agent_suffix = 'config-validator'
+                    break
+            http_helpers.set_user_agent_suffix(user_agent_suffix)
             forseti_notifier_config = forseti_config.get('notifier', {})
 
             forseti_global_config = forseti_config.get('global', {})

@@ -14,6 +14,15 @@
 """Fake violation data."""
 
 NOTIFIER_CONFIGS = {
+    'email_connector': {
+        'name': 'sendgrid',
+        'auth': {
+            'api_key': 'SG.O9'
+        },
+        'sender': 'forseti-notify@mycompany',
+        'recipient': 'john@john.com',
+        'data_format': 'csv'
+    },
     'resources': [
         {'resource': 'iam_policy_violations',
          'notifiers': [
@@ -57,37 +66,50 @@ NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT = {
          'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_JSON = {
+    'email_connector': {
+        'name': 'sendgrid',
+        'auth': {
+            'api_key': 'SG.O9'
+        },
+        'sender': 'forseti-notify@mycompany',
+        'recipient': 'john@john.com',
+        'data_format': 'json'
+    },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com',
-                'data_format': 'json'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
+    'email_connector': {
+        'name': 'sendgrid',
+        'auth': {
+            'api_key': 'SG.O9'
+        },
+        'sender': 'forseti-notify@mycompany',
+        'recipient': 'john@john.com',
+        'data_format': 'csv'
+    },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
+    'email_connector': {
+        'name': 'sendgrid',
+        'auth': {
+            'api_key': 'SG.O9'
+        },
+        'sender': 'forseti-notify@mycompany',
+        'recipient': 'john@john.com',
+        'data_format': 'xyz-invalid'
+    },
     'resources': [
         {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com',
-                'data_format': 'xyz-invalid'},
-             'name': 'email_violations'}],
+            {'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'iam_policy_violations'}]}
 
@@ -112,7 +134,7 @@ VIOLATIONS = {
     'iap_violations': [
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 47L,
+         'id': 47,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -126,7 +148,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_type': 'bucket',
          'resource_name': 'be-1-ext',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -136,7 +158,7 @@ VIOLATIONS = {
          'violation_type': 'IAP_VIOLATION'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 48L,
+         'id': 48,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -150,7 +172,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_name': 'be-1-ext',
          'resource_type': 'bucket',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -161,7 +183,7 @@ VIOLATIONS = {
     'iam_policy_violations': [
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 1L,
+         'id': 1,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -175,7 +197,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_name': 'be-1-ext',
          'resource_type': 'bucket',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
@@ -185,7 +207,7 @@ VIOLATIONS = {
          'violation_type': 'IAM_POLICY_VIOLATION'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 2L,
+         'id': 2,
          'inventory_data': {
              'bindings': [
                  {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
@@ -199,7 +221,7 @@ VIOLATIONS = {
          'resource_id': 'be-1-ext',
          'resource_type': 'bucket',
          'resource_name': 'be-1-ext',
-         'rule_index': 1L,
+         'rule_index': 1,
          'rule_name': 'Allow only service accounts to have access',
          'violation_data': {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',

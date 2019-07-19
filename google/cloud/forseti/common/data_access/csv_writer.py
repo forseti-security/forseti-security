@@ -14,6 +14,7 @@
 
 """Writes the csv files for upload to Cloud SQL."""
 from contextlib import contextmanager
+import json
 import os
 import tempfile
 
@@ -477,6 +478,24 @@ CSV_FIELDNAME_MAP = {
 }
 
 
+def normalize_nested_dicts(row):
+    """Transform nested dicts into json strings with sorted keys.
+
+    Args:
+        row (dict): A dictionary to normalize.
+
+    Returns:
+        dict: A row with nested dicts transformed to json string.
+    """
+    new_row = {}
+    for key, value in list(row.items()):
+        if isinstance(value, dict):
+            new_row[key] = json.dumps(value, sort_keys=True)
+        else:
+            new_row[key] = value
+    return new_row
+
+
 @contextmanager
 def write_csv(resource_name, data, write_header=False):
     """Start the csv writing flow.
@@ -500,11 +519,11 @@ def write_csv(resource_name, data, write_header=False):
         if write_header:
             writer.writeheader()
 
-        for i in data:
+        for row in data:
             # Not ready to send these data via CSV attachment as they break
             # across multiple columns.
-            i.pop('inventory_data', None)
-            writer.writerow(i)
+            row.pop('inventory_data', None)
+            writer.writerow(normalize_nested_dicts(row))
 
         # This must be closed before returned for loading.
         csv_file.close()
@@ -512,5 +531,5 @@ def write_csv(resource_name, data, write_header=False):
 
         # Remove the csv file after loading.
         os.remove(csv_file.name)
-    except (IOError, OSError, csv.Error) as e:
+    except (OSError, csv.Error) as e:
         raise CSVFileError(resource_name, e)

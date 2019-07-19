@@ -13,20 +13,22 @@
 # limitations under the License.
 
 """Forseti CLI."""
+from __future__ import print_function
 
+from builtins import object
 from argparse import ArgumentParser
 import json
 import os
 import sys
 
 import grpc
+
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
 from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
-
 
 LOGGER = logger.get_logger(__name__)
 
@@ -44,8 +46,7 @@ class DefaultParser(ArgumentParser):
         Args:
             message (str): Error message.
         """
-        if message:
-            sys.stderr.write('Argument error: %s.\n' % message)
+        del message
         self.print_usage()
         sys.exit(2)
 
@@ -304,9 +305,17 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    action_subparser.add_parser(
+    run_scanner_parser = action_subparser.add_parser(
         'run',
         help='Run the scanner')
+
+    run_scanner_parser.add_argument(
+        '--scanner',
+        choices=['external_project_access_scanner'],
+        help='Run a specific scanner, '
+             'currently only applicable for '
+             'the external project access scanner'
+    )
 
 
 def define_notifier_parser(parent):
@@ -334,8 +343,15 @@ def define_notifier_parser(parent):
               'will be used.')
     )
 
+    create_notifier_parser.add_argument(
+        '--scanner_index_id',
+        default=0,
+        help=('Id of the scanner index to send violation notifications. '
+              'If this is not specified, then the last scanner index id '
+              'will be used.')
+    )
 
-# pylint: disable=too-many-locals
+
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -602,7 +618,7 @@ class JsonOutput(Output):
             Args:
                 obj (object): Object to write as json
         """
-        print MessageToJson(obj, including_default_value_fields=True)
+        print(MessageToJson(obj, including_default_value_fields=True))
 
 
 def run_config(_, config, output, config_env):
@@ -617,7 +633,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        print config_env
+        print(config_env)
 
     def do_set_endpoint():
         """Set a config item."""
@@ -671,10 +687,11 @@ def run_scanner(client, config, output, _):
     """
 
     client = client.scanner
+    scanner_name = config.scanner
 
     def do_run():
         """Run a scanner."""
-        for progress in client.run():
+        for progress in client.run(scanner_name):
             output.write(progress)
 
     actions = {
@@ -738,7 +755,9 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(int(config.inventory_index_id)):
+        for progress in client.run(
+                int(config.inventory_index_id),
+                int(config.scanner_index_id)):
             output.write(progress)
 
     actions = {
@@ -867,18 +886,18 @@ def run_explainer(client, config, output, _):
 
     def do_list_resources():
         """List resources by prefix"""
-        result = client.list_resources(config.prefix)
-        output.write(result)
+        for resource in client.list_resources(config.prefix):
+            output.write(resource)
 
     def do_list_members():
         """List resources by prefix"""
-        result = client.list_members(config.prefix)
-        output.write(result)
+        for member in client.list_members(config.prefix):
+            output.write(member)
 
     def do_list_roles():
         """List roles by prefix"""
-        result = client.list_roles(config.prefix)
-        output.write(result)
+        for role in client.list_roles(config.prefix):
+            output.write(role)
 
     def do_list_permissions():
         """List permissions by roles or role prefixes.
@@ -888,14 +907,13 @@ def run_explainer(client, config, output, _):
         """
         if not any([config.roles, config.role_prefixes]):
             raise ValueError('please specify either a role or a role prefix')
-        result = client.query_permissions_by_roles(config.roles,
-                                                   config.role_prefixes)
-        output.write(result)
+        permissions = client.query_permissions_by_roles(config.roles,
+                                                        config.role_prefixes)
+        output.write(permissions)
 
     def do_get_policy():
         """Get access"""
-        result = client.get_iam_policy(config.resource)
-        output.write(result)
+        output.write(client.get_iam_policy(config.resource))
 
     def do_check_policy():
         """Check access"""
@@ -906,33 +924,36 @@ def run_explainer(client, config, output, _):
 
     def do_why_granted():
         """Explain why a permission or role is granted."""
-        result = client.explain_granted(config.member,
-                                        config.resource,
-                                        config.role,
-                                        config.permission)
-        output.write(result)
+        bindings = client.explain_granted(config.member,
+                                          config.resource,
+                                          config.role,
+                                          config.permission)
+        output.write(bindings)
 
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
-        result = client.explain_denied(config.member,
-                                       config.resources,
-                                       config.roles,
-                                       config.permissions)
-        output.write(result)
+        for binding in (
+                client.explain_denied(config.member,
+                                      config.resources,
+                                      config.roles,
+                                      config.permissions)):
+            output.write(binding)
 
     def do_query_access_by_member():
         """Query access by member and permissions"""
-        result = client.query_access_by_members(config.member,
-                                                config.permissions,
-                                                config.expand_resources)
-        output.write(result)
+        for access in (
+                client.query_access_by_members(config.member,
+                                               config.permissions,
+                                               config.expand_resources)):
+            output.write(access)
 
     def do_query_access_by_resource():
         """Query access by resource and permissions"""
-        result = client.query_access_by_resources(config.resource,
-                                                  config.permissions,
-                                                  config.expand_groups)
-        output.write(result)
+        for access in (
+                client.query_access_by_resources(config.resource,
+                                                 config.permissions,
+                                                 config.expand_groups)):
+            output.write(access)
 
     def do_query_access_by_authz():
         """Query access by role or permission
@@ -991,7 +1012,7 @@ class DefaultConfigParser(object):
             config (obj): Configuration to store.
         """
 
-        with file(get_config_path(), 'w+') as outfile:
+        with open(get_config_path(), 'w+') as outfile:
             json.dump(config, outfile)
 
     @classmethod
@@ -1003,11 +1024,11 @@ class DefaultConfigParser(object):
         """
 
         try:
-            with file(get_config_path()) as infile:
+            with open(get_config_path()) as infile:
                 return DefaultConfig(json.load(infile))
         except IOError:
-            LOGGER.warn('IOError - trying to open configuration'
-                        ' file located at %s', get_config_path())
+            LOGGER.warning('IOError - trying to open configuration '
+                           'file located at %s', get_config_path())
             return DefaultConfig()
 
 
@@ -1034,7 +1055,7 @@ class DefaultConfig(dict):
         self.DEFAULT['endpoint'] = self.get_default_endpoint()
 
         # Initialize default values
-        for key, value in self.DEFAULT.iteritems():
+        for key, value in self.DEFAULT.items():
             if key not in self:
                 self[key] = value
 
@@ -1061,7 +1082,6 @@ class DefaultConfig(dict):
                         'endpoint instead, endpoint: %s',
                         conf_path,
                         self.DEFAULT_ENDPOINT)
-
         return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):
@@ -1153,8 +1173,8 @@ def main(args=None,
     output = outputs[config.out_format]()
     try:
         services[config.service](client, config, output, config_env)
-    except ValueError as e:
-        parser.error(e.message)
+    except (KeyError, ValueError) as e:
+        parser.error(str(e))
     except grpc.RpcError as e:
         grpc_status_code = e.code()  # pylint: disable=no-member
         if grpc_status_code == grpc.StatusCode.UNAVAILABLE:
@@ -1166,11 +1186,11 @@ def main(args=None,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n')
         else:
-            print 'Error occurred on the server side, message: {}'.format(e)
+            print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:
-        print ('Model must be specified before running this command. '
-               'You can specify a model to use with command '
-               '"forseti model use <MODEL_NAME>".')
+        print('Model must be specified before running this command. '
+              'You can specify a model to use with command '
+              '"forseti model use <MODEL_NAME>".')
     return config
 
 

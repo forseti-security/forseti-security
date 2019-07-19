@@ -14,7 +14,7 @@
 
 """Forseti Server utilities."""
 
-from itertools import izip
+
 import logging
 
 
@@ -168,6 +168,9 @@ def to_full_resource_name(full_parent_name, resource_type_name):
     Returns:
         str: full_resource_name of the child
     """
+    # Strip out the fake composite root parent from the full resource name.
+    if full_parent_name == 'composite_root/root/':
+        return '{}/'.format(resource_type_name)
 
     return '{}{}/'.format(full_parent_name, resource_type_name)
 
@@ -242,7 +245,7 @@ def get_resources_from_full_name(full_name):
     full_name_parts = full_name.split('/')[:-1]
     full_name_parts.reverse()
     resource_iter = iter(full_name_parts)
-    for resource_id, resource_type in izip(resource_iter, resource_iter):
+    for resource_id, resource_type in zip(resource_iter, resource_iter):
         yield resource_type, resource_id
 
 

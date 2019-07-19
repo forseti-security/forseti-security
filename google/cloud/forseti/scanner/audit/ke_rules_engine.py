@@ -14,6 +14,7 @@
 
 """Rules engine for checking arbitrary properties ofKE clusters."""
 
+from builtins import object
 from collections import namedtuple
 import threading
 
@@ -314,7 +315,19 @@ class Rule(object):
         """
         violations = []
 
-        actual = self.rule_jmespath.search(ke_cluster.as_dict)
+        try:
+            actual = self.rule_jmespath.search(ke_cluster.as_dict)
+        except jmespath.exceptions.JMESPathError as e:
+            LOGGER.warning(
+                'JMESPath error processing KE cluster %s: %s',
+                ke_cluster.id,
+                e
+            )
+
+            # The resource data violated some assumption the user made
+            # about it.  So we cannot know if any violations occurred.
+            return violations
+
         LOGGER.debug('actual jmespath result: %s', actual)
 
         if self.rule_mode == 'whitelist':
@@ -356,7 +369,7 @@ class Rule(object):
         """
         return RuleViolation(
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
-            resource_id=ke_cluster.name,
+            resource_id=ke_cluster.id,
             full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,

@@ -14,6 +14,7 @@
 
 """Forseti gRPC client."""
 
+from builtins import object
 import binascii
 import os
 import grpc
@@ -144,13 +145,16 @@ class ScannerClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self):
+    def run(self, scanner_name):
         """Runs the scanner
+
+        Args:
+            scanner_name (String): name of the scanner specified to run
 
         Returns:
             proto: the returned proto message.
         """
-        request = scanner_pb2.RunRequest()
+        request = scanner_pb2.RunRequest(scanner_name=scanner_name)
         return self.stub.Run(request,
                              metadata=self.metadata())
 
@@ -246,18 +250,20 @@ class NotifierClient(ForsetiClient):
         echo = self.stub.Ping(notifier_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def run(self, inventory_index_id):
+    def run(self, inventory_index_id, scanner_index_id):
         """Runs the notifier.
 
         Args:
             inventory_index_id (int64): Inventory Index Id.
+            scanner_index_id (int64): Scanner Index Id.
 
         Returns:
             proto: the returned proto message.
         """
 
         request = notifier_pb2.RunRequest(
-            inventory_index_id=inventory_index_id)
+            inventory_index_id=inventory_index_id,
+            scanner_index_id=scanner_index_id)
         return self.stub.Run(request,
                              metadata=self.metadata())
 
@@ -486,10 +492,10 @@ class ExplainClient(ForsetiClient):
         """List resources by name prefix.
 
         Args:
-            resource_name_prefix (str): the prefix of resource_name to query
+            resource_name_prefix (str): the prefix of resource_name to query.
 
         Returns:
-            proto: the returned proto message of list_resources
+            object: generator of proto message of resources.
         """
 
         return self.stub.ListResources(
@@ -505,7 +511,7 @@ class ExplainClient(ForsetiClient):
             member_name_prefix (str): the prefix of member_name to query
 
         Returns:
-            proto: the returned proto message of list_members
+            object: generator of proto message of members.
         """
 
         return self.stub.ListGroupMembers(
@@ -521,7 +527,7 @@ class ExplainClient(ForsetiClient):
             role_name_prefix (str): the prefix of role_name to query
 
         Returns:
-            proto: the returned proto message of list_roles
+            object: generator of proto message of roles.
         """
 
         return self.stub.ListRoles(
@@ -580,7 +586,7 @@ class ExplainClient(ForsetiClient):
                 one of roles or permission_names should be not none
 
         Returns:
-            proto: the returned proto message of explain_denied
+            object: generator of proto message of bindingstrategies.
 
         Raises:
             Exception: Either roles or permission names must be set
@@ -640,7 +646,7 @@ class ExplainClient(ForsetiClient):
             expand_groups (bool): whether to expand group relations
 
         Returns:
-            proto: the returned proto message of query_access_by_resources
+            object: generator of proto message of accesses.
         """
 
         request = explain_pb2.GetAccessByResourcesRequest(
@@ -662,7 +668,7 @@ class ExplainClient(ForsetiClient):
             expand_resources (bool): whether to expand resource hierarchy
 
         Returns:
-            proto: the returned proto message of query_access_by_members
+            object: generator of proto message of accesses.
         """
 
         request = explain_pb2.GetAccessByMembersRequest(
@@ -738,9 +744,13 @@ class ClientComposition(object):
             Exception: gRPC connected but services not registered
         """
         interceptors = create_interceptors(endpoint)
+        self.gigabyte = 1024 ** 3
         self.channel = grpc.intercept_channel(
-            grpc.insecure_channel(endpoint),
+            grpc.insecure_channel(endpoint, options=[
+                ('grpc.max_receive_message_length',
+                self.gigabyte)]),
             *interceptors)
+
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)

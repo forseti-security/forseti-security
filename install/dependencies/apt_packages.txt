@@ -4,8 +4,9 @@ git
 libffi-dev
 libssl-dev
 default-libmysqlclient-dev
-libpython-dev
-python-pip
-python-dev
+libpython3-dev
+python3-pip
+python3-dev
 unzip
 wget
+cron

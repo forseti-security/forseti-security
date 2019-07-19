@@ -35,8 +35,10 @@
 #        major version.
 
 rules:
-# The default KE rule alerts if any node pool is running a version of
-# kubernetes that is no longer supported
+  # Note: please use the id of the resource (such as organization id,
+  # folder id, project id, etc.) when specifying the resource ids.
+  # The default KE rule alerts if any node pool is running a version of
+  # kubernetes that is no longer supported
   - name: Unsupported node pool version
     resource:
       - type: organization
@@ -50,8 +52,8 @@ rules:
     # Master versions are always greater or equal to the node pool version.
     check_serverconfig_valid_master_versions: false
 
-# This rule checks for any node pools that are running a version
-# that is not patched for current known and patched critical CVEs.
+  # This rule checks for any node pools that are running a version
+  # that is not patched for current known and patched critical CVEs.
   - name: Nodepool version not patched for critical security vulnerabilities
     resource:
       - type: organization
@@ -85,6 +87,16 @@ rules:
         minor: '5-gke.4'
         operator: '>='
       - major: '1.11'
+        minor: '8-gke.10'
+        operator: '>='
+      - major: '1.12'
+        minor: '7-gke.24'
+        operator: '='
+      - major: '1.12'
+        minor: '8-gke.10'
+        operator: '>='
+      - major: '1.13'
+        minor: '6-gke.13'
         operator: '>='
 
 # Example rules.

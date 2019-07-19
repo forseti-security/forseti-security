@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Bucket acls."""
+from builtins import object
 from collections import namedtuple
 import itertools
 import json
@@ -150,7 +151,7 @@ class BucketsRuleBook(bre.BaseRuleBook):
                 email=escape_and_globify(email),
                 domain=escape_and_globify(domain),
                 role=escape_and_globify(role.upper()),
-                raw_json=json.dumps(rule_def)
+                raw_json=json.dumps(rule_def, sort_keys=True)
             )
 
             rule = Rule(rule_name=rule_def.get('name'),

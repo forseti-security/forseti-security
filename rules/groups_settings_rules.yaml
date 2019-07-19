@@ -1,0 +1,56 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Rule Keys:
+# name: The unique name describing the rule
+# mode: Depending on whether you want to allow or block in a given situation,
+#      whitelist: violates when any specified property:value combination
+#                 doesn't match.  OR used on settings properties
+#      blacklist: violates when all specified property:value combinations
+#                 match.  AND used on settings properties
+# mode can be whitelist or blacklist
+# group_emails: unique emails matching gsuite groups. Essentially the same rule
+#               is created for each email listed here, or for all in case of 
+#               wildcard
+# settings: settings rules.  Supported settings are
+#           - whoCanAdd
+#           - whoCanJoin
+#           - whoCanViewMembership
+#           - whoCanViewGroup
+#           - whoCanInvite
+#           - allowExternalMembers
+#           - whoCanLeaveGroup
+#https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups
+
+rules:
+  - name: All groups with iam policies should have all of these settings
+    mode: whitelist
+    only_iam_groups: True
+    groups_emails:
+      - '*'
+    settings:
+      allowExternalMembers: True
+      whoCanJoin: "INVITED_CAN_JOIN"
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+      whoCanAdd: "ALL_MANAGERS_CAN_ADD"
+      allowExternalMembers: False
+      whoCanLeaveGroup: "ALL_MANAGERS_CAN_LEAVE"
+  # - name: Recommended for groups only used for IAM and not for email
+  #   mode: whitelist
+  #   only_iam_groups: True
+  #   groups_emails:
+  #     - '*'
+  #   settings:
+  #     whoCanViewMembership: "ALL_IN_DOMAIN_CAN_VIEW"
+  #     whoCanViewGroup: "ALL_MANAGERS_CAN_VIEW"

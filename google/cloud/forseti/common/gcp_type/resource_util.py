@@ -21,10 +21,13 @@ from google.cloud.forseti.common.gcp_type import cloudsql_instance
 from google.cloud.forseti.common.gcp_type import ke_cluster
 from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import groups_settings
 from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import role
+from google.cloud.forseti.common.gcp_type import table
 from google.cloud.forseti.services import utils
 
 _RESOURCE_TYPE_MAP = {
@@ -78,6 +81,21 @@ _RESOURCE_TYPE_MAP = {
         'plural': 'GKE Clusters',
         'can_create_resource': True,
     },
+    resource.ResourceType.ROLE: {
+        'class': role.Role,
+        'plural': 'Roles',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.TABLE: {
+        'class': table.Table,
+        'plural': 'Tables',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.GROUPS_SETTINGS: {
+        'class': groups_settings.GroupsSettings,
+        'plural': 'Groups Settings',
+        'can_create_resource': True,
+    },
 }
 
 
@@ -101,6 +119,21 @@ def create_resource(resource_id, resource_type, **kwargs):
 
     return resource_type.get('class')(
         resource_id, **kwargs)
+
+
+def create_resource_from_db_row(row):
+    """Create a resource type from a database resource row.
+
+    Args:
+        row (Resource): the database resource row.
+
+    Returns:
+        Resource: the concrete resource type.
+    """
+    parent = (
+        create_resource_from_db_row(row.parent) if row.parent else None)
+
+    return create_resource_from_json(row.type, parent, row.data)
 
 
 def create_resource_from_json(resource_type, parent, json_string):
@@ -170,7 +203,7 @@ def type_from_name(resource_name):
     if not resource_name:
         return None
 
-    for (resource_type, metadata) in _RESOURCE_TYPE_MAP.iteritems():
+    for (resource_type, metadata) in _RESOURCE_TYPE_MAP.items():
         if resource_name.startswith(metadata['plural'].lower()):
             return resource_type
 

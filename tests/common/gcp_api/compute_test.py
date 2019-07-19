@@ -16,7 +16,7 @@
 import json
 import unittest
 import uuid
-import mock
+import unittest.mock as mock
 import parameterized
 import google.auth
 from google.oauth2 import credentials
@@ -34,10 +34,11 @@ ERROR_TEST_CASES = [
      api_errors.ApiExecutionError),
 ]
 
-# Test create, update and delete operations.
+# Test create, patch, update and delete operations.
 CUD_TEST_CASES = [
     ('delete', 'delete'),
     ('insert', 'insert'),
+    ('patch', 'patch'),
     ('update', 'update'),
 ]
 
@@ -75,7 +76,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_backend_services(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_BACKEND_SERVICES_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_BACKEND_SERVICES_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -92,7 +93,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
             fake_compute.DISKS_AGGREGATED_LIST)
 
         results = self.gce_api_client.get_disks(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_DISKS_SELFLINKS,
+        self.assertEqual(fake_compute.EXPECTED_DISKS_SELFLINKS,
                           [r.get('selfLink') for r in results])
 
     def test_get_disks_by_zone(self):
@@ -101,7 +102,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_disks(
             self.project_id, fake_compute.FAKE_DISK_ZONE)
-        self.assertEquals(fake_compute.EXPECTED_DISKS_SELFLINKS,
+        self.assertEqual(fake_compute.EXPECTED_DISKS_SELFLINKS,
                           [r.get('selfLink') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -123,7 +124,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_firewall_rules(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_FIREWALL_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_FIREWALL_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -136,7 +137,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule(self, name, verb):
-        """Test create/update/delete firewall rule."""
+        """Test create/patch/update/delete firewall rule."""
         mock_response = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -150,7 +151,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_read_only(self, name, verb):
-        """Test create/update/delete firewall rule."""
+        """Test create/patch/update/delete firewall rule."""
         with mock.patch.object(self.gce_api_client.repository.firewalls,
                                'read_only', return_value=True):
             method = getattr(self.gce_api_client,
@@ -170,7 +171,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_blocking(self, name, verb):
-        """Test create/update/delete firewall rule blocking until complete."""
+        """Test create/patch/update/delete firewall blocks until complete."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -196,7 +197,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_timeout(self, name, verb):
-        """Test create/update/delete firewall rule times out."""
+        """Test create/patch/update/delete firewall rule times out."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -226,7 +227,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
     def test_cud_firewall_rule_retry(self, name, verb, mock_logger):
-        """Test create/update/delete firewall rule times out."""
+        """Test create/patch/update/delete firewall rule times out."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
             resource_path='project1/global/firewalls/fake-firewall')
@@ -252,7 +253,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                              timeout=1,
                              retry_count=3)
         self.assertDictEqual(json.loads(mock_finished), results)
-        self.assertTrue(mock_logger.warn.called)
+        self.assertTrue(mock_logger.warning.called)
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_delete_firewall_rule_errors(self, name, response, status,
@@ -286,7 +287,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.GLOBAL_OPERATION_RESPONSE)
         results = self.gce_api_client.get_global_operation(
             self.project_id, operation_id=fake_compute.FAKE_OPERATION_ID)
-        self.assertEquals(fake_compute.FAKE_OPERATION_ID, results.get('name'))
+        self.assertEqual(fake_compute.FAKE_OPERATION_ID, results.get('name'))
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_global_operation_errors(self, name, response, status,
@@ -302,7 +303,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.GET_IMAGE)
         results = self.gce_api_client.get_image(
             self.project_id, image_name=fake_compute.FAKE_IMAGE_NAME)
-        self.assertEquals(fake_compute.FAKE_IMAGE_NAME, results.get('name'))
+        self.assertEqual(fake_compute.FAKE_IMAGE_NAME, results.get('name'))
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_image_errors(self, name, response, status, expected_exception):
@@ -317,7 +318,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.LIST_IMAGES)
 
         results = self.gce_api_client.get_images(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_IMAGE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_IMAGE_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -334,7 +335,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_quota(self.project_id,
                                                 metric='SNAPSHOTS')
-        self.assertEquals(fake_compute.GET_QUOTA_RESPONSE, results)
+        self.assertEqual(fake_compute.GET_QUOTA_RESPONSE, results)
 
     def test_get_quota_no_metric(self):
         """Test get quota with no metrics."""
@@ -354,7 +355,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.GET_PROJECT_RESPONSE)
 
         results = self.gce_api_client.get_firewall_quota(self.project_id)
-        self.assertEquals(fake_compute.GET_FIREWALL_QUOTA_RESPONSE, results)
+        self.assertEqual(fake_compute.GET_FIREWALL_QUOTA_RESPONSE, results)
 
     def test_get_forwarding_rules(self):
         """Test get forwarding rules."""
@@ -362,7 +363,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
             fake_compute.FORWARDING_RULES_AGGREGATED_LIST)
 
         results = self.gce_api_client.get_forwarding_rules(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_forwarding_rules_by_region(self):
@@ -371,7 +372,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_forwarding_rules(
             self.project_id, fake_compute.FAKE_FORWARDING_RULE_REGION)
-        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -393,7 +394,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         results = self.gce_api_client.get_instance_group_instances(
             self.project_id, fake_compute.FAKE_INSTANCE_GROUP,
             zone=fake_compute.FAKE_INSTANCE_ZONE)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_ZONE_URLS,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_GROUP_ZONE_URLS,
                           list(results))
 
     def test_get_instance_group_instances_by_region(self):
@@ -404,7 +405,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         results = self.gce_api_client.get_instance_group_instances(
             self.project_id, fake_compute.FAKE_INSTANCE_GROUP,
             region=fake_compute.FAKE_INSTANCE_GROUP_REGION)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_REGION_URLS,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_GROUP_REGION_URLS,
                           list(results))
 
     def test_get_instance_group_instances_region_and_zone_raises(self):
@@ -441,7 +442,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_instance_group_managers(
             self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_MANAGER_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_GROUP_MANAGER_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -465,9 +466,9 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_instance_groups(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_GROUP_NAMES,
                           [r.get('name') for r in results])
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_URLS,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_GROUP_URLS,
                           [r.get('instance_urls') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -483,7 +484,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.INSTANCE_TEMPLATES_LIST)
 
         results = self.gce_api_client.get_instance_templates(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_TEMPLATE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_TEMPLATE_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -499,7 +500,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.INSTANCES_AGGREGATED_LIST)
 
         results = self.gce_api_client.get_instances(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_NAMES,
                           [r.get('name') for r in results])
 
     def test_get_instances_by_zone(self):
@@ -508,7 +509,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_instances(
             self.project_id, fake_compute.FAKE_INSTANCE_ZONE)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
+        self.assertEqual(fake_compute.EXPECTED_INSTANCE_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -530,7 +531,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_networks(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
+        self.assertEqual(fake_compute.EXPECTED_NETWORK_NAME,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
@@ -547,7 +548,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
             fake_compute.GET_PROJECT_RESPONSE)
 
         results = self.gce_api_client.get_project(self.project_id)
-        self.assertEquals(self.project_id, results.get('name'))
+        self.assertEqual(self.project_id, results.get('name'))
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_project_errors(self, name, response, status,
@@ -565,7 +566,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_snapshots(self.project_id)
-        self.assertEquals(
+        self.assertEqual(
             fake_compute.EXPECTED_SNAPSHOTS_LIST_NAMES,
             frozenset([r.get('name') for r in results]))
 
@@ -585,7 +586,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_subnetworks(self.project_id)
-        self.assertEquals(
+        self.assertEqual(
             fake_compute.EXPECTED_SUBNETWORKS_AGGREGATEDLIST_SELFLINKS,
             frozenset([r.get('selfLink') for r in results]))
 
@@ -595,7 +596,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
         results = self.gce_api_client.get_subnetworks(
             self.project_id, fake_compute.FAKE_SUBNETWORK_REGION)
-        self.assertEquals(fake_compute.EXPECTED_SUBNETWORKS_LIST_SELFLINKS,
+        self.assertEqual(fake_compute.EXPECTED_SUBNETWORKS_LIST_SELFLINKS,
                           frozenset([r.get('selfLink') for r in results]))
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)

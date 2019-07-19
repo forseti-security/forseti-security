@@ -23,7 +23,7 @@ PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
 import os
 import shutil
 import time
-import mock
+import unittest.mock as mock
 
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
@@ -81,6 +81,24 @@ class TestServiceConfig(MockServerConfig):
         return self.inventory_config
 
 
+class TestCompositeServiceConfig(TestServiceConfig):
+    """Composite root ServiceConfig Stub."""
+
+    def __init__(self, engine):
+        self.engine = engine
+        self.model_manager = ModelManager(self.engine)
+        self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
+        self.workers = ThreadPool(1)
+        self.inventory_config = InventoryConfig(
+            None,
+            '',
+            {},
+            0,
+            {'enabled': False},
+            ['folders/1032', 'projects/1041'])
+        self.inventory_config.set_service_config(self)
+
+
 def copy_db_file_to_test(tmpfile, db_name):
     module_dir = os.path.dirname(os.path.abspath(__file__))
     test_file = os.path.join(module_dir, 'test_data', db_name)
@@ -132,6 +150,16 @@ def main():
         time.sleep(5)
 
     copy_db_file_to_test(tmpfile, 'forseti-test.db')
+
+    engine, tmpfile = create_test_engine_with_file()
+    config = TestCompositeServiceConfig(engine)
+
+    with gcp_api_mocks.mock_gcp():
+        runner = ApiTestRunner(config, [GrpcInventoryFactory])
+        runner.run(create_inventory)
+        time.sleep(5)
+
+    copy_db_file_to_test(tmpfile, 'forseti-composite-test.db')
 
 
 if __name__ == '__main__':

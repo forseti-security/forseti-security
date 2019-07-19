@@ -13,16 +13,18 @@
 # limitations under the License.
 """Upload inventory summary to GCS."""
 
+from builtins import str
+from builtins import object
 from googleapiclient.errors import HttpError
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util import email
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
+from google.cloud.forseti.common.util.email.email_factory import EmailFactory
+from google.cloud.forseti.common.util.errors import InvalidInputError
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 # pylint: enable=line-too-long
 
@@ -80,7 +82,7 @@ class InventorySummary(object):
             return
 
         data_format = gcs_summary_config.get('data_format', 'csv')
-        BaseNotification.check_data_format(data_format)
+        base_notification.BaseNotification.check_data_format(data_format)
 
         try:
             if data_format == 'csv':
@@ -109,14 +111,27 @@ class InventorySummary(object):
 
             details_data (list): Details of inventory data as a list of dicts.
                 Example: [[{resource_type, count}, {}, {}, ...]
+
+        Raises:
+            InvalidInputError: Indicating that invalid input was encountered.
         """
         LOGGER.debug('Sending inventory summary by email.')
 
         email_summary_config = (
             self.notifier_config.get('inventory').get('email_summary'))
 
-        email_util = email.EmailUtil(
-            email_summary_config.get('sendgrid_api_key'))
+        try:
+            if self.notifier_config.get('email_connector'):
+                email_connector = (
+                    EmailFactory(self.notifier_config).get_connector())
+            # else block below is added for backward compatibility
+            else:
+                email_connector = (
+                    EmailFactory(email_summary_config).get_connector())
+        except:
+            LOGGER.exception(
+                'Error occurred to instantiate connector.')
+            raise InvalidInputError(self.notifier_config)
 
         email_subject = 'Inventory Summary: {0}'.format(
             self.inventory_index_id)
@@ -129,7 +144,7 @@ class InventorySummary(object):
 
         gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
-        email_content = email_util.render_from_template(
+        email_content = email_connector.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
@@ -137,16 +152,24 @@ class InventorySummary(object):
              'summary_data': summary_data,
              'details_data': details_data})
 
+        if self.notifier_config.get('email_connector'):
+            sender = (
+                self.notifier_config.get('email_connector').get('sender'))
+            recipient = (
+                self.notifier_config.get('email_connector').get('recipient'))
+        # else block below is added for backward compatibility.
+        else:
+            sender = email_summary_config.get('sender')
+            recipient = email_summary_config.get('recipient')
         try:
-            email_util.send(
-                email_sender=email_summary_config.get('sender'),
-                email_recipient=email_summary_config.get('recipient'),
-                email_subject=email_subject,
-                email_content=email_content,
-                content_type='text/html')
+            email_connector.send(email_sender=sender,
+                                 email_recipient=recipient,
+                                 email_subject=email_subject,
+                                 email_content=email_content,
+                                 content_type='text/html')
             LOGGER.debug('Inventory summary sent successfully by email.')
         except util_errors.EmailSendError:
-            LOGGER.exception('Unable to send inventory summary email')
+            LOGGER.exception('Unable to send Inventory summary email')
 
     @staticmethod
     def transform_to_template(data):
@@ -160,7 +183,7 @@ class InventorySummary(object):
                 Example: [{resource_type, count}, {}, {}, ...]
         """
         template_data = []
-        for key, value in data.iteritems():
+        for key, value in data.items():
             template_data.append(dict(resource_type=key, count=value))
         return sorted(template_data, key=lambda k: k['resource_type'])
 

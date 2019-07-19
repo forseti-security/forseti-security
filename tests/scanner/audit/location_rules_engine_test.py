@@ -17,7 +17,7 @@
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -48,7 +48,7 @@ rules:
 
 def get_rules_engine_with_rule(rule):
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = location_rules_engine.LocationRulesEngine(
             rules_file_path=f.name)
@@ -215,6 +215,21 @@ rules:
     resource:
       - type: 'organization'
         resource_ids: ['234']
+    applies_to: ['bucket']
+    locations: ['eu*']
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.BUCKET))
+        self.assertEqual(got_violations, data.build_violations(data.BUCKET))
+
+    def test_find_violations_project(self):
+        rule = """
+rules:
+  - name: Location test rule
+    mode: blacklist
+    resource:
+      - type: 'project'
+        resource_ids: ['p1']
     applies_to: ['bucket']
     locations: ['eu*']
 """

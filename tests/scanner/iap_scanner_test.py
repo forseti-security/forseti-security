@@ -13,10 +13,11 @@
 # limitations under the License.
 """IAP scanner test."""
 
+from builtins import object
 from datetime import datetime
 import json
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
@@ -388,30 +389,30 @@ class IapScannerTest(ForsetiTestCase):
                 session, 'organization/12345', '', True)
             project = data_access.add_resource(session, 'project/foo',
                                                organization)
-            for backend_service in BACKEND_SERVICES.values():
+            for backend_service in list(BACKEND_SERVICES.values()):
                 bs = data_access.add_resource(
                     session, 'backendservice/%s' % backend_service.name,
                     project)
                 bs.data = backend_service.json
-            for firewall in FIREWALL_RULES.values():
+            for firewall in list(FIREWALL_RULES.values()):
                 fw = data_access.add_resource(
                     session, 'firewall/%s' % firewall.name, project)
                 fw.data = firewall.as_json()
-            for instance in INSTANCES.values():
+            for instance in list(INSTANCES.values()):
                 i = data_access.add_resource(
                     session, 'instance/%s' % instance.name, project)
                 i.data = instance.json
-            for instance_group in INSTANCE_GROUPS.values():
+            for instance_group in list(INSTANCE_GROUPS.values()):
                 ig = data_access.add_resource(
                     session, 'instancegroup/%s' % instance_group.name, project)
                 ig.data = instance_group.json
-            for instance_group_manager in INSTANCE_GROUP_MANAGERS.values():
+            for instance_group_manager in list(INSTANCE_GROUP_MANAGERS.values()):
                 igm = data_access.add_resource(
                     session,
                     'instancegroupmanager/%s' % instance_group_manager.name,
                     project)
                 igm.data = instance_group_manager.json
-            for instance_template in INSTANCE_TEMPLATES.values():
+            for instance_template in list(INSTANCE_TEMPLATES.values()):
                 it = data_access.add_resource(
                     session, 'instancetemplate/%s' % instance_template.name,
                     project)
@@ -436,18 +437,18 @@ class IapScannerTest(ForsetiTestCase):
             '', get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
 
         self.data = iap_scanner._RunData(
-            BACKEND_SERVICES.values(),
-            FIREWALL_RULES.values(),
-            INSTANCES.values(),
-            INSTANCE_GROUPS.values(),
-            INSTANCE_GROUP_MANAGERS.values(),
-            INSTANCE_TEMPLATES.values(),
+            list(BACKEND_SERVICES.values()),
+            list(FIREWALL_RULES.values()),
+            list(INSTANCES.values()),
+            list(INSTANCE_GROUPS.values()),
+            list(INSTANCE_GROUP_MANAGERS.values()),
+            list(INSTANCE_TEMPLATES.values()),
         )
 
     def test_instance_template_map(self):
-        self.assertEqual({
+        self.assertEqual(str({
             INSTANCE_GROUPS['ig_managed'].key: INSTANCE_TEMPLATES['it1'],
-        }, self.data.instance_templates_by_group_key)
+        }), str(self.data.instance_templates_by_group_key))
 
     def test_find_instance_group(self):
         self.assertEqual(
@@ -464,15 +465,15 @@ class IapScannerTest(ForsetiTestCase):
 
     def test_find_network_port(self):
         self.assertEqual(
-            self.network_port(80),
-            self.data.instance_group_network_port(
-                BACKEND_SERVICES['bs1'], INSTANCE_GROUPS['ig_managed']))
+            str(self.network_port(80)),
+            str(self.data.instance_group_network_port(
+                BACKEND_SERVICES['bs1'], INSTANCE_GROUPS['ig_managed'])))
 
         # ig_unmanaged overrides port mapping, so it gets a different port number
         self.assertEqual(
-            self.network_port(8080),
-            self.data.instance_group_network_port(
-                BACKEND_SERVICES['bs1'], INSTANCE_GROUPS['ig_unmanaged']))
+            str(self.network_port(8080)),
+            str(self.data.instance_group_network_port(
+                BACKEND_SERVICES['bs1'], INSTANCE_GROUPS['ig_unmanaged'])))
 
     def test_firewall_allowed_sources(self):
         self.assertEqual(
@@ -519,11 +520,22 @@ class IapScannerTest(ForsetiTestCase):
                      for resource in resources))
 
         self.maxDiff = None
-        self.assertEquals(
-            set([bs.key for bs in BACKEND_SERVICES.values()]),
-            set(iap_resources.keys()))
-        self.assertEquals(
-            iap_scanner.IapResource(
+
+        backend_services_keys = [bs.key.__dict__ for bs in
+                                 list(BACKEND_SERVICES.values())]
+        iap_resources_keys = list(key.__dict__ for key in iap_resources.keys())
+
+        self.assertEqual(backend_services_keys, iap_resources_keys)
+
+        backend_services_bs1_key = BACKEND_SERVICES['bs1'].key
+        iap_bs1_key = backend_services_bs1_key
+
+        for key in iap_resources.keys():
+            if str(key) == str(backend_services_bs1_key):
+                iap_bs1_key = key
+
+        self.assertEqual(
+            str(iap_scanner.IapResource(
                 project_full_name='organization/12345/project/foo/',
                 backend_service=BACKEND_SERVICES['bs1'],
                 alternate_services=set([
@@ -536,17 +548,17 @@ class IapScannerTest(ForsetiTestCase):
                         name='bs1_same_instance',
                     ),
                 ]),
-                direct_access_sources=set(
+                direct_access_sources=sorted(set(
                     ['10.0.2.0/24', 'tag_match', 'applies_all',
-                     'applies_8080']),
+                     'applies_8080'])),
                 iap_enabled=True,
-            ), iap_resources[BACKEND_SERVICES['bs1'].key])
+            )), str(iap_resources[iap_bs1_key]))
 
     @mock.patch.object(
         iap_scanner.IapScanner, '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
-        self.assertEquals(1, mock_output_results.call_count)
+        self.assertEqual(1, mock_output_results.call_count)
 
 if __name__ == '__main__':
     unittest.main()

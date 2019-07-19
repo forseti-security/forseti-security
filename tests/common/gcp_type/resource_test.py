@@ -14,7 +14,7 @@
 
 """Tests the GCP Resource base class."""
 
-import mock
+import unittest.mock as mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
@@ -77,6 +77,13 @@ class ResourceUtilTest(ForsetiTestCase):
     def test_plural_nonexist_resource_returns_none(self):
         """Test that trying to get plural nonexistent resource returns None."""
         self.assertIsNone(resource_util.pluralize('nonexistent'))
+
+    def test_can_create_from_json(self):
+        """Test that can_create resources in map have a from_json method."""
+        for resource in list(resource_util._RESOURCE_TYPE_MAP.values()):
+            if resource['can_create_resource']:
+                self.assertTrue(hasattr(resource['class'], 'from_json'),
+                                msg='%s missing from_json' % resource['class'])
 
 
 if __name__ == '__main__':

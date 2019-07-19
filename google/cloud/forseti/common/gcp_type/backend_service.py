@@ -96,7 +96,8 @@ class BackendService(resource.Resource):
                   'region': backend_service.get('region'),
                   'session_affinity': backend_service.get('sessionAffinity'),
                   'timeout_sec': backend_service.get('timeoutSec'),
-                  'raw_backend_service': json.dumps(backend_service)}
+                  'raw_backend_service': json.dumps(
+                      backend_service, sort_keys=True)}
         return cls(**kwargs)
 
     @staticmethod
@@ -142,8 +143,9 @@ class BackendService(resource.Resource):
             'timeoutSec': self.timeout_sec}
 
         # Strip out empty values
-        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
-        return json.dumps(resource_dict)
+        resource_dict = dict((k, v) for k, v in
+                             list(resource_dict.items()) if v)
+        return json.dumps(resource_dict, sort_keys=True)
 
     @property
     def json(self):

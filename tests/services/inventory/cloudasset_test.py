@@ -17,7 +17,7 @@ import os
 import unittest
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker
@@ -31,6 +31,7 @@ from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory import storage
 from google.cloud.forseti.services.inventory.base import cloudasset
+from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 
 TEST_RESOURCE_DIR_PATH = os.path.join(
     os.path.dirname(__file__), 'test_data')
@@ -112,47 +113,53 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
     def validate_data_in_table(self):
         """Validate there is actual data in the CAI table."""
+        cai_name = '//cloudresourcemanager.googleapis.com/organizations/111222333'
+        cai_type = 'cloudresourcemanager.googleapis.com/Organization'
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/111222333',
+            cai_type,
+            cai_name,
             self.session)
-        expected_resource = {
+        expected_resource = ({
             'creationTime': '2015-09-09T19:34:18.591Z',
             'displayName': 'forseti.test',
             'lifecycleState': 'ACTIVE',
             'name': 'organizations/111222333',
-            'owner': {'directoryCustomerId': 'ABC123DEF'}}
+            'owner': {'directoryCustomerId': 'ABC123DEF'}},
+                             AssetMetadata(cai_name=cai_name, cai_type=cai_type))
         self.assertEqual(expected_resource, resource)
+
+        cai_name = '//cloudresourcemanager.googleapis.com/folders/1033'
+        cai_type = 'cloudresourcemanager.googleapis.com/Folder'
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/folders/1033',
+            cai_type,
+            cai_name,
             self.session)
-        expected_iam_policy = {
+        expected_iam_policy = ({
             'bindings': [
                 {'members': ['user:a_user@forseti.test'],
-                 'role': 'roles/resourcemanager.folderAdmin'}],
-            'version': 1}
+                 'role': 'roles/resourcemanager.folderAdmin'}]},
+                               AssetMetadata(cai_name=cai_name, cai_type=cai_type))
         self.assertEqual(expected_iam_policy, iam_policy)
 
     def validate_no_data_in_table(self):
         """Validate there is not data in the CAI table."""
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization',
+            'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/organizations/111222333',
             self.session)
-        expected_resource = {}
+        expected_resource = ({}, None)
         self.assertEqual(expected_resource, resource)
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Folder',
+            'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/folders/1033',
             self.session)
-        expected_iam_policy = {}
+        expected_iam_policy = ({}, None)
         self.assertEqual(expected_iam_policy, iam_policy)
 
     def test_get_gcs_path(self):
@@ -187,6 +194,61 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         self.assertTrue(results)
         self.validate_data_in_table()
 
+    def test_load_cloudasset_data_composite_root(self):
+        """Validate load_cloudasset_data correctly works with composite root."""
+        composite_root_resources = ['projects/1043', 'projects/1044']
+        inventory_config = InventoryConfig(None,
+                                           '',
+                                           {},
+                                           0,
+                                           {'enabled': True,
+                                            'gcs_path': 'gs://test-bucket'},
+                                           composite_root_resources)
+
+        # Ignore call to export_assets for this test.
+        self.mock_export_assets.return_value = {'done': True}
+
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            if 'resource' in file_path:
+                if 'projects-1043' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project3_resources.dump')
+                if 'projects-1044' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project4_resources.dump')
+            elif 'iam_policy' in file_path:
+                if 'projects-1043' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project3_iam_policies.dump')
+                if 'projects-1044' in file_path:
+                    return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                        'mock_cai_project4_iam_policies.dump')
+
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  inventory_config)
+        expected_results = 12  # Total of resources and IAM policies in dumps.
+        self.assertEqual(expected_results, results)
+
+        # Validate data from both projects in database.
+        for root_id in composite_root_resources:
+            for content_type in [storage.ContentTypes.resource,
+                                 storage.ContentTypes.iam_policy]:
+
+                expected_resource_name = (
+                    '//cloudresourcemanager.googleapis.com/%s' % root_id)
+                resource = storage.CaiDataAccess.fetch_cai_asset(
+                    content_type,
+                    'cloudresourcemanager.googleapis.com/Project',
+                    expected_resource_name,
+                    self.session)
+                self.assertTrue(resource,
+                                msg=('Resource %s type %s is missing'
+                                     % (root_id, content_type)))
+
     def test_long_resource_name(self):
         """Validate load_cloudasset_data handles resources with long names."""
         # Ignore call to export_assets for this test.
@@ -211,25 +273,28 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         expected_results = 1
         self.assertEqual(results, expected_results)
 
+        cai_type = 'spanner.googleapis.com/Instance'
+        cai_name = '//spanner.googleapis.com/projects/project2/instances/test123'
+
         # Validate resource with short name is in database.
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
-            'google.spanner.Instance',
-            '//spanner.googleapis.com/projects/project2/instances/test123',
+            cai_type,
+            cai_name,
             self.session)
-        expected_resource = {
+        expected_resource = ({
             'config': 'projects/project2/instanceConfigs/regional-us-east1',
             'displayName': 'Test123',
             'name': 'projects/project2/instances/test123',
             'nodeCount': 1,
-            'state': 'READY'}
+            'state': 'READY'}, AssetMetadata(cai_type=cai_type, cai_name=cai_name))
         self.assertEqual(expected_resource, resource)
 
     def test_load_cloudasset_data_cai_apierror(self):
         """Validate load_cloud_asset handles an API error from CAI."""
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = PERMISSION_DENIED
+        content = PERMISSION_DENIED.encode()
         error_403 = errors.HttpError(response, content)
 
         self.mock_export_assets.side_effect = (
@@ -237,6 +302,23 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         )
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
+        self.assertIsNone(results)
+        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.validate_no_data_in_table()
+
+    def test_load_cloudasset_data_cai_valueerror(self):
+        """Validate load_cloud_asset handles a bad root resource id."""
+        inventory_config = InventoryConfig('bad_resource/987654321',
+                                           '',
+                                           {},
+                                           0,
+                                           {'enabled': True,
+                                            'gcs_path': 'gs://test-bucket'})
+        self.mock_export_assets.side_effect = (
+            ValueError('parent must start with folders/, projects/, or '
+                       'organizations/'))
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
         self.validate_no_data_in_table()
@@ -267,7 +349,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = PERMISSION_DENIED
+        content = PERMISSION_DENIED.encode()
         error_403 = errors.HttpError(response, content)
         self.mock_copy_file_from_gcs.side_effect = error_403
 

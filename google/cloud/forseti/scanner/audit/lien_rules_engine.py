@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Rules engine for Liens."""
+from builtins import object
 import collections
 
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -197,6 +198,10 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
 
         for res in resource_ancestors:
             applicable_rules.extend(self.resource_to_rules.get(res, []))
+            wildcard_res = resource_util.create_resource(
+                resource_id='*', resource_type=res.type)
+            applicable_rules.extend(self.resource_to_rules.get(
+                wildcard_res, []))
 
         for rule in applicable_rules:
             for violation in rule.find_violations(parent_resource,

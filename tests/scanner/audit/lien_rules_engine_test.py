@@ -14,10 +14,11 @@
 
 """Tests the LienRulesEngine."""
 
+from builtins import object
 import copy
 import itertools
 import json
-import mock
+import unittest.mock as mock
 import tempfile
 import unittest
 import yaml
@@ -44,14 +45,14 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
     projects_rule = base_rule + """
     resource:
       - type: project
         resource_ids:
-          - {id}
+          - "{id}"
 """
 
 def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
@@ -61,7 +62,7 @@ def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
     rule = rule_tmpl.format(id=rid, restrictions=restrictions)
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        f.write(rule)
+        f.write(rule.encode())
         f.flush()
         rules_engine = lien_rules_engine.LienRulesEngine(
             rules_file_path=f.name)
@@ -111,12 +112,18 @@ class LienRulesEngineTest(ForsetiTestCase):
         got_violations = list(rules_engine.find_violations(data.PROJECT, []))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
+    def test_find_violations_project_wildcard(self):
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, '*')
+        got_violations = list(rules_engine.find_violations(data.PROJECT, []))
+        self.assertEqual(got_violations, data.VIOLATIONS)
+
     def test_find_violations_projects_multiple_liens(self):
         id_to_restrictions = {'l1': ['a', 'b'], 'l2': ['c']}
 
         liens = []
 
-        for lid, restrictions in id_to_restrictions.iteritems():
+        for lid, restrictions in id_to_restrictions.items():
             lien_dict = {
                 'name': 'liens/' + lid,
                 'parent': 'projects/p1',
@@ -126,7 +133,7 @@ class LienRulesEngineTest(ForsetiTestCase):
             }
 
             liens.append(lien.Lien.from_json(
-                data.PROJECT, 'l1', json.dumps(lien_dict)))
+                data.PROJECT, json.dumps(lien_dict)))
 
         rules_engine = get_rules_engine_with_rule(
             Rules.projects_rule, data.PROJECT.id, restrictions=['a', 'c'])

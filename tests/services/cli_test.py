@@ -13,15 +13,18 @@
 # limitations under the License.
 """Unit Tests: Forseti CLI."""
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 from argparse import ArgumentParser
 from copy import copy
 import json
-import mock
+import unittest.mock as mock
 import os
 import shlex
 import shutil
 import sys
-import StringIO
+import io
 import tempfile
 import unittest
 
@@ -309,14 +312,35 @@ class ImporterTest(ForsetiTestCase):
 
         ('scanner run',
          CLIENT.scanner.run,
-         [],
+         [None],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('scanner run --scanner external_project_access_scanner',
+         CLIENT.scanner.run,
+         ['external_project_access_scanner'],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
         ('notifier run --inventory_index_id 88',
          CLIENT.scanner.run,
-         [88],
+         [88, 0],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('notifier run --scanner_index_id 88',
+         CLIENT.scanner.run,
+         [0, 88],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('notifier run --inventory_index_id 88 --scanner_index_id 88',
+         CLIENT.scanner.run,
+         [88, 88],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
@@ -353,10 +377,10 @@ class ImporterTest(ForsetiTestCase):
                 try:
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
-                        json.load(StringIO.StringIO(config_string)))
+                        json.load(io.StringIO(config_string)))
                     # Capture stdout, so it doesn't pollute the test output
                     with mock.patch('sys.stdout',
-                                    new_callable=StringIO.StringIO):
+                                    new_callable=io.StringIO):
                         config = cli.main(
                             args=args,
                             config_env=env_config,
@@ -367,7 +391,7 @@ class ImporterTest(ForsetiTestCase):
                                                        **func_kwargs)
 
                     # Check attribute values
-                    for attribute, value in config_expect.iteritems():
+                    for attribute, value in config_expect.items():
                         self.assertEqual(
                             getattr(config, attribute),
                             value,
@@ -393,9 +417,9 @@ class ImporterTest(ForsetiTestCase):
              func_kwargs, config_string, config_expect) in test_cases:
             args = shlex.split(commandline)
             env_config = cli.DefaultConfig(
-                json.load(StringIO.StringIO(config_string)))
+                json.load(io.StringIO(config_string)))
             with mock.patch('sys.stdout',
-                            new_callable=StringIO.StringIO) as mock_out:
+                            new_callable=io.StringIO) as mock_out:
                 cli.main(
                     args=args,
                     config_env=env_config,
@@ -417,9 +441,9 @@ class ImporterTest(ForsetiTestCase):
              func_kwargs, config_string, config_expect) in test_cases:
             args = shlex.split(commandline)
             env_config = cli.DefaultConfig(
-                json.load(StringIO.StringIO(config_string)))
+                json.load(io.StringIO(config_string)))
             with mock.patch('sys.stdout',
-                            new_callable=StringIO.StringIO) as mock_out:
+                            new_callable=io.StringIO) as mock_out:
                 cli.main(
                     args=args,
                     config_env=env_config,
@@ -440,9 +464,9 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a role prefix',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_list_permissions_with_role_specified(self):
         ignored = mock.MagicMock()
@@ -474,9 +498,9 @@ class RunExplainerTest(ForsetiTestCase):
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
             cli.run_explainer(mock_client, mock_config, mock_output, ignored)
-        self.assertEquals(
+        self.assertEqual(
             'please specify either a role or a permission',
-            ctxt.exception.message)
+            str(ctxt.exception))
 
     def test_query_access_by_authz_with_role_specified(self):
         ignored = mock.MagicMock()

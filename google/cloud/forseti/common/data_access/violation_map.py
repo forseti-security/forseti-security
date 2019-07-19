@@ -30,6 +30,7 @@ VIOLATION_RESOURCES = {
     'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
+    'CONFIG_VALIDATOR_VIOLATION': 'config_validator_violations',
     'ENABLED_APIS_VIOLATION': 'enabled_apis_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
     'FIREWALL_BLACKLIST_VIOLATION': 'firewall_rule_violations',
@@ -37,16 +38,21 @@ VIOLATION_RESOURCES = {
     'FIREWALL_REQUIRED_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
     'GROUP_VIOLATION': 'groups_violations',
+    'GSUITE_GROUPS_SETTINGS_VIOLATION': 'groups_settings_violations',
     'KE_VERSION_VIOLATION': 'ke_version_violations',
     'KE_VIOLATION': 'ke_violations',
     'IAM_POLICY_VIOLATION': 'iam_policy_violations',
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),
+    'CRYPTO_KEY_VIOLATION': 'kms_violations',
     'LIEN_VIOLATION': 'lien_violations',
     'LOCATION_VIOLATION': 'location_violations',
     'LOG_SINK_VIOLATION': 'log_sink_violations',
+    'RESOURCE_VIOLATION': 'resource_violations',
     'RETENTION_VIOLATION': 'retention_violations',
+    'CUSTOM_ROLE_VIOLATION': 'custom_role_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
+    'EXTERNAL_PROJECT_ACCESS_VIOLATION': 'external_project_access_violations'
 }

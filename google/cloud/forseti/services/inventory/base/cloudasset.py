@@ -29,6 +29,72 @@ from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
+# Any asset type referenced in cai_gcp_client.py needs to be added here.
+DEFAULT_ASSET_TYPES = [
+    'appengine.googleapis.com/Application',
+    'appengine.googleapis.com/Service',
+    'appengine.googleapis.com/Version',
+    'bigquery.googleapis.com/Dataset',
+    'cloudbilling.googleapis.com/BillingAccount',
+    'cloudkms.googleapis.com/CryptoKey',
+    'cloudkms.googleapis.com/CryptoKeyVersion',
+    'cloudkms.googleapis.com/KeyRing',
+    'cloudresourcemanager.googleapis.com/Folder',
+    'cloudresourcemanager.googleapis.com/Organization',
+    'cloudresourcemanager.googleapis.com/Project',
+    'compute.googleapis.com/Autoscaler',
+    'compute.googleapis.com/BackendBucket',
+    'compute.googleapis.com/BackendService',
+    'compute.googleapis.com/Disk',
+    'compute.googleapis.com/Firewall',
+    'compute.googleapis.com/ForwardingRule',
+    'compute.googleapis.com/GlobalForwardingRule',
+    'compute.googleapis.com/HealthCheck',
+    'compute.googleapis.com/HttpHealthCheck',
+    'compute.googleapis.com/HttpsHealthCheck',
+    'compute.googleapis.com/Image',
+    'compute.googleapis.com/Instance',
+    'compute.googleapis.com/InstanceGroup',
+    'compute.googleapis.com/InstanceGroupManager',
+    'compute.googleapis.com/InstanceTemplate',
+    'compute.googleapis.com/License',
+    'compute.googleapis.com/Network',
+    'compute.googleapis.com/Project',
+    'compute.googleapis.com/RegionBackendService',
+    'compute.googleapis.com/Router',
+    'compute.googleapis.com/Snapshot',
+    'compute.googleapis.com/SslCertificate',
+    'compute.googleapis.com/Subnetwork',
+    'compute.googleapis.com/TargetHttpProxy',
+    'compute.googleapis.com/TargetHttpsProxy',
+    'compute.googleapis.com/TargetInstance',
+    'compute.googleapis.com/TargetPool',
+    'compute.googleapis.com/TargetSslProxy',
+    'compute.googleapis.com/TargetTcpProxy',
+    'compute.googleapis.com/TargetVpnGateway',
+    'compute.googleapis.com/UrlMap',
+    'compute.googleapis.com/VpnTunnel',
+    'container.googleapis.com/Cluster',
+    'dataproc.googleapis.com/Cluster',
+    'dns.googleapis.com/ManagedZone',
+    'dns.googleapis.com/Policy',
+    'iam.googleapis.com/Role',
+    'k8s.io/Namespace',
+    'k8s.io/Node',
+    'k8s.io/Pod',
+    'iam.googleapis.com/ServiceAccount',
+    'pubsub.googleapis.com/Subscription',
+    'pubsub.googleapis.com/Topic',
+    'rbac.authorization.k8s.io/ClusterRole',
+    'rbac.authorization.k8s.io/ClusterRoleBinding',
+    'rbac.authorization.k8s.io/Role',
+    'rbac.authorization.k8s.io/RoleBinding',
+    'spanner.googleapis.com/Database',
+    'spanner.googleapis.com/Instance',
+    'sqladmin.googleapis.com/Instance',
+    'storage.googleapis.com/Bucket',
+]
+
 
 def load_cloudasset_data(session, config):
     """Export asset data from Cloud Asset API and load into storage.
@@ -48,13 +114,21 @@ def load_cloudasset_data(session, config):
         config.get_api_quota_configs())
     imported_assets = 0
 
+    root_resources = []
+    if config.use_composite_root():
+        root_resources.extend(config.get_composite_root_resources())
+    else:
+        root_resources.append(config.get_root_resource_id())
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
-        for content_type in CONTENT_TYPES:
-            futures.append(executor.submit(_export_assets,
-                                           cloudasset_client,
-                                           config,
-                                           content_type))
+        for root_id in root_resources:
+            for content_type in CONTENT_TYPES:
+                futures.append(executor.submit(_export_assets,
+                                               cloudasset_client,
+                                               config,
+                                               root_id,
+                                               content_type))
 
         for future in concurrent.futures.as_completed(futures):
             temporary_file = ''
@@ -76,12 +150,13 @@ def load_cloudasset_data(session, config):
     return imported_assets
 
 
-def _export_assets(cloudasset_client, config, content_type):
+def _export_assets(cloudasset_client, config, root_id, content_type):
     """Worker function for exporting assets and downloading dump from GCS.
 
     Args:
         cloudasset_client (CloudAssetClient): CloudAsset API client interface.
         config (object): Inventory configuration on server.
+        root_id (str): The name of the parent resource to export assests under.
         content_type (ContentTypes): The content type to export.
 
     Returns:
@@ -89,7 +164,10 @@ def _export_assets(cloudasset_client, config, content_type):
             error.
     """
     asset_types = config.get_cai_asset_types()
-    root_id = config.get_root_resource_id()
+    if not asset_types:
+        asset_types = DEFAULT_ASSET_TYPES
+    timeout = config.get_cai_timeout()
+
     timestamp = int(time.time())
     export_path = _get_gcs_path(config.get_cai_gcs_path(),
                                 content_type,
@@ -108,15 +186,18 @@ def _export_assets(cloudasset_client, config, content_type):
                                                   content_type=content_type,
                                                   asset_types=asset_types,
                                                   blocking=True,
-                                                  timeout=3600)
+                                                  timeout=timeout)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
     except api_errors.ApiExecutionError as e:
-        LOGGER.warn('API Error getting cloud asset data: %s', e)
+        LOGGER.warning('API Error getting cloud asset data: %s', e)
         return None
     except api_errors.OperationTimeoutError as e:
-        LOGGER.warn('Timeout getting cloud asset data: %s', e)
+        LOGGER.warning('Timeout getting cloud asset data: %s', e)
+        return None
+    except ValueError as e:
+        LOGGER.warning('Invalid root resource id: %s', e)
         return None
 
     if 'error' in results:
@@ -128,7 +209,7 @@ def _export_assets(cloudasset_client, config, content_type):
         LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
         return file_loader.copy_file_from_gcs(export_path)
     except errors.HttpError as e:
-        LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
+        LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
         return None
 
 

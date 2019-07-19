@@ -14,6 +14,8 @@
 
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
+from builtins import str
+from builtins import range
 from collections import defaultdict
 import unittest
 from sqlalchemy.orm.exc import NoResultFound
@@ -67,7 +69,7 @@ class DaoTest(ForsetiTestCase):
         'admin': set(),
     }
 
-    for prefix, expected_roles in expectations.iteritems():
+    for prefix, expected_roles in expectations.items():
       role_names = data_access.list_roles_by_prefix(session, prefix)
       self.assertEqual(expected_roles, set(role_names))
 
@@ -99,14 +101,14 @@ class DaoTest(ForsetiTestCase):
     client = ModelCreatorClient(session, data_access)
     _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
 
-    memberships = {
-        'user/t1': ['group/g1'],
-        'user/t2': ['group/g2', 'group/g3'],
-        'user/t3': ['group/g3g2g1', 'group/g3'],
-        'group/t4': ['group/g3g2g1', 'group/g3'],
-        'group/t5': ['group/t4'],
-        'user/t6': ['group/t5', 'group/t4'],
-    }
+    memberships = [
+        ('group/t4', ['group/g3g2g1', 'group/g3']),
+        ('group/t5', ['group/t4']),
+        ('user/t1', ['group/g1']),
+        ('user/t2', ['group/g2', 'group/g3']),
+        ('user/t3', ['group/g3g2g1', 'group/g3']),
+        ('user/t6', ['group/t5', 'group/t4']),
+    ]
 
     checks = {
         'user/t1': ['group/g1'],
@@ -115,10 +117,10 @@ class DaoTest(ForsetiTestCase):
         'group/t5': ['group/g3g2'],
     }
 
-    for member, parents in memberships.iteritems():
+    for member, parents in memberships:
       data_access.add_group_member(session, member, parents)
 
-    for member, groups in checks.iteritems():
+    for member, groups in checks.items():
       res = data_access.reverse_expand_members(session, [member])
       res = [m.name for m in res]
       for group in groups:
@@ -139,6 +141,19 @@ class DaoTest(ForsetiTestCase):
 
     for check in checks:
       self.assertTrue(check in all_member_names)
+
+  def test_list_group_members_by_member_type(self):
+    """Test listing of group members."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
+    member_types = ['user']
+
+    all_member_names = data_access.list_group_members(
+        session, '', member_types=member_types)
+    checks = {u'user/u1', u'user/u2'}
+    self.assertEqual(checks, set(all_member_names))
 
   def test_iter_groups(self):
     """Test fetching all groups in model."""
@@ -243,6 +258,32 @@ class DaoTest(ForsetiTestCase):
     self.assertEqual(set([
         u'group/g1']), members)
 
+  def test_reverse_expand_members_special_groups(self):
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+
+    members = data_access.reverse_expand_members(session,
+                                                 ['user/b'])
+
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'allauthenticatedusers',
+        u'group/a',
+        u'projecteditor/project1',
+        u'user/b',
+        ]), members)
+
+    # Unknown members expand to allauthenticatedusers
+    members = data_access.reverse_expand_members(session,
+                                                 ['user/unknown'])
+
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'allauthenticatedusers',
+        ]), members)
+
   def test_expand_members(self):
     """Test expand_members."""
     session_maker, data_access = session_creator('test')
@@ -269,6 +310,29 @@ class DaoTest(ForsetiTestCase):
         u'group/g3g2g1'
         ]), members)
 
+  def test_expand_members_special_groups(self):
+    """Test expand_members with special groups."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+    members = data_access.expand_members(session, ['projectviewer/project2',
+                                                   'projecteditor/project1',
+                                                   'projectowner/project1'])
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'group/b',
+        u'group/c',
+        u'projecteditor/project1',
+        u'projectowner/project1',
+        u'projectviewer/project2',
+        u'user/a',
+        u'user/b',
+        u'user/d',
+        u'user/e',
+        u'user/f',
+        ]), members)
+
   def test_expand_members_map(self):
     """Test expand_members_map."""
     session_maker, data_access = session_creator('test')
@@ -285,6 +349,25 @@ class DaoTest(ForsetiTestCase):
             u'user/g1g1u2',
             u'user/g1g1u3',
         ]), members_map[u'group/g1'])
+
+  def test_expand_members_map_special_groups(self):
+    """Test expand_members_map with special groups."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.COMPLEX_MODEL, client)
+    members_map = data_access.expand_members_map(session,
+                                                 ['projecteditor/project1'])
+
+    self.assertEqual(set([
+        'projecteditor/project1',
+        u'group/b',
+        u'group/c',
+        u'user/a',
+        u'user/b',
+        u'user/d',
+        u'user/f',
+        ]), members_map['projecteditor/project1'])
 
   def test_explain_granted(self):
     """Test explain_granted."""
@@ -348,7 +431,7 @@ class DaoTest(ForsetiTestCase):
       for check in bindings:
         self.assertTrue(check in bindings)
       self.assertEqual(set(member_graph.keys()), set(graph.keys()))
-      for key, value in member_graph.iteritems():
+      for key, value in member_graph.items():
         self.assertEqual(value, graph[key])
       self.assertEqual(check_ancestors, ancestors)
 
@@ -474,13 +557,13 @@ class DaoTest(ForsetiTestCase):
         'writer': [(u'r/res3', set([u'group/g3'])),],
     }
 
-    for role, access in expected_by_role.iteritems():
+    for role, access in expected_by_role.items():
       result = [r for r in (
           data_access.query_access_by_permission(session, role))]
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -498,14 +581,14 @@ class DaoTest(ForsetiTestCase):
         'writeonly': [(u'r/res3', set([u'group/g3'])),],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(session,
                                                  permission_name=perm))]
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -515,12 +598,11 @@ class DaoTest(ForsetiTestCase):
             (u'r/res1', set([u'user/u1'])),
             (u'r/res2', set([u'user/u1'])),
             (u'r/res3', set([u'user/u1'])),
-            (u'r/res4', set([u'user/u1'])),
-            (u'r/res4', set([u'group/g2'])),
+            (u'r/res4', set([u'user/u1', u'group/g2'])),
         ],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(session,
                                                  permission_name=perm,
@@ -528,7 +610,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warning('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -540,7 +622,7 @@ class DaoTest(ForsetiTestCase):
         ],
     }
 
-    for perm, access in expected_by_permission.iteritems():
+    for perm, access in expected_by_permission.items():
       result = [r for r in (
           data_access.query_access_by_permission(
               session,
@@ -727,6 +809,17 @@ class DaoTest(ForsetiTestCase):
       self.assertIn('etag', res, 'Etag must be in policy')
       self.assertEqual(resource, res['resource'])
 
+  def test_get_iam_policy_by_role(self):
+    """Test check_iam_policy."""
+    session_maker, data_access = session_creator('test', None, None, False)
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.EXPLAIN_GRANTED_1, client)
+    expected_bindings = {u'viewer': [u'group/g1']}
+    iam_policy = data_access.get_iam_policy(session, 'r/res1',
+                                            roles=['viewer', 'writer'])
+    self.assertEqual(expected_bindings, iam_policy['bindings'])
+
   def test_check_iam_policy(self):
     """Test check_iam_policy."""
     session_maker, data_access = session_creator('test', None, None, False)
@@ -825,11 +918,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/u1',
+    self.assertEqual('user/u1',
                       data_access.get_member(session, 'user/u1')[0].name)
-    self.assertEquals('user/u6',
+    self.assertEqual('user/u6',
                       data_access.get_member(session, 'user/u6')[0].name)
 
     # Non-existing users should not be found
@@ -888,7 +981,7 @@ class DaoTest(ForsetiTestCase):
              u'r/r1r5', u'r/r1'},
     }
 
-    for test_val, comparison in tests.iteritems():
+    for test_val, comparison in tests.items():
       result = [r.type_name
                 for r in data_access.find_resource_path(session, test_val)]
       self.assertEqual(comparison, set(result))
@@ -919,11 +1012,11 @@ class DaoTest(ForsetiTestCase):
     self.assertTrue(1 == len(data_access.get_member(session, 'group/g3g1')))
 
     # Check names as well
-    self.assertEquals('group/g1',
+    self.assertEqual('group/g1',
                       data_access.get_member(session, 'group/g1')[0].name)
-    self.assertEquals('user/g3g1u2',
+    self.assertEqual('user/g3g1u2',
                       data_access.get_member(session, 'user/g3g1u2')[0].name)
-    self.assertEquals('user/g2u3',
+    self.assertEqual('user/g2u3',
                       data_access.get_member(session, 'user/g2u3')[0].name)
 
     # Non-existing users should not be found
@@ -944,7 +1037,7 @@ class DaoTest(ForsetiTestCase):
     def expand(resource):
         return [
             '/'.join(i.full_name.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
+            for i in list(data_access.expand_resources_by_type_names(session, [resource]).values())[0]
         ]
 
     self.assertEqual(set(expand('r/res1')),
@@ -991,7 +1084,7 @@ class DaoTest(ForsetiTestCase):
     def expand(resource):
         return [
             '/'.join(i.full_name.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
+            for i in list(data_access.expand_resources_by_type_names(session, [resource]).values())[0]
         ]
 
     self.assertEqual(

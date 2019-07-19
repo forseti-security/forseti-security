@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 
+from builtins import object
 import sys
 
 # Importing migrate.changeset adds some new methods to existing SQLAlchemy
@@ -108,21 +109,20 @@ def migrate_schema(base, dao_classes):
                                             None)
         if (not callable(get_schema_update_actions) or
                 dao_class.__tablename__ not in tables):
-            LOGGER.warn('Method: %s is not callable or Table: %s doesn\'t '
-                        'exist', schema_update_actions_method,
+            LOGGER.info('Table %s doesn\'t require update.',
                         dao_class.__tablename__)
             continue
         LOGGER.info('Updating table %s', dao_class.__tablename__)
         # schema_update will require the Table object.
         table = tables.get(dao_class.__tablename__)
         schema_update_actions = get_schema_update_actions()
-        for column_action, columns in schema_update_actions.iteritems():
+        for column_action, columns in schema_update_actions.items():
             if column_action in [ColumnAction.CREATE, ColumnAction.DROP]:
                 _create_or_drop_columns(column_action, columns, table)
             elif column_action in [ColumnAction.ALTER]:
                 _alter_columns(column_action, columns, table)
             else:
-                LOGGER.warn('Unknown column action: %s', column_action)
+                LOGGER.warning('Unknown column action: %s', column_action)
 
 
 def _alter_columns(column_action, columns, table):
@@ -134,7 +134,7 @@ def _alter_columns(column_action, columns, table):
         table (sqlalchemy.schema.Table): The sql alchemy table object.
     """
     column_action = column_action.upper()
-    for old_column, new_column in columns.iteritems():
+    for old_column, new_column in columns.items():
         try:
             COLUMN_ACTION_MAPPING.get(column_action)(table,
                                                      old_column,
@@ -190,7 +190,7 @@ def _find_subclasses(cls):
 if __name__ == '__main__':
     # If the DB connection string is passed in, use that, otherwise
     # fall back to the default DB connection string.
-    print (sys.argv)
+    print(sys.argv)
     DB_CONN_STR = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DB_CONN_STR
 
     SQL_ENGINE = general_dao.create_engine(DB_CONN_STR,
@@ -218,6 +218,6 @@ if __name__ == '__main__':
         scanner_dao.BASE: SCANNER_DAO_CLASSES,
         inventory_dao.BASE: INVENTORY_DAO_CLASSES}
 
-    for declaritive_base, classes in DECLARITIVE_BASE_MAPPING.iteritems():
+    for declaritive_base, classes in DECLARITIVE_BASE_MAPPING.items():
         declaritive_base.metadata.bind = SQL_ENGINE
         migrate_schema(declaritive_base, classes)

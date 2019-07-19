@@ -13,6 +13,7 @@
 # limitations under the License.
 """Location data to be used in the unit tests."""
 
+from builtins import str
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -61,7 +62,8 @@ CLOUD_SQL_INSTANCE = resource_util.create_resource_from_json(
 
 _CLUSTER_JSON = """{
     "name": "p1-cluster1",
-    "locations": ["europe-west1-a"]
+    "locations": ["europe-west1-a"],
+    "selfLink": "p1-cluster1.com"
 }
 """
 

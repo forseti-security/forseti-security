@@ -14,7 +14,7 @@
 """Tests the email scanner summary notifier."""
 
 import json
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.notifier.notifiers import slack_webhook
@@ -39,16 +39,16 @@ class SlackWebhooknotifierTest(ForsetiTestCase):
         violation = {'violation_data': json.loads(violation_data),
                      'resource_id': '123',
                      'rule_name': 'Public buckets (allUsers)',
-                     'rule_index': 0L,
+                     'rule_index': 0,
                      'violation_type': 'BUCKET_VIOLATION',
-                     'id': 1L, 'resource_type': 'bucket'}
+                     'id': 1, 'resource_type': 'bucket'}
 
         with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
             slack_notifier = slack_webhook.SlackWebhook()
             slack_notifier.resource = 'buckets_acl_violations'
             actual_output = slack_notifier._compose(violation=violation)
 
-            expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*role*:\t\t`READER`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`"
+            expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`\n\t*role*:\t\t`READER`"
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
 

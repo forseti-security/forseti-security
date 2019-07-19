@@ -14,6 +14,31 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+def get_patch_search_expression(forseti_version):
+    """Returns a glob expression matching all patches of the given version.
+
+    TODO: Update in client/forseti-instance-client if update here.
+
+    Args:
+        forseti_version (str): Installed forseti version.  Should start with
+            'tags/v' if patches are to be updated automatically.
+
+    Returns:
+        str: Glob expression matching all patches of given forseti_version.
+        None: Returns None if forseti_version is not in 'tags/vX.Y.Z' format.
+    """
+
+    if forseti_version[:6] != 'tags/v':
+        return None
+    segments = forseti_version.replace('tags/v', '').split('.')
+
+    for segment in segments:
+        if not segment.isdigit():
+            return None
+
+    return 'v{}.{}.{{[0-9],[0-9][0-9]}}'.format(segments[0], segments[1])
+
+
 def GenerateConfig(context):
     """Generate configuration."""
 
@@ -23,9 +48,29 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    FORSETI_VERSION = (
-        "git checkout {forseti_version}".format(
-            forseti_version=context.properties['forseti-version']))
+    patch_search_expression = get_patch_search_expression(context.properties['forseti-version'])
+    if patch_search_expression:
+        CHECKOUT_FORSETI_VERSION = (
+        """versions=$(git tag -l {patch_search_expression})
+versions=(${{versions//;/ }})
+for version in "${{versions[@]}}"
+do
+segments=(${{version//./ }})
+patch=${{segments[2]}}
+patch=${{patch: 0: 2}}
+patch=$(echo $patch | sed 's/[^0-9]*//g')
+# latest_version is an array [full_version, patch_number]
+if !((${{#latest_version[@]}})) || ((patch > ${{latest_version[1]}}));
+then
+  latest_version=($version $patch)
+fi
+done
+git checkout ${{latest_version[0]}}"""
+        .format(patch_search_expression=patch_search_expression))
+    else:
+        CHECKOUT_FORSETI_VERSION = (
+            "git checkout {forseti_version}".format(
+                forseti_version=context.properties['forseti-version']))
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -129,6 +174,14 @@ if [ -z "$FLUENTD" ]; then
       bash install-logging-agent.sh
 fi
 
+# Install collectd if necessary.
+COLLECTD=$(ls /opt/stackdriver/collectd/sbin/stackdriver-collectd)
+if [ -z "$COLLECTD" ]; then
+      cd $USER_HOME
+      curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+      bash install-monitoring-agent.sh
+fi
+
 # Check whether Cloud SQL proxy is installed.
 CLOUD_SQL_PROXY=$(which cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
@@ -145,6 +198,8 @@ rm -rf *forseti*
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+# Fetch tags updates tag changes which fetch all doesn't do
+git fetch --tags
 git fetch --all
 {checkout_forseti_version}
 
@@ -155,9 +210,8 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip install --upgrade pip==9.0.3
-pip install -q --upgrade setuptools wheel
-pip install -q --upgrade -r requirements.txt
+python3 -m pip install -q --upgrade setuptools wheel
+python3 -m pip install -q --upgrade -r requirements.txt
 
 # Setup Forseti logging
 touch /var/log/forseti.log
@@ -175,7 +229,7 @@ chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/insta
 pip install .[tracing]
 
 # Install Forseti
-python setup.py install
+python3 setup.py install
 
 # Export variables required by initialize_forseti_services.sh.
 {export_initialize_vars}
@@ -191,15 +245,20 @@ echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | s
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
+# Download the Newest Config Validator constraints from GCS
+rm -rf {forseti_home}/policy-library
+gsutil cp -r gs://{scanner_bucket}/policy-library {forseti_home}/
+
 # Start Forseti service depends on vars defined above.
 bash ./install/gcp/scripts/initialize_forseti_services.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
+systemctl start config-validator
 sleep 5
 
 echo "Attempting to update database schema, if necessary."
-python $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
+python3 $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
 
 systemctl start forseti
 echo "Success! The Forseti API server has been started."
@@ -231,6 +290,7 @@ USER=ubuntu
 (echo "{run_frequency} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
+
 echo "Execution of startup script finished"
 """.format(
     # Cloud SQL properties
@@ -239,8 +299,9 @@ echo "Execution of startup script finished"
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
 
-    # Checkout Forseti version.
-    checkout_forseti_version=FORSETI_VERSION,
+    # If installed on a version tag, checkout latest patch.
+    # Otherwise checkout originally installed version.
+    checkout_forseti_version=CHECKOUT_FORSETI_VERSION,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,

@@ -13,11 +13,12 @@
 # limitations under the License.
 """Tests for ExternalProjectAccessScanner."""
 # pylint: disable=line-too-long
+from builtins import next
 from datetime import datetime
 import json
 # pylint says unittest goes before mock
 import unittest
-import mock
+import unittest.mock as mock
 
 # pylint says sqlalchemy.orm goes before google.auth
 from sqlalchemy.orm import sessionmaker
@@ -113,7 +114,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 
         user_ancestries = scanner._retrieve()
 
-        self.assertIn('user1@example.com', user_ancestries.keys())
+        self.assertIn('user1@example.com', list(user_ancestries.keys()))
         self.assertTrue(isinstance(user_ancestries['user1@example.com'], list))
         self.assertTrue(
             isinstance(user_ancestries['user1@example.com'][0], list))
@@ -168,8 +169,8 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             resource_id='12345',
             rule_name='Only my org',
             rule_index=0,
-            rule_ancestors=[resource_util.create_resource(
-                '45678', 'organization')],
+            rule_data=dict(ancestor_resources=[resource_util.create_resource(
+                '45678', 'organization')]),
             full_name='projects/12345',
             violation_type='EXTERNAL_PROJECT_ACCESS_VIOLATION',
             member='user1@example.com',
@@ -183,7 +184,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
                                                     self.rules)
         flattened_iter = scanner._flatten_violations([violation1])
 
-        flat_violation = flattened_iter.next()
+        flat_violation = next(flattened_iter)
         self.assertEqual(flat_violation['resource_id'], '12345')
         self.assertEqual(
             flat_violation['resource_type'], resource_mod.ResourceType.PROJECT)
@@ -193,7 +194,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             flat_violation['violation_data']['member'], 'user1@example.com')
 
         with self.assertRaises(StopIteration):
-            flat_violation = flattened_iter.next()
+            flat_violation = next(flattened_iter)
 
     def tearDown(self):
         epas.get_user_emails = self.stash_email_method
@@ -202,7 +203,6 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 class GetUserEmailsTest(ForsetiTestCase):
     """Test the storage_helpers module."""
     def setUp(self):
-        print("##AA#")
         self.engine = create_test_engine()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)

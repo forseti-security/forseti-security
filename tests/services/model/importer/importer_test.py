@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
+from __future__ import print_function
 
-import mock
+from builtins import object
+import unittest.mock as mock
 import os
 import shutil
 import tempfile
@@ -63,52 +65,59 @@ def get_db_file_copy(filename):
 class ImporterTest(ForsetiTestCase):
     """Test importer based on database dump."""
 
-    def test_inventory_importer_basic(self):
-        """Test the basic importer for the inventory."""
-
+    def setUp(self):
         db_connect = 'sqlite:///{}'.format(
             get_db_file_copy('forseti-test.db'))
 
-        print db_connect
-
         self.service_config = ServiceConfig(db_connect)
-
         self.source = 'INVENTORY'
+        self.importer_cls = importer.by_source(self.source)
         self.model_manager = self.service_config.model_manager
         self.model_name = self.model_manager.create(name=self.source)
+        self.scoped_session, self.data_access = self.model_manager.get(self.model_name)
 
-        scoped_session, data_access = self.model_manager.get(self.model_name)
-
-        with scoped_session as session:
+    def test_inventory_importer_basic(self):
+        """Test the basic importer for the inventory."""
+        with self.scoped_session as session:
             # Sqlite really doesn't like multiple connections, and sqlalchemy
             # is effectively a connection per session, reusing the same session
             # for read and write.
-            importer_cls = importer.by_source(self.source)
-            import_runner = importer_cls(
+            import_runner = self.importer_cls(
                 session,
                 session,
                 self.model_manager.model(self.model_name,
                                          expunge=False,
                                          session=session),
-                data_access,
+                self.data_access,
                 self.service_config,
                 inventory_index_id=FAKE_DATETIME_TIMESTAMP)
             import_runner.run()
 
             # Make sure the 'full_name' for policies has an even number of
             # segments.
-            for policy in data_access.scanner_iter(session, 'iam_policy'):
+            for policy in self.data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
-                        len(filter(None, policy.full_name.split('/'))) % 2)
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
-        # Make sure binding_members table is populated properly when there are users with multiple
-        # roles in different projects.
-        expected_abc_user_accesses = [
-            ('roles/appengine.codeViewer', ['project/project3']),
-            ('roles/appengine.appViewer', ['project/project3'])
-        ]
-        abc_user_accesses = data_access.query_access_by_member(session, 'user/abc_user@forseti.test', [])
-        self.assertEqual(expected_abc_user_accesses, abc_user_accesses)
+            gcs_policies = list(
+                self.data_access.scanner_iter(session, 'gcs_policy'))
+            # From tests/services/inventory/crawling_test.py
+            expected_gcs_policies = 2
+            self.assertEqual(expected_gcs_policies, len(gcs_policies))
+
+            # Make sure binding_members table is populated properly when there
+            # are users with multiple roles in different projects.
+            expected_abc_user_accesses = [
+                ('roles/appengine.appViewer', ['project/project3']),
+                ('roles/appengine.codeViewer', ['project/project3']),
+                # Matched to AllAuthenticatedUsers on IAM policy
+                ('roles/bigquery.dataViewer', ['dataset/project2:bq_test_ds']),
+                ('roles/bigquery.dataViewer', ['dataset/project3:bq_test_ds1']),
+            ]
+            abc_user_accesses = self.data_access.query_access_by_member(
+                session, 'user/abc_user@forseti.test', [])
+            self.assertEqual(expected_abc_user_accesses,
+                             sorted(abc_user_accesses))
 
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
@@ -117,12 +126,64 @@ class ImporterTest(ForsetiTestCase):
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(
+        self.assertEqual(
             {'pristine': True,
              'source': 'inventory',
              'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
              'source_root': 'organization/111222333',
              'gsuite_enabled': True
+             },
+            model_description)
+
+    def test_inventory_importer_composite_root(self):
+        """Test the importer for the inventory with a composite root."""
+        db_connect = 'sqlite:///{}'.format(
+            get_db_file_copy('forseti-composite-test.db'))
+
+        print(db_connect)
+        service_config = ServiceConfig(db_connect)
+        model_manager = service_config.model_manager
+        model_name = model_manager.create(name=self.source)
+        scoped_session, data_access = model_manager.get(model_name)
+
+        with scoped_session as session:
+            # Sqlite really doesn't like multiple connections, and sqlalchemy
+            # is effectively a connection per session, reusing the same session
+            # for read and write.
+            import_runner = self.importer_cls(
+                session,
+                session,
+                model_manager.model(model_name,
+                                    expunge=False,
+                                    session=session),
+                data_access,
+                service_config,
+                inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+            import_runner.run()
+
+            # Make sure the 'full_name' for policies has an even number of
+            # segments.
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                self.assertFalse(
+                        len([_f for _f in policy.full_name.split('/') if _f]) % 2)
+
+            # Verify that two projects are in the inventory after import.
+            projects = list(data_access.scanner_iter(session, 'project'))
+            self.assertEqual(2, len(projects))
+
+        model = model_manager.model(model_name)
+        model_description = model_manager.get_description(model_name)
+
+        self.assertIn(model.state,
+                      ['SUCCESS', 'PARTIAL_SUCCESS'],
+                      'Model state should be success or partial success: %s' %
+                      model.message)
+        self.assertEqual(
+            {'pristine': True,
+             'source': 'inventory',
+             'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
+             'source_root': 'composite_root/root',
+             'gsuite_enabled': False
              },
             model_description)
 
@@ -133,11 +194,21 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        InventoryImporter.model_action_wrapper(session,
-                                               inventory_iter,
-                                               action,
-                                               post,
-                                               flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        import_runner.model_action_wrapper(inventory_iter,
+                                           action,
+                                           post,
+                                           flush_count)
         post.assert_called_once()
 
     def test_model_action_wrapper_inventory_iter_tuple(self):
@@ -149,14 +220,25 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
+
 
         action.assert_called_once_with(1, 2)
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -172,15 +254,25 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
 
         calls = [mock.call(1, 2), mock.call(4, 5)]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -198,14 +290,24 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
+
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
 
         action.assert_called_once_with('not_tuple')
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
 
         # post is always called if exists
         self.assertTrue(post.called)
@@ -221,15 +323,24 @@ class ImporterTest(ForsetiTestCase):
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
-        count = InventoryImporter.model_action_wrapper(session,
-                                                       inventory_iter,
-                                                       action,
-                                                       post,
-                                                       flush_count)
 
+        import_runner = self.importer_cls(
+            session,
+            session,
+            self.model_manager.model(self.model_name,
+                                     expunge=False,
+                                     session=session),
+            self.data_access,
+            self.service_config,
+            inventory_index_id=FAKE_DATETIME_TIMESTAMP)
+
+        count = import_runner.model_action_wrapper(inventory_iter,
+                                                   action,
+                                                   post,
+                                                   flush_count)
         calls = [mock.call('data'), mock.call('data1')]
         action.assert_has_calls(calls)
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
 
         # post is always called if exists
         self.assertTrue(post.called)

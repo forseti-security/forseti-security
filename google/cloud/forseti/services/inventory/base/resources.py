@@ -15,6 +15,8 @@
 
 # pylint: disable=too-many-lines, no-self-use, bad-docstring-quotes
 
+from builtins import str
+from builtins import object
 import ctypes
 from functools import partial
 import json
@@ -26,16 +28,30 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.inventory.base.gcp import (
     ResourceNotSupported)
+from google.cloud.forseti.services.inventory.base import iam_helpers
 
 LOGGER = logger.get_logger(__name__)
 
 
-def from_root_id(client, root_id):
+def size_t_hash(key):
+    """Hash the key using size_t.
+
+    Args:
+        key (str): The key to hash.
+
+    Returns:
+        str: The hashed key.
+    """
+    return '%u' % ctypes.c_size_t(hash(key)).value
+
+
+def from_root_id(client, root_id, root=True):
     """Start the crawling from root if the root type is supported.
 
     Args:
         client (object): GCP API client.
         root_id (str): id of the root.
+        root (bool): Set this as the root resource in the hierarchy.
 
     Returns:
         Resource: the root resource instance.
@@ -49,12 +65,12 @@ def from_root_id(client, root_id):
         'folders': ResourceManagerFolder.fetch,
     }
 
-    for prefix, func in root_map.iteritems():
+    for prefix, func in root_map.items():
         if root_id.startswith(prefix):
-            return func(client, root_id)
+            return func(client, root_id, root=root)
     raise Exception(
         'Unsupported root id, must be one of {}'.format(
-            ','.join(root_map.keys())))
+            ','.join(list(root_map.keys()))))
 
 
 def cached(field_name):
@@ -110,36 +126,40 @@ class ResourceFactory(object):
         """
         self.attributes = attributes
 
-    def create_new(self, data, root=False):
+    def create_new(self, data, root=False, metadata=None):
         """Create a new instance of a Resource type.
 
         Args:
             data (str): raw data.
             root (Resource): root of this resource.
+            metadata (AssetMetadata): asset metadata.
 
         Returns:
             Resource: Resource instance.
         """
         attrs = self.attributes
         cls = attrs['cls']
-        return cls(data, root, **attrs)
+        return cls(data, root=root, metadata=metadata, **attrs)
 
 
 # pylint: disable=too-many-instance-attributes, too-many-public-methods
 class Resource(object):
     """The base Resource class."""
 
-    def __init__(self, data, root=False, contains=None, **kwargs):
+    def __init__(self, data, root=False,
+                 contains=None, metadata=None, **kwargs):
         """Initialize.
 
         Args:
-            data (str): raw data.
+            data (dict): raw data.
             root (Resource): the root of this crawling.
             contains (list): child types to crawl.
+            metadata (AssetMetadata): Asset metadata.
             **kwargs (dict): arguments.
         """
         del kwargs  # Unused.
         self._data = data
+        self._metadata = metadata
         self._root = root
         self._stack = None
         self._visitor = None
@@ -156,6 +176,14 @@ class Resource(object):
             datatime: the datetime.
         """
         return date_time.get_utc_now_datetime()
+
+    def __delitem__(self, key):
+        """Delete item.
+
+        Args:
+            key (str): key of this resource.
+        """
+        self._data.pop(key, None)
 
     def __getitem__(self, key):
         """Get Item.
@@ -190,6 +218,14 @@ class Resource(object):
             key (int): The unique id for the resource from the storage.
         """
         self._inventory_key = key
+
+    def metadata(self):
+        """Gets the asset metadata.
+
+        Returns:
+            AssetMetadata: Asset metadata.
+        """
+        return self._metadata
 
     def inventory_key(self):
         """Gets the inventory key for this resource, if set.
@@ -277,6 +313,9 @@ class Resource(object):
             visitor (Crawler): visitor instance.
             stack (list): resource hierarchy stack.
         """
+        skip_errors = ['Not found',
+                       'Unknown project id',
+                       'scheduled for deletion']
         stack = [] if not stack else stack
         self._stack = stack
         self._visitor = visitor
@@ -295,10 +334,16 @@ class Resource(object):
                     else:
                         res.try_accept(visitor, new_stack)
             except Exception as e:
-                LOGGER.exception(e)
-                self.add_warning(e)
-                visitor.on_child_error(e)
-
+                # Use string phrases and not error codes since error codes
+                # can mean multiple things.
+                if (isinstance(e, api_errors.ApiExecutionError) and
+                        any(error_str in str(e) for error_str
+                            in skip_errors)):
+                    pass
+                else:
+                    LOGGER.exception(e)
+                    self.add_warning(e)
+                    visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
@@ -435,7 +480,7 @@ class Resource(object):
         return ('{}<data="{}", parent_resource_type="{}", '
                 'parent_resource_id="{}">').format(
                     self.__class__.__name__,
-                    json.dumps(self._data),
+                    json.dumps(self._data, sort_keys=True),
                     self.parent().type(),
                     self.parent().key())
 # pylint: enable=too-many-instance-attributes, too-many-public-methods
@@ -476,11 +521,77 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
             if hash_key:
                 # Resource does not have a globally unique ID, use size_t hash
                 # of key data.
-                return '%u' % ctypes.c_size_t(hash(self[key_field])).value
+                return size_t_hash(self[key_field])
 
             return self[key_field]
 
     return ResourceSubclass
+
+
+def k8_resource_class_factory(resource_type):
+    """Factory function to generate Kubernetes Resource subclasses.
+
+    Args:
+        resource_type (str): The static Kubernetes resource type for this
+        subclass.
+
+    Returns:
+        class: A new class object.
+    """
+
+    class ResourceSubclass(Resource):
+        """Subclass of Resource."""
+
+        @staticmethod
+        def type():
+            """Get type of this resource.
+
+            Returns:
+                str: The static resource type for this subclass.
+            """
+            return resource_type
+
+        def key(self):
+            """Get key of this resource.
+
+            Returns:
+                str: key of this resource.
+            """
+            # Resource does not have a globally unique ID, use size_t hash
+            # of uid under metadata key.
+            return size_t_hash(self['metadata']['uid'])
+
+    return ResourceSubclass
+
+
+# Fake composite resource class
+class CompositeRootResource(resource_class_factory('composite_root', None)):
+    """The Composite Root fake resource."""
+
+    @classmethod
+    def create(cls, composite_root_resources):
+        """Creates a new composite root.
+
+        Args:
+            composite_root_resources (list): The list of resources to crawl
+                using a composite root.
+
+        Returns:
+            CompositeRootResource: A new instance of the CompositeRootResource
+                class.
+        """
+        data = {'name': 'Composite Root',
+                'composite_children': composite_root_resources}
+        resource = FACTORIES['composite_root'].create_new(data, root=True)
+        return resource
+
+    def key(self):
+        """Get key of this resource.
+
+        Returns:
+            str: key of this resource.
+        """
+        return 'root'
 
 
 # Resource Manager resource classes
@@ -488,7 +599,7 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
     """The Resource implementation for Organization."""
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Organization.
 
         Saves ApiExecutionErrors as warnings.
@@ -496,17 +607,20 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Organization: Organization resource.
         """
         try:
-            data = client.fetch_crm_organization(resource_key)
-            return FACTORIES['organization'].create_new(data, root=True)
+            data, metadata = client.fetch_crm_organization(resource_key)
+            return FACTORIES['organization'].create_new(
+                data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Organization %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Organization %s: %s',
+                           resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['organization'].create_new(data, root=True)
+            resource = FACTORIES['organization'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -521,9 +635,10 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             dict: organization IAM Policy.
         """
         try:
-            return client.fetch_crm_organization_iam_policy(self['name'])
+            data, _ = client.fetch_crm_organization_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -564,23 +679,25 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
     """The Resource implementation for Folder."""
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Folder.
 
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Folder: Folder resource.
         """
         try:
-            data = client.fetch_crm_folder(resource_key)
-            return FACTORIES['folder'].create_new(data, root=True)
+            data, metadata = client.fetch_crm_folder(resource_key)
+            return FACTORIES['folder'].create_new(
+                data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Folder %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Folder %s: %s', resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['folder'].create_new(data, root=True)
+            resource = FACTORIES['folder'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -611,9 +728,10 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
             dict: Folder IAM Policy.
         """
         try:
-            return client.fetch_crm_folder_iam_policy(self['name'])
+            data, _ = client.fetch_crm_folder_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -635,24 +753,26 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         self._enabled_service_names = None
 
     @classmethod
-    def fetch(cls, client, resource_key):
+    def fetch(cls, client, resource_key, root=True):
         """Get Project.
 
         Args:
             client (object): GCP API client.
             resource_key (str): resource key to fetch.
+            root (bool): Set this as the root resource in the hierarchy.
 
         Returns:
             Project: created project.
         """
         try:
             project_number = resource_key.split('/', 1)[-1]
-            data = client.fetch_crm_project(project_number)
-            return FACTORIES['project'].create_new(data, root=True)
+            data, metadata = client.fetch_crm_project(project_number)
+            return FACTORIES['project'].create_new(
+                data, metadata=metadata, root=root)
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Unable to fetch Project %s: %s', resource_key, e)
+            LOGGER.warning('Unable to fetch Project %s: %s', resource_key, e)
             data = {'name': resource_key}
-            resource = FACTORIES['project'].create_new(data, root=True)
+            resource = FACTORIES['project'].create_new(data, root=root)
             resource.add_warning(e)
             return resource
 
@@ -668,10 +788,11 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         """
         if self.enumerable():
             try:
-                return client.fetch_crm_project_iam_policy(
+                data, _ = client.fetch_crm_project_iam_policy(
                     project_number=self['projectNumber'])
+                return data
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get IAM policy: %s', e)
+                LOGGER.warning('Could not get IAM policy: %s', e)
                 self.add_warning(e)
                 return None
 
@@ -689,10 +810,11 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         """
         if self.enumerable():
             try:
-                return client.fetch_billing_project_info(
+                data, _ = client.fetch_billing_project_info(
                     project_number=self['projectNumber'])
+                return data
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get Billing Info: %s', e)
+                LOGGER.warning('Could not get Billing Info: %s', e)
                 self.add_warning(e)
                 return None
         return {}
@@ -710,10 +832,10 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         enabled_apis = []
         if self.enumerable():
             try:
-                enabled_apis = client.fetch_services_enabled_apis(
+                enabled_apis, _ = client.fetch_services_enabled_apis(
                     project_number=self['projectNumber'])
             except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-                LOGGER.warn('Could not get Enabled APIs: %s', e)
+                LOGGER.warning('Could not get Enabled APIs: %s', e)
                 self.add_warning(e)
 
         self._enabled_service_names = frozenset(
@@ -772,16 +894,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         # Bigquery API depends on billing being enabled
         return (self.billing_enabled() and
                 self.is_api_enabled('bigquery-json.googleapis.com'))
-
-    def cloudsql_api_enabled(self):
-        """Check if the cloudsql api is enabled.
-
-        Returns:
-            bool: if this API service is enabled on the project.
-        """
-        # CloudSQL Admin API depends on billing being enabled
-        return (self.billing_enabled() and
-                self.is_api_enabled('sql-component.googleapis.com'))
 
     def compute_api_enabled(self):
         """Check if the compute api is enabled.
@@ -849,6 +961,41 @@ class AppEngineInstance(resource_class_factory('appengine_instance', 'name',
 class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     """The Resource implementation for Bigquery DataSet."""
 
+    def _set_cache(self, field_name, value):
+        """Manually set a cache value if it isn't already set.
+
+        Args:
+            field_name (str): The name of the attribute to cache.
+            value (str): The value to cache.
+        """
+        field_name = '__cached_{}'.format(field_name)
+        if not hasattr(self, field_name) or getattr(self, field_name) is None:
+            setattr(self, field_name, value)
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """IAM policy for this Dataset.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Dataset Policy.
+        """
+        try:
+            iam_policy, _ = client.fetch_bigquery_iam_policy(
+                self.parent()['projectId'],
+                self.parent()['projectNumber'],
+                self['datasetReference']['datasetId'])
+            dataset_policy = iam_helpers.convert_iam_to_bigquery_policy(
+                iam_policy)
+            self._set_cache('dataset_policy', dataset_policy)
+            return iam_policy
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Dataset IAM Policy: %s', e)
+            self.add_warning(e)
+            return None
+
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset.
@@ -860,13 +1007,23 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             dict: Dataset Policy.
         """
         try:
-            return client.fetch_bigquery_dataset_policy(
+            dataset_policy, _ = client.fetch_bigquery_dataset_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
+            iam_policy = iam_helpers.convert_bigquery_policy_to_iam(
+                dataset_policy, self.parent()['projectId'])
+            self._set_cache('iam_policy', iam_policy)
+            return dataset_policy
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get Dataset Policy: %s', e)
+            LOGGER.warning('Could not get Dataset Policy: %s', e)
             self.add_warning(e)
             return None
+
+
+# BigqueryTable resource classes
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
+    """The Resource implementation for bigquery table."""
 
 
 # Billing resource classes
@@ -892,15 +1049,17 @@ class BillingAccount(resource_class_factory('billing_account', None)):
             dict: Billing Account IAM Policy.
         """
         try:
-            return client.fetch_billing_account_iam_policy(self['name'])
+            data, _ = client.fetch_billing_account_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
 
 # CloudSQL resource classes
-class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'name')):
+class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
+                                              hash_key=True)):
     """The Resource implementation for CloudSQL Instance."""
 
 
@@ -1023,8 +1182,51 @@ class ComputeTargetTcpProxy(resource_class_factory('compute_targettcpproxy',
     """The Resource implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGateway(resource_class_factory('compute_targetvpngateway',
+                                                     'id')):
+    """The Resource implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMap(resource_class_factory('compute_urlmap', 'id')):
     """The Resource implementation for Compute UrlMap."""
+
+
+class ComputeVpnTunnel(resource_class_factory('compute_vpntunnel', 'id')):
+    """The Resource implementation for Compute VpnTunnel."""
+
+
+# Cloud Dataproc resource classes
+class DataprocCluster(resource_class_factory('dataproc_cluster',
+                                             'clusterUuid')):
+    """The Resource implementation for Dataproc Cluster."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Dataproc Cluster IAM policy.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Dataproc Cluster IAM policy.
+        """
+        try:
+            # Dataproc resource does not contain a direct reference to the
+            # region name except in an embedded label.
+            region = self['labels']['goog-dataproc-location']
+            cluster = 'projects/{}/regions/{}/clusters/{}'.format(
+                self['projectId'], region, self['clusterName'])
+            data, _ = client.fetch_dataproc_cluster_iam_policy(cluster)
+            return data
+        except (api_errors.ApiExecutionError,
+                ResourceNotSupported,
+                KeyError,
+                TypeError) as e:
+            if isinstance(e, TypeError):
+                e = 'Cluster has no labels.'
+            LOGGER.warning('Could not get IAM policy: %s', e)
+            self.add_warning('Could not get IAM policy: %s' % e)
+            return None
 
 
 # Cloud DNS resource classes
@@ -1063,10 +1265,11 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
             dict: Service Account IAM policy.
         """
         try:
-            return client.fetch_iam_serviceaccount_iam_policy(
+            data, _ = client.fetch_iam_serviceaccount_iam_policy(
                 self['name'], self['uniqueId'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1101,9 +1304,10 @@ class KmsCryptoKey(resource_class_factory('kms_cryptokey', 'name',
             dict: CryptoKey IAM policy.
         """
         try:
-            return client.fetch_kms_cryptokey_iam_policy(self['name'])
+            data, _ = client.fetch_kms_cryptokey_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1128,9 +1332,10 @@ class KmsKeyRing(resource_class_factory('kms_keyring', 'name',
             dict: Keyring IAM policy.
         """
         try:
-            return client.fetch_kms_keyring_iam_policy(self['name'])
+            data, _ = client.fetch_kms_keyring_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1152,14 +1357,15 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
             dict: Generator of Kubernetes Engine Cluster resources.
         """
         try:
-            return client.fetch_container_serviceconfig(
+            data, _ = client.fetch_container_serviceconfig(
                 self.parent().key(), zone=self.zone(), location=self.location())
+            return data
         except ValueError:
             LOGGER.exception('Cluster has no zone or location: %s',
                              self._data)
             return {}
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get Service Config: %s', e)
+            LOGGER.warning('Could not get Service Config: %s', e)
             self.add_warning(e)
             return None
 
@@ -1190,6 +1396,39 @@ class KubernetesCluster(resource_class_factory('kubernetes_cluster',
             LOGGER.debug('selfLink not found or contains no zones: %s',
                          self._data)
             return None
+
+# Kubernetes resource classes
+
+
+class KubernetesNode(k8_resource_class_factory('kubernetes_node')):
+    """The Resource implementation for Kubernetes Node."""
+
+
+class KubernetesPod(k8_resource_class_factory('kubernetes_pod')):
+    """The Resource implementation for Kubernetes Pod."""
+
+
+class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace')):
+    """The Resource implementation for Kubernetes Namespace."""
+
+
+class KubernetesRole(k8_resource_class_factory('kubernetes_role')):
+    """The Resource implementation for Kubernetes Role."""
+
+
+class KubernetesRoleBinding(k8_resource_class_factory(
+        'kubernetes_rolebinding')):
+    """The Resource implementation for Kubernetes RoleBinding."""
+
+
+class KubernetesClusterRole(k8_resource_class_factory(
+        'kubernetes_clusterrole')):
+    """The Resource implementation for Kubernetes ClusterRole."""
+
+
+class KubernetesClusterRoleBinding(k8_resource_class_factory(
+        'kubernetes_clusterrolebinding')):
+    """The Resource implementation for Kubernetes ClusterRoleBinding."""
 
 
 # Stackdriver Logging resource classes
@@ -1224,6 +1463,11 @@ class GsuiteGroup(resource_class_factory('gsuite_group', 'id')):
         return True
 
 
+class GsuiteGroupsSettings(resource_class_factory(
+        'gsuite_groups_settings', 'email')):
+    """The Resource implementation for GSuite Settings."""
+
+
 class GsuiteUserMember(resource_class_factory('gsuite_user_member', 'id')):
     """The Resource implementation for GSuite User."""
 
@@ -1233,6 +1477,29 @@ class GsuiteGroupMember(resource_class_factory('gsuite_group_member', 'id')):
 
 
 # Cloud Pub/Sub resource classes
+class PubsubSubscription(resource_class_factory('pubsub_subscription', 'name',
+                                                hash_key=True)):
+    """The Resource implementation for PubSub Subscription."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Get IAM policy for this Pubsub Subscription.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Pubsub Subscription IAM policy.
+        """
+        try:
+            data, _ = client.fetch_pubsub_subscription_iam_policy(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get IAM policy: %s', e)
+            self.add_warning(e)
+            return None
+
+
 class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
                                          hash_key=True)):
     """The Resource implementation for PubSub Topic."""
@@ -1248,9 +1515,10 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
             dict: Pubsub Topic IAM policy.
         """
         try:
-            return client.fetch_pubsub_topic_iam_policy(self['name'])
+            data, _ = client.fetch_pubsub_topic_iam_policy(self['name'])
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
@@ -1281,26 +1549,40 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             dict: bucket IAM policy.
         """
         try:
-            return client.fetch_storage_bucket_iam_policy(self.key())
+            data, _ = client.fetch_storage_bucket_iam_policy(self.key())
+            return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warn('Could not get IAM policy: %s', e)
+            LOGGER.warning('Could not get IAM policy: %s', e)
             self.add_warning(e)
             return None
 
+    @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
-        """Full projection returns GCS policy with the resource.
+        """Get Bucket Access Control policy for this storage bucket.
 
         Args:
             client (object): GCP API client.
 
         Returns:
-            dict: bucket acl.
+            list: bucket access controls.
         """
-        # Full projection returns GCS policy with the resource.
         try:
-            return self['acl']
+            # Full projection returns GCS policy with the resource.
+            if self['acl']:
+                return self['acl']
         except KeyError:
-            return []
+            pass
+
+        try:
+            data, _ = client.fetch_storage_bucket_acls(
+                self.key(),
+                self.parent()['projectId'],
+                self.parent()['projectNumber'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get bucket Access Control policy: %s', e)
+            self.add_warning(e)
+            return None
 
 
 class StorageObject(resource_class_factory('storage_object', 'id')):
@@ -1343,9 +1625,25 @@ class ResourceIterator(object):
         raise NotImplementedError()
 
 
+class CompositeRootIterator(ResourceIterator):
+    """The resource iterator for the fake composite root resource."""
+
+    def iter(self):
+        """Creates a new resource child resource for each configured resource.
+
+        Yields:
+            Resource: resource returned from client.
+        """
+        gcp = self.client
+        for composite_child in self.resource['composite_children']:
+            resource = from_root_id(gcp, composite_child, root=False)
+            yield resource
+
+
 def resource_iter_class_factory(api_method_name,
                                 resource_name,
                                 api_method_arg_key=None,
+                                additional_arg_keys=None,
                                 resource_validation_method_name=None,
                                 **kwargs):
     """Factory function to generate ResourceIterator subclasses.
@@ -1357,6 +1655,8 @@ def resource_iter_class_factory(api_method_name,
             resource factory.
         api_method_arg_key (str): An optional key from the resource dict to
             lookup for the value to send to the api method.
+        additional_arg_keys (list): An optional list of additional keys from the
+            resource dict to lookup for the values to send to the api method.
         resource_validation_method_name (str): An optional method name to call
             to validate that the resource supports iterating resources of this
             type.
@@ -1397,8 +1697,12 @@ def resource_iter_class_factory(api_method_name,
                     args = []
                     if api_method_arg_key:
                         args.append(self.resource[api_method_arg_key])
-                    for data in iter_method(*args, **kwargs):
-                        yield FACTORIES[resource_name].create_new(data)
+                    if additional_arg_keys:
+                        args.extend(
+                            self.resource[key] for key in additional_arg_keys)
+                    for data, metadata in iter_method(*args, **kwargs):
+                        yield FACTORIES[resource_name].create_new(
+                            data, metadata=metadata)
                 except ResourceNotSupported as e:
                     # API client doesn't support this resource, ignore.
                     LOGGER.debug(e)
@@ -1440,9 +1744,9 @@ class ResourceManagerProjectIterator(ResourceIterator):
         parent_type = self.resource.type()
         parent_id = self.resource.key()
         try:
-            for data in gcp.iter_crm_projects(
+            for data, metadata in gcp.iter_crm_projects(
                     parent_type=parent_type, parent_id=parent_id):
-                yield FACTORIES['project'].create_new(data)
+                yield FACTORIES['project'].create_new(data, metadata=metadata)
         except ResourceNotSupported as e:
             # API client doesn't support this resource, ignore.
             LOGGER.debug(e)
@@ -1468,9 +1772,11 @@ class AppEngineAppIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             try:
-                data = gcp.fetch_gae_app(project_id=self.resource['projectId'])
+                data, metadata = gcp.fetch_gae_app(
+                    project_id=self.resource['projectId'])
                 if data:
-                    yield FACTORIES['appengine_app'].create_new(data)
+                    yield FACTORIES['appengine_app'].create_new(
+                        data, metadata=metadata)
             except ResourceNotSupported as e:
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
@@ -1487,8 +1793,10 @@ class AppEngineServiceIterator(ResourceIterator):
         """
         gcp = self.client
         try:
-            for data in gcp.iter_gae_services(project_id=self.resource['id']):
-                yield FACTORIES['appengine_service'].create_new(data)
+            for data, metadata in gcp.iter_gae_services(
+                    project_id=self.resource['id']):
+                yield FACTORIES['appengine_service'].create_new(
+                    data, metadata=metadata)
         except ResourceNotSupported as e:
             # API client doesn't support this resource, ignore.
             LOGGER.debug(e)
@@ -1505,10 +1813,11 @@ class AppEngineVersionIterator(ResourceIterator):
         """
         gcp = self.client
         try:
-            for data in gcp.iter_gae_versions(
+            for data, metadata in gcp.iter_gae_versions(
                     project_id=self.resource.parent()['id'],
                     service_id=self.resource['id']):
-                yield FACTORIES['appengine_version'].create_new(data)
+                yield FACTORIES['appengine_version'].create_new(
+                    data, metadata=metadata)
         except ResourceNotSupported as e:
             # API client doesn't support this resource, ignore.
             LOGGER.debug(e)
@@ -1525,11 +1834,12 @@ class AppEngineInstanceIterator(ResourceIterator):
         """
         gcp = self.client
         try:
-            for data in gcp.iter_gae_instances(
+            for data, metadata in gcp.iter_gae_instances(
                     project_id=self.resource.parent().parent()['id'],
                     service_id=self.resource.parent()['id'],
                     version_id=self.resource['id']):
-                yield FACTORIES['appengine_instance'].create_new(data)
+                yield FACTORIES['appengine_instance'].create_new(
+                    data, metadata=metadata)
         except ResourceNotSupported as e:
             # API client doesn't support this resource, ignore.
             LOGGER.debug(e)
@@ -1542,6 +1852,13 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Dataset."""
 
 
+class BigqueryTableIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_tables',
+        resource_name='bigquery_table',
+        api_method_arg_key='datasetReference')):
+    """The Resource iterator implementation for Bigquery Table."""
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -1551,8 +1868,9 @@ class BillingAccountIterator(resource_iter_class_factory(
 class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='cloudsql_api_enabled')):
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
@@ -1647,21 +1965,24 @@ class ComputeInstanceGroupIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             try:
-                for data in gcp.iter_compute_instancegroups(
+                for data, metadata in gcp.iter_compute_instancegroups(
                         self.resource['projectNumber']):
                     # IAP Scanner expects instance URLs to be included with the
                     # instance groups.
                     try:
-                        data['instance_urls'] = gcp.fetch_compute_ig_instances(
+                        instance_urls, _ = gcp.fetch_compute_ig_instances(
                             self.resource['projectNumber'],
                             data['name'],
                             zone=os.path.basename(data.get('zone', '')),
-                            region=os.path.basename(data.get('region', '')))
+                            region=os.path.basename(data.get('region', ''))
+                        )
+                        data['instance_urls'] = instance_urls
                     except ResourceNotSupported as e:
                         # API client doesn't support this resource, ignore.
                         LOGGER.debug(e)
 
-                    yield FACTORIES['compute_instancegroup'].create_new(data)
+                    yield FACTORIES['compute_instancegroup'].create_new(
+                        data, metadata=metadata)
             except ResourceNotSupported as e:
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
@@ -1695,6 +2016,12 @@ class ComputeNetworkIterator(compute_iter_class_factory(
         api_method_name='iter_compute_networks',
         resource_name='compute_network')):
     """The Resource iterator implementation for Compute Network."""
+
+
+class ComputeProjectIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_project',
+        resource_name='compute_project')):
+    """The Resource iterator implementation for Compute Project."""
 
 
 class ComputeRouterIterator(compute_iter_class_factory(
@@ -1757,32 +2084,30 @@ class ComputeTargetTcpProxyIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute TargetTcpProxy."""
 
 
+class ComputeTargetVpnGatewayIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_targetvpngateways',
+        resource_name='compute_targetvpngateway')):
+    """The Resource iterator implementation for Compute TargetVpnGateway."""
+
+
 class ComputeUrlMapIterator(compute_iter_class_factory(
         api_method_name='iter_compute_urlmaps',
         resource_name='compute_urlmap')):
     """The Resource iterator implementation for Compute UrlMap."""
 
 
-# Compute project iterator uses a fetch function, does not support using the
-# class factory.
-class ComputeProjectIterator(ResourceIterator):
-    """The Resource iterator implementation for Compute Project."""
+class ComputeVpnTunnelIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_vpntunnels',
+        resource_name='compute_vpntunnel')):
+    """The Resource iterator implementation for Compute VpnTunnel."""
 
-    def iter(self):
-        """Resource iterator.
 
-        Yields:
-            Resource: ComputeProject created
-        """
-        gcp = self.client
-        if self.resource.compute_api_enabled():
-            try:
-                data = gcp.fetch_compute_project(
-                    project_number=self.resource['projectNumber'])
-                yield FACTORIES['compute_project'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
+class DataprocClusterIterator(resource_iter_class_factory(
+        api_method_name='iter_dataproc_clusters',
+        resource_name='dataproc_cluster',
+        api_method_arg_key='projectId',
+        resource_validation_method_name='enumerable')):
+    """The Resource iterator implementation for Cloud Dataproc Cluster."""
 
 
 class DnsManagedZoneIterator(resource_iter_class_factory(
@@ -1814,7 +2139,7 @@ class GsuiteGroupIterator(ResourceIterator):
         gsuite = self.client
         if self.resource.has_directory_resource_id():
             try:
-                for data in gsuite.iter_gsuite_groups(
+                for data, _ in gsuite.iter_gsuite_groups(
                         self.resource['owner']['directoryCustomerId']):
                     yield FACTORIES['gsuite_group'].create_new(data)
             except ResourceNotSupported as e:
@@ -1833,7 +2158,8 @@ class GsuiteMemberIterator(ResourceIterator):
         """
         gsuite = self.client
         try:
-            for data in gsuite.iter_gsuite_group_members(self.resource['id']):
+            for data, _ in gsuite.iter_gsuite_group_members(
+                    self.resource['id']):
                 if data['type'] == 'USER':
                     yield FACTORIES['gsuite_user_member'].create_new(data)
                 elif data['type'] == 'GROUP':
@@ -1855,12 +2181,30 @@ class GsuiteUserIterator(ResourceIterator):
         gsuite = self.client
         if self.resource.has_directory_resource_id():
             try:
-                for data in gsuite.iter_gsuite_users(
+                for data, _ in gsuite.iter_gsuite_users(
                         self.resource['owner']['directoryCustomerId']):
                     yield FACTORIES['gsuite_user'].create_new(data)
             except ResourceNotSupported as e:
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
+
+
+class GsuiteGroupsSettingsIterator(ResourceIterator):
+    """The Resource iterator implementation for Gsuite Group Settings"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: GsuiteGroupsSettings created
+        """
+        gsuite = self.client
+        try:
+            data = gsuite.fetch_gsuite_groups_settings(self.resource['email'])
+            yield FACTORIES['gsuite_groups_settings'].create_new(data)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
 
 
 class IamOrganizationCuratedRoleIterator(resource_iter_class_factory(
@@ -1876,48 +2220,22 @@ class IamOrganizationRoleIterator(resource_iter_class_factory(
     """The Resource iterator implementation for IAM Organization Role."""
 
 
-# API requires the projectId, but CAI requires the projectNumber, so pass both
-# to the client.
-class IamProjectRoleIterator(ResourceIterator):
+class IamProjectRoleIterator(resource_iter_class_factory(
+        api_method_name='iter_iam_project_roles',
+        resource_name='iam_role',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for IAM Project Role."""
 
-    def iter(self):
-        """IAM Project Custom Role iterator.
 
-        Yields:
-            Resource: IAM Role resource.
-        """
-        gcp = self.client
-        if self.resource.enumerable():
-            try:
-                for data in gcp.iter_iam_project_roles(
-                        self.resource['projectId'],
-                        self.resource['projectNumber']):
-                    yield FACTORIES['iam_role'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
-
-
-class IamServiceAccountIterator(ResourceIterator):
+class IamServiceAccountIterator(resource_iter_class_factory(
+        api_method_name='iter_iam_serviceaccounts',
+        resource_name='iam_serviceaccount',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for IAM ServiceAccount."""
-
-    def iter(self):
-        """IAM ServiceAccount iterator.
-
-        Yields:
-            Resource: IAM ServiceAccount resource.
-        """
-        gcp = self.client
-        if self.resource.enumerable():
-            try:
-                for data in gcp.iter_iam_serviceaccounts(
-                        self.resource['projectId'],
-                        self.resource['projectNumber']):
-                    yield FACTORIES['iam_serviceaccount'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
 
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
@@ -1957,6 +2275,163 @@ class KubernetesClusterIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Kubernetes Cluster."""
 
 
+class KubernetesNodeIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesNode"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_nodes(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_node'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesPodIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesPod"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_pods(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_pod'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesNamespaceIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesNamespace"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_namespaces(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_namespace'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesRole"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_roles(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_role'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesRoleBindingIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesRoleBinding"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_rolebindings(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_rolebinding'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesClusterRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesClusterRole"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_clusterroles(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_clusterrole'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class KubernetesClusterRoleBindingIterator(ResourceIterator):
+    """The Resource iterator implementation for KubernetesClusterRoleBinding"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: KubernetesCluster created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_clusterrolebindings(
+                    project_id=self.resource.parent()['projectId'],
+                    zone=self.resource['zone'],
+                    cluster=self.resource['name']):
+                yield FACTORIES['kubernetes_clusterrolebinding'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class LoggingBillingAccountSinkIterator(resource_iter_class_factory(
         api_method_name='iter_stackdriver_billing_account_sinks',
         resource_name='logging_sink',
@@ -1986,25 +2461,22 @@ class LoggingProjectSinkIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Logging Project Sink."""
 
 
-class PubsubTopicIterator(ResourceIterator):
-    """The Resource iterator implementation for IAM ServiceAccount."""
+class PubsubSubscriptionIterator(resource_iter_class_factory(
+        api_method_name='iter_pubsub_subscriptions',
+        resource_name='pubsub_subscription',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
+        resource_validation_method_name='enumerable')):
+    """The Resource iterator implementation for PubSub Subscription."""
 
-    def iter(self):
-        """IAM ServiceAccount iterator.
 
-        Yields:
-            Resource: IAM ServiceAccount resource.
-        """
-        gcp = self.client
-        if self.resource.enumerable():
-            try:
-                for data in gcp.iter_pubsub_topics(
-                        self.resource['projectId'],
-                        self.resource['projectNumber']):
-                    yield FACTORIES['pubsub_topic'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
+class PubsubTopicIterator(resource_iter_class_factory(
+        api_method_name='iter_pubsub_topics',
+        resource_name='pubsub_topic',
+        api_method_arg_key='projectId',
+        additional_arg_keys=['projectNumber'],
+        resource_validation_method_name='enumerable')):
+    """The Resource iterator implementation for PubSub Topic."""
 
 
 class ResourceManagerProjectLienIterator(resource_iter_class_factory(
@@ -2033,8 +2505,7 @@ class SpannerInstanceIterator(resource_iter_class_factory(
 class StorageBucketIterator(resource_iter_class_factory(
         api_method_name='iter_storage_buckets',
         resource_name='storage_bucket',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='storage_api_enabled')):
+        api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Storage Bucket."""
 
 
@@ -2046,6 +2517,13 @@ class StorageObjectIterator(resource_iter_class_factory(
 
 
 FACTORIES = {
+    'composite_root': ResourceFactory({
+        'dependsOn': [],
+        'cls': CompositeRootResource,
+        'contains': [
+            CompositeRootIterator,
+        ]}),
+
     'organization': ResourceFactory({
         'dependsOn': [],
         'cls': ResourceManagerOrganization,
@@ -2105,7 +2583,10 @@ FACTORIES = {
             ComputeTargetPoolIterator,
             ComputeTargetSslProxyIterator,
             ComputeTargetTcpProxyIterator,
+            ComputeTargetVpnGatewayIterator,
             ComputeUrlMapIterator,
+            ComputeVpnTunnelIterator,
+            DataprocClusterIterator,
             DnsManagedZoneIterator,
             DnsPolicyIterator,
             IamProjectRoleIterator,
@@ -2113,6 +2594,7 @@ FACTORIES = {
             KmsKeyRingIterator,
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
+            PubsubSubscriptionIterator,
             PubsubTopicIterator,
             ResourceManagerProjectLienIterator,
             ResourceManagerProjectOrgPolicyIterator,
@@ -2156,6 +2638,13 @@ FACTORIES = {
     'bigquery_dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
+        'contains': [
+            BigqueryTableIterator
+        ]}),
+
+    'bigquery_table': ResourceFactory({
+        'dependsOn': ['bigquery_dataset'],
+        'cls': BigqueryTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
@@ -2298,9 +2787,19 @@ FACTORIES = {
         'cls': ComputeTargetTcpProxy,
         'contains': []}),
 
+    'compute_targetvpngateway': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeTargetVpnGateway,
+        'contains': []}),
+
     'compute_urlmap': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeUrlMap,
+        'contains': []}),
+
+    'compute_vpntunnel': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeVpnTunnel,
         'contains': []}),
 
     'crm_lien': ResourceFactory({
@@ -2311,6 +2810,11 @@ FACTORIES = {
     'crm_org_policy': ResourceFactory({
         'dependsOn': ['folder', 'organization', 'project'],
         'cls': ResourceManagerOrgPolicy,
+        'contains': []}),
+
+    'dataproc_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': DataprocCluster,
         'contains': []}),
 
     'dns_managedzone': ResourceFactory({
@@ -2328,7 +2832,13 @@ FACTORIES = {
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,
+            GsuiteGroupsSettingsIterator,
         ]}),
+
+    'gsuite_groups_settings': ResourceFactory({
+        'dependsOn': ['gsuite_group'],
+        'cls': GsuiteGroupsSettings,
+        'contains': []}),
 
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
@@ -2389,11 +2899,60 @@ FACTORIES = {
     'kubernetes_cluster': ResourceFactory({
         'dependsOn': ['project'],
         'cls': KubernetesCluster,
+        'contains': [
+            KubernetesNodeIterator,
+            KubernetesNamespaceIterator,
+            KubernetesClusterRoleIterator,
+            KubernetesClusterRoleBindingIterator,
+        ]}),
+
+    'kubernetes_namespace': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesNamespace,
+        'contains': [
+            KubernetesPodIterator,
+            KubernetesRoleIterator,
+            KubernetesRoleBindingIterator,
+        ]}),
+
+    'kubernetes_node': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesNode,
+        'contains': []}),
+
+    'kubernetes_pod': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesPod,
+        'contains': []}),
+
+    'kubernetes_role': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesRole,
+        'contains': []}),
+
+    'kubernetes_rolebinding': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesRoleBinding,
+        'contains': []}),
+
+    'kubernetes_clusterrole': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesClusterRole,
+        'contains': []}),
+
+    'kubernetes_clusterrolebinding': ResourceFactory({
+        'dependsOn': ['kubernetes_cluster'],
+        'cls': KubernetesClusterRoleBinding,
         'contains': []}),
 
     'logging_sink': ResourceFactory({
         'dependsOn': ['organization', 'folder', 'project'],
         'cls': LoggingSink,
+        'contains': []}),
+
+    'pubsub_subscription': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': PubsubSubscription,
         'contains': []}),
 
     'pubsub_topic': ResourceFactory({

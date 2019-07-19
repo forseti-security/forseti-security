@@ -15,14 +15,17 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+from __future__ import absolute_import
+from builtins import input
+from builtins import str
 import json
 import os.path
 import re
 import sys
 
-import constants
-import installer_errors
-import utils
+from . import constants
+from . import installer_errors
+from . import utils
 
 
 def get_gcloud_info():
@@ -35,9 +38,14 @@ def get_gcloud_info():
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         sys.exit(1)
+
     else:
         try:
             gcloud_info = json.loads(out)
@@ -52,6 +60,19 @@ def get_gcloud_info():
             print(verr)
             sys.exit(1)
     return project_id, authed_user, is_devshell
+
+
+def set_project_id(project_id):
+    """Set the project for the installation.
+    Args:
+        project_id (str): The GCP Project Id
+    """
+    print('Setting Project %s' % project_id)
+    return_code, out, err = utils.run_command(
+        ['gcloud', 'config', 'set', 'project', project_id])
+    if return_code:
+        print(out + '/' + err)
+        sys.exit(1)
 
 
 def set_network_host_project_id(self):
@@ -125,6 +146,9 @@ def check_proper_gcloud():
         print(err)
         sys.exit(1)
     else:
+        if isinstance(out, bytes):
+            out = out.decode()
+
         for line in out.split('\n'):
             version_match = version_regex.match(line)
             if version_match:
@@ -145,22 +169,14 @@ def check_proper_gcloud():
         sys.exit(1)
 
 
-def enable_apis(dry_run=False):
+def enable_apis():
     """Enable necessary APIs for Forseti Security.
 
     Technically, this could be done in Deployment Manager, but if you
     delete the deployment, you'll disable the APIs. This could cause errors
     if there are resources still in use (e.g. Compute Engine), and then
-    your deployment won't be cleanly deleted.
-
-    Args:
-        dry_run (bool): Whether this is a dry run. If True, don't actually
-            enable the APIs.
-    """
+    your deployment won't be cleanly deleted."""
     utils.print_banner('Enabling Required APIs')
-    if dry_run:
-        print('This is a dry run, so skipping this step.')
-        return
 
     for api in constants.REQUIRED_APIS:
         print('Enabling the {} API... '.format(api['name']),
@@ -210,11 +226,9 @@ def grant_client_svc_acct_roles(project_id,
 
 
 def grant_server_svc_acct_roles(enable_write,
-                                access_target,
-                                target_id,
+                                resources,
                                 project_id,
                                 gcp_service_account,
-                                cai_bucket_name,
                                 user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
 
@@ -228,11 +242,9 @@ def grant_server_svc_acct_roles(enable_write,
 
     Args:
         enable_write (bool): Whether or not to enable write access.
-        access_target (str): Access target, either org, folder or project.
-        target_id (str): Id of the access_target.
+        resources (list): List of resources, either org, folder or project.
         project_id (str): GCP Project Id.
         gcp_service_account (str): GCP service account email.
-        cai_bucket_name (str): The name of the CAI bucket.
         user_can_grant_roles (bool): Whether or not user has
             access to grant roles.
 
@@ -240,29 +252,33 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated.
     """
 
-    utils.print_banner('Assigning Roles To The GCP Service Account',
+    utils.print_banner('Assigning Roles To The GCP Service Account '
+                       'for the forseti project',
                        gcp_service_account)
-    access_target_roles = constants.GCP_READ_IAM_ROLES
-    if enable_write:
-        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
-
-    roles = {
-        '%ss' % access_target: access_target_roles,
-        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
-        'service_accounts': constants.SVC_ACCT_ROLES,
-    }
-
-    has_role_script_bucket = _grant_bucket_roles(
-        gcp_service_account,
-        cai_bucket_name,
-        constants.FORSETI_CAI_BUCKET_ROLES,
-        user_can_grant_roles)
+    roles = {}
+    roles['forseti_project'] = constants.PROJECT_IAM_ROLES_SERVER
+    roles['service_accounts'] = constants.SVC_ACCT_ROLES
+    target_id = project_id
 
     has_role_script_rest = _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
 
-    return has_role_script_bucket or has_role_script_rest
+    for resource in resources:
+        utils.print_banner('Assigning Roles To The GCP Service Account '
+                           'for the resource[' + resource + ']',
+                           gcp_service_account)
+        access_target, target_id = resource.split('/')
+        access_target_roles = constants.GCP_READ_IAM_ROLES
+        if enable_write:
+            access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
+        roles = {}
+        roles[access_target] = access_target_roles
+        has_role_script_rest = _grant_svc_acct_roles(
+            target_id, project_id, gcp_service_account,
+            user_can_grant_roles, roles)
+
+    return has_role_script_rest
 
 
 def _grant_bucket_roles(gcp_service_account,
@@ -380,7 +396,7 @@ def _grant_roles(roles_map, target_id, project_id,
 
     assign_roles_cmds = []
 
-    for (resource_type, roles) in roles_map.iteritems():
+    for (resource_type, roles) in roles_map.items():
         resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
@@ -449,8 +465,13 @@ def choose_organization():
         orgs = None
         return_code, out, err = utils.run_command([
             'gcloud', 'organizations', 'list', '--format=json'])
+
+        if isinstance(out, bytes):
+            out = out.decode()
+
         if return_code:
             print(err)
+
         else:
             try:
                 orgs = json.loads(out)
@@ -472,8 +493,8 @@ def choose_organization():
             print('ID=%s (description="%s")' %
                   (org_id, org['displayName']))
 
-        choice = raw_input('Enter the organization id where '
-                           'you want Forseti to crawl for data: ').strip()
+        choice = input('Enter the organization id where '
+                       'you want Forseti to crawl for data: ').strip()
         try:
             # make sure that the choice is a valid organization id
             if choice not in valid_org_ids:
@@ -496,7 +517,7 @@ def choose_folder(organization_id):
     """
     target_id = None
     while not target_id:
-        choice = raw_input(
+        choice = input(
             constants.QUESTION_CHOOSE_FOLDER.format(organization_id)).strip()
         try:
             # make sure that the choice is an int before converting to str
@@ -514,7 +535,7 @@ def choose_project():
     """
     target_id = None
     while not target_id:
-        target_id = raw_input(
+        target_id = input(
             'Enter the project id (NOT PROJECT NUMBER), '
             'where you want Forseti to crawl for data: ').strip()
     return target_id
@@ -522,75 +543,33 @@ def choose_project():
 
 def create_or_reuse_service_acct(acct_type,
                                  acct_name,
-                                 acct_email,
-                                 advanced_mode,
-                                 dry_run):
+                                 acct_email):
     """Create or reuse service account.
 
     Args:
         acct_type (str): The account type.
         acct_name (str): The account name.
         acct_email (str): Account id.
-        advanced_mode (bool): Whether or not the installer is in advanced mode.
-        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
         str: The final account email that we will be using throughout
             the installation.
     """
 
-    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
+    print('Creating {}... '.format(acct_type), end='')
+    sys.stdout.flush()
 
-    if not advanced_mode:
-        print ('Creating {}... '.format(acct_type), end='')
-        sys.stdout.flush()
-        choice_index = 1
-    else:
-        print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
-        choice_index = utils.get_choice_id(choices, print_fun)
-
-    # If the choice is "Create service account", create the service
-    # account. The default is to create the service account with a
-    # generated name.
-    # Otherwise, present the user with options to choose from
-    # available service accounts in this project.
-    if choice_index == 1 and dry_run:
-        print('This is a dry run, so don\'t actually create '
-              'the service account.')
-    elif choice_index == 1:
-        return_code, out, err = utils.run_command(
-            ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_email[:acct_email.index('@')], '--display-name',
-             acct_name])
-        if return_code:
-            print(err)
-            print('Could not create the service account. Terminating '
-                  'because this is an unexpected error.')
-            sys.exit(1)
-        print ('created')
-    else:
-        return_code, out, err = utils.run_command(
-            ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
-        if return_code:
-            print(err)
-            print('Could not determine the service accounts, will just '
-                  'create a new service account.')
-            return acct_email
-        else:
-            try:
-                svc_accts = json.loads(out)
-            except ValueError:
-                print('Could not determine the service accounts, will just '
-                      'create a new service account.')
-                return acct_email
-
-        print_fun = lambda ind, val: print('[{}] {} ({})'
-                                           .format(ind+1,
-                                                   val.get('displayName', ''),
-                                                   val['email']))
-        acct_idx = utils.get_choice_id(svc_accts, print_fun)
-        acct_email = svc_accts[acct_idx - 1]['email']
-    print ('\t{}'.format(acct_email))
+    return_code, _, err = utils.run_command(
+        ['gcloud', 'iam', 'service-accounts', 'create',
+         acct_email[:acct_email.index('@')], '--display-name',
+         acct_name])
+    if return_code:
+        print(err)
+        print('Could not create the service account. Terminating '
+              'because this is an unexpected error.')
+        sys.exit(1)
+    print('created')
+    print('\t{}'.format(acct_email))
     return acct_email
 
 
@@ -610,9 +589,14 @@ def check_billing_enabled(project_id, organization_id):
     return_code, out, err = utils.run_command(
         ['gcloud', 'alpha', 'billing', 'projects', 'describe',
          project_id, '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
         print(err)
         _billing_not_enabled()
+
     try:
         billing_info = json.loads(out)
         if billing_info.get('billingEnabled'):
@@ -624,13 +608,13 @@ def check_billing_enabled(project_id, organization_id):
 
 
 def lookup_organization(project_id):
-    """Infer the organization from the project's parent.
+    """Infer the organization from the resource's parent.
 
     Args:
-        project_id (str): GCP project id
+        project_id (str): GCP project id.
 
     Returns:
-        str: GCP organization id
+        str: GCP organization id.
     """
 
     def _no_organization():
@@ -638,61 +622,24 @@ def lookup_organization(project_id):
         print(constants.MESSAGE_NO_ORGANIZATION)
         sys.exit(1)
 
-    def _find_org_from_folder(folder_id):
-        """Find the organization from some folder.
-
-        Args:
-            folder_id (str): The folder id, just a number.
-
-        Returns:
-            str: GCP organization id of the folder
-        """
-        cur_type = 'folders'
-        cur_id = folder_id
-        while cur_type != 'organizations':
-            ret_code, output, error = utils.run_command(
-                ['gcloud', 'alpha', 'resource-manager', 'folders',
-                 'describe', cur_id, '--format=json'])
-            if ret_code:
-                print(error)
-                _no_organization()
-            try:
-                folder = json.loads(output)
-                cur_type, cur_id = folder['parent'].split('/')
-                print('Check parent: %s' % folder['parent'])
-            except ValueError as verr:
-                print(verr)
-                _no_organization()
-        return cur_id
-
     return_code, out, err = utils.run_command(
-        ['gcloud', 'projects', 'describe',
-         project_id, '--format=json'])
+        ['gcloud', 'projects', 'get-ancestors', project_id, '--format=json'])
+
     if return_code:
         print(err)
-        print('Error trying to find current organization from '
-              'project! Exiting.')
+        sys.exit(1)
 
-    try:
-        project = json.loads(out)
-        project_parent = project.get('parent')
-        if not project_parent:
-            _no_organization()
-        parent_type = project_parent['type']
-        parent_id = project_parent['id']
-    except ValueError:
-        print('Error retrieving organization id')
-        _no_organization()
+    if isinstance(out, bytes):
+        out = out.decode()
 
-    if parent_type == 'folder':
-        organization_id = _find_org_from_folder(parent_id)
-    elif parent_type == 'organization':
-        organization_id = parent_id
-    else:
-        _no_organization()
-    if organization_id:
-        print('Organization id: %s' % organization_id)
-        return organization_id
+    resources = json.loads(out)
+
+    for resource in resources:
+        if resource.get('type') == 'organization':
+            org_id = resource.get('id')
+            print('Organization id: %s' % org_id)
+            return org_id
+    _no_organization()
 
 
 def get_forseti_server_info():
@@ -737,9 +684,13 @@ def get_vm_instance_info(instance_name, try_match=False):
     return_code, out, err = utils.run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
+    if isinstance(out, bytes):
+        out = out.decode()
+
     if return_code:
-        print (err)
+        print(err)
         sys.exit(1)
+
     try:
         instances = json.loads(out)
         for instance in instances:
@@ -766,7 +717,8 @@ def create_firewall_rule(rule_name,
                          direction,
                          priority,
                          vpc_host_network,
-                         source_ranges=None):
+                         source_ranges=None,
+                         vpc_host_project_id=None):
     """Create a firewall rule for a specific gcp service account.
 
     Args:
@@ -783,6 +735,8 @@ def create_firewall_rule(rule_name,
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
                              address blocks must be specified in CIDR format.
+        vpc_host_project_id (str): The project ID of the project which contains
+                                 the VPC host network.
     Raises:
         Exception: Not enough arguments to execute command
     """
@@ -799,9 +753,13 @@ def create_firewall_rule(rule_name,
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
+    if vpc_host_project_id:
+        gcloud_command_args.extend(['--project', vpc_host_project_id])
+
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
+
 
 def delete_firewall_rule(rule_name):
     """Delete a firewall rule for a specific gcp service account.
@@ -818,6 +776,7 @@ def delete_firewall_rule(rule_name):
     if return_code:
         print(err)
 
+
 def enable_os_login(instance_name, zone):
     """Enable os login for the given VM instance.
 
@@ -831,15 +790,14 @@ def enable_os_login(instance_name, zone):
 
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
-        print (err)
+        print(err)
 
 
 def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
                       installation_type,
-                      timestamp,
-                      dry_run):
+                      timestamp):
     """Create the GCP deployment.
 
     Args:
@@ -848,15 +806,10 @@ def create_deployment(project_id,
         deploy_tpl_path (str): Path of deployment template.
         installation_type (str): Type of the installation (client/server).
         timestamp (str): Timestamp.
-        dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
         str: Name of the deployment.
     """
-
-    if dry_run:
-        print('This is a dry run, so skipping this step.')
-        return 0
 
     utils.print_banner('Creating Forseti {} Deployment'.format(
         installation_type.capitalize()))
@@ -922,12 +875,14 @@ def get_domain_from_organization_id(organization_id):
         str: Domain of the org.
     """
 
-    return_code, out, err = utils.run_command(
+    return_code, out, _ = utils.run_command(
         ['gcloud', 'organizations', 'describe', organization_id,
-         '--format=json'])
+         '--format=json'], number_of_retry=0)
+
+    if isinstance(out, bytes):
+        out = out.decode()
 
     if return_code:
-        print(err)
         print('Unable to retrieve domain from the organization.')
         return ''
 
@@ -953,6 +908,9 @@ def check_deployment_status(deployment_name, status):
     return_code, out, err = utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
+
+    if isinstance(out, bytes):
+        out = out.decode()
 
     if return_code:
         print(err)

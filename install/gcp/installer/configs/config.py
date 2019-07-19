@@ -14,6 +14,7 @@
 
 """Forseti installer config object."""
 
+from builtins import object
 import datetime
 import hashlib
 
@@ -33,6 +34,12 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
+        self.project_id = kwargs.get('project_id')
+        if kwargs.get('composite_root_resources'):
+            tmpcrr = kwargs.get('composite_root_resources')
+            self.composite_root_resources = tmpcrr.split(',')
+        else:
+            self.composite_root_resources = []
         self.service_account_key_file = kwargs.get('service_account_key_file')
         self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
         self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'
@@ -41,8 +48,6 @@ class Config(object):
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))
-        self.advanced_mode = bool(kwargs.get('advanced'))
-        self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location')
         self.installation_type = None
 

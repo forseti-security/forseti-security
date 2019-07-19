@@ -14,10 +14,11 @@
 
 """Mock responses to GCP API calls, for testing."""
 
+from builtins import object
 import contextlib
 from googleapiclient import errors
 import httplib2
-import mock
+import unittest.mock as mock
 from tests.services.inventory.test_data import mock_gcp_results as results
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 
@@ -40,6 +41,7 @@ class GcpMocks(object):
         self.mock_compute = None
         self.mock_container = None
         self.mock_crm = None
+        self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
@@ -61,6 +63,7 @@ class GcpMocks(object):
         crm_patcher, self.mock_crm = _mock_crm(has_org_access)
         gce_patcher, self.mock_compute = _mock_gce()
         gcs_patcher, self.mock_storage = _mock_gcs()
+        groups_settings_patcher, self.mock_groups_settings = _mock_groups_settings()
         iam_patcher, self.mock_iam = _mock_iam()
         sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
         logging_patcher, self.mock_logging = _mock_stackdriver_logging()
@@ -75,6 +78,7 @@ class GcpMocks(object):
             crm_patcher,
             gce_patcher,
             gcs_patcher,
+            groups_settings_patcher,
             iam_patcher,
             sm_patcher,
             logging_patcher
@@ -93,6 +97,7 @@ class GcpMocks(object):
         self.mock_compute = None
         self.mock_container = None
         self.mock_crm = None
+        self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
@@ -313,7 +318,8 @@ def _mock_crm(has_org_access):
     def _mock_permission_denied(parentid):
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
-        content = results.GCP_PERMISSION_DENIED_TEMPLATE.format(id=parentid)
+        content = results.GCP_PERMISSION_DENIED_TEMPLATE.format(id=parentid).\
+            encode()
         error_403 = errors.HttpError(response, content)
         raise api_errors.ApiExecutionError(parentid, error_403)
 
@@ -475,6 +481,20 @@ def _mock_gcs():
     mock_gcs.get_object_iam_policy.side_effect = _mock_gcs_get_object_iam
 
     return gcs_patcher, mock_gcs
+
+
+def _mock_groups_settings():
+    """Groups Settings client."""
+
+    def _mock_groups_settings_get_groups_settings(group_email):
+        return results.AD_GET_GROUPS_SETTINGS[group_email]
+
+    groups_settings_patcher = mock.patch(
+        MODULE_PATH + 'groups_settings.GroupsSettingsClient', spec=True)
+    mock_groups_settings = groups_settings_patcher.start().return_value
+    mock_groups_settings.get_groups_settings.side_effect = _mock_groups_settings_get_groups_settings
+
+    return groups_settings_patcher, mock_groups_settings
 
 
 def _mock_iam():

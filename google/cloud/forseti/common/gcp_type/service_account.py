@@ -19,6 +19,7 @@ https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
 https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts.keys
 """
 
+from builtins import object
 import json
 
 
@@ -62,7 +63,7 @@ class ServiceAccount(object):
             unique_id=service_account.get('uniqueId'),
             email=service_account.get('email'),
             oauth2_client_id=service_account.get('oauth2ClientId'),
-            raw_json=json.dumps(service_account),
+            raw_json=json.dumps(service_account, sort_keys=True),
             keys=keys,
         )
 
