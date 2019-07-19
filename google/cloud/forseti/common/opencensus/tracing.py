@@ -178,7 +178,7 @@ def set_span_attributes(tracer, **kwargs):
         kwargs (dict): A set of attributes to set to the current span.
     """
     if tracer is None:
-        LOGGER.debug('No tracer found, cannot do `end_span`.')
+        LOGGER.debug('No tracer found, cannot do `set_span_attributes`.')
         return
 
     if tracer.current_span() is None:
