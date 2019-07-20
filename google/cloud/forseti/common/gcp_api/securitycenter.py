@@ -18,7 +18,6 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
-from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
@@ -143,7 +142,7 @@ class SecurityCenterClient(object):
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.debug('CSCC API exception encountered while creating '
-                         'finding:', str(e))
+                         'finding')
 
     def list_findings(self, source_id):
         """Lists all the findings in CSCC.
@@ -181,4 +180,4 @@ class SecurityCenterClient(object):
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.debug('CSCC API exception encountered while updating '
-                         'finding:', str(e))
+                         'finding')
