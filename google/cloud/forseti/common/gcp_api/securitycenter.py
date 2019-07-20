@@ -138,15 +138,12 @@ class SecurityCenterClient(object):
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding
             )
-            LOGGER.debug('Created finding response: %s',
+            LOGGER.debug('Successfully created finding response: %s',
                          response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.exception(
-                'Unable to create CSCC finding: Resource: %s', finding)
-            violation_data = (
-                finding.get('source_properties').get('violation_data'))
-            raise api_errors.ApiExecutionError(violation_data, e)
+            LOGGER.debug('CSCC API exception encountered while creating '
+                         'finding:', str(e))
 
     def list_findings(self, source_id):
         """Lists all the findings in CSCC.
@@ -180,11 +177,8 @@ class SecurityCenterClient(object):
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
-            LOGGER.debug('Updated finding.')
+            LOGGER.debug('Successfully updated finding.')
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.exception(
-                'Unable to update CSCC finding: Resource: %s', finding)
-            violation_data = (
-                finding.get('source_properties').get('violation_data'))
-            raise api_errors.ApiExecutionError(violation_data, e)
+            LOGGER.debug('CSCC API exception encountered while updating '
+                         'finding:', str(e))
