@@ -54,16 +54,6 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
             )
         self.assertEqual(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
 
-    def test_create_findings_raises(self):
-        """Test create cscc finding raises exception."""
-        http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')
-
-        fake_finding = {'source_properties': {'violation_data': 'foo'}}
-        with self.assertRaises(api_errors.ApiExecutionError):
-            self.securitycenter_client.create_finding(
-                fake_finding,
-                source_id=self.source_id)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,7 +15,6 @@
 """Wrapper for Cloud Security Command Center API client."""
 from builtins import object
 from googleapiclient import errors
-from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import repository_mixins
@@ -140,7 +139,7 @@ class SecurityCenterClient(object):
             LOGGER.debug('Successfully created finding response: %s',
                          response)
             return response
-        except (errors.HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error):
             LOGGER.debug('CSCC API exception encountered while creating '
                          'finding')
 
@@ -178,6 +177,6 @@ class SecurityCenterClient(object):
                 finding, updateMask='state,event_time')
             LOGGER.debug('Successfully updated finding.')
             return response
-        except (errors.HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error):
             LOGGER.debug('CSCC API exception encountered while updating '
                          'finding')

@@ -196,7 +196,6 @@ class CsccNotifier(object):
                 inactive_findings.append([finding_id, to_be_updated_finding])
         return inactive_findings
 
-    # pylint: disable=too-many-locals
     def _send_findings_to_cscc(self, violations, source_id=None):
         """Send violations to CSCC directly via the CSCC API.
 
@@ -219,18 +218,18 @@ class CsccNotifier(object):
 
             # No need to use the next page token, as the results here will
             # return all the pages.
-            # for page in paged_findings_in_cscc:
-            #     formated_findings_in_page = (
-            #         ast.literal_eval(json.dumps(page)))
-            #     list_findings_result_paged = (
-            #         formated_findings_in_page.get('listFindingsResults'))
-            #     if not list_findings_result_paged:
-            #         continue
-            #     for findings_in_page in list_findings_result_paged:
-            #         finding_data = findings_in_page.get('finding')
-            #         name = finding_data.get('name')
-            #         finding_id = name[-32:]
-            #         formatted_cscc_findings.append([finding_id, finding_data])
+            for page in paged_findings_in_cscc:
+                formated_findings_in_page = (
+                    ast.literal_eval(json.dumps(page)))
+                list_findings_result_paged = (
+                    formated_findings_in_page.get('listFindingsResults'))
+                if not list_findings_result_paged:
+                    continue
+                for findings_in_page in list_findings_result_paged:
+                    finding_data = findings_in_page.get('finding')
+                    name = finding_data.get('name')
+                    finding_id = name[-32:]
+                    formatted_cscc_findings.append([finding_id, finding_data])
 
             inactive_findings = self.find_inactive_findings(
                 new_findings,
