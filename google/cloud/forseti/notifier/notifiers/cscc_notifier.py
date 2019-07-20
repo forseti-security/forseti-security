@@ -196,6 +196,7 @@ class CsccNotifier(object):
                 inactive_findings.append([finding_id, to_be_updated_finding])
         return inactive_findings
 
+    # pylint: disable=too-many-locals
     def _send_findings_to_cscc(self, violations, source_id=None):
         """Send violations to CSCC directly via the CSCC API.
 

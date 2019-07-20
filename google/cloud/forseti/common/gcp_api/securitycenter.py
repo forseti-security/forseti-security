@@ -15,6 +15,7 @@
 """Wrapper for Cloud Security Command Center API client."""
 from builtins import object
 from googleapiclient import errors
+from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import repository_mixins
