@@ -31,7 +31,7 @@ Users can install Forseti using Terraform by clicking the button below.
 Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google).
 
 If you still need to use the legacy and soon-to-be-deprecated python-based
-installer, it be found here({% link _docs/latest/setup/install-with-python-installer.md %}).
+installer, it be found [here]({% link _docs/latest/setup/install-with-python-installer.md %}).
 
 ## What's next
 
