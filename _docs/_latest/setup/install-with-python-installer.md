@@ -5,7 +5,7 @@ order: 002
 
 # {{ page.title }}
 
-This guide explains how to use the Forseti installation tool.
+This guide explains how to use the python-based Forseti installation tool.
 
 ---
 
