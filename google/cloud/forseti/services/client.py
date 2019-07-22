@@ -748,7 +748,7 @@ class ClientComposition(object):
         self.channel = grpc.intercept_channel(
             grpc.insecure_channel(endpoint, options=[
                 ('grpc.max_receive_message_length',
-                self.gigabyte)]),
+                 self.gigabyte)]),
             *interceptors)
 
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})

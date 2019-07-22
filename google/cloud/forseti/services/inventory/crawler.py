@@ -313,6 +313,7 @@ def _api_client_factory(storage, config, parallel, tracer=None):
         storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -353,7 +354,8 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
             The initialized crawler implementation class.
     """
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client, tracer=tracer)
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client,
+                                                tracer=tracer)
         return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
@@ -403,7 +405,8 @@ def run_crawler(storage,
         parallel = False
 
     client = _api_client_factory(storage, config, parallel, tracer=tracer)
-    crawler_impl = _crawler_factory(storage, progresser, client, parallel, tracer=tracer)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel,
+                                    tracer=tracer)
     resource = _root_resource_factory(config, client, tracer=tracer)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
