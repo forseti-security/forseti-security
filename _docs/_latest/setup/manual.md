@@ -1,6 +1,6 @@
 ---
 title: Manual
-order: 003
+order: 004
 ---
 
 # {{ page.title }}

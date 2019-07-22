@@ -1,6 +1,6 @@
 ---
-title: Install
-order: 001
+title: Install with Python Installer
+order: 002
 ---
 
 # {{ page.title }}

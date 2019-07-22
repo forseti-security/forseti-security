@@ -1,6 +1,6 @@
 ---
 title: Deploy Forseti Security on Kubernetes
-order: 004
+order: 005
 ---
 
 # {{ page.title }}
