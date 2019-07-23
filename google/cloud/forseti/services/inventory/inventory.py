@@ -29,7 +29,6 @@ from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize \
     as init_storage
-from google.cloud.forseti.common.opencensus.tracing import RuntimeContext
 
 standard_library.install_aliases()
 
