@@ -21,7 +21,6 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
-logging.getLogger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
 
 try:
     from opencensus.common.runtime_context import RuntimeContext
@@ -34,9 +33,8 @@ try:
     from opencensus.trace.tracer import Tracer
     from opencensus.trace.samplers import AlwaysOnSampler
     from opencensus.trace.span import SpanKind
-    LOGGER.debug(
-        'Tracing libraries successfully installed.'
-        'Tracing modules succesfully imported.')
+    logger.getLogger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
+    LOGGER.info('Tracing dependencies successfully imported.')
     OPENCENSUS_ENABLED = True
 except ImportError:
     LOGGER.warning(
@@ -79,6 +77,7 @@ def create_server_interceptor(extras=True):
         exporter)
     if extras:
         trace_integrations(DEFAULT_INTEGRATIONS)
+    LOGGER.debug("Tracing interceptor set up.")
     return interceptor
 
 
@@ -96,6 +95,7 @@ def trace_integrations(integrations):
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
+    LOGGER.debug("Tracing libraries: {integrated_libraries}")
     return integrated_libraries
 
 
@@ -194,7 +194,7 @@ def trace():
                 tracer = execution_context.get_opencensus_tracer()
                 module = func.__module__.split('.')[-1]
                 fname = func.__name__
-                LOGGER.debug("Tracing {module}.{function}")
+                LOGGER.debug("Tracing method '{module}.{function}'")
                 LOGGER.debug("Tracing context: {tracer.span_context}")
                 if inspect.ismethod(func):
                     span_name = "{module}.{fname}"
