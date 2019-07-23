@@ -77,10 +77,6 @@ def serve(endpoint,
     if enable_console_log:
         logger.enable_console_log()
 
-    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
-    enable_tracing = True if enable_tracing == "True" else False
-    LOGGER.info("Enable tracing is set to %s" % enable_tracing)
-
     factories = []
     for service in services:
         factories.append(SERVICE_MAP[service])
@@ -97,7 +93,7 @@ def serve(endpoint,
         endpoint=endpoint)
     config.update_configuration()
 
-    interceptors = create_interceptors(enable_tracing)
+    interceptors = create_interceptors()
 
     # Register services & start server
     server = grpc.server(
@@ -117,15 +113,15 @@ def serve(endpoint,
             return
 
 
-def create_interceptors(enable_tracing):
+def create_interceptors():
     """Create gRPC server interceptors.
-
-    Args:
-        enable_tracing (bool): If True, enable the trace interceptor.
 
     Returns:
         tuple: A tuple of gRPC interceptors.
     """
+    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "True")
+    enable_tracing = True if enable_tracing == "True" else False
+    LOGGER.info("Tracing enabled (`FORSETI_ENABLE_TRACING` env var): %s" % enable_tracing)
     interceptors = []
     if enable_tracing and tracing.OPENCENSUS_ENABLED:
         interceptors.append(tracing.create_server_interceptor())
