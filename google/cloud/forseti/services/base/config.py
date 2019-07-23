@@ -507,8 +507,7 @@ class ServiceConfig(AbstractServiceConfig):
         Args:
             func (Function): Function to be executed.
         """
-        if tracing.OPENCENSUS_ENABLED:
-            tracing.monkey_patch_multiprocessing()
+        func = tracing.trace()(func)
         self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
