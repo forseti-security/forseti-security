@@ -77,7 +77,7 @@ def create_server_interceptor(extras=True):
         exporter)
     if extras:
         trace_integrations(DEFAULT_INTEGRATIONS)
-    LOGGER.debug("Tracing interceptor set up.")
+    LOGGER.info("Tracing interceptor set up.")
     return interceptor
 
 
