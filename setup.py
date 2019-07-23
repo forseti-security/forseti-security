@@ -69,8 +69,9 @@ OPTIONAL_PACKAGES = {
         'opencensus==0.6.0',
         'opencensus-ext-grpc',
         'opencensus-ext-threading',
-        'opencensus-ext-stackdriver',
         'opencensus-ext-google-cloud-clientlibs',
+        'opencensus-ext-stackdriver',
+        'opencensus-ext-sqlalchemy',
         'google-cloud-trace==0.19.0'
     ]
 }

@@ -21,7 +21,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 logger.get_logger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
+DEFAULT_INTEGRATIONS = ['threading', 'requests', 'sqlalchemy', 'google_cloud_clientlibs']
 
 try:
     from opencensus.common.runtime_context import RuntimeContext
