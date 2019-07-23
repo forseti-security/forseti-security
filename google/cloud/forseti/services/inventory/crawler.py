@@ -304,6 +304,7 @@ def _api_client_factory(storage, config, parallel):
     """
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    client_config['excluded_resources'] = config.get_excluded_resources()
     asset_count = 0
     if config.get_cai_enabled():
         asset_count = cloudasset.load_cloudasset_data(storage.session, config)
@@ -334,12 +335,20 @@ def _crawler_factory(storage, progresser, client, parallel):
         Union[Crawler, ParallelCrawler]:
             The initialized crawler implementation class.
     """
+    excluded_resources = set(client.config.get('excluded_resources', []))
+    config_variables = {'excluded_resources': excluded_resources}
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
+        parallel_config = ParallelCrawlerConfig(storage,
+                                                progresser,
+                                                client,
+                                                variables=config_variables)
         return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
-    crawler_config = CrawlerConfig(storage, progresser, client)
+    crawler_config = CrawlerConfig(storage,
+                                   progresser,
+                                   client,
+                                   variables=config_variables)
     return Crawler(crawler_config)
 
 

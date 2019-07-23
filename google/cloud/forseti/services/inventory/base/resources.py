@@ -320,11 +320,18 @@ class Resource(object):
         self._stack = stack
         self._visitor = visitor
         visitor.visit(self)
+        excluded_resources = visitor.config.variables.get(
+            'excluded_resources', {})
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
             try:
                 for resource in yielder.iter():
                     res = resource
+
+                    resource_name = '{}/{}'.format(res.type(), res.key())
+                    if resource_name in excluded_resources:
+                        continue
+
                     new_stack = stack + [self]
 
                     # Parallelization for resource subtrees.

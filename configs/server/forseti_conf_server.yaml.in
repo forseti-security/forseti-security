@@ -16,6 +16,12 @@ inventory:
     # project number instead of project id, e.g. "projects/<project number>".
     root_resource_id: {ROOT_RESOURCE_ID}
 
+    # Resources to be excluded during the inventory process.
+    # Only organizations/<ORG_NUMBER>, folders/<FOLDER_NUMBER> and
+    # projects/<PROJECT_ID> are accepted. The child resources under
+    # the excluded resources will also be excluded.
+    excluded_resources: []
+
     # Composite root resources: combines multiple resource roots into a single
     # inventory, for use across all Forseti modules. Can contain one or more
     # resources from the GCP Resource Hierarchy in any combination.
