@@ -16,11 +16,12 @@
 
 import functools
 import inspect
+import logging
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
-logger = logging.getLogger('opencensus').setLevel(logger.DEBUG)
+logging.getLogger('opencensus').setLevel(logger.DEBUG)  # set debug level for opencensus
 
 try:
     from opencensus.common.runtime_context import RuntimeContext
@@ -203,28 +204,3 @@ def trace():
             return func(*args, **kwargs)
         return inner_wrapper
     return outer_wrapper
-
-class Span(object):
-    """Span class with RuntimeContext that can be used within threads.
-
-    Args:
-        name (str): Span name.
-    """
-    def __init__(self, name):
-        self.name = name
-        self.parent = RuntimeContext.current_span
-
-    def __repr__(self):
-        return ('{}({})'.format(type(self).__name__, self.name))
-
-    def __enter__(self):
-        RuntimeContext.current_span = self
-
-    def __exit__(self, type, value, traceback):
-        RuntimeContext.current_span = self.parent
-
-    def start(self):
-        RuntimeContext.current_span = self
-
-    def end(self):
-        RuntimeContext.current_span = self.parent
