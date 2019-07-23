@@ -37,9 +37,6 @@ from google.cloud.forseti.services.inventory.storage import Storage
 
 LOGGER = logger.get_logger(__name__)
 
-if tracing.OPENCENSUS_ENABLED:
-    tracing.monkey_patch_multiprocessing()
-
 def _validate_cai_enabled(cai_configs):
     """Verifies if CloudAsset Inventory can be used for this inventory config.
 
@@ -510,7 +507,8 @@ class ServiceConfig(AbstractServiceConfig):
         Args:
             func (Function): Function to be executed.
         """
-
+        if tracing.OPENCENSUS_ENABLED:
+            tracing.monkey_patch_multiprocessing()
         self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
