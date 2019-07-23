@@ -77,7 +77,6 @@ def inventory_pb_from_object(inventory_index,
         errors=errors)
 
 
-@tracing.traced()
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
