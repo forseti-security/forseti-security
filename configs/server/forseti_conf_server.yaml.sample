@@ -135,12 +135,14 @@ inventory:
         #    - cloudresourcemanager.googleapis.com/Folder
         #    - cloudresourcemanager.googleapis.com/Organization
         #    - cloudresourcemanager.googleapis.com/Project
+        #    - compute.googleapis.com/Address
         #    - compute.googleapis.com/Autoscaler
         #    - compute.googleapis.com/BackendBucket
         #    - compute.googleapis.com/BackendService
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalAddress
         #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck

@@ -265,6 +265,20 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session)
 
+    def iter_compute_addresses(self, project_number):
+        """Iterate Addresses from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Address resources.
+
+        """
+        resources = self._iter_compute_resources('Address', project_number)
+        for address in resources:
+            yield address
+
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from Cloud Asset data.
 
@@ -394,6 +408,20 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield (
                 _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map),
                 metadata)
+
+    def iter_compute_globaladdresses(self, project_number):
+        """Iterate Global Addresses from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Global Address resources.
+        """
+        resources = self._iter_compute_resources('GlobalAddress',
+                                                 project_number)
+        for global_address in resources:
+            yield global_address
 
     def iter_compute_healthchecks(self, project_number):
         """Iterate Health checks from Cloud Asset data.

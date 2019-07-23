@@ -1064,6 +1064,9 @@ class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
 
 
 # Compute Engine resource classes
+class ComputeAddress(resource_class_factory('compute_address', 'id')):
+    """The Resource implementation for Compute Address."""
+
 class ComputeAutoscaler(resource_class_factory('compute_autoscaler', 'id')):
     """The Resource implementation for Compute Autoscaler."""
 
@@ -1088,6 +1091,9 @@ class ComputeFirewall(resource_class_factory('firewall', 'id')):
 class ComputeForwardingRule(resource_class_factory('forwardingrule', 'id')):
     """The Resource implementation for Compute Forwarding Rule."""
 
+class ComputeGlobalAddress(resource_class_factory('compute_globaladdress',
+                                                  'id')):
+    """The Resource implementation for Compute Global Address."""
 
 class ComputeHealthCheck(resource_class_factory('compute_healthcheck', 'id')):
     """The Resource implementation for Compute HealthCheck."""
@@ -1890,6 +1896,10 @@ def compute_iter_class_factory(api_method_name, resource_name):
         api_method_name, resource_name, api_method_arg_key='projectNumber',
         resource_validation_method_name='compute_api_enabled')
 
+class ComputeAddressIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_address',
+        resource_name='compute_address')):
+    """The Resource iterator implementation for Compute Address."""
 
 class ComputeAutoscalerIterator(compute_iter_class_factory(
         api_method_name='iter_compute_autoscalers',
@@ -1926,6 +1936,10 @@ class ComputeForwardingRuleIterator(compute_iter_class_factory(
         resource_name='compute_forwardingrule')):
     """The Resource iterator implementation for Compute ForwardingRule."""
 
+class ComputeGlobalAddressIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_globaladdress',
+        resource_name='compute_globaladdress')):
+    """The Resource iterator implementation for Compute GlobalAddress."""
 
 class ComputeHealthCheckIterator(compute_iter_class_factory(
         api_method_name='iter_compute_healthchecks',
@@ -2556,12 +2570,14 @@ FACTORIES = {
             AppEngineAppIterator,
             BigqueryDataSetIterator,
             CloudSqlInstanceIterator,
+            ComputeAddressIterator,
             ComputeAutoscalerIterator,
             ComputeBackendBucketIterator,
             ComputeBackendServiceIterator,
             ComputeDiskIterator,
             ComputeFirewallIterator,
             ComputeForwardingRuleIterator,
+            ComputeGlobalAddressIterator,
             ComputeHealthCheckIterator,
             ComputeHttpHealthCheckIterator,
             ComputeHttpsHealthCheckIterator,
@@ -2652,6 +2668,11 @@ FACTORIES = {
         'cls': CloudSqlInstance,
         'contains': []}),
 
+    'compute_address': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeAddress,
+        'contains': []}),
+
     'compute_autoscaler': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeAutoscaler,
@@ -2680,6 +2701,11 @@ FACTORIES = {
     'compute_forwardingrule': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeForwardingRule,
+        'contains': []}),
+
+    'compute_globaladdress': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeGlobalAddress,
         'contains': []}),
 
     'compute_healthcheck': ResourceFactory({

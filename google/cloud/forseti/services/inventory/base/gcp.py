@@ -174,6 +174,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_compute_addresses(self, project_number):
+        """Iterate Addresses from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.
 
@@ -216,6 +224,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def iter_compute_forwardingrules(self, project_number):
         """Iterate Forwarding Rules from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_globaladdresses(self, project_number):
+        """Iterate Global Addresses from GCP API.
 
         Args:
             project_number (str): number of the project to query.
