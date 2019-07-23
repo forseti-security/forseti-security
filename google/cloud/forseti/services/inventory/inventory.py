@@ -23,6 +23,7 @@ from queue import Queue
 import threading
 
 from future import standard_library
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.crawler import run_crawler
@@ -208,6 +209,7 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
+@tracing.traced()
 class Inventory(object):
     """Inventory API implementation."""
 
