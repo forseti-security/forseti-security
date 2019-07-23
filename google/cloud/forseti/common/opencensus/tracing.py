@@ -18,7 +18,7 @@ import functools
 import inspect
 import logging
 from concurrent import futures
-import pool
+from multiprocessing import pool
 import threading
 from google.cloud.forseti.common.util import logger
 
