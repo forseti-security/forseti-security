@@ -25,6 +25,7 @@ from multiprocessing.pool import ThreadPool
 import threading
 
 from future.utils import with_metaclass
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
@@ -36,6 +37,8 @@ from google.cloud.forseti.services.inventory.storage import Storage
 
 LOGGER = logger.get_logger(__name__)
 
+if tracing.OPENCENSUS_ENABLED:
+    tracing.monkey_patch_multiprocessing()
 
 def _validate_cai_enabled(cai_configs):
     """Verifies if CloudAsset Inventory can be used for this inventory config.

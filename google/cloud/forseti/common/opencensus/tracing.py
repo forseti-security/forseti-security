@@ -28,6 +28,8 @@ try:
     from opencensus.common.transports.async_ import AsyncTransport
     from opencensus.ext.grpc import client_interceptor, server_interceptor
     from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
+    from opencensus.ext.threading.trace import (
+        wrap_threading_start, wrap_threading_run, wrap_submit)
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
     from opencensus.trace import file_exporter
@@ -206,3 +208,33 @@ def trace():
             return func(*args, **kwargs)
         return inner_wrapper
     return outer_wrapper
+
+
+def monkey_patch_multiprocessing():
+    LOGGER.info("Monkeypatching `multiprocessing` library to trace methods.")
+
+    # Wrap the threading start function
+    start_func = getattr(threading.Thread, "start")
+    setattr(
+        threading.Thread, start_func.__name__, wrap_threading_start(start_func)
+    )
+
+    # Wrap the threading run function
+    run_func = getattr(threading.Thread, "run")
+    setattr(threading.Thread, run_func.__name__, wrap_threading_run(run_func))
+
+    # Wrap the threading run function
+    apply_async_func = getattr(pool.Pool, "apply_async")
+    setattr(
+        pool.Pool,
+        apply_async_func.__name__,
+        wrap_apply_async(apply_async_func),
+    )
+
+    # Wrap the threading run function
+    submit_func = getattr(futures.ThreadPoolExecutor, "submit")
+    setattr(
+        futures.ThreadPoolExecutor,
+        submit_func.__name__,
+        wrap_submit(submit_func),
+    )
