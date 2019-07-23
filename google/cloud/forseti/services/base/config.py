@@ -228,7 +228,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.cai_configs = cai_configs
         self.composite_root_resources = composite_root_resources
         self.excluded_resources = self._filter_valid_excluded_resources(
-            excluded_resources)
+            excluded_resources or [])
 
     def use_composite_root(self):
         """Checks if inventory is configured to use a composite root resource.
