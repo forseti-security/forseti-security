@@ -79,7 +79,7 @@ def serve(endpoint,
 
     enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
     enable_tracing = True if enable_tracing == "True" else False
-    LOGGER.info("Enable tracing is set to {enable_tracing}")
+    LOGGER.info("Enable tracing is set to %s" % enable_tracing)
 
     factories = []
     for service in services:
