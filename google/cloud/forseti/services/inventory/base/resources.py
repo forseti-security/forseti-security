@@ -1897,7 +1897,7 @@ def compute_iter_class_factory(api_method_name, resource_name):
         resource_validation_method_name='compute_api_enabled')
 
 class ComputeAddressIterator(compute_iter_class_factory(
-        api_method_name='iter_compute_address',
+        api_method_name='iter_compute_addresses',
         resource_name='compute_address')):
     """The Resource iterator implementation for Compute Address."""
 
@@ -1937,7 +1937,7 @@ class ComputeForwardingRuleIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute ForwardingRule."""
 
 class ComputeGlobalAddressIterator(compute_iter_class_factory(
-        api_method_name='iter_compute_globaladdress',
+        api_method_name='iter_compute_globaladdresses',
         resource_name='compute_globaladdress')):
     """The Resource iterator implementation for Compute GlobalAddress."""
 
