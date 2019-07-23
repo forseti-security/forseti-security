@@ -17,7 +17,6 @@
 from builtins import object
 import google.protobuf.timestamp_pb2 as timestamp
 
-from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory
@@ -113,10 +112,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Inventory progress updates.
         """
-        tracer = tracing.execution_context.get_opencensus_tracer()
         for progress in self.inventory.create(request.background,
                                               request.model_name):
-            span = tracer.start_span(name='inventory.create.progress')
             if request.enable_debug:
                 last_warning = repr(progress.last_warning)
                 last_error = repr(progress.last_error)
@@ -132,7 +129,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 errors=progress.errors,
                 last_warning=last_warning,
                 last_error=last_error)
-            tracer.end_span()
 
     @autoclose_stream
     def List(self, request, _):
