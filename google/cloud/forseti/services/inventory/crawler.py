@@ -342,12 +342,11 @@ def _crawler_factory(storage, progresser, client, parallel):
             The initialized crawler implementation class.
     """
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client,
-                                                tracer=tracer)
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
         return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
-    crawler_config = CrawlerConfig(storage, progresser, client, tracer=tracer)
+    crawler_config = CrawlerConfig(storage, progresser, client)
     return Crawler(crawler_config)
 
 
