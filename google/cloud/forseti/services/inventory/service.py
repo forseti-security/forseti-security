@@ -112,7 +112,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Inventory progress updates.
         """
-
         for progress in self.inventory.create(request.background,
                                               request.model_name):
 
