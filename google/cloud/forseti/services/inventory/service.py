@@ -132,7 +132,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 errors=progress.errors,
                 last_warning=last_warning,
                 last_error=last_error)
-            tracer.end_span(name='inventory.create.progress')
+            tracer.end_span()
 
     @autoclose_stream
     def List(self, request, _):
