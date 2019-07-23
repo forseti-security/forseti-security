@@ -23,12 +23,12 @@ import time
 
 from future import standard_library
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
-from google.cloud.forseti.common.opencensus import tracing
 
 standard_library.install_aliases()
 
@@ -38,8 +38,7 @@ LOGGER = logger.get_logger(__name__)
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables=None,
-                 tracer=None):
+    def __init__(self, storage, progresser, api_client, variables=None):
         """Initialize
 
         Args:
@@ -62,7 +61,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, threads=10,
-                 variables=None, tracer=None):
+                 variables=None):
         """Initialize
 
         Args:
@@ -70,7 +69,6 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
-            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
             threads (int): how many threads to use
             variables (dict): config variables
         """
@@ -83,7 +81,6 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         self.tracer = tracer
 
 
-@tracing.traced(methods=['visit', 'update', 'run', 'write'])
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -143,8 +140,6 @@ class Crawler(crawler.Crawler):
             raise
         else:
             progresser.on_new_object(resource)
-        finally:
-            tracing.set_span_attributes(self.config.tracer, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
@@ -305,15 +300,13 @@ class ParallelCrawler(Crawler):
             raise
 
 
-@tracing.trace()
-def _api_client_factory(storage, config, parallel, tracer=None):
+def _api_client_factory(storage, config, parallel):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
-        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:

@@ -66,8 +66,12 @@ REQUIRED_PACKAGES = [
 
 OPTIONAL_PACKAGES = {
     'tracing': [
-        'opencensus==0.1.9',
-        'google-cloud-trace==0.19.0',
+        'opencensus==0.6.0',
+        'opencensus-ext-grpc',
+        'opencensus-ext-threading',
+        'opencensus-ext-stackdriver',
+        'opencensus-ext-google-cloud-clientlibs',
+        'google-cloud-trace==0.19.0'
     ]
 }
 

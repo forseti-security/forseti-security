@@ -22,15 +22,15 @@ LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
-    from opencensus.common.transports import async_
+    from opencensus.common.runtime_context import RuntimeContext
+    from opencensus.common.transports.async_ import AsyncTransport
+    from opencensus.ext.grpc import client_interceptor, server_interceptor
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
-    from opencensus.trace.exporters import file_exporter
-    from opencensus.trace.exporters import stackdriver_exporter
-    from opencensus.trace.ext.grpc import client_interceptor
-    from opencensus.trace.ext.grpc import server_interceptor
-    from opencensus.trace.samplers import always_on
+    from opencensus.trace import file_exporter
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
     from opencensus.trace.span import SpanKind
     LOGGER.debug(
         'Tracing libraries successfully installed.'
@@ -71,7 +71,7 @@ def create_server_interceptor(extras=True):
     """
 
     exporter = create_exporter()
-    sampler = always_on.AlwaysOnSampler()
+    sampler = AlwaysOnSampler()
     if extras:
         trace_integrations()
     interceptor = server_interceptor.OpenCensusServerInterceptor(
@@ -94,6 +94,13 @@ def trace_integrations(integrations=None):
     """
     integrations = integrations or DEFAULT_INTEGRATIONS
     tracer = execution_context.get_opencensus_tracer()
+    if tracer is None:
+        LOGGING.debug(
+            'Tracer not found in context.'
+            'Creating new tracer and setting it in the execution context.')
+        exporter = create_exporter()
+        tracer = Tracer(exporter=exporter)
+        execution_context.set_opencensus_tracer(tracer)
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
@@ -116,7 +123,7 @@ def create_exporter(transport=None):
         StackdriverExporter: A Stackdriver exporter.
         FileExporter: A file exporter. Default path: 'opencensus-traces.json'.
     """
-    transport = transport or async_.AsyncTransport
+    transport = transport or AsyncTransport
     try:
         exporter = stackdriver_exporter.StackdriverExporter(transport=transport)
         LOGGER.info(
