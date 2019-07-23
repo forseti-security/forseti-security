@@ -397,10 +397,9 @@ def run_crawler(storage,
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
 
-    client = _api_client_factory(storage, config, parallel, tracer=tracer)
-    crawler_impl = _crawler_factory(storage, progresser, client, parallel,
-                                    tracer=tracer)
-    resource = _root_resource_factory(config, client, tracer=tracer)
+    client = _api_client_factory(storage, config, parallel)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel)
+    resource = _root_resource_factory(config, client)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
