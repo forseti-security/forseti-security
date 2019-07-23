@@ -95,7 +95,7 @@ def trace_integrations(integrations):
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
-    LOGGER.debug("Tracing libraries: {integrated_libraries}")
+    LOGGER.info("Tracing libraries: {integrated_libraries}")
     return integrated_libraries
 
 
@@ -194,8 +194,8 @@ def trace():
                 tracer = execution_context.get_opencensus_tracer()
                 module = func.__module__.split('.')[-1]
                 fname = func.__name__
-                LOGGER.debug("Tracing method '{module}.{function}'")
-                LOGGER.debug("Tracing context: {tracer.span_context}")
+                LOGGER.info("Tracing method '{module}.{function}'")
+                LOGGER.info("Tracing context: {tracer.span_context}")
                 if inspect.ismethod(func):
                     span_name = "{module}.{fname}"
                 else:
