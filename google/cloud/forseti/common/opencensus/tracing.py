@@ -32,7 +32,7 @@ try:
     from opencensus.ext.grpc import client_interceptor, server_interceptor
     from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.ext.threading.trace import (
-        wrap_threading_start, wrap_threading_run, wrap_submit)
+        wrap_threading_start, wrap_threading_run, wrap_submit, wrap_apply_async)
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
     from opencensus.trace import file_exporter
