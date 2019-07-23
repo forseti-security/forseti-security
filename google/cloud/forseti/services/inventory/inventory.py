@@ -155,7 +155,8 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background):
+                  background,
+                  tracer=None):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -180,7 +181,8 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 tracer=tracer)
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
@@ -234,7 +236,7 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-
+        tracer = tracing.execution_context.get_opencensus_tracer()
         with self._create_lock:
             queue = Queue()
             if background:
@@ -257,7 +259,8 @@ class Inventory(object):
                             queue,
                             session,
                             progresser,
-                            background)
+                            background,
+                            tracer=tracer)
 
                         if model_name:
                             run_import(self.config.client(),
