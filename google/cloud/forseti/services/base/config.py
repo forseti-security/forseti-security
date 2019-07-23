@@ -25,7 +25,6 @@ from multiprocessing.pool import ThreadPool
 import threading
 
 from future.utils import with_metaclass
-from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
@@ -507,7 +506,6 @@ class ServiceConfig(AbstractServiceConfig):
         Args:
             func (Function): Function to be executed.
         """
-        func = tracing.trace()(func)
         self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
