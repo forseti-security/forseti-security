@@ -20,6 +20,7 @@ import logging
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+logger.get_logger('opencensus').set_logger_level(logging.DEBUG)  # set debug level for opencensus
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
 
 try:
@@ -33,7 +34,6 @@ try:
     from opencensus.trace.tracer import Tracer
     from opencensus.trace.samplers import AlwaysOnSampler
     from opencensus.trace.span import SpanKind
-    logger.getLogger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
     LOGGER.info('Tracing dependencies successfully imported.')
     OPENCENSUS_ENABLED = True
 except ImportError:
