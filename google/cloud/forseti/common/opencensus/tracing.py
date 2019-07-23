@@ -21,7 +21,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
-logging.getLogger('opencensus').setLevel(logger.DEBUG)  # set debug level for opencensus
+logging.getLogger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
 
 try:
     from opencensus.common.runtime_context import RuntimeContext
@@ -194,6 +194,8 @@ def trace():
                 tracer = execution_context.get_opencensus_tracer()
                 module = func.__module__.split('.')[-1]
                 fname = func.__name__
+                LOGGER.debug("Tracing {module}.{function}")
+                LOGGER.debug("Tracing context: {tracer.span_context}")
                 if inspect.ismethod(func):
                     span_name = "{module}.{fname}"
                 else:
