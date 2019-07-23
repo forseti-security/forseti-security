@@ -113,10 +113,10 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Inventory progress updates.
         """
-        tracer = execution_context.get_opencensus_tracer()
+        tracer = tracing.execution_context.get_opencensus_tracer()
         for progress in self.inventory.create(request.background,
                                               request.model_name):
-            tracer.start_span(name='inventory.create.progress')
+            span = tracer.start_span(name='inventory.create.progress')
             if request.enable_debug:
                 last_warning = repr(progress.last_warning)
                 last_error = repr(progress.last_error)
