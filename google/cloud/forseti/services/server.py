@@ -79,6 +79,7 @@ def serve(endpoint,
 
     enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
     enable_tracing = True if enable_tracing == "True" else False
+    LOGGER.info("Enable tracing is set to {enable_tracing}")
 
     factories = []
     for service in services:
@@ -128,7 +129,6 @@ def create_interceptors(enable_tracing):
     interceptors = []
     if enable_tracing and tracing.OPENCENSUS_ENABLED:
         interceptors.append(tracing.create_server_interceptor())
-        LOGGER.info('Tracing interceptor set up.')
     return tuple(interceptors)
 
 
