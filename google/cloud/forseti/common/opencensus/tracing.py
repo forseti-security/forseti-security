@@ -77,7 +77,7 @@ def create_server_interceptor(extras=True):
         exporter)
     if extras:
         trace_integrations(DEFAULT_INTEGRATIONS)
-    LOGGER.info("Tracing interceptor set up.")
+    LOGGER.info(f"Tracing interceptor created.")
     return interceptor
 
 
@@ -95,7 +95,7 @@ def trace_integrations(integrations):
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
-    LOGGER.info("Tracing libraries: {integrated_libraries}")
+    LOGGER.info(f"Tracing libraries: {integrated_libraries}")
     return integrated_libraries
 
 
@@ -194,8 +194,8 @@ def trace():
                 tracer = execution_context.get_opencensus_tracer()
                 module = func.__module__.split('.')[-1]
                 fname = func.__name__
-                LOGGER.info("Tracing method '{module}.{function}'")
-                LOGGER.info("Tracing context: {tracer.span_context}")
+                LOGGER.info(f"Tracing method '{module}.{function}'")
+                LOGGER.info(f"Tracing context: {tracer.span_context}")
                 if inspect.ismethod(func):
                     span_name = "{module}.{fname}"
                 else:
