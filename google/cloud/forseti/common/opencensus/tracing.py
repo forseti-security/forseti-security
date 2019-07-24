@@ -239,21 +239,18 @@ def trace(attr=None):
             Raises:
                 Exception: Exception thrown by the decorated function (if any).
             """
+            is_method, span_name = get_fname(func, *args)
+
             if not OPENCENSUS_ENABLED:
-                if inspect.ismethod(func):
+                if is_method:
                     args[0].tracer = None  # fix bug where tracer is not defined
                 return func(*args, **kwargs)
-
-            # Build span name from function info and fetch appropriate tracer
-            module = func.__module__.split('.')[-1]
-            fname = func.__name__
 
             # If the function is a class method, get the tracer from the
             # 'tracer' instance attribute. If it's a standard function, get
             # the tracer from the 'tracer' kwargs, and if it's empty get tracer
             # from the OpenCensus context.
             ctx_tracer = execution_context.get_opencensus_tracer()
-            is_method, span_name = get_fname(func)
             if is_method:
                 LOGGER.info(f"Tracing - {span_name} is a class method")
                 _self = args[0]
@@ -301,7 +298,7 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
-def get_fname(fn):
+def get_fname(fn, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.
 
