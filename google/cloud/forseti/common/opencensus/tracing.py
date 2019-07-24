@@ -247,8 +247,6 @@ def trace(attr=None):
             # Build span name from function info and fetch appropriate tracer
             module = func.__module__.split('.')[-1]
             fname = func.__name__
-            LOGGER.info(f"Tracing method '{module}.{function}'")
-            LOGGER.info(f"Tracing context: {tracer.span_context}")
 
             # If the function is a class method, get the tracer from the
             # 'tracer' instance attribute. If it's a standard function, get
@@ -260,6 +258,9 @@ def trace(attr=None):
             else:
                 span_name = '{fname}'
                 tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
+
+            LOGGER.info(f"Tracing span: '{span}'")
+            LOGGER.info(f"Tracing context: {tracer.span_context}")
 
             # Trace our function
             with tracer.span(name=span_name) as span:
