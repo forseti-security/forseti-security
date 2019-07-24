@@ -77,7 +77,6 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         self.client = api_client
 
 
-@tracing.traced()
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -104,6 +103,7 @@ class Crawler(crawler.Crawler):
         return self.config.progresser
 
     # pylint: disable=protected-access
+    @tracing.trace()
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -197,7 +197,6 @@ class Crawler(crawler.Crawler):
             raise
 
 
-@tracing.traced()
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 
@@ -221,6 +220,7 @@ class ParallelCrawler(Crawler):
             worker.daemon = True
             worker.start()
 
+    @tracing.trace()
     def _process_queue(self):
         """Process items in the queue until the shutdown event is set."""
         while not self._shutdown_event.is_set():
