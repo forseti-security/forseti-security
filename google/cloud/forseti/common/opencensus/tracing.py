@@ -250,13 +250,15 @@ def trace(attr=None):
             # 'tracer' instance attribute. If it's a standard function, get
             # the tracer from the 'tracer' kwargs, and if it's empty get tracer
             # from the OpenCensus context.
+            ctx_tracer = execution_context.get_opencensus_tracer()
             if inspect.ismethod(func):
                 span_name = f'{module}.{fname}'
                 _self = args[0]
-                tracer = getattr(_self, 'tracer')
+                tracer = getattr(_self, 'tracer', ctx_tracer)
+                _self.tracer = tracer
             else:
                 span_name = f'{fname}'
-                tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
+                tracer = kwargs.get('tracer') or ctx_tracer
 
             LOGGER.info(f"Tracing - {span_name} - Context: {tracer.span_context}")
 
@@ -266,7 +268,7 @@ def trace(attr=None):
                 # If the method has a `tracer` argument, pass it there
                 # this will enable to start sub-spans within the target function.
                 if 'tracer' in kwargs:
-                    LOGGER.info(f"Tracing - {span_name} - put `tracer` into function arg")
+                    LOGGER.info(f"Tracing - {span_name} - push tracer object into `tracer` kwarg")
                     kwargs['tracer'] = tracer
 
                 return func(*args, **kwargs)
