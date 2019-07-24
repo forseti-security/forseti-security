@@ -186,6 +186,7 @@ def trace_init(attr=None):
         func: Decorated function.
     """
     def outer_wrapper(init):
+        @functools.wraps(init)
         def inner_wrapper(self, *args, **kwargs):
             init(self, *args, **kwargs)
 
