@@ -163,6 +163,7 @@ def traced(methods=None, attr=None):
         # Adds `self.tracer` in class to give access to the tracer from within.
         if OPENCENSUS_ENABLED:
             for name, func in to_trace:
+                LOGGER.info(f"Tracing - Adding decorator to {name}")
                 if name == '__init__': # __init__ decorator to add tracer as instance attribute
                     decorator = trace_init(attr=attr)
                 else:
