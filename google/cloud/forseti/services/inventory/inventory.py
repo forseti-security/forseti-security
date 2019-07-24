@@ -227,6 +227,7 @@ class Inventory(object):
 
         init_storage(self.config.get_engine())
 
+    @tracing.trace()
     def create(self, background, model_name):
         """Create a new inventory,
 
