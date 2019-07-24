@@ -238,7 +238,6 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-        tracer = tracing.execution_context.get_opencensus_tracer()
         with self._create_lock:
             queue = Queue()
             if background:
@@ -262,7 +261,7 @@ class Inventory(object):
                             session,
                             progresser,
                             background,
-                            tracer=tracer)
+                            tracer=self.tracer)
 
                         if model_name:
                             run_import(self.config.client(),

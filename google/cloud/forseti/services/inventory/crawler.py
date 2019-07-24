@@ -34,11 +34,10 @@ standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
-@tracing.traced()
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables=None, tracer=None):
+    def __init__(self, storage, progresser, api_client, variables=None):
         """Initialize
 
         Args:
@@ -53,14 +52,13 @@ class CrawlerConfig(crawler.CrawlerConfig):
         self.progresser = progresser
         self.variables = {} if not variables else variables
         self.client = api_client
-        self.tracer = tracer
 
 
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, threads=10,
-                 variables=None, tracer=None):
+                 variables=None):
         """Initialize
 
         Args:
@@ -79,11 +77,11 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         self.client = api_client
 
 
-@tracing.traced(attr='config.tracer')
+@tracing.traced()
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
-    def __init__(self, config):
+    def __init__(self, config, tracer=None):
         """Initialize
 
         Args:
@@ -198,7 +196,7 @@ class Crawler(crawler.Crawler):
             raise
 
 
-@tracing.traced(attr='config.tracer')
+@tracing.traced()
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 
@@ -353,12 +351,12 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
             The initialized crawler implementation class.
     """
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client, tracer=tracer)
-        return ParallelCrawler(parallel_config)
+        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
+        return ParallelCrawler(parallel_config, tracer=tracer)
 
     # Default to the non-parallel crawler
-    crawler_config = CrawlerConfig(storage, progresser, client, tracer=tracer)
-    return Crawler(crawler_config)
+    crawler_config = CrawlerConfig(storage, progresser, client)
+    return Crawler(crawler_config, tracer=tracer)
 
 
 @tracing.trace()
