@@ -162,8 +162,6 @@ def traced(methods=None, attr=None):
         # Decorate each of the methods to be traced.
         # Adds `self.tracer` in class to give access to the tracer from within.
         if OPENCENSUS_ENABLED:
-            tracer = execution_context.get_opencensus_tracer()
-            LOGGER.info("Tracing context in class: {tracer.span_context}")
             for name, func in to_trace:
                 if name == '__init__': # __init__ decorator to add tracer as instance attribute
                     decorator = trace_init(attr=attr)
@@ -189,23 +187,24 @@ def trace_init(attr=None):
         @functools.wraps(init)
         def inner_wrapper(self, *args, **kwargs):
             init(self, *args, **kwargs)
+            cls_name = self.__class__.__name__
 
             if OPENCENSUS_ENABLED:
                 if 'tracer' in kwargs:
                     # If `tracer` is passed explicitely to our class at __init__,
                     # we use that tracer.
-                    LOGGER.info("Tracing - set tracer from kwargs")
+                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from kwargs")
                     self.tracer = kwargs['tracer']
                 elif attr is not None:
                     # If `attr` is passed to this decorator, then get the tracer from
                     # the instance attribute.
-                    LOGGER.info(f"Tracing - set tracer from class attribute {name}")
+                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from class attribute {name}")
                     self.tracer = rgetattr(self, name)
                 else:
                     # Otherwise, get tracer from current execution context.
-                    LOGGER.info(f"Tracing - set tracer from execution context")
+                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from execution context")
                     self.tracer = execution_context.get_opencensus_tracer()
-                LOGGER.info(f"Tracing - context: {self.tracer.span_context}")
+                LOGGER.info(f"Tracing - {cls_name}.__init__ - context: {self.tracer.span_context}")
         return inner_wrapper
     return outer_wrapper
 
@@ -257,8 +256,7 @@ def trace(attr=None):
                 span_name = f'{fname}'
                 tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
 
-            LOGGER.info(f"Tracing span: '{span_name}'")
-            LOGGER.info(f"Tracing context: {tracer.span_context}")
+            LOGGER.info(f"Tracing - {span_name} - Context: {tracer.span_context}")
 
             # Trace our function
             with tracer.span(name=span_name) as span:
@@ -266,7 +264,7 @@ def trace(attr=None):
                 # If the method has a `tracer` argument, pass it there
                 # this will enable to start sub-spans within the target function.
                 if 'tracer' in kwargs:
-                    LOGGER.info(f"Tracing - put `tracer` into function arg")
+                    LOGGER.info(f"Tracing - {span_name} - put `tracer` into function arg")
                     kwargs['tracer'] = tracer
 
                 return func(*args, **kwargs)
