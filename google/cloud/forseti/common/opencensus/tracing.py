@@ -259,6 +259,9 @@ def trace(attr=None):
             else:
                 tracer = kwargs.get('tracer') or ctx_tracer
 
+            # Put the tracer in the new context
+            execution_context.set_opencensus_tracer(tracer)
+
             LOGGER.info(f"Tracing - {span_name} - Class method: {is_method} - Context: {tracer.span_context}")
 
             # Trace our function

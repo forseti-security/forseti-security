@@ -80,7 +80,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
-    def __init__(self, config, tracer=None):
+    def __init__(self, config):
         """Initialize
 
         Args:
@@ -200,7 +200,7 @@ class Crawler(crawler.Crawler):
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 
-    def __init__(self, config, tracer=None):
+    def __init__(self, config):
         """Initialize
 
         Args:
@@ -354,11 +354,11 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     """
     if parallel:
         parallel_config = ParallelCrawlerConfig(storage, progresser, client)
-        return ParallelCrawler(parallel_config, tracer=tracer)
+        return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
     crawler_config = CrawlerConfig(storage, progresser, client)
-    return Crawler(crawler_config, tracer=tracer)
+    return Crawler(crawler_config)
 
 
 @tracing.trace()
