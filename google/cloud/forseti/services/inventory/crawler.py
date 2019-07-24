@@ -86,6 +86,7 @@ class Crawler(crawler.Crawler):
 
         Args:
             config (CrawlerConfig): The crawler configuration
+            tracer (object, optional): OpenCensus tracer.
         """
         super(Crawler, self).__init__()
         self.config = config
@@ -200,11 +201,12 @@ class Crawler(crawler.Crawler):
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 
-    def __init__(self, config):
+    def __init__(self, config, tracer=None):
         """Initialize
 
         Args:
             config (ParallelCrawlerConfig): The crawler configuration
+            tracer (object, optional): OpenCensus tracer.
         """
         super(ParallelCrawler, self).__init__(config)
         self._write_lock = threading.Lock()
