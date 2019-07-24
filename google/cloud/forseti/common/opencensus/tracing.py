@@ -253,15 +253,14 @@ def trace(attr=None):
             # the tracer from the 'tracer' kwargs, and if it's empty get tracer
             # from the OpenCensus context.
             ctx_tracer = execution_context.get_opencensus_tracer()
-            if inspect.ismethod(func):
-                LOGGER.info("Tracing - {fname} is a class method")
-                span_name = f'{module}.{fname}'
+            is_method, span_name = get_fname(func)
+            if is_method:
+                LOGGER.info(f"Tracing - {span_name} is a class method")
                 _self = args[0]
                 tracer = getattr(_self, 'tracer', ctx_tracer)
                 _self.tracer = tracer
             else:
-                LOGGER.info("Tracing - {fname} is a standard function")
-                span_name = f'{fname}'
+                LOGGER.info(f"Tracing - {span_name} is a standard function")
                 tracer = kwargs.get('tracer') or ctx_tracer
 
             LOGGER.info(f"Tracing - {span_name} - Context: {tracer.span_context}")
@@ -300,6 +299,27 @@ def rgetattr(obj, attr, *args):
         """
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+
+def get_fname(fn):
+    """Find out if a function is a class method or a standard function, and
+    return it's name.
+
+    Args:
+        fn (object): Input function or class method.
+
+    Returns:
+        (bool, str): A tuple (is_cls_method, fname).
+    """
+    try :
+        is_cls_method = inspect.getargspec(fn)[0][0] == 'self'
+    except :
+        is_cls_method = False
+    if is_cls_method:
+        name = '{}.{}.{}'.format(fn.__module__, args[0].__class__.__name__, fn.__name__)
+    else:
+        name = '{}.{}'.format(fn.__module__, fn.__name__)
+    return is_cls_method, fname
 
 
 def monkey_patch_multiprocessing():
