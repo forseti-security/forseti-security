@@ -198,6 +198,7 @@ class Crawler(crawler.Crawler):
             raise
 
 
+@tracing.traced(attr='config.tracer')
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 

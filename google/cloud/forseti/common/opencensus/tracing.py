@@ -187,27 +187,24 @@ def trace_init(attr=None):
     """
     def outer_wrapper(init):
         def inner_wrapper(self, *args, **kwargs):
-            if not OPENCENSUS_ENABLED:
-                return init(self, *args, **kwargs)
+            init(self, *args, **kwargs)
 
-            ret = init(self, *args, **kwargs)
-
-            if 'tracer' in kwargs:
-                # If `tracer` is passed explicitely to our class at __init__,
-                # we use that tracer.
-                LOGGER.info("Tracing - set tracer from kwargs")
-                self.tracer = kwargs['tracer']
-            elif attr is not None:
-                # If `attr` is passed to this decorator, then get the tracer from
-                # the instance attribute.
-                LOGGER.info(f"Tracing - set tracer from class attribute {name}")
-                self.tracer = rgetattr(self, name)
-            else:
-                # Otherwise, get tracer from current execution context.
-                LOGGER.info(f"Tracing - set tracer from execution context")
-                self.tracer = execution_context.get_opencensus_tracer()
-
-            LOGGER.info(f"Tracing - context: {self.tracer.span_context}")
+            if OPENCENSUS_ENABLED:
+                if 'tracer' in kwargs:
+                    # If `tracer` is passed explicitely to our class at __init__,
+                    # we use that tracer.
+                    LOGGER.info("Tracing - set tracer from kwargs")
+                    self.tracer = kwargs['tracer']
+                elif attr is not None:
+                    # If `attr` is passed to this decorator, then get the tracer from
+                    # the instance attribute.
+                    LOGGER.info(f"Tracing - set tracer from class attribute {name}")
+                    self.tracer = rgetattr(self, name)
+                else:
+                    # Otherwise, get tracer from current execution context.
+                    LOGGER.info(f"Tracing - set tracer from execution context")
+                    self.tracer = execution_context.get_opencensus_tracer()
+                LOGGER.info(f"Tracing - context: {self.tracer.span_context}")
         return inner_wrapper
     return outer_wrapper
 
