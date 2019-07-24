@@ -313,9 +313,9 @@ def get_fname(fn, *args):
     except :
         is_cls_method = False
     if is_cls_method:
-        name = '{}.{}.{}'.format(fn.__module__, args[0].__class__.__name__, fn.__name__)
+        fname = '{}.{}.{}'.format(fn.__module__, args[0].__class__.__name__, fn.__name__)
     else:
-        name = '{}.{}'.format(fn.__module__, fn.__name__)
+        fname = '{}.{}'.format(fn.__module__, fn.__name__)
     return is_cls_method, fname
 
 
