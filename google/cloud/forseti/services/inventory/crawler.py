@@ -34,7 +34,7 @@ standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
-
+@tracing.traced()
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
@@ -60,7 +60,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, threads=10,
-                 variables=None):
+                 variables=None, tracer=None):
         """Initialize
 
         Args:
@@ -77,9 +77,9 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
-        self.tracer = tracer
 
 
+@tracing.traced(attr='config.tracer')
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -114,16 +114,12 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-        tracer = self.config.tracer
-        span = tracer.start_span('crawler.visit')
         attrs = {
             'id': resource._data.get('name', None),
             'parent': resource._data.get('parent', None),
             'type': resource.__class__.__name__,
             'success': True
         }
-        for k, v in attrs.items():
-            span.add_attribute(k, v)
         progresser = self.config.progresser
         try:
 
@@ -142,7 +138,8 @@ class Crawler(crawler.Crawler):
             attrs['success'] = False
             raise
         else:
-            tracer.end_span()
+            for k, v in attrs.items():
+                self.tracer.add_attribute_to_current_span(k, v)
             progresser.on_new_object(resource)
 
     def dispatch(self, callback):
@@ -226,6 +223,7 @@ class ParallelCrawler(Crawler):
     def _process_queue(self):
         """Process items in the queue until the shutdown event is set."""
         while not self._shutdown_event.is_set():
+            self.tracer.start_span("test")
             try:
                 callback = self._dispatch_queue.get(timeout=1)
             except Empty:
@@ -233,6 +231,7 @@ class ParallelCrawler(Crawler):
 
             callback()
             self._dispatch_queue.task_done()
+            self.tracer.end_span()
 
     def run(self, resource):
         """Run the crawler, given a start resource.
@@ -304,13 +303,15 @@ class ParallelCrawler(Crawler):
             raise
 
 
-def _api_client_factory(storage, config, parallel):
+@tracing.trace()
+def _api_client_factory(storage, config, parallel, tracer=None):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -335,6 +336,7 @@ def _api_client_factory(storage, config, parallel):
     return gcp.ApiClientImpl(client_config)
 
 
+@tracing.trace()
 def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
@@ -343,6 +345,7 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
         progresser (object): Progresser to notify status updates.
         client (object): The API client instance.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Union[Crawler, ParallelCrawler]:
@@ -357,13 +360,14 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     return Crawler(crawler_config)
 
 
-def _root_resource_factory(config, client):
+@tracing.trace()
+def _root_resource_factory(config, client, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
     Args:
         config (object): Inventory configuration on server.
         client (object): The API client instance.
-        tracer (opencensus.trace.Tracer): OpenCensus tracer.
+        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Resource: The initialized root resource.
@@ -376,6 +380,7 @@ def _root_resource_factory(config, client):
     return resources.from_root_id(client, config.get_root_resource_id())
 
 
+@tracing.trace()
 def run_crawler(storage,
                 progresser,
                 config,

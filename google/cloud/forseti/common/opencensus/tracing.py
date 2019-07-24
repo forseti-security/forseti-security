@@ -130,12 +130,15 @@ def create_exporter(transport=None):
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
 
-def traced(methods=None):
-    """Class decorator.
+
+def traced(methods=None, attr=None):
+    """Class decorator to enable automatic tracing on designated class methods.
 
     Args:
-        methods (list): If set, the decorator will trace those class methods.
-            Otherwise, trace all class methods.
+        methods (list, optional): If set, the decorator will trace those class
+            methods. Otherwise, trace all class methods.
+        attr (str, optional): If the tracer was passed explicitely to the class
+            in an attribute, get it from there.
 
     Returns:
         object: Decorated class.
@@ -157,20 +160,63 @@ def traced(methods=None):
             to_trace = [m for m in cls_methods if m[0] in methods]  # trace specified methods
 
         # Decorate each of the methods to be traced.
-        for name, func in to_trace:
-            if name != '__init__':  # never trace __init__
-                decorator = trace()
+        # Adds `self.tracer` in class to give access to the tracer from within.
+        if OPENCENSUS_ENABLED:
+            tracer = execution_context.get_opencensus_tracer()
+            LOGGER.info("Tracing context in class: {tracer.span_context}")
+            for name, func in to_trace:
+                if name == '__init__': # __init__ decorator to add tracer as instance attribute
+                    decorator = trace_init(attr=attr)
+                else:
+                    decorator = trace()
                 setattr(cls, name, decorator(func))
-
         return cls
-
     return wrapper
 
-def trace():
-    """Method decorator to trace a function.
+
+def trace_init(attr=None):
+    """Method decorator for a class's __init__ method. Set `self.tracer` (either
+    from instance kwargs, attribute, or execution context).
+
+    Args:
+        attr (str, optional): If the tracer was passed explicitely to the class
+            in an attribute, get it from there.
 
     Returns:
         func: Decorated function.
+    """
+    def outer_wrapper(init):
+        def inner_wrapper(self, *args, **kwargs):
+            if not OPENCENSUS_ENABLED:
+                return init(self, *args, **kwargs)
+
+            ret = init(self, *args, **kwargs)
+
+            if 'tracer' in kwargs:
+                # If `tracer` is passed explicitely to our class at __init__,
+                # we use that tracer.
+                LOGGER.info("Tracing - set tracer from kwargs")
+                self.tracer = kwargs['tracer']
+            elif attr is not None:
+                # If `attr` is passed to this decorator, then get the tracer from
+                # the instance attribute.
+                LOGGER.info(f"Tracing - set tracer from class attribute {name}")
+                self.tracer = rgetattr(self, name)
+            else:
+                # Otherwise, get tracer from current execution context.
+                LOGGER.info(f"Tracing - set tracer from execution context")
+                self.tracer = execution_context.get_opencensus_tracer()
+
+            LOGGER.info(f"Tracing - context: {self.tracer.span_context}")
+        return inner_wrapper
+    return outer_wrapper
+
+
+def trace(attr=None):
+    """Method decorator to trace a class method or a function.
+
+    Returns:
+        func: Decorated function (or class method).
     """
     def outer_wrapper(func):
         """Outer wrapper.
@@ -179,7 +225,7 @@ def trace():
             func (func): Function to trace.
 
         Returns:
-            func: Decorated function.
+            func: Decorated function (or class method).
         """
         @functools.wraps(func)
         def inner_wrapper(*args, **kwargs):
@@ -195,22 +241,60 @@ def trace():
             Raises:
                 Exception: Exception thrown by the decorated function (if any).
             """
-            if OPENCENSUS_ENABLED:
-                tracer = execution_context.get_opencensus_tracer()
-                module = func.__module__.split('.')[-1]
-                fname = func.__name__
-                LOGGER.info(f"Tracing method '{module}.{function}'")
-                LOGGER.info(f"Tracing context: {tracer.span_context}")
-                if inspect.ismethod(func):
-                    span_name = "{module}.{fname}"
-                else:
-                    span_name = '{fname}'
-                with tracer.span(name=span_name) as span:
-                    kwargs['span'] = span
-                    return func(*args, **kwargs)
-            return func(*args, **kwargs)
+            if not OPENCENSUS_ENABLED:
+                return func(*args, **kwargs)
+
+            # Build span name from function info and fetch appropriate tracer
+            module = func.__module__.split('.')[-1]
+            fname = func.__name__
+            LOGGER.info(f"Tracing method '{module}.{function}'")
+            LOGGER.info(f"Tracing context: {tracer.span_context}")
+
+            # If the function is a class method, get the tracer from the
+            # 'tracer' instance attribute. If it's a standard function, get
+            # the tracer from the 'tracer' kwargs, and if it's empty get tracer
+            # from the OpenCensus context.
+            if inspect.ismethod(func):
+                span_name = "{module}.{fname}"
+                tracer = getattr(args[0], 'tracer')
+            else:
+                span_name = '{fname}'
+                tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
+
+            # Trace our function
+            with tracer.span(name=span_name) as span:
+
+                # If the method has a `tracer` argument, pass it there
+                # this will enable to start sub-spans within the target function.
+                if 'tracer' in kwargs:
+                    LOGGER.info(f"Tracing - put `tracer` into function arg")
+                    kwargs['tracer'] = tracer
+
+                return func(*args, **kwargs)
+
         return inner_wrapper
     return outer_wrapper
+
+
+def rgetattr(obj, attr, *args):
+    """Get nested attribute from object.
+    Args:
+        obj (Object): An instance of a class.
+        attr (str): The attribute to get the tracer from.
+        *args: Argument list passed to a function.
+    Returns:
+        object: Fetched attribute.
+    """
+    def _getattr(obj, attr):
+        """Get attributes in object.
+        Args:
+            obj (Object): An instance of a class.
+            attr (str): The nested attribute to get.
+        Returns:
+            object: Return value of `getattr`.
+        """
+        return getattr(obj, attr, *args)
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
 def monkey_patch_multiprocessing():

@@ -151,6 +151,7 @@ class FirstMessageQueueProgresser(QueueProgresser):
         QueueProgresser._notify_eof(self)
 
 
+@tracing.trace()
 def run_inventory(service_config,
                   queue,
                   session,
@@ -164,7 +165,8 @@ def run_inventory(service_config,
         queue (object): Queue to push status updates into.
         session (object): Database session.
         progresser (object): Progresser implementation to use.
-        background (bool): whether to run the inventory in background
+        background (bool): whether to run the inventory in background.
+        tracer (object, optional): Tracer object.
 
     Returns:
         QueueProgresser: Returns the result of the crawl.
