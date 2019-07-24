@@ -140,11 +140,12 @@ class Crawler(crawler.Crawler):
             attrs['success'] = False
             raise
         else:
-            for k, v in attrs.items():
-                self.tracer.add_attribute_to_current_span(k, v)
             progresser.on_new_object(resource)
+        finally:
+            for k, v in attrs.items():
+                LOGGER.info(f'Tracing - DEBUG - Adding {k}={v} to span')
+                self.tracer.add_attribute_to_current_span(k, v)
 
-    @tracing.trace()
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
 
@@ -162,7 +163,6 @@ class Crawler(crawler.Crawler):
         """
         self.config.storage.write(resource)
 
-    @tracing.trace()
     def get_client(self):
         """Get the GCP API client.
 
