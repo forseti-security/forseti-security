@@ -240,6 +240,8 @@ def trace(attr=None):
                 Exception: Exception thrown by the decorated function (if any).
             """
             if not OPENCENSUS_ENABLED:
+                if inspect.ismethod(func):
+                    args[0].tracer = None  # fix bug where tracer is not defined
                 return func(*args, **kwargs)
 
             # Build span name from function info and fetch appropriate tracer
