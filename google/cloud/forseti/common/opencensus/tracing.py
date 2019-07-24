@@ -259,7 +259,7 @@ def trace(attr=None):
                 span_name = '{fname}'
                 tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
 
-            LOGGER.info(f"Tracing span: '{span}'")
+            LOGGER.info(f"Tracing span: '{span_name}'")
             LOGGER.info(f"Tracing context: {tracer.span_context}")
 
             # Trace our function
