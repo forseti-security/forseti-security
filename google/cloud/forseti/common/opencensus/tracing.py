@@ -254,11 +254,13 @@ def trace(attr=None):
             # from the OpenCensus context.
             ctx_tracer = execution_context.get_opencensus_tracer()
             if inspect.ismethod(func):
+                LOGGER.info("Tracing - {fname} is a class method")
                 span_name = f'{module}.{fname}'
                 _self = args[0]
                 tracer = getattr(_self, 'tracer', ctx_tracer)
                 _self.tracer = tracer
             else:
+                LOGGER.info("Tracing - {fname} is a standard function")
                 span_name = f'{fname}'
                 tracer = kwargs.get('tracer') or ctx_tracer
 
