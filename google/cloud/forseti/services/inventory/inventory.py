@@ -261,7 +261,7 @@ class Inventory(object):
                             session,
                             progresser,
                             background,
-                            tracer=self.tracer)
+                            tracer=tracer)
 
                         if model_name:
                             run_import(self.config.client(),

@@ -186,8 +186,9 @@ def trace_init(attr=None):
     def outer_wrapper(init):
         @functools.wraps(init)
         def inner_wrapper(self, *args, **kwargs):
-            init(self, *args, **kwargs)
             cls_name = self.__class__.__name__
+            LOGGER.info(f"Decorating {cls_name}")
+            init(self, *args, **kwargs)
 
             if OPENCENSUS_ENABLED:
                 if 'tracer' in kwargs:
@@ -251,7 +252,8 @@ def trace(attr=None):
             # from the OpenCensus context.
             if inspect.ismethod(func):
                 span_name = f'{module}.{fname}'
-                tracer = getattr(args[0], 'tracer')
+                _self = args[0]
+                tracer = getattr(_self, 'tracer')
             else:
                 span_name = f'{fname}'
                 tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
