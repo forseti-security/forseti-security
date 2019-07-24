@@ -253,15 +253,13 @@ def trace(attr=None):
             # from the OpenCensus context.
             ctx_tracer = execution_context.get_opencensus_tracer()
             if is_method:
-                LOGGER.info(f"Tracing - {span_name} is a class method")
                 _self = args[0]
                 tracer = getattr(_self, 'tracer', ctx_tracer)
                 _self.tracer = tracer
             else:
-                LOGGER.info(f"Tracing - {span_name} is a standard function")
                 tracer = kwargs.get('tracer') or ctx_tracer
 
-            LOGGER.info(f"Tracing - {span_name} - Context: {tracer.span_context}")
+            LOGGER.info(f"Tracing - {span_name} - Class method: {is_method} - Context: {tracer.span_context}")
 
             # Trace our function
             with tracer.span(name=span_name) as span:
@@ -269,7 +267,7 @@ def trace(attr=None):
                 # If the method has a `tracer` argument, pass it there
                 # this will enable to start sub-spans within the target function.
                 if 'tracer' in kwargs:
-                    LOGGER.info(f"Tracing - {span_name} - push tracer object into `tracer` kwarg")
+                    LOGGER.info(f"Tracing - {span_name} - found `tracer` kwargs - push tracer object into it")
                     kwargs['tracer'] = tracer
 
                 return func(*args, **kwargs)
