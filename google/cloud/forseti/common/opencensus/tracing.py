@@ -250,10 +250,10 @@ def trace(attr=None):
             # the tracer from the 'tracer' kwargs, and if it's empty get tracer
             # from the OpenCensus context.
             if inspect.ismethod(func):
-                span_name = "{module}.{fname}"
+                span_name = f'{module}.{fname}'
                 tracer = getattr(args[0], 'tracer')
             else:
-                span_name = '{fname}'
+                span_name = f'{fname}'
                 tracer = kwargs.get('tracer') or execution_context.get_opencensus_tracer()
 
             LOGGER.info(f"Tracing span: '{span_name}'")
