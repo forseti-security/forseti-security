@@ -22,8 +22,8 @@ import threading
 import time
 
 from future import standard_library
-from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.opencensus import tracing
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
@@ -402,7 +402,7 @@ def run_crawler(storage,
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
         tracer (object): OpenCensus tracer.
-        
+
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
