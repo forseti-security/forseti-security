@@ -9,7 +9,7 @@ order: 004
 
 This guide explains how to setup Forseti on Kubernetes.  Most installation scenarios require the use of Terraform and the [terraform-google-forseti](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/) module.  The Forseti containers are deployed on GKE using [Helm charts](https://github.com/forseti-security/helm-charts).  When using Terraform to deploy Forseti on GKE, this is transparent to the user.
 
-There are multiple scenarios for installation depending on what GCP components (GKE, Forseti) are installed, if any.  After addressing the [pre-requisites](#install-pre-requisites), please use the following table to determine from which step you should start. 
+There are multiple scenarios for installation depending on what GCP components (GKE, Forseti) are installed, if any.  After addressing the [pre-requisites](#install-pre-requisites), please use the following table to determine from which step you should start.
 
 {: .table}
 |  An Empty GCP Project  |  Forseti Infrastructure  |  GKE Cluster  |  Then start at  |
@@ -29,7 +29,9 @@ The following tools are required:
 
 In each of the following scenarios, the user will create a *main.tf* file and add the appropriate input variables.  It is recommended that this *main.tf* be created in an empty directory.
 
-Each scenario described below invokes a corresponding example in the [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) folder of the *terraform-google-forseti* Terraform module.  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.
+Each scenario described below invokes a corresponding example in the [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) folder of the *terraform-google-forseti* Terraform module.  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.  
+
+Each corresponding example in [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) on GitHub also contains additional information on each deployment scenario.
 
 Wherever possible, the examples utilize [modules](https://registry.terraform.io/modules/terraform-google-modules) developed and curated by the [Cloud Foundation Toolkit](https://cloud.google.com/foundation-toolkit/) team.  These modules implement opinionated best practices for deploying GCP components.  For example, the [kubernetes-engine](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/4.0.0) module applies practices found in the [GKE hardening](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster).
 
