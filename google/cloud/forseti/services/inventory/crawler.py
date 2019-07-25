@@ -401,7 +401,8 @@ def run_crawler(storage,
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
-
+        tracer (object): OpenCensus tracer.
+        
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
