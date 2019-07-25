@@ -303,6 +303,7 @@ def rgetattr(obj, attr, *args):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
+
 def get_fname(function, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.
