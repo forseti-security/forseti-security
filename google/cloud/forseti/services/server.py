@@ -52,6 +52,7 @@ def serve(endpoint,
           config_file_path,
           log_level,
           enable_console_log,
+          enable_tracing=False,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -190,6 +191,10 @@ def main():
              ' than the level you set will be ignored.')
     parser.add_argument(
         '--enable_console_log',
+        action='store_true',
+        help='Print log to console.')
+    parser.add_argument(
+        '--enable_tracing',
         action='store_true',
         help='Print log to console.')
 
