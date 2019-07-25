@@ -212,7 +212,6 @@ class ParallelCrawler(Crawler):
 
         Args:
             config (ParallelCrawlerConfig): The crawler configuration
-            tracer (object, optional): OpenCensus tracer.
         """
         super(ParallelCrawler, self).__init__(config)
         self._write_lock = threading.Lock()
