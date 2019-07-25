@@ -319,7 +319,7 @@ class Resource(object):
         stack = [] if not stack else stack
         self._stack = stack
 
-        # Verify the current resource is not a resource we intended to skip.
+        # Skip the current resource if it's in the excluded_resources list.
         excluded_resources = visitor.config.variables.get(
             'excluded_resources', {})
         resource_name = '{}/{}'.format(self.type(), self.key())
