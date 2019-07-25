@@ -320,7 +320,7 @@ def get_fname(function, *args):
     if is_cls_method:
         fname = '{}.{}.{}'.format(function.__module__,
                                   args[0].__class__.__name__,
-                                  fn.__name__)
+                                  function.__name__)
     else:
         fname = '{}.{}'.format(function.__module__, function.__name__)
     return is_cls_method, fname
