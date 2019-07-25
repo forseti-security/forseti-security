@@ -200,6 +200,35 @@ class CrawlerTest(CrawlerBase):
 
         self.assertEqual(expected_counts, result_counts)
 
+    def test_crawling_to_memory_storage_exclude_all_folders_and_projects(self):
+        """Crawl mock environment, test that all the folders are excluded."""
+        config = InventoryConfig(
+            gcp_api_mocks.ORGANIZATION_ID,
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['folders/1031', 'folders/1032',
+                                'projects/project1', 'projects/project2'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'billing_account': {'iam_policy': 2, 'resource': 2},
+            'crm_org_policy': {'resource': 2},
+            'gsuite_group': {'resource': 4},
+            'gsuite_group_member': {'resource': 1},
+            'gsuite_groups_settings': {'resource': 4},
+            'gsuite_user': {'resource': 4},
+            'gsuite_user_member': {'resource': 3},
+            'organization': {'iam_policy': 1, 'resource': 1},
+            'role': {'resource': 19},
+            'sink': {'resource': 2}
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
     def test_crawling_from_folder(self):
         """Crawl from folder, verify expected resources crawled."""
         config = InventoryConfig(
@@ -222,6 +251,48 @@ class CrawlerTest(CrawlerBase):
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
             'role': {'resource': 1},
+            'sink': {'resource': 1},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder_exclude_project(self):
+        """Crawl from folder, and skip one project, verify
+        expected resources crawled."""
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['projects/project4'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'folder': {'iam_policy': 2, 'resource': 2},
+            'sink': {'resource': 1},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder_exclude_folder(self):
+        """Crawl from folder, and skip one folder, verify
+        expected resources crawled."""
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['folders/1033'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'folder': {'iam_policy': 1, 'resource': 1},
             'sink': {'resource': 1},
         }
 

@@ -149,13 +149,16 @@ class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
 
 
 class InventoryConfig(AbstractInventoryConfig):
+    # pylint: disable=too-many-instance-attributes
     """Implements composed dependency injection for the inventory."""
 
-    def _filter_valid_excluded_resources(self, excluded_resources):
+    @staticmethod
+    def _filter_valid_resources(excluded_resources):
         """Filter valid excluded resources.
 
         Args:
-            list: List of excluded resources to validate against.
+            excluded_resources (list): A list of excluded resources to
+                validate against.
 
         Returns:
             list: List of valid resources to exclude.
@@ -177,8 +180,9 @@ class InventoryConfig(AbstractInventoryConfig):
                     valid_resources.append(resource)
                     break
             if resource not in valid_resources:
-                LOGGER.warn('Resource %s is invalid and will not be omitted '
-                            'during the inventory process.', resource)
+                LOGGER.warning('Resource %s is invalid and will not be '
+                               'omitted during the inventory process.',
+                               resource)
         return valid_resources
 
     def __init__(self,
@@ -227,7 +231,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.retention_days = retention_days
         self.cai_configs = cai_configs
         self.composite_root_resources = composite_root_resources
-        self.excluded_resources = self._filter_valid_excluded_resources(
+        self.excluded_resources = self._filter_valid_resources(
             excluded_resources or [])
 
     def use_composite_root(self):

@@ -248,7 +248,7 @@ class Resource(object):
         """Get data on this resource.
 
         Returns:
-            str: raw data.
+            dict: raw data.
         """
         return self._data
 
@@ -318,19 +318,22 @@ class Resource(object):
                        'scheduled for deletion']
         stack = [] if not stack else stack
         self._stack = stack
-        self._visitor = visitor
-        visitor.visit(self)
+
+        # Verify the current resource is not a resource we intended to skip.
         excluded_resources = visitor.config.variables.get(
             'excluded_resources', {})
+        resource_name = '{}/{}'.format(self.type(), self.key())
+        if resource_name in excluded_resources:
+            return
+
+        self._visitor = visitor
+        visitor.visit(self)
+
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
             try:
                 for resource in yielder.iter():
                     res = resource
-
-                    resource_name = '{}/{}'.format(res.type(), res.key())
-                    if resource_name in excluded_resources:
-                        continue
 
                     new_stack = stack + [self]
 
