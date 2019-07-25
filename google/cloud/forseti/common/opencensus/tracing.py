@@ -35,7 +35,6 @@ try:
     from opencensus.trace import file_exporter
     from opencensus.trace.tracer import Tracer
     from opencensus.trace.samplers import AlwaysOnSampler
-    from opencensus.trace.span import SpanKind
     LOGGER.info('Tracing dependencies successfully imported.')
     OPENCENSUS_ENABLED = True
 except ImportError:
@@ -80,7 +79,7 @@ def create_server_interceptor(extras=True):
         exporter)
     if extras:
         trace_integrations(DEFAULT_INTEGRATIONS)
-    LOGGER.info(f"Tracing interceptor created.")
+    LOGGER.info(f'Tracing interceptor created.')
     return interceptor
 
 
@@ -270,7 +269,7 @@ def trace(attr=None):
             # LOGGER.info(f"Tracing - {span_name} - Class method: {is_method} -
             # Context: {tracer.span_context}")
 
-            with tracer.span(name=span_name) as span:
+            with tracer.span(name=span_name):
 
                 # If the method has a `tracer` argument, pass it there, this
                 # will enable to start sub-spans within the target function.
