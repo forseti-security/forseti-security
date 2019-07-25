@@ -34,6 +34,7 @@ standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
+
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 

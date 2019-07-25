@@ -17,9 +17,7 @@
 import functools
 import inspect
 import logging
-from concurrent import futures
-from multiprocessing import pool
-import threading
+
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
