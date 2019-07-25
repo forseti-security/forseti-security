@@ -27,7 +27,6 @@ logger.get_logger('opencensus').setLevel(logging.DEBUG)  # set debug level for o
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'httplib']
 
 try:
-    from opencensus.common.runtime_context import RuntimeContext
     from opencensus.common.transports.async_ import AsyncTransport
     from opencensus.ext.grpc import client_interceptor, server_interceptor
     from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
