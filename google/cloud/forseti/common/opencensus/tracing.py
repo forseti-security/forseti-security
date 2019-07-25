@@ -24,7 +24,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 logger.get_logger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'httplib']
+DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
     from opencensus.common.transports.async_ import AsyncTransport
