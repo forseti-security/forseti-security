@@ -118,7 +118,7 @@ def create_interceptors():
     Returns:
         tuple: A tuple of gRPC interceptors.
     """
-    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "True")
+    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
     enable_tracing = True if enable_tracing == "True" else False
     LOGGER.info(f"Tracing enabled: {enable_tracing}")
     interceptors = []
