@@ -507,7 +507,7 @@ class ServiceConfig(AbstractServiceConfig):
         Args:
             func (Function): Function to be executed.
         """
-        
+
         self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
