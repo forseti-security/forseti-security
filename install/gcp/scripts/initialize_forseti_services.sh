@@ -39,7 +39,7 @@ FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?charset=utf8"
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
-FORSETI_COMMAND+=" --enable-tracing ${FORSETI_ENABLE_TRACING}"
+FORSETI_COMMAND+=" --enable_tracing ${FORSETI_ENABLE_TRACING}"
 
 CONFIG_VALIDATOR_COMMAND="${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer"
 CONFIG_VALIDATOR_COMMAND+=" --policyPath='${FORSETI_HOME}/policy-library/policies'"
