@@ -20,7 +20,6 @@ import os
 import grpc
 
 from google.cloud.forseti.common.opencensus import tracing
-
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory_pb2
