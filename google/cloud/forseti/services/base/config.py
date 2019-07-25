@@ -36,6 +36,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 
 LOGGER = logger.get_logger(__name__)
 
+
 def _validate_cai_enabled(cai_configs):
     """Verifies if CloudAsset Inventory can be used for this inventory config.
 
@@ -506,6 +507,7 @@ class ServiceConfig(AbstractServiceConfig):
         Args:
             func (Function): Function to be executed.
         """
+        
         self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
