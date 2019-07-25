@@ -17,15 +17,15 @@
 import functools
 import inspect
 import logging
-from concurrent import futures
-from multiprocessing import pool
-import threading
+
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-logger.get_logger('opencensus').setLevel(logging.DEBUG)  # set debug level for opencensus
+# set debug level for opencensus
+logger.get_logger('opencensus').setLevel(logging.DEBUG)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
+# pylint: disable=line-too-long
 try:
     from opencensus.common.transports.async_ import AsyncTransport
     from opencensus.ext.grpc import client_interceptor, server_interceptor
@@ -41,7 +41,8 @@ try:
 except ImportError:
     LOGGER.warning(
         'Cannot enable tracing because the `opencensus` library was not '
-        'found. Run `sudo pip3 install .[tracing]` to install tracing libraries.')
+        'found. Run `sudo pip3 install .[tracing]` to install tracing '
+        'libraries.')
     OPENCENSUS_ENABLED = False
 
 
@@ -97,7 +98,7 @@ def trace_integrations(integrations):
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
-    LOGGER.info(f"Tracing libraries: {integrated_libraries}")
+    LOGGER.info(f'Tracing libraries: {integrated_libraries}')
     return integrated_libraries
 
 
@@ -134,7 +135,7 @@ def traced(methods=None, attr=None):
     Args:
         methods (list, optional): If set, the decorator will trace those class
             methods. Otherwise, trace all class methods.
-        attr (str, optional): If the tracer was passed explicitely to the class
+        attr (str, optional): If the tracer was passed explicitly to the class
             in an attribute, get it from there.
 
     Returns:
@@ -152,16 +153,19 @@ def traced(methods=None, attr=None):
         # Get names of methods to be traced.
         cls_methods = inspect.getmembers(cls, inspect.ismethod)
         if methods is None:
-            to_trace = cls_methods  # trace all class methods
+            # trace all class methods
+            to_trace = cls_methods
         else:
-            to_trace = [m for m in cls_methods if m[0] in methods]  # trace specified methods
+            # trace specified methods
+            to_trace = [m for m in cls_methods if m[0] in methods]
 
         # Decorate each of the methods to be traced.
         # Adds `self.tracer` in class to give access to the tracer from within.
         if OPENCENSUS_ENABLED:
             for name, func in to_trace:
-                LOGGER.info(f"Tracing - Adding decorator to {name}")
-                if name == '__init__': # __init__ decorator to add tracer as instance attribute
+                LOGGER.info(f'Tracing - Adding decorator to {name}')
+                if name == '__init__':
+                    # __init__ decorator to add tracer as instance attribute
                     decorator = trace_init(attr=attr)
                 else:
                     decorator = trace()
@@ -175,7 +179,7 @@ def trace_init(attr=None):
     from instance kwargs, attribute, or execution context).
 
     Args:
-        attr (str, optional): If the tracer was passed explicitely to the class
+        attr (str, optional): If the tracer was passed explicitly to the class
             in an attribute, get it from there.
 
     Returns:
@@ -185,25 +189,29 @@ def trace_init(attr=None):
         @functools.wraps(init)
         def inner_wrapper(self, *args, **kwargs):
             cls_name = self.__class__.__name__
-            LOGGER.info(f"Decorating {cls_name}")
+            LOGGER.info(f'Decorating {cls_name}')
             init(self, *args, **kwargs)
 
             if OPENCENSUS_ENABLED:
                 if 'tracer' in kwargs:
-                    # If `tracer` is passed explicitely to our class at __init__,
+                    # If `tracer` is passed explicitly to our class at __init__,
                     # we use that tracer.
-                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from kwargs")
+                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                                f'from kwargs')
                     self.tracer = kwargs['tracer']
                 elif attr is not None:
-                    # If `attr` is passed to this decorator, then get the tracer from
-                    # the instance attribute.
-                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from class attribute {name}")
-                    self.tracer = rgetattr(self, name)
+                    # If `attr` is passed to this decorator, then get the tracer
+                    # from the instance attribute.
+                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                                f'from class attribute {cls_name}')
+                    self.tracer = rgetattr(self, cls_name)
                 else:
                     # Otherwise, get tracer from current execution context.
-                    LOGGER.info(f"Tracing - {cls_name}.__init__ - set tracer from execution context")
+                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                                f'from execution context')
                     self.tracer = execution_context.get_opencensus_tracer()
-                LOGGER.info(f"Tracing - {cls_name}.__init__ - context: {self.tracer.span_context}")
+                LOGGER.info(f'Tracing - {cls_name}.__init__ - '
+                            f'context: {self.tracer.span_context}')
         return inner_wrapper
     return outer_wrapper
 
@@ -259,12 +267,13 @@ def trace(attr=None):
             # Put the tracer in the new context
             execution_context.set_opencensus_tracer(tracer)
 
-            # LOGGER.info(f"Tracing - {span_name} - Class method: {is_method} - Context: {tracer.span_context}")
+            # LOGGER.info(f"Tracing - {span_name} - Class method: {is_method} -
+            # Context: {tracer.span_context}")
 
             with tracer.span(name=span_name) as span:
 
-                # If the method has a `tracer` argument, pass it there
-                # this will enable to start sub-spans within the target function.
+                # If the method has a `tracer` argument, pass it there, this
+                # will enable to start sub-spans within the target function.
                 if 'tracer' in kwargs:
                     kwargs['tracer'] = tracer
 
@@ -294,23 +303,24 @@ def rgetattr(obj, attr, *args):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
-
-def get_fname(fn, *args):
+def get_fname(function, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.
 
     Args:
-        fn (object): Input function or class method.
+        function (object): Input function or class method.
 
     Returns:
         (bool, str): A tuple (is_cls_method, fname).
     """
-    try :
-        is_cls_method = inspect.getargspec(fn)[0][0] == 'self'
-    except :
+    try:
+        is_cls_method = inspect.getargspec(function)[0][0] == 'self'
+    except:
         is_cls_method = False
     if is_cls_method:
-        fname = '{}.{}.{}'.format(fn.__module__, args[0].__class__.__name__, fn.__name__)
+        fname = '{}.{}.{}'.format(function.__module__,
+                                  args[0].__class__.__name__,
+                                  fn.__name__)
     else:
-        fname = '{}.{}'.format(fn.__module__, fn.__name__)
+        fname = '{}.{}'.format(function.__module__, function.__name__)
     return is_cls_method, fname

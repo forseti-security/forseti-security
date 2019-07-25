@@ -119,9 +119,9 @@ def create_interceptors():
     Returns:
         tuple: A tuple of gRPC interceptors.
     """
-    enable_tracing = os.environ.get("FORSETI_ENABLE_TRACING", "False")
-    enable_tracing = True if enable_tracing == "True" else False
-    LOGGER.info(f"Tracing enabled: {enable_tracing}")
+    enable_tracing = os.environ.get('FORSETI_ENABLE_TRACING', 'False')
+    enable_tracing = True if enable_tracing == 'True' else False
+    LOGGER.info(f'Tracing enabled: {enable_tracing}')
     interceptors = []
     if enable_tracing and tracing.OPENCENSUS_ENABLED:
         interceptors.append(tracing.create_server_interceptor())
@@ -213,6 +213,7 @@ def main():
           args['config_file_path'],
           args['log_level'],
           args['enable_console_log'])
+
 
 if __name__ == '__main__':
     main()

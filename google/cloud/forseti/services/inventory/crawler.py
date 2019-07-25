@@ -34,6 +34,7 @@ standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
+
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
@@ -142,8 +143,8 @@ class Crawler(crawler.Crawler):
             progresser.on_new_object(resource)
         finally:
             if tracing.OPENCENSUS_ENABLED:
-                for k, v in attrs.items():
-                    self.tracer.add_attribute_to_current_span(k, v)
+                for key, value in attrs.items():
+                    self.tracer.add_attribute_to_current_span(key, value)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
@@ -409,7 +410,8 @@ def run_crawler(storage,
         parallel = False
 
     client = _api_client_factory(storage, config, parallel)
-    crawler_impl = _crawler_factory(storage, progresser, client, parallel, tracer=tracer)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel,
+                                    tracer=tracer)
     resource = _root_resource_factory(config, client)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
