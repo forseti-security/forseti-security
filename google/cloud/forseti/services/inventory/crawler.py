@@ -143,8 +143,8 @@ class Crawler(crawler.Crawler):
             progresser.on_new_object(resource)
         finally:
             if tracing.OPENCENSUS_ENABLED:
-                for k, v in attrs.items():
-                    self.tracer.add_attribute_to_current_span(k, v)
+                for key, value in attrs.items():
+                    self.tracer.add_attribute_to_current_span(key, value)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.

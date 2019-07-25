@@ -25,6 +25,7 @@ LOGGER = logger.get_logger(__name__)
 logger.get_logger('opencensus').setLevel(logging.DEBUG)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
+# pylint: disable=line-too-long
 try:
     from opencensus.common.transports.async_ import AsyncTransport
     from opencensus.ext.grpc import client_interceptor, server_interceptor
@@ -302,25 +303,24 @@ def rgetattr(obj, attr, *args):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
-
-def get_fname(fn, *args):
+def get_fname(function, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.
 
     Args:
-        fn (object): Input function or class method.
+        function (object): Input function or class method.
 
     Returns:
         (bool, str): A tuple (is_cls_method, fname).
     """
     try:
-        is_cls_method = inspect.getargspec(fn)[0][0] == 'self'
+        is_cls_method = inspect.getargspec(function)[0][0] == 'self'
     except:
         is_cls_method = False
     if is_cls_method:
-        fname = '{}.{}.{}'.format(fn.__module__,
+        fname = '{}.{}.{}'.format(function.__module__,
                                   args[0].__class__.__name__,
                                   fn.__name__)
     else:
-        fname = '{}.{}'.format(fn.__module__, fn.__name__)
+        fname = '{}.{}'.format(function.__module__, function.__name__)
     return is_cls_method, fname

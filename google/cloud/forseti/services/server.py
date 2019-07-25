@@ -120,7 +120,7 @@ def create_interceptors():
     """
     enable_tracing = os.environ.get('FORSETI_ENABLE_TRACING', 'False')
     enable_tracing = True if enable_tracing == 'True' else False
-    LOGGER.info(f"Tracing enabled: {enable_tracing}")
+    LOGGER.info(f'Tracing enabled: {enable_tracing}')
     interceptors = []
     if enable_tracing and tracing.OPENCENSUS_ENABLED:
         interceptors.append(tracing.create_server_interceptor())
