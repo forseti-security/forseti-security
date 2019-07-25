@@ -3,6 +3,8 @@ title: Deploy Forseti Security on Google Kubernetes Engine
 order: 004
 ---
 
+{% include_relative ../../../_includes/docs/latest/beta-release-feature.md %}
+
 # {{ page.title }}
 
 This guide explains how to setup Forseti on Kubernetes.  Most installation scenarios require the use of Terraform and the [terraform-google-forseti](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/) module.  The Forseti containers are deployed on GKE using [Helm charts](https://github.com/forseti-security/helm-charts).  When using Terraform to deploy Forseti on GKE, this is transparent to the user.
@@ -29,7 +31,7 @@ In each of the following scenarios, the user will create a *main.tf* file and ad
 
 Each scenario described below invokes a corresponding example in the [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) folder of the *terraform-google-forseti* Terraform module.  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.
 
-Wherever possible, the examples utilize [modules](https://registry.terraform.io/modules/terraform-google-modules) developed and curated by the [Cloud Foundation Toolkit](https://cloud.google.com/foundation-toolkit/) team.  These modules implement opinionated best practices for deploying GCP components.  For example, the [kubernetes-engine](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/4.0.0) module applies practices found in the [GKE hardening](documentation).
+Wherever possible, the examples utilize [modules](https://registry.terraform.io/modules/terraform-google-modules) developed and curated by the [Cloud Foundation Toolkit](https://cloud.google.com/foundation-toolkit/) team.  These modules implement opinionated best practices for deploying GCP components.  For example, the [kubernetes-engine](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/4.0.0) module applies practices found in the [GKE hardening](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster).
 
 ### Deploy Forseti and Forseti on GKE end-to-end
 
@@ -45,7 +47,7 @@ module "forseti-on-gke-end-to-end" {
     project_id              = ""
     region                  = ""
     zones                   = [""]
-	network_description     = "GKE Network"
+    network_description     = "GKE Network"
     auto_create_subnetworks = false
     gke_node_ip_range       = "10.1.0.0/20"
 }
@@ -60,7 +62,7 @@ terraform init
 Apply the Terraform module.
 
 ```bash
-tarraform apply
+terraform apply
 ```
 
 **Note:** The `terraform apply` may fail to complete.  In this case, please re-run `terraform apply`.
@@ -82,7 +84,7 @@ module "forseti-on-gke-new-gke-cluster" {
     region                           = ""
     suffix                           = ""
     zones                            = [""]
-	network_description              = "GKE Network"
+    network_description              = "GKE Network"
     auto_create_subnetworks          = false
     gke_node_ip_range                = "10.1.0.0/20"
 }
@@ -97,7 +99,7 @@ terraform init
 Apply the Terraform module.
 
 ```bash
-tarraform apply
+terraform apply
 ```
 
 **Note:** The `terraform apply` may fail to complete.  In this case, please re-run `terraform apply`.
@@ -132,7 +134,7 @@ terraform init
 Apply the Terraform module.
 
 ```bash
-tarraform apply
+terraform apply
 ```
 
 ## Deploying with Helm
@@ -209,7 +211,7 @@ helm upgrade -i forseti forseti-security/forseti-security \
     --recreate-pods \
     --set-string serverKeyContents="$(cat forseti-server.json | base64 - -w 0)" \
     --set-string orchestratorKeyContents="$(cat forseti-client.json | base64 - -w 0)" \
-    --set-string serverConfigContents="$(gsutil cat gs://<BUCKET_NAME>/<CONFIGS_FOLDER>/forseti_conf_server.yaml | base64 -)" \
+    --set-string serverConfigContents="$(gsutil cat gs://<BUCKET_NAME>/configs/forseti_conf_server.yaml | base64 -)" \
     --values=forseti-values.yaml
 ```
 ### Troubleshooting
@@ -255,9 +257,9 @@ terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute
 Error: Get https://35.239.190.141/apis/apps/v1/namespaces/forseti-84cd80fe/deployments/tiller-deploy: dial tcp 35.239.190.141:443: connect: connection refused
 ```
 
-**Exaplanation:**
+**Explanation:**
 
-This happens when the GKE cluster is not able to schedule pods when Terraform attempts to deploy Forseti on the cluster via Helm.  This is be addressed via a patch in a future version of the [terraform-google-kubernetes-engine](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine) module.
+This happens when the GKE cluster is not able to schedule pods when Terraform attempts to deploy Forseti on the cluster via Helm.  This is to be addressed via a patch in a future version of the [terraform-google-kubernetes-engine](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine) module.
 
 **Workaround:**
 
