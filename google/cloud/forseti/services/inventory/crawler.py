@@ -346,7 +346,7 @@ def _api_client_factory(storage, config, parallel):
 
 
 @tracing.trace()
-def _crawler_factory(storage, progresser, client, parallel, tracer=None):
+def _crawler_factory(storage, progresser, client, parallel):
     """Creates the proper initialized crawler based on the configuration.
 
     Args:
@@ -354,7 +354,6 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
         progresser (object): Progresser to notify status updates.
         client (object): The API client instance.
         parallel (bool): If true, use the parallel crawler implementation.
-        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Union[Crawler, ParallelCrawler]:
@@ -369,13 +368,12 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     return Crawler(crawler_config)
 
 
-def _root_resource_factory(config, client, tracer=None):
+def _root_resource_factory(config, client):
     """Creates the proper initialized crawler based on the configuration.
 
     Args:
         config (object): Inventory configuration on server.
         client (object): The API client instance.
-        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Resource: The initialized root resource.
