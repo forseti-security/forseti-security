@@ -308,3 +308,23 @@ terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.helm_r
 
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.kubernetes_namespace.forseti
 ```
+
+#### Terraform Destroy - Cannot delete auto subnetwork
+
+**Error Message:**
+
+```bash
+Error: Error reading Subnetwork: googleapi: Error 400: Invalid resource usage: 'Cannot delete auto subnetwork from an auto subnet mode network.'., invalidResourceUsage
+```
+
+**Explanation:**
+
+This occurs when there are resources on the subnetwork that exist outside of Terraform's state.  For instance, Forseti may haven been deployed in a separate run of Terraform.
+
+**Workaround:**
+
+```bash
+terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_network.network
+
+terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_subnetwork.subnetwork[0]
+```
