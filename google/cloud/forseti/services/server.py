@@ -64,6 +64,7 @@ def serve(endpoint,
         config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
+        enable_tracing (bool): Enable tracing.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -93,7 +94,7 @@ def serve(endpoint,
         endpoint=endpoint)
     config.update_configuration()
 
-    interceptors = create_interceptors()
+    interceptors = create_interceptors(enable_tracing)
 
     # Register services & start server
     server = grpc.server(
@@ -113,14 +114,15 @@ def serve(endpoint,
             return
 
 
-def create_interceptors():
+def create_interceptors(enable_tracing):
     """Create gRPC server interceptors.
+
+    Args:
+        enable_tracing (bool): Flag to enable tracing.
 
     Returns:
         tuple: A tuple of gRPC interceptors.
     """
-    enable_tracing = os.environ.get('FORSETI_ENABLE_TRACING', 'False')
-    enable_tracing = True if enable_tracing == 'True' else False
     LOGGER.info(f'Tracing enabled: {enable_tracing}')
     interceptors = []
     if enable_tracing and tracing.OPENCENSUS_ENABLED:
