@@ -99,6 +99,7 @@ class Crawler(crawler.Crawler):
         Returns:
             QueueProgresser: The filled progresser described in inventory
         """
+
         resource.accept(self)
         return self.config.progresser
 
@@ -113,14 +114,13 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
+
         attrs = {
             'id': resource._data.get('name', None),
             'parent': resource._data.get('parent', None),
             'type': resource.__class__.__name__,
             'success': True
         }
-        LOGGER.info(f'Tracing - DEBUG - Context: {self.tracer.span_context}')
-        LOGGER.info(f'Tracing - DEBUG - Attributes: {self.tracer.span_context}')
         progresser = self.config.progresser
         try:
 
@@ -141,9 +141,9 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
         finally:
-            for k, v in attrs.items():
-                LOGGER.info(f'Tracing - DEBUG - Adding {k}={v} to span')
-                self.tracer.add_attribute_to_current_span(k, v)
+            if tracing.OPENCENSUS_ENABLED:
+                for k, v in attrs.items():
+                    self.tracer.add_attribute_to_current_span(k, v)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
