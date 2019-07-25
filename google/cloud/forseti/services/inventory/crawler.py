@@ -85,7 +85,6 @@ class Crawler(crawler.Crawler):
 
         Args:
             config (CrawlerConfig): The crawler configuration
-            tracer (object, optional): OpenCensus tracer.
         """
         super(Crawler, self).__init__()
         self.config = config
@@ -316,15 +315,13 @@ class ParallelCrawler(Crawler):
             raise
 
 
-@tracing.trace()
-def _api_client_factory(storage, config, parallel, tracer=None):
+def _api_client_factory(storage, config, parallel):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
-        tracer (object, optional): OpenCensus tracer.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -373,7 +370,6 @@ def _crawler_factory(storage, progresser, client, parallel, tracer=None):
     return Crawler(crawler_config)
 
 
-@tracing.trace()
 def _root_resource_factory(config, client, tracer=None):
     """Creates the proper initialized crawler based on the configuration.
 
