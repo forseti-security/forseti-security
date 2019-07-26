@@ -391,7 +391,8 @@ def _root_resource_factory(config, client):
 def run_crawler(storage,
                 progresser,
                 config,
-                parallel=True):
+                parallel=True,
+                tracer=None):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -399,6 +400,7 @@ def run_crawler(storage,
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (object): OpenCensus tracer.
 
     Returns:
         QueueProgresser: The progresser implemented in inventory
