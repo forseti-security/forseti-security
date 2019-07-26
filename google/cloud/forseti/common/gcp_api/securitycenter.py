@@ -149,7 +149,7 @@ class SecurityCenterClient(object):
             error_msg = formatted_error['error']['message']
             if error_msg == 'Requested entity already exists':
                 LOGGER.debug('Unable to create finding. Finding already exists '
-                            'in CSCC. %s', finding)
+                             'in CSCC. %s', finding)
             else:
                 LOGGER.exception('Unable to create CSCC finding: Resource: %s',
                                  finding)
