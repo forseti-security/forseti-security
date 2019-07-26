@@ -217,10 +217,6 @@ def main():
         action='store_true',
         help='Print log to console.')
     parser.add_argument(
-        '--enable_tracing',
-        action='store_true',
-        help='Print log to console.')
-    parser.add_argument(
         "--enable_tracing",
         type=str2bool,
         nargs='?',
