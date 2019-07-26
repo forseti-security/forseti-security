@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Wrapper for Cloud Security Command Center API client."""
-
 from builtins import object
 import json
 from googleapiclient import errors
