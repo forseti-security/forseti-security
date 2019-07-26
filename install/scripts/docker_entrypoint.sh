@@ -46,6 +46,9 @@ RUN_TEST=false
 SQL_HOST=127.0.0.1
 SQL_PORT=3306
 
+SERVER_HOST=127.0.0.1
+SERVER_PORT=50051
+
 # Check if the k8s cloud sql proxy environment variables have been set, if so
 # overwrite our cloud sql variables with their contents
 if [[ !(-z ${CLOUDSQLPROXY_SERVICE_HOST}) ]]; then
@@ -88,6 +91,14 @@ while [[ "$1" != "" ]]; do
             shift
             SQL_PORT=$1
             ;;
+        --server_host )
+            shift
+            SERVER_HOST=$1
+            ;;
+        --server_port )
+            shift
+            SERVER_PORT=$1
+            ;;
     esac
     shift # Move remaining args down 1 position
 done
@@ -95,7 +106,7 @@ done
 start_server(){
 
     forseti_server \
-    --endpoint "0.0.0.0:50051" \
+    --endpoint ${SERVER_HOST}:${SERVER_PORT} \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/forseti_conf_server.yaml" \
@@ -116,7 +127,7 @@ run_forseti_job(){
     
     # Set the output format to json
     forseti config format json
-    forseti config endpoint $FORSETI_SERVER_SERVICE_HOST:$FORSETI_SERVER_SERVICE_PORT
+    forseti config endpoint ${SERVER_HOST}:${SERVER_PORT}
 
     # Purge inventory.
     # Use retention_days from configuration yaml file.
