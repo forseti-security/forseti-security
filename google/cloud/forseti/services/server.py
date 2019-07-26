@@ -162,6 +162,27 @@ def check_args(args):
 
 # pylint: enable=too-many-locals
 
+def str2bool(v):
+    """Converts 'truthy' string to boolean.
+
+    Args:
+        v (string): String to convert.
+
+    Returns:
+        boolean: True if string is in 'truthy' value, False otherwise.
+
+    Raises:
+        argparse.ArgumentTypeError (object): Exception when string is neither 'truthy' nor
+            'falsy'.
+    """
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def main():
     """Run."""
@@ -199,6 +220,13 @@ def main():
         '--enable_tracing',
         action='store_true',
         help='Print log to console.')
+    parser.add_argument(
+        "--enable_tracing",
+        type=str2bool,
+        nargs='?',
+        const=True,
+        default=False,
+        help="Enable Forseti gRPC tracing")
 
     args = vars(parser.parse_args())
 
@@ -214,7 +242,8 @@ def main():
           args['forseti_db'],
           args['config_file_path'],
           args['log_level'],
-          args['enable_console_log'])
+          args['enable_console_log'],
+          args['enable_tracing'])
 
 
 if __name__ == '__main__':

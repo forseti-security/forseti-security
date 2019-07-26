@@ -22,6 +22,7 @@ set -o nounset
 echo "Cloud SQL Instance Connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "SQL port: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
+echo "Forseti tracing enabled: ${FORSETI_ENABLE_TRACING}"
 
 if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     echo "Could not find the configuration file: ${FORSETI_SERVER_CONF}." >&2
