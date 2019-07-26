@@ -144,17 +144,13 @@ class SecurityCenterClient(object):
                          response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            arguments = e.args
-            all_args = []
-            for argument in arguments:
-                all_args.append(argument)
-            raw_error = all_args[1]
+            raw_error = e.args[1]
             error = raw_error.decode('utf-8')
             formatted_error = json.loads(error)
             error_msg = formatted_error['error']['message']
             if error_msg == 'Requested entity already exists':
-                LOGGER.debug('CSCC API exception encountered while creating '
-                             'finding.')
+                LOGGER.info('Unable to create finding. Finding already exists '
+                            'in CSCC. %s', finding)
             else:
                 LOGGER.exception('Unable to create CSCC finding: Resource: %s',
                                  finding)
