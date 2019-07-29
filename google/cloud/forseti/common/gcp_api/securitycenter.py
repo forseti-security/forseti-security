@@ -146,8 +146,8 @@ class SecurityCenterClient(object):
             raw_error = e.args[1]
             error = raw_error.decode('utf-8')
             formatted_error = json.loads(error)
-            error_msg = formatted_error['error']['message']
-            if error_msg == 'Requested entity already exists':
+            error_code = formatted_error['error']['code']
+            if error_code == 409:
                 LOGGER.debug('Unable to create finding. Finding already exists '
                              'in CSCC. %s', finding)
             else:
