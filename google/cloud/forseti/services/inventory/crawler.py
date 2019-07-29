@@ -104,7 +104,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
 
-    # pylint: disable=protected-access
+    # pylint: disable=protected-access, no-member
     @tracing.trace()
     def visit(self, resource):
         """Handle a newly found resource.
@@ -387,6 +387,7 @@ def _root_resource_factory(config, client):
     return resources.from_root_id(client, config.get_root_resource_id())
 
 
+# pylint: disable=unused-argument
 @tracing.trace()
 def run_crawler(storage,
                 progresser,

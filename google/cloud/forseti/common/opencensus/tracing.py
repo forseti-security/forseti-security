@@ -185,8 +185,25 @@ def trace_init(attr=None):
         func: Decorated function.
     """
     def outer_wrapper(init):
+        """Outer function.
+
+        Args:
+            init (method): Initialization method.
+
+        Returns:
+            func: A function that is decorated.
+        """
         @functools.wraps(init)
         def inner_wrapper(self, *args, **kwargs):
+            """Inner function.
+
+            Args:
+                *args: Arguments of __init__ method.
+                **kwargs (dict): keyword arguments of __init__ method.
+
+            Returns:
+                func: Method decorator for a class's __init__ method.
+            """
             cls_name = self.__class__.__name__
             LOGGER.info(f'Decorating {cls_name}')
             init(self, *args, **kwargs)
@@ -215,7 +232,7 @@ def trace_init(attr=None):
     return outer_wrapper
 
 
-def trace(attr=None):
+def trace():
     """Method decorator to trace a class method or a function.
 
     Returns:
@@ -248,7 +265,8 @@ def trace(attr=None):
 
             if not OPENCENSUS_ENABLED:
                 if is_method:
-                    args[0].tracer = None  # fix bug where tracer is not defined
+                    # fixes bug where tracer is not defined
+                    args[0].tracer = None
                 return func(*args, **kwargs)
 
             # If the function is a class method, get the tracer from the
@@ -303,19 +321,21 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
+# pylint: disable=deprecated-method, broad-except
 def get_fname(function, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.
 
     Args:
         function (object): Input function or class method.
+        *args: list of arguments
 
     Returns:
-        (bool, str): A tuple (is_cls_method, fname).
+        is_cls_method, fname (bool, str): Class method, function name.
     """
     try:
         is_cls_method = inspect.getargspec(function)[0][0] == 'self'
-    except:
+    except Exception:
         is_cls_method = False
     if is_cls_method:
         fname = '{}.{}.{}'.format(function.__module__,

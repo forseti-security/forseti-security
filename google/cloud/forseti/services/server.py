@@ -162,11 +162,11 @@ def check_args(args):
 
 # pylint: enable=too-many-locals
 
-def str2bool(v):
+def str2bool(str_to_convert):
     """Converts 'truthy' string to boolean.
 
     Args:
-        v (string): String to convert.
+        str_to_convert (string): String to convert.
 
     Returns:
         boolean: True if string is in 'truthy' value, False otherwise.
@@ -175,11 +175,11 @@ def str2bool(v):
         argparse.ArgumentTypeError (object): Exception when string is neither 'truthy' nor
             'falsy'.
     """
-    if isinstance(v, bool):
-       return v
-    if v.lower() in ('yes', 'true', 'True', 't', 'y', '1'):
+    if isinstance(str_to_convert, bool):
+        return str_to_convert
+    if str_to_convert.lower() in ('yes', 'true', 'True', 't', 'y', '1'):
         return True
-    elif v.lower() in ('no', 'false', 'False', 'f', 'n', '0'):
+    elif str_to_convert.lower() in ('no', 'false', 'False', 'f', 'n', '0'):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
@@ -217,12 +217,12 @@ def main():
         action='store_true',
         help='Print log to console.')
     parser.add_argument(
-        "--enable_tracing",
+        '--enable_tracing',
         type=str2bool,
         nargs='?',
         const=True,
         default=False,
-        help="Enable Forseti gRPC tracing")
+        help='Enable Forseti gRPC tracing')
 
     args = vars(parser.parse_args())
 

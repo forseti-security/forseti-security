@@ -245,6 +245,7 @@ class Inventory(object):
             else:
                 progresser = QueueProgresser(queue)
 
+            # pylint: disable=no-member
             def do_inventory():
                 """Run the inventory.
 

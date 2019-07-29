@@ -76,5 +76,6 @@ class TracingTest(ForsetiTestCase):
         integrated_libraries = tracing.trace_integrations()
         self.assertEqual(integrated_libraries, tracing.DEFAULT_INTEGRATIONS)
 
+
 if __name__ == '__main__':
     unittest.main()
