@@ -189,7 +189,7 @@ class SecurityCenterClient(object):
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
-            LOGGER.debug('Successfully updated finding.')
+            LOGGER.debug('Successfully updated finding in CSCC:\n%s', finding)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.exception('Unable to update CSCC finding: Resource: %s',
