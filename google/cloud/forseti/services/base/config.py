@@ -163,10 +163,14 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             list: List of valid resources to exclude.
         """
+        if not excluded_resources:
+            return []
+
         valid_resource_patterns = [
             'organization/\\d+',
             'folder/\\d+',
-            'project/.+'
+            'project/\\d+',
+            'project/[a-z][-a-z0-9]{4,28}[a-z0-9]'
         ]
         valid_resources = []
 
@@ -232,7 +236,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.cai_configs = cai_configs
         self.composite_root_resources = composite_root_resources
         self.excluded_resources = self._filter_valid_resources(
-            excluded_resources or [])
+            excluded_resources)
 
     def use_composite_root(self):
         """Checks if inventory is configured to use a composite root resource.

@@ -322,8 +322,14 @@ class Resource(object):
         # Skip the current resource if it's in the excluded_resources list.
         excluded_resources = visitor.config.variables.get(
             'excluded_resources', {})
+        cur_resource_repr = set()
         resource_name = '{}/{}'.format(self.type(), self.key())
-        if resource_name in excluded_resources:
+        cur_resource_repr.add(resource_name)
+        if self.type() == 'project':
+            # Supports matching on projectNumber.
+            project_number = '{}/{}'.format(self.type(), self['projectNumber'])
+            cur_resource_repr.add(project_number)
+        if cur_resource_repr.intersection(excluded_resources):
             return
 
         self._visitor = visitor
