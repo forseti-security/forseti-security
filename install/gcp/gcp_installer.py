@@ -99,7 +99,7 @@ def run():
         '\n\n'
     )
     print('\033[91m', deprecation_message, '\033[0m')
-    #input("Press Enter to continue...")
+    input("Press Enter to continue...")
 
 
     if not args.get('type'):
