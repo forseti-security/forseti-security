@@ -87,6 +87,19 @@ def run():
     client_config = ClientConfig(**args)
     server_config = ServerConfig(**args)
 
+    deprecation_message = (
+        '\n\n'
+        '##################################################################\n'
+        '#  ATTENTION: This python installer will be deprecated           #\n'
+        '#  on 9/30/2019, and will be replaced by the easier and simpler  #\n'
+        '#  to use terraform installer.  Try out this short, interactive  #\n'
+        '#  tutorial to learn how to use the terraform installer.         #\n'
+        '#  https://forsetisecurity.org/docs/latest/setup/install.html    #\n'
+        '##################################################################'
+        '\n\n'
+    )
+    print('\033[91m', deprecation_message, '\033[0m')
+
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
         forseti_server = ForsetiServerInstaller(server_config)
