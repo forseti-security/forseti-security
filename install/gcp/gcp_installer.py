@@ -94,7 +94,7 @@ def run():
         '#  on 9/30/2019, and will be replaced by the easier and simpler  #\n'
         '#  to use terraform installer.  Try out this short, interactive  #\n'
         '#  tutorial to learn how to use the terraform installer.         #\n'
-        '#  http://foobar.com                                             #\n'
+        '#  https://forsetisecurity.org/docs/latest/setup/install.html    #\n'
         '##################################################################'
         '\n\n'
     )
