@@ -22,6 +22,7 @@ set -o nounset
 echo "Cloud SQL Instance Connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "SQL port: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
+echo "Forseti tracing enabled: ${FORSETI_ENABLE_TRACING}"
 
 if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     echo "Could not find the configuration file: ${FORSETI_SERVER_CONF}." >&2
@@ -39,7 +40,7 @@ FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}?charset=utf8"
 FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
-FORSETI_COMMAND+=" --enable-tracing"
+FORSETI_COMMAND+=" --enable_tracing ${FORSETI_ENABLE_TRACING}"
 
 CONFIG_VALIDATOR_COMMAND="${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer"
 CONFIG_VALIDATOR_COMMAND+=" --policyPath='${FORSETI_HOME}/policy-library/policies'"

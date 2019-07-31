@@ -15,7 +15,7 @@
 """Tests for tracing."""
 
 import json
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.common.opencensus import tracing
@@ -75,6 +75,7 @@ class TracingTest(ForsetiTestCase):
     def test_trace_integrations(self):
         integrated_libraries = tracing.trace_integrations()
         self.assertEqual(integrated_libraries, tracing.DEFAULT_INTEGRATIONS)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -112,10 +112,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Inventory progress updates.
         """
-
         for progress in self.inventory.create(request.background,
                                               request.model_name):
-
             if request.enable_debug:
                 last_warning = repr(progress.last_warning)
                 last_error = repr(progress.last_error)

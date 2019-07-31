@@ -23,13 +23,13 @@ from queue import Queue
 import threading
 
 from future import standard_library
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize \
     as init_storage
-from google.cloud.forseti.common.opencensus import tracing
 
 standard_library.install_aliases()
 
@@ -151,11 +151,13 @@ class FirstMessageQueueProgresser(QueueProgresser):
         QueueProgresser._notify_eof(self)
 
 
+@tracing.trace()
 def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background):
+                  background,
+                  tracer=None):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -163,7 +165,8 @@ def run_inventory(service_config,
         queue (object): Queue to push status updates into.
         session (object): Database session.
         progresser (object): Progresser implementation to use.
-        background (bool): whether to run the inventory in background
+        background (bool): whether to run the inventory in background.
+        tracer (object, optional): Tracer object.
 
     Returns:
         QueueProgresser: Returns the result of the crawl.
@@ -172,8 +175,6 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
 
-    tracer = getattr(service_config, 'tracer', None)
-    tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -190,7 +191,6 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-        tracing.end_span(tracer, result=result)
         return result
 
 
@@ -213,7 +213,6 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
-@tracing.traced(methods=['create'], context=True)
 class Inventory(object):
     """Inventory API implementation."""
 
@@ -228,6 +227,7 @@ class Inventory(object):
 
         init_storage(self.config.get_engine())
 
+    @tracing.trace()
     def create(self, background, model_name):
         """Create a new inventory,
 
@@ -238,7 +238,6 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-
         with self._create_lock:
             queue = Queue()
             if background:
@@ -246,6 +245,7 @@ class Inventory(object):
             else:
                 progresser = QueueProgresser(queue)
 
+            # pylint: disable=no-member
             def do_inventory():
                 """Run the inventory.
 
@@ -261,7 +261,8 @@ class Inventory(object):
                             queue,
                             session,
                             progresser,
-                            background)
+                            background,
+                            tracer=self.tracer)
 
                         if model_name:
                             run_import(self.config.client(),
