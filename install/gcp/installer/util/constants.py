@@ -107,7 +107,7 @@ PROJECT_IAM_ROLES_SERVER = [
     'roles/logging.logWriter',
     'roles/cloudtrace.agent',
     'roles/monitoring.metricWriter',
-    'roles/storage.objectCreator'
+    'roles/storage.objectCreator',
     'roles/storage.objectViewer',
 ]
 
