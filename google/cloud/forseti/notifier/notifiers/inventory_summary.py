@@ -277,7 +277,6 @@ class InventorySummary(object):
                 self.service_config.inventory_config.root_resource_id)
         return root_resources
 
-
     def run(self):
         """Generate inventory summary."""
         LOGGER.info('Running inventory summary notifier.')
