@@ -239,7 +239,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
 
     def test_export_assets_valueerror_bad_parent(self):
         """Test export_assets for an invalid parent."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, 'parent must start'):
             self.asset_api_client.export_assets(
                 'serviceaccounts/123454321',
                 output_config=self.default_output_config,
@@ -247,16 +247,18 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
 
     def test_export_assets_valueerror_no_output(self):
         """Test export_assets for an missing output config."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError,
+                                    'destination_object or output_config'):
             self.asset_api_client.export_assets(
-                'serviceaccounts/123454321',
+                fake_cloudasset.PROJECT,
                 content_type='RESOURCE')
 
     def test_export_assets_valueerror_destination_and_output(self):
         """Test export_assets for both destination object and output config."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError,
+                                    'destination_object and output_config'):
             self.asset_api_client.export_assets(
-                'serviceaccounts/123454321',
+                fake_cloudasset.PROJECT,
                 fake_cloudasset.DESTINATION,
                 output_config=self.default_output_config,
                 content_type='RESOURCE')
