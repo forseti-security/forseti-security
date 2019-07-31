@@ -173,6 +173,7 @@ def traced(methods=None, attr=None):
     return wrapper
 
 
+# pylint: disable=redundant-returns-doc
 def trace_init(attr=None):
     """Method decorator for a class's __init__ method. Set `self.tracer` (either
     from instance kwargs, attribute, or execution context).
@@ -321,7 +322,7 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
-# pylint: disable=deprecated-method, broad-except
+# pylint: disable=deprecated-method, broad-except, missing-return-type-doc
 def get_fname(function, *args):
     """Find out if a function is a class method or a standard function, and
     return it's name.

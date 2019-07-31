@@ -184,6 +184,7 @@ def str2bool(str_to_convert):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
 def main():
     """Run."""
     parser = argparse.ArgumentParser()

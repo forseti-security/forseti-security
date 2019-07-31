@@ -15,7 +15,7 @@
 """Tests for tracing."""
 
 import json
-import mock
+import unittest.mock as mock
 import unittest
 
 from google.cloud.forseti.common.opencensus import tracing
