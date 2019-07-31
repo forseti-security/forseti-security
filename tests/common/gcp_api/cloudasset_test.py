@@ -40,6 +40,9 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             'cloudasset': {'max_calls': 1, 'period': 1.0}}
         cls.asset_api_client = cloudasset.CloudAssetClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
+        cls.default_output_config = (
+            cls.asset_api_client.build_gcs_object_output(
+                fake_cloudasset.DESTINATION))
 
     @mock.patch.object(
         google.auth, 'default',
@@ -50,13 +53,61 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         asset_api_client = cloudasset.CloudAssetClient(global_configs={})
         self.assertEqual(None, asset_api_client.repository._rate_limiter)
 
+    def test_export_assets_destination_object(self):
+        """Test call with destination_object instead of output_config.
+
+        NOTE: This test uses a positional argument for the destination_object
+        instead of named argument to replicate prior behavior of the method
+        before the introduction of output_config.
+        """
+        http_mocks.mock_http_response(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION)
+
+        result = self.asset_api_client.export_assets(
+            fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+            content_type='RESOURCE')
+
+        self.assertEqual(json.loads(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION), result)
+
+    def test_export_assets_gcs_prefix_output(self):
+        """Test export_assets call with gcs prefix output_config."""
+        http_mocks.mock_http_response(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION)
+
+        output_config = (
+            self.asset_api_client.build_gcs_prefix_output(
+                'gs://forseti-test-bucket/prefix-test'))
+        result = self.asset_api_client.export_assets(
+            fake_cloudasset.PROJECT, output_config=output_config,
+            content_type='RESOURCE')
+
+        self.assertEqual(json.loads(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION), result)
+
+    @unittest.skip("Bigquery output is not yet supported")
+    def test_export_assets_bigquery_output(self):
+        """Test export_assets call with gcs prefix output_config."""
+        http_mocks.mock_http_response(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION)
+
+        output_config = (
+            self.asset_api_client.build_bigquery_table_output(
+                'test-project', 'test-dataset', 'test-table'))
+        result = self.asset_api_client.export_assets(
+            fake_cloudasset.PROJECT, output_config=output_config,
+            content_type='RESOURCE')
+
+        self.assertEqual(json.loads(
+            fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION), result)
+
     def test_export_assets_folder(self):
         """Test export_assets for a folder."""
         http_mocks.mock_http_response(
             fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_OPERATION)
 
         result = self.asset_api_client.export_assets(
-            fake_cloudasset.FOLDER, fake_cloudasset.DESTINATION,
+            fake_cloudasset.FOLDER, output_config=self.default_output_config,
             content_type='RESOURCE',
             asset_types=fake_cloudasset.ASSET_TYPES)
 
@@ -69,7 +120,7 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             fake_cloudasset.EXPORT_ASSETS_PROJECT_RESOURCES_OPERATION)
 
         result = self.asset_api_client.export_assets(
-            fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+            fake_cloudasset.PROJECT, output_config=self.default_output_config,
             content_type='RESOURCE')
 
         self.assertEqual(json.loads(
@@ -81,7 +132,8 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
             fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_OPERATION)
 
         result = self.asset_api_client.export_assets(
-            fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
+            fake_cloudasset.ORGANIZATION,
+            output_config=self.default_output_config,
             content_type='RESOURCE',
             asset_types=['cloudresourcemanager.googleapis.com/Project'])
 
@@ -104,7 +156,8 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         with mock.patch.object(self.asset_api_client,
                                'OPERATION_DELAY_IN_SEC', 0.1):
             result = self.asset_api_client.export_assets(
-                fake_cloudasset.FOLDER, fake_cloudasset.DESTINATION,
+                fake_cloudasset.FOLDER,
+                output_config=self.default_output_config,
                 content_type='RESOURCE',
                 asset_types=fake_cloudasset.ASSET_TYPES,
                 blocking=True)
@@ -126,7 +179,8 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         with mock.patch.object(self.asset_api_client,
                                'OPERATION_DELAY_IN_SEC', 0.1):
             result = self.asset_api_client.export_assets(
-                fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+                fake_cloudasset.PROJECT,
+                output_config=self.default_output_config,
                 content_type='RESOURCE',
                 asset_types=['cloudresourcemanager.googleapis.com/Project'],
                 blocking=True)
@@ -148,7 +202,8 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         with mock.patch.object(self.asset_api_client,
                                'OPERATION_DELAY_IN_SEC', 0.1):
             result = self.asset_api_client.export_assets(
-                fake_cloudasset.ORGANIZATION, fake_cloudasset.DESTINATION,
+                fake_cloudasset.ORGANIZATION,
+                output_config=self.default_output_config,
                 content_type='RESOURCE', blocking=True)
 
         self.assertEqual(json.loads(
@@ -169,7 +224,8 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                                'OPERATION_DELAY_IN_SEC', 0.1):
             with self.assertRaises(api_errors.OperationTimeoutError):
                 result = self.asset_api_client.export_assets(
-                    fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+                    fake_cloudasset.PROJECT,
+                    output_config=self.default_output_config,
                     content_type='RESOURCE', blocking=True, timeout=0.1)
 
     def test_export_assets_http_error(self):
@@ -177,14 +233,32 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_cloudasset.PERMISSION_DENIED, 403)
         with self.assertRaises(api_errors.ApiExecutionError):
             self.asset_api_client.export_assets(
-                fake_cloudasset.PROJECT, fake_cloudasset.DESTINATION,
+                fake_cloudasset.PROJECT,
+                output_config=self.default_output_config,
                 content_type='RESOURCE', blocking=True)
 
-    def test_export_assets_valueerror(self):
+    def test_export_assets_valueerror_bad_parent(self):
         """Test export_assets for an invalid parent."""
         with self.assertRaises(ValueError):
             self.asset_api_client.export_assets(
-                'serviceaccounts/123454321', fake_cloudasset.DESTINATION,
+                'serviceaccounts/123454321',
+                output_config=self.default_output_config,
+                content_type='RESOURCE')
+
+    def test_export_assets_valueerror_no_output(self):
+        """Test export_assets for an missing output config."""
+        with self.assertRaises(ValueError):
+            self.asset_api_client.export_assets(
+                'serviceaccounts/123454321',
+                content_type='RESOURCE')
+
+    def test_export_assets_valueerror_destination_and_output(self):
+        """Test export_assets for both destination object and output config."""
+        with self.assertRaises(ValueError):
+            self.asset_api_client.export_assets(
+                'serviceaccounts/123454321',
+                fake_cloudasset.DESTINATION,
+                output_config=self.default_output_config,
                 content_type='RESOURCE')
 
     def test_get_operation_http_error(self):
