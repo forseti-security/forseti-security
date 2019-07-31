@@ -102,7 +102,7 @@ class InventorySummary(object):
             LOGGER.exception('Unable to upload inventory summary in bucket %s:',
                              gcs_upload_path)
 
-    def _send_email(self, summary_data, details_data):
+    def _send_email(self, summary_data, details_data, root_resources):
         """Send the email for inventory summary.
 
         Args:
@@ -111,6 +111,9 @@ class InventorySummary(object):
 
             details_data (list): Details of inventory data as a list of dicts.
                 Example: [[{resource_type, count}, {}, {}, ...]
+
+            root_resources (list): List of root resources, either the
+                root_resource_id, or the composite_root_resources
 
         Raises:
             InvalidInputError: Indicating that invalid input was encountered.
@@ -150,7 +153,8 @@ class InventorySummary(object):
              'timestamp': timestamp,
              'gsuite_dwd_status': gsuite_dwd_status,
              'summary_data': summary_data,
-             'details_data': details_data})
+             'details_data': details_data,
+             'root_resources': root_resources})
 
         if self.notifier_config.get('email_connector'):
             sender = (
@@ -258,6 +262,22 @@ class InventorySummary(object):
             details_data = self.transform_to_template(details)
             return details_data
 
+    def _get_root_resources(self):
+        """Get the root resources defined in the server config file.
+
+        Returns:
+            list: root resources as defined in the server config file
+        """
+        root_resources = []
+        composite_roots = self.service_config.inventory_config.composite_root_resources
+        if composite_roots:
+            root_resources.extend(composite_roots)
+        else:
+            root_resources.append(
+                self.service_config.inventory_config.root_resource_id)
+        return root_resources
+
+
     def run(self):
         """Generate inventory summary."""
         LOGGER.info('Running inventory summary notifier.')
@@ -285,6 +305,7 @@ class InventorySummary(object):
         try:
             summary_data = self._get_summary_data()
             details_data = self._get_details_data()
+            root_resources = self._get_root_resources()
         except util_errors.NoDataError:
             LOGGER.exception('Inventory summary can not be created because '
                              'no summary data is found for index id: %s.',
@@ -297,6 +318,6 @@ class InventorySummary(object):
             self._upload_to_gcs(summary_and_details_data)
 
         if is_email_summary_enabled:
-            self._send_email(summary_data, details_data)
+            self._send_email(summary_data, details_data, root_resources)
 
         LOGGER.info('Completed running inventory summary.')
