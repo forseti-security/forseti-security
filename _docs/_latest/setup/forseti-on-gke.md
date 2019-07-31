@@ -3,7 +3,7 @@ title: Deploy Forseti Security on Google Kubernetes Engine
 order: 004
 ---
 
-{% include_relative ../../../_includes/docs/latest/beta-release-feature.md %}
+{% include docs/latest/alpha-release-feature.md %}
 
 # {{ page.title }}
 
@@ -172,21 +172,18 @@ After deploying Forseti, the default server configuration defines
 This path doesn't exist in the container.  Instead, the value of `rules_path` must point to the rules path in the Forseti server GCS bucket.  The can be changed by executing the following.
 
 1. Obtain the *forseti_server_conf.yaml* file from the GCS bucket.
-
 ```bash
 gsutil cp gs://[FORSETI_SERVER_BUCKET]/configs/forseti_server_conf.yaml forseti_server_conf.yaml
 ```
 
 2. Edit the forseti_server_conf.yaml file so that the `rules_path` points to the rules folder in the GCS bucket.
-
 ```yaml
-    rules_path: gs://[FORSETI_SERVER_BUCKET]/rules
+	rules_path: gs://[FORSETI_SERVER_BUCKET]/rules
 ```
 
 3. Save the file and exit the editor.
 
 4. Copy the *forseti_server_conf.yaml* file back to GCS.
-
 ```bash
 gsutil cp forseti_server_conf.yaml gs://[FORSETI_SERVER_BUCKET]/configs/forseti_server_conf.yaml
 ```
@@ -201,7 +198,6 @@ gsutil setmeta -h "Content-Type:text/plain; charset=utf-8" gs://[FORSETI_SERVER_
 **Note:** If any changes are made to the *forseti_server_conf.yaml* file in GCS, one of the following steps is necessary.  In a future version of this feature, this will be automated.
 
 #### With Terraform
-
 ```bash
 terraform apply
 ```
@@ -220,109 +216,94 @@ helm upgrade -i forseti forseti-security/forseti-security \
 
 #### Terraform Apply - Error creating Network: googleapi: Error 409
 
-**Error Message:**
-
+##### Error Message:
 ```bash
 Error: Error creating Network: googleapi: Error 409: The resource 'projects/[PROJECT_ID]/regions/us-central1/subnetworks/[SUBNETWORK_NAME]' already exists, alreadyExists
 ```
 
-**Explanation:**
-
+##### Explanation:
 This error occurs when attempting to deploy to a network and subnetwork that already exist, for example the "default" network.
 
-**Workaround:**
-
+##### Workaround:
 1. Remove any state files in the working directory
-
 ```bash
 rm -rf terraform.tfstate*
 ```
 
-2. Import existing resources into Terraform state
-
+2. Import existing network resource into Terraform state
 ```bash
 terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_network.network projects/forseti-security-e32n/global/networks/default
+```
 
+3. Import existing subnetwork resource into Terraform state
+```bash
 terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_subnetwork.subnetwork[0] projects/forseti-security-e32n/regions/us-central1/subnetworks/default
 ```
 
-3. In the user defined module ensure the following values match the values in the existing resource
+4. In the user defined module ensure the following values match the values in the existing resource
 	* `network_description`
 	* `auto_create_subnetworks`
 	* `gke_node_ip_range` - This is the subnet range of the VPC subnet
-
+<br />
 #### Terraform Apply - connect: connection refused when deploying Forseti via Tiller
 
-**Error:**
-
+##### Error:
 ```
 Error: Get https://35.239.190.141/apis/apps/v1/namespaces/forseti-84cd80fe/deployments/tiller-deploy: dial tcp 35.239.190.141:443: connect: connection refused
 ```
 
-**Explanation:**
-
+##### Explanation:
 This happens when the GKE cluster is not able to schedule pods when Terraform attempts to deploy Forseti on the cluster via Helm.  This is to be addressed via a patch in a future version of the [terraform-google-kubernetes-engine](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine) module.
 
-**Workaround:**
-
+##### Workaround:
 Re-run `terraform apply`
 ```
 terraform apply
 ```
-
+<br />
 #### Terraform Destroy - Error, failed to deleteuser root 
 
-**Error Message:**
-
+##### Error Message:
 ```bash
 Error: Error, failed to deleteuser root in instance forseti-server-db-1914b4e1: googleapi: Error 400: Missing parameter: host., required
 ```
 
-**Explanation:**
-
+##### Explanation:
 This is under investigation.  Please see forseti-security/forseti-security GitHub [issue #148](https://github.com/forseti-security/terraform-google-forseti/issues/148).  
 
-**Workaround:**
-
+##### Workaround:
 ```bash
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti.module.server.google_sql_user.root
 ```
-
+<br />
 #### Terraform Destroy - could not find a ready tiller pod
 
-**Error message:**
-
+##### Error message:
 ```bash
 Error: error creating tunnel: "could not find a ready tiller pod"
 ```
 
-**Explanation:**
-
+##### Explanation:
 This occurs if the GKE cluster is destroyed before Terraform destroys the Helm release.  This will be resolved in the near future.  While this issue has been resolved via terraform-google-modules/terraform-google-kubernetes-engine [pull request #214](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/pull/214), this documentation will remain for reference.
 
-
-**Workaround:**
-
+##### Workaround:
 ```bash
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.helm_release.forseti-security
 
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.kubernetes_namespace.forseti
 ```
-
+<br />
 #### Terraform Destroy - Cannot delete auto subnetwork
 
-**Error Message:**
-
+##### Error Message:
 ```bash
 Error: Error reading Subnetwork: googleapi: Error 400: Invalid resource usage: 'Cannot delete auto subnetwork from an auto subnet mode network.'., invalidResourceUsage
 ```
 
-**Explanation:**
-
+##### Explanation:
 This occurs when there are resources on the subnetwork that exist outside of Terraform's state.  For instance, Forseti may haven been deployed in a separate run of Terraform.
 
-**Workaround:**
-
+##### Workaround:
 ```bash
 terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_network.network
 

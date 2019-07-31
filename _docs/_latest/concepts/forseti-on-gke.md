@@ -3,7 +3,7 @@ title: Forseti on GKE
 order: 006
 ---
 
-{% include_relative ../../../_includes/docs/latest/beta-release-feature.md %}
+{% include docs/latest/alpha-release-feature.md %}
 
 # {{ page.title }}
 
