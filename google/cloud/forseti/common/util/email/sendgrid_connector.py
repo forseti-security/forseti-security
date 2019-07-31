@@ -57,7 +57,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
         # else block below is for backward compatibility
         else:
             api_key = kwargs.get('sendgrid_api_key')
-        self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
+        self.sendgrid = sendgrid.SendGridAPIClient(api_key=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
