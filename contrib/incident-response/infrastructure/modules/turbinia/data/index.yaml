@@ -1,0 +1,73 @@
+indexes:
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: successful
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: request_id
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: id
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: request_id
+  - name: successful
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: user
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: id
+  - name: user
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: instance
+  - name: request_id
+  - name: user
+  - name: last_update
+    direction: desc
+
+- kind: TurbiniaTask
+  ancestor: no
+  properties:
+  - name: task_id
+  - name: last_update
+    direction: desc

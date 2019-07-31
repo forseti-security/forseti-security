@@ -13,18 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-output "Timesketch server URL" {
-  description = "Timesketch server URL"
-  value = "${module.timesketch.timesketch-server-url}"
-}
-
-output "Timesketch admin username" {
-  description = "Timesketch admin username"
-  value = "${module.timesketch.timesketch-admin-username}"
-}
-
-output "Timesketch admin password" {
-  description = "Timesketch admin password"
-  value = "${module.timesketch.timesketch-admin-password}"
-}
