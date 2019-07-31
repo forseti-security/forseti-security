@@ -243,8 +243,6 @@ class CsccNotifier(object):
                 try:
                     client.create_finding(finding, source_id=source_id,
                                           finding_id=finding_id)
-                    LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                                 finding)
                 except api_errors.ApiExecutionError:
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
@@ -257,8 +255,6 @@ class CsccNotifier(object):
                     client.update_finding(finding,
                                           finding_id,
                                           source_id=source_id)
-                    LOGGER.debug('Successfully updated finding in CSCC:\n%s',
-                                 finding)
                 except api_errors.ApiExecutionError:
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
