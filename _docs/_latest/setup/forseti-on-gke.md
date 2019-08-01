@@ -29,15 +29,15 @@ The following tools are required:
 
 In each of the following scenarios, the user will create a *main.tf* file and add the appropriate input variables.  It is recommended that this *main.tf* be created in an empty directory.
 
-Each scenario described below invokes a corresponding example in the [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) folder of the *terraform-google-forseti* Terraform module.  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.  
+Each scenario described below invokes a corresponding example in the [examples/](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/) folder of the *terraform-google-forseti* Terraform module.  Each "on-GKE" specific example is prepended with "on_gke_".  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.  
 
-Each corresponding example in [examples/on_gke](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/on_gke) on GitHub also contains additional information on each deployment scenario.
+Each corresponding example in the [examples/](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/) folder on GitHub also contains additional information on each deployment scenario.
 
 Wherever possible, the examples utilize [modules](https://registry.terraform.io/modules/terraform-google-modules) developed and curated by the [Cloud Foundation Toolkit](https://cloud.google.com/foundation-toolkit/) team.  These modules implement opinionated best practices for deploying GCP components.  For example, the [kubernetes-engine](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/4.0.0) module applies practices found in the [GKE hardening](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster).
 
 ### Deploy Forseti and Forseti on GKE end-to-end
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input vairables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
 ```bash
 module "forseti-on-gke-end-to-end" {
@@ -71,7 +71,7 @@ terraform apply
 
 ### Deploy Forseti in a New GKE Cluster
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input vairables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
 ```bash
 module "forseti-on-gke-new-gke-cluster" {
@@ -108,7 +108,7 @@ terraform apply
 
 ### Deploy Forseti in an Existing GKE Cluster
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input vairables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
 ```bash
 module "forseti-on-gke-existing-gke-cluster" {
@@ -178,7 +178,7 @@ gsutil cp gs://[FORSETI_SERVER_BUCKET]/configs/forseti_server_conf.yaml forseti_
 
 2. Edit the forseti_server_conf.yaml file so that the `rules_path` points to the rules folder in the GCS bucket.
 ```yaml
-	rules_path: gs://[FORSETI_SERVER_BUCKET]/rules
+    rules_path: gs://[FORSETI_SERVER_BUCKET]/rules
 ```
 
 3. Save the file and exit the editor.
