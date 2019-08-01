@@ -238,12 +238,12 @@ rm -rf terraform.tfstate*
 
 2. Import existing network resource into Terraform state
 ```bash
-terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_network.network projects/forseti-security-e32n/global/networks/default
+terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_network.network projects/[PROJECT_ID]/global/networks/default
 ```
 
 3. Import existing subnetwork resource into Terraform state
 ```bash
-terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_subnetwork.subnetwork[0] projects/forseti-security-e32n/regions/us-central1/subnetworks/default
+terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_subnetwork.subnetwork[0] projects/[PROJECT_ID]/regions/us-central1/subnetworks/default
 ```
 
 4. In the user defined module ensure the following values match the values in the existing resource
