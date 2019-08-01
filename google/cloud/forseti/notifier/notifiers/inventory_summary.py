@@ -269,7 +269,8 @@ class InventorySummary(object):
             list: root resources as defined in the server config file
         """
         root_resources = []
-        composite_roots = self.service_config.inventory_config.composite_root_resources
+        composite_roots = (
+            self.service_config.inventory_config.composite_root_resources)
         if composite_roots:
             root_resources.extend(composite_roots)
         else:
