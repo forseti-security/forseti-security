@@ -2,9 +2,9 @@
 INSTANCE_ID         = 'turbinia-${turbinia_id}'
 STATE_MANAGER       = 'Datastore'
 TASK_MANAGER        = 'PSQ'
-OUTPUT_DIR          = '/var/tmp'
+OUTPUT_DIR          = '/var/lib/turbinia'
 TMP_DIR             = '/tmp'
-LOG_FILE            = '/var/log/turbinia.log'
+LOG_FILE            = '/var/log/turbinia/turbinia.log'
 LOCK_FILE           = '/var/lock/turbinia-worker.lock'
 SLEEP_TIME          = 10
 SINGLE_RUN          = False

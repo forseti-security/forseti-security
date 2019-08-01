@@ -69,8 +69,9 @@ resource "google_pubsub_topic" "pubsub-topic-psq" {
 
 # Cloud Storage Bucket
 resource "google_storage_bucket" "output-bucket" {
-  name        = "turbinia-${random_id.infrastructure-random-id.hex}"
-  depends_on  = ["google_project_service.storage-component"]
+  name          = "turbinia-${random_id.infrastructure-random-id.hex}"
+  depends_on    = ["google_project_service.storage-component"]
+  force_destroy = true
 }
 
 # Create datastore index
@@ -79,12 +80,75 @@ data "local_file" "datastore-index-file" {
   depends_on  = ["google_project_service.datastore"]
 }
 
-#resource "null_resource" "cloud-datastore-create-index" {
-#  provisioner "local-exec" {
-#    command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
-#  }
-#}
+resource "null_resource" "cloud-datastore-create-index" {
+  provisioner "local-exec" {
+    command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
+  }
+}
 
+# Deploy cloud functions
+data "archive_file" "cloudfunction-archive" {
+  type        = "zip"
+  output_path = "${path.module}/data/function.zip"
+
+  source {
+    content  = "${file("${path.module}/data/function.js")}"
+    filename = "function.js"
+  }
+
+  source {
+    content  = "${file("${path.module}/data/package.json")}"
+    filename = "package.json"
+  }
+}
+
+resource "google_storage_bucket_object" "cloudfunction-archive" {
+  name   = "function.zip"
+  bucket = "${google_storage_bucket.output-bucket.name}"
+  source = "${path.module}/data/function.zip"
+  depends_on = ["data.archive_file.cloudfunction-archive"]
+}
+
+resource "google_cloudfunctions_function" "gettasks" {
+    name                      = "gettasks"
+    entry_point               = "gettasks"
+    available_memory_mb       = 256
+    timeout                   = 60
+    runtime                   = "nodejs8"
+    project                   = "${var.gcp_project}"
+    region                    = "${var.gcp_region}"
+    trigger_http              = true
+    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
+    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
+}
+
+resource "google_cloudfunctions_function" "closetasks" {
+    name                      = "closetasks"
+    entry_point               = "closetasks"
+    available_memory_mb       = 256
+    timeout                   = 60
+    runtime                   = "nodejs8"
+    project                   = "${var.gcp_project}"
+    region                    = "${var.gcp_region}"
+    trigger_http              = true
+    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
+    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
+}
+
+resource "google_cloudfunctions_function" "closetask" {
+    name                      = "closetask"
+    entry_point               = "closetask"
+    available_memory_mb       = 256
+    timeout                   = 60
+    runtime                   = "nodejs8"
+    project                   = "${var.gcp_project}"
+    region                    = "${var.gcp_region}"
+    trigger_http              = true
+    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
+    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
+}
+
+# Template for systemd service file
 data "template_file" "turbinia-systemd" {
   template = "${file("${path.module}/templates/turbinia.service.tpl")}"
 }
@@ -119,8 +183,6 @@ resource "google_compute_instance" "turbinia-server" {
   name         = "turbinia-server"
   machine_type = "${var.turbinia_server_machine_type}"
   zone         = "${var.gcp_zone}"
-
-  count        = 1
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true

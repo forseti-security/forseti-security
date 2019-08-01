@@ -4,7 +4,7 @@
 #
 # Systemd supports service instantiations from a single template file.
 # This service file will serve as a template from which two units will
-# be instantiated as "server" and "psqworker".
+# be instantiated as server and psqworker.
 #
 # Systemd naming convention for an instantiated service unit:
 # <service_name>@<argument>.service
@@ -38,7 +38,16 @@ User=turbinia
 Group=turbinia
 Restart=always
 RestartSec=10
-ExecStart=/bin/sh -c '/usr/local/bin/turbinia/turbiniactl -L /tmp/turbinia-%i.log -S -o /tmp %i 2>> /tmp/turbinia-%i.stdout.log'
+# Run ExecStartPre as root
+PermissionsStartOnly=true
+ExecStartPre=-/bin/mkdir /mnt/turbinia/
+ExecStartPre=-/bin/mkdir /var/lib/turbinia/
+ExecStartPre=-/bin/mkdir /var/lib/turbinia/
+ExecStartPre=/bin/chown -R turbinia:turbinia /mnt/turbinia/
+ExecStartPre=/bin/chown -R turbinia:turbinia /var/lib/turbinia/
+ExecStartPre=/bin/chown -R turbinia:turbinia /var/lib/turbinia/
+# Run the server as the turbinia user
+ExecStart=/bin/sh -c '/usr/local/bin/turbiniactl -L /var/log/turbinia/turbinia-%i.log -S -o /var/lib/turbinia %i 2>> /var/log/turbinia/turbinia-%i.stdout.log'
 KillMode=control-group
 KillSignal=SIGINT
 
