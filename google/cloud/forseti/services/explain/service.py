@@ -65,8 +65,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             if 'organizations' in root_resource_id:
                 return True
         except (AttributeError, TypeError):
-            LOGGER.exception('Unable to check forseti server config. '
-                             'Explain will not be supported.')
+            LOGGER.exception('Unable to check the root resource in the server '
+                             'config file. Explain will not be supported.')
         return False
 
     @staticmethod
