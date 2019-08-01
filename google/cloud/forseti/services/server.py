@@ -98,7 +98,6 @@ def serve(endpoint,
         raise Exception(error_msg + ' ' + update_config_msg)
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-
     for factory in factories:
         factory(config).create_and_register_service(server)
 
