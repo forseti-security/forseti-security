@@ -77,10 +77,13 @@ Create a file named *main.tf* in an empty directory and add the following conten
 module "forseti-on-gke-new-gke-cluster" {
     source                           = "terraform-google-modules/forseti/google//examples/on_gke_new_gke_cluster"
     credentials_path                 = ""
-    forseti_client_service_account   = ""
+	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
+    forseti_client_service_account   = "" 
     forseti_client_vm_ip             = ""
     forseti_cloudsql_connection_name = ""
+	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
     forseti_server_service_account   = ""
+	# BUCKET_ID (without gs)
     forseti_server_storage_bucket    = ""
     project_id                       = ""
     region                           = ""
@@ -114,10 +117,13 @@ Create a file named *main.tf* in an empty directory and add the following conten
 module "forseti-on-gke-existing-gke-cluster" {
     source                           = "terraform-google-modules/forseti/google//examples/on_gke_existing_gke_cluster"
     credentials_path                 = ""
+	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
     forseti_client_service_account   = ""
     forseti_client_vm_ip             = ""
     forseti_cloudsql_connection_name = ""
+	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
     forseti_server_service_account   = ""
+	# BUCKET_ID (without gs)
     forseti_server_storage_bucket    = ""
     gke_cluster_name                 = ""
     gke_cluster_location             = ""
@@ -244,6 +250,7 @@ terraform import module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute
 	* `network_description`
 	* `auto_create_subnetworks`
 	* `gke_node_ip_range` - This is the subnet range of the VPC subnet
+
 <br />
 #### Terraform Apply - connect: connection refused when deploying Forseti via Tiller
 
@@ -275,6 +282,7 @@ This is under investigation.  Please see forseti-security/forseti-security GitHu
 ```bash
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti.module.server.google_sql_user.root
 ```
+
 <br />
 #### Terraform Destroy - could not find a ready tiller pod
 
@@ -292,6 +300,7 @@ terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.helm_r
 
 terraform state rm module.forseti-on-gke-end-to-end.module.forseti-on-gke.kubernetes_namespace.forseti
 ```
+
 <br />
 #### Terraform Destroy - Cannot delete auto subnetwork
 
