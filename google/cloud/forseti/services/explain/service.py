@@ -59,10 +59,14 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             bool: True if Explainer module can be used.
         """
-        root_resource_id = (
-            self.explainer.config.inventory_config.root_resource_id)
-        if 'organizations' in root_resource_id:
-            return True
+        try:
+            root_resource_id = (
+                self.explainer.config.inventory_config.root_resource_id)
+            if 'organizations' in root_resource_id:
+                return True
+        except (AttributeError, TypeError):
+            LOGGER.exception('Unable to check forseti server config. '
+                             'Explain will not be supported.')
         return False
 
     @staticmethod

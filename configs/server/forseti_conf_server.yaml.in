@@ -25,7 +25,6 @@ inventory:
     # service account before they can be included in the inventory.
     #
     # Forseti Explain is not supported with a composite root at this time.
-    # Explain must be disabled when starting the server.
     #
     # Resources can exist in multiple organizations.
     #
