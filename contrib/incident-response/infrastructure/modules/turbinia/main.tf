@@ -153,11 +153,8 @@ data "template_file" "turbinia-systemd" {
   template = "${file("${path.module}/templates/turbinia.service.tpl")}"
 }
 
-
-#-----------------------#
-# Turbinia server       #
-#-----------------------#
-data "template_file" "turbinia-server-config-template" {
+# Turbinia config
+data "template_file" "turbinia-config-template" {
   template = "${file("${path.module}/templates/turbinia.conf.tpl")}"
   vars = {
     project           = "${var.gcp_project}"
@@ -171,10 +168,11 @@ data "template_file" "turbinia-server-config-template" {
   depends_on  = ["google_project_service.datastore"]
 }
 
+# Turbinia server
 data "template_file" "turbinia-server-startup-script" {
   template = "${file("${path.module}/templates/scripts/install-turbinia-server.sh.tpl")}"
   vars = {
-    config = "${data.template_file.turbinia-server-config-template.rendered}"
+    config = "${data.template_file.turbinia-config-template.rendered}"
     systemd = "${data.template_file.turbinia-systemd.rendered}"
   }
 }
@@ -205,6 +203,54 @@ resource "google_compute_instance" "turbinia-server" {
     scopes = ["compute-ro", "storage-rw", "pubsub"]
   }
 
+  lifecycle {
+    ignore_changes = ["metadata_startup_script"]
+  }
+
   # Provision the machine with a script.
   metadata_startup_script = "${data.template_file.turbinia-server-startup-script.rendered}"
+}
+
+# Turbinia worker
+data "template_file" "turbinia-worker-startup-script" {
+  template = "${file("${path.module}/templates/scripts/install-turbinia-worker.sh.tpl")}"
+  vars = {
+    config = "${data.template_file.turbinia-config-template.rendered}"
+    systemd = "${data.template_file.turbinia-systemd.rendered}"
+  }
+}
+
+resource "google_compute_instance" "turbinia-worker" {
+  count        = "${var.turbinia_worker_count}"
+  name         = "turbinia-worker-${count.index}"
+  machine_type = "${var.turbinia_worker_machine_type}"
+  zone         = "${var.gcp_zone}"
+
+  # Allow to stop/start the machine to enable change machine type.
+  allow_stopping_for_update = true
+
+  # Use default Ubuntu image as operating system.
+  boot_disk {
+    initialize_params {
+      image = "${var.gcp_ubuntu_1804_image}"
+      size  = "${var.turbinia_worker_disk_size_gb}"
+    }
+  }
+
+  # Assign a generated public IP address. Needed for SSH access.
+  network_interface {
+    network       = "default"
+    access_config {}
+  }
+
+  service_account {
+    scopes = ["compute-ro", "storage-rw", "pubsub"]
+  }
+
+  lifecycle {
+    ignore_changes = ["metadata_startup_script"]
+  }
+
+  # Provision the machine with a script.
+  metadata_startup_script = "${data.template_file.turbinia-worker-startup-script.rendered}"
 }

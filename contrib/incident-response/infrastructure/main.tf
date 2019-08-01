@@ -36,13 +36,13 @@ provider "google" {
 #------------#
 # Timesketch #
 #------------#
-#module "timesketch" {
-#  source                      = "modules/timesketch"
-#  gcp_project                 = "${var.gcp_project}"
-#  gcp_region                  = "${var.gcp_region}"
-#  gcp_zone                    = "${var.gcp_zone}"
-#  gcp_ubuntu_1804_image       = "${var.gcp_ubuntu_1804_image}"
-#}
+module "timesketch" {
+  source                      = "./modules/timesketch"
+  gcp_project                 = "${var.gcp_project}"
+  gcp_region                  = "${var.gcp_region}"
+  gcp_zone                    = "${var.gcp_zone}"
+  gcp_ubuntu_1804_image       = "${var.gcp_ubuntu_1804_image}"
+}
 
 #------------#
 # Turbinia   #

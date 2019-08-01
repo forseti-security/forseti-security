@@ -42,10 +42,10 @@ RestartSec=10
 PermissionsStartOnly=true
 ExecStartPre=-/bin/mkdir /mnt/turbinia/
 ExecStartPre=-/bin/mkdir /var/lib/turbinia/
-ExecStartPre=-/bin/mkdir /var/lib/turbinia/
+ExecStartPre=-/bin/mkdir /var/log/turbinia/
 ExecStartPre=/bin/chown -R turbinia:turbinia /mnt/turbinia/
 ExecStartPre=/bin/chown -R turbinia:turbinia /var/lib/turbinia/
-ExecStartPre=/bin/chown -R turbinia:turbinia /var/lib/turbinia/
+ExecStartPre=/bin/chown -R turbinia:turbinia /var/log/turbinia/
 # Run the server as the turbinia user
 ExecStart=/bin/sh -c '/usr/local/bin/turbiniactl -L /var/log/turbinia/turbinia-%i.log -S -o /var/lib/turbinia %i 2>> /var/log/turbinia/turbinia-%i.stdout.log'
 KillMode=control-group
