@@ -34,3 +34,7 @@ using them.
 
 Learn about automatically remediating non-compliant configurations in Google Cloud Platform (GCP) resources using 
 Real-Time Enforcer.
+
+**[Forseti on GKE]({% link _docs/latest/concepts/forseti-on-gke.md %})**
+
+Learn about deploying Forseti on a GKE cluster.
