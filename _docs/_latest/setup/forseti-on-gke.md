@@ -91,9 +91,13 @@ module "forseti-on-gke-new-gke-cluster" {
 	# existing Forseti VM's: forseti-server-[SUFFIX]
     suffix                           = ""
     zones                            = [""]
-    network_description              = "GKE Network"
+    network_description              = ""
     auto_create_subnetworks          = false
+	# This is the subnet CIDR on the subnet
+	# where Forseti is installed.
     gke_node_ip_range                = "10.1.0.0/20"
+	network_name				     = ""
+	subnetwork_name					 = ""
 }
 ```
 
