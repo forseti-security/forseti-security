@@ -1353,7 +1353,6 @@ class Storage(BaseStorage):
         resource_data = resource.data()
         # Group members do not need to be checked if it already exists
         # in Inventory, as a user can be members in multiple groups.
-        # IOW: group members must always be inserted.
         if resource_data.get('kind') != 'admin#directory#member':
             previous_id = self._get_resource_id(resource)
             if previous_id:

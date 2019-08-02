@@ -39,7 +39,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 
 class ResourceMock(Resource):
 
-    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
+    def __init__(self, key, data, res_type, category, parent=None, warning=[], kind=None):
         self._key = key
         self._data = data
         self._res_type = res_type
@@ -50,6 +50,7 @@ class ResourceMock(Resource):
         self._timestamp = self._utcnow()
         self._inventory_key = None
         self._metadata = None
+        self._kind = kind
 
     def type(self):
         return self._res_type
@@ -59,6 +60,9 @@ class ResourceMock(Resource):
 
     def parent(self):
         return self._parent
+
+    def kind(self):
+        return self._kin
 
 
 class StorageTest(ForsetiTestCase):
@@ -99,6 +103,22 @@ class StorageTest(ForsetiTestCase):
                                 res_proj2)
         res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', 'resource',
                                 res_buc2)
+        res_group1 =  ResourceMock('7', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group2 =  ResourceMock('8', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group_member1 = ResourceMock('9', {'id': 'test'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1,
+                                         kind='admin#directory#member')
+        res_group_member2 = ResourceMock('10', {'id': 'test'},
+                                         'gsuite_group_member',
+                                         'resource', res_group2,
+                                         kind='admin# directory#member')
+        res_group_member3 = ResourceMock('11', {'id': 'test'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1,
+                                         kind='admin# directory#member')
 
         resources = [
             res_org,
@@ -106,7 +126,12 @@ class StorageTest(ForsetiTestCase):
             res_buc1,
             res_proj2,
             res_buc2,
-            res_obj2
+            res_obj2,
+            res_group1,
+            res_group2,
+            res_group_member1,
+            res_group_member2,
+            res_group_member3
         ]
 
         with scoped_sessionmaker() as session:
@@ -121,7 +146,13 @@ class StorageTest(ForsetiTestCase):
                                      ['organization', 'bucket'])),
                                  'Only 1 organization and 2 buckets')
 
-                self.assertEqual(6,
+                self.assertEqual(3,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['gsuite_group_member'])),
+                                 'All group members should be stored.')
+
+                self.assertEqual(11,
                                  len(self.reduced_inventory(storage, [])),
                                  'No types should yield empty list')
 
@@ -137,7 +168,13 @@ class StorageTest(ForsetiTestCase):
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
 
-            self.assertEqual(6,
+            self.assertEqual(3,
+                             len(self.reduced_inventory(
+                                 storage,
+                                 ['gsuite_group_member'])),
+                             'All group members should be stored.')
+
+            self.assertEqual(11,
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
 
