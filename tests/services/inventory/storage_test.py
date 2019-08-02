@@ -39,7 +39,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 
 class ResourceMock(Resource):
 
-    def __init__(self, key, data, res_type, category, parent=None, warning=[], kind=None):
+    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
         self._key = key
         self._data = data
         self._res_type = res_type
@@ -169,9 +169,8 @@ class StorageTest(ForsetiTestCase):
     def test_whether_resource_should_be_inserted_or_updated(self):
         """Whether the resource should be inserted or updated.
 
-        All resources should be checked if they have been previously
-        written.  Except group members, which should not be checked
-        since they can be members of multiple groups.
+        All resources should not be written if they have been previously
+        written. Except group members, where members can be in multiple groups.
         """
 
         engine = create_test_engine()
