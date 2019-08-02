@@ -77,14 +77,11 @@ Create a file named *main.tf* in an empty directory and add the following conten
 module "forseti-on-gke-new-gke-cluster" {
     source                           = "terraform-google-modules/forseti/google//examples/on_gke_new_gke_cluster"
     credentials_path                 = ""
-	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
-    forseti_client_service_account   = "" 
+    forseti_client_service_account   = "SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com" 
     forseti_client_vm_ip             = ""
     forseti_cloudsql_connection_name = ""
-	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
-    forseti_server_service_account   = ""
-	# BUCKET_ID (without gs)
-    forseti_server_storage_bucket    = ""
+    forseti_server_service_account   = "SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com"
+    forseti_server_storage_bucket    = "BUCKET_ID_without_gs"
     project_id                       = ""
     region                           = ""
 	# The suffix can be obtained from the name of the
@@ -123,14 +120,11 @@ Create a file named *main.tf* in an empty directory and add the following conten
 module "forseti-on-gke-existing-gke-cluster" {
     source                           = "terraform-google-modules/forseti/google//examples/on_gke_existing_gke_cluster"
     credentials_path                 = ""
-	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
-    forseti_client_service_account   = ""
+    forseti_client_service_account   = "SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com"
     forseti_client_vm_ip             = ""
     forseti_cloudsql_connection_name = ""
-	# SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com
-    forseti_server_service_account   = ""
-	# BUCKET_ID (without gs)
-    forseti_server_storage_bucket    = ""
+    forseti_server_service_account   = "SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com"
+    forseti_server_storage_bucket    = "BUCKET_ID_without_gs"
     gke_cluster_name                 = ""
     gke_cluster_location             = ""
     gke_service_account              = ""
@@ -318,7 +312,7 @@ Error: Error reading Subnetwork: googleapi: Error 400: Invalid resource usage: '
 ```
 
 ##### Explanation:
-This occurs when there are resources on the subnetwork that exist outside of Terraform's state.  For instance, Forseti may haven been deployed in a separate run of Terraform.
+This occurs when there are resources on the subnetwork that exist outside of Terraform's state.  For instance, Forseti may have been deployed in a separate run of Terraform.
 
 ##### Workaround:
 ```bash
