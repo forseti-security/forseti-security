@@ -50,7 +50,6 @@ class ResourceMock(Resource):
         self._timestamp = self._utcnow()
         self._inventory_key = None
         self._metadata = None
-        self._kind = kind
 
     def type(self):
         return self._res_type
@@ -60,9 +59,6 @@ class ResourceMock(Resource):
 
     def parent(self):
         return self._parent
-
-    def kind(self):
-        return self._kin
 
 
 class StorageTest(ForsetiTestCase):
@@ -103,22 +99,6 @@ class StorageTest(ForsetiTestCase):
                                 res_proj2)
         res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', 'resource',
                                 res_buc2)
-        res_group1 =  ResourceMock('7', {'id': 'test'}, 'google_group',
-                                   'resource', res_org)
-        res_group2 =  ResourceMock('8', {'id': 'test'}, 'google_group',
-                                   'resource', res_org)
-        res_group_member1 = ResourceMock('9', {'id': 'test'},
-                                         'gsuite_group_member',
-                                         'resource', res_group1,
-                                         kind='admin#directory#member')
-        res_group_member2 = ResourceMock('10', {'id': 'test'},
-                                         'gsuite_group_member',
-                                         'resource', res_group2,
-                                         kind='admin# directory#member')
-        res_group_member3 = ResourceMock('11', {'id': 'test'},
-                                         'gsuite_group_member',
-                                         'resource', res_group1,
-                                         kind='admin# directory#member')
 
         resources = [
             res_org,
@@ -126,12 +106,7 @@ class StorageTest(ForsetiTestCase):
             res_buc1,
             res_proj2,
             res_buc2,
-            res_obj2,
-            res_group1,
-            res_group2,
-            res_group_member1,
-            res_group_member2,
-            res_group_member3
+            res_obj2
         ]
 
         with scoped_sessionmaker() as session:
@@ -146,13 +121,7 @@ class StorageTest(ForsetiTestCase):
                                      ['organization', 'bucket'])),
                                  'Only 1 organization and 2 buckets')
 
-                self.assertEqual(3,
-                                 len(self.reduced_inventory(
-                                     storage,
-                                     ['gsuite_group_member'])),
-                                 'All group members should be stored.')
-
-                self.assertEqual(11,
+                self.assertEqual(6,
                                  len(self.reduced_inventory(storage, [])),
                                  'No types should yield empty list')
 
@@ -168,13 +137,7 @@ class StorageTest(ForsetiTestCase):
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
 
-            self.assertEqual(3,
-                             len(self.reduced_inventory(
-                                 storage,
-                                 ['gsuite_group_member'])),
-                             'All group members should be stored.')
-
-            self.assertEqual(11,
+            self.assertEqual(6,
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
 
@@ -202,6 +165,92 @@ class StorageTest(ForsetiTestCase):
                     verify_resource_timestamps_from_storage(storage))
                 self.assertEqual(1, resource_count,
                                  'Unexpected number of resources in inventory')
+
+    def test_whether_resource_should_be_inserted_or_updated(self):
+        """Whether the resource should be inserted or updated.
+
+        All resources should be checked if they have been previously
+        written.  Except group members, which should not be checked
+        since they can be members of multiple groups.
+        """
+
+        engine = create_test_engine()
+
+        initialize(engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
+        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_iam1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
+                                 res_proj1)
+        res_billing1 = ResourceMock('4', {'id': 'test'}, 'project',
+                                    'billing_info', res_proj1)
+        res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
+                                res_org)
+        res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_buc2 = ResourceMock('7', {'id': 'test'}, 'bucket', 'resource',
+                                res_proj2)
+        res_obj2 = ResourceMock('8', {'id': 'test'}, 'object', 'resource',
+                                res_buc2)
+        res_group1 =  ResourceMock('9', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group2 =  ResourceMock('10', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group_member1 = ResourceMock('11', {'id': 'user111',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1)
+        res_group_member2 = ResourceMock('11', {'id': 'user111',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group2)
+        res_group_member3 = ResourceMock('12', {'id': 'user222',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1)
+        res_proj3 = ResourceMock('6', {'id': 'dup_proj'}, 'project',
+                                 'resource', res_org)
+
+        resources = [
+            res_org,
+            res_proj1,
+            res_iam1,
+            res_billing1,
+            res_buc1,
+            res_proj2,
+            res_buc2,
+            res_obj2,
+            res_proj3,
+            res_group1,
+            res_group2,
+            res_group_member1,
+            res_group_member2,
+            res_group_member3
+        ]
+
+        with scoped_sessionmaker() as session:
+            with Storage(session) as storage:
+                for resource in resources:
+                    storage.write(resource)
+                storage.commit()
+
+                self.assertEqual(5,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['organization', 'project'])),
+                                 'Only 1 organization and 2 unique projects')
+
+                self.assertEqual(3,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['gsuite_group_member'])),
+                                 'All group members should be stored.')
+
+                self.assertEqual(13,
+                                 len(self.reduced_inventory(storage, [])),
+                                 'No types should yield empty list')
 
 
 class InventoryIndexTest(ForsetiTestCase):
