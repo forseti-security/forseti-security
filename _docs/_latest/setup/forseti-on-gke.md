@@ -326,3 +326,8 @@ terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compu
 
 terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compute_subnetwork.subnetwork[0]
 ```
+#### Terraform - Help, my error isn't listed here.
+There are a few things you can do.
+1. Run `terraform apply` or `terraform destroy` again to see if the error occurs repeatedly.
+2. Open an issue against the [Terraform Google Forseti](https://github.com/forseti-security/terraform-google-forseti/issues) module
+3. Post an issue in our [Slack Channel](forsetisecurity.slack.com).  We'll be happy to try and help!
