@@ -87,6 +87,8 @@ module "forseti-on-gke-new-gke-cluster" {
     forseti_server_storage_bucket    = ""
     project_id                       = ""
     region                           = ""
+	# The suffix can be obtained from the name of the
+	# existing Forseti VM's: forseti-server-[SUFFIX]
     suffix                           = ""
     zones                            = [""]
     network_description              = "GKE Network"
@@ -129,6 +131,8 @@ module "forseti-on-gke-existing-gke-cluster" {
     gke_cluster_location             = ""
     gke_service_account              = ""
     project_id                       = ""
+	# The suffix can be obtained from the name of the
+	# existing Forseti VM's: forseti-server-[SUFFIX]
     suffix                           = ""
 }
 ```
