@@ -28,3 +28,5 @@ to the Terraform module.
 * Tracing can be disabled by passing the `enable_tracing="false"` to the 
 Terraform module or not passing `enable_tracing` flag as Tracing is disabled by
 default.
+* Forseti will send traces using StackdriverExporter by default, and are
+viewable in GCP console under `Traces`.

@@ -242,6 +242,16 @@ cd <virtual environment>/lib/python2.7/site-packages/google/cloud
 ln -s <path to your git source code>/google/cloud/forseti forseti
 ```
 
+## Setting up instrumentation
+* To collect performance stats, tracing libraries needs to be installed.
+```
+sudo pip3 install .[tracing]
+```
+* Enable tracing by running:
+```
+export FORSETI_ENABLE_TRACING=True
+```
+* Run the server with `--enable_tracing=${FORSETI_ENABLE_TRACING}`.
 ------------------
 
 
