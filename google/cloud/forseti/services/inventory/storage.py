@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Inventory storage implementation."""
-# pylint: disable=too-many-lines
+# NOTE: no-value-for-parameter disabled due to sqlalchemy issue
+# https://github.com/sqlalchemy/sqlalchemy/issues/4656.
+# pylint: disable=too-many-lines, no-value-for-parameter
 
 from builtins import object
 import json
@@ -585,7 +587,7 @@ class CaiTemporaryStore(object):
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
         """Initialize database column.
 
-        Manually defined so that the collation value can be overriden at run
+        Manually defined so that the collation value can be overridden at run
         time for this database table.
 
         Args:
@@ -629,25 +631,17 @@ class CaiTemporaryStore(object):
                                                   'name',
                                                   name='cai_temp_store_pk'))
 
+            cls.__table__ = my_table
             mapper(cls, my_table)
 
-    def extract_asset_data(self, content_type):
-        """Extracts the data from the asset protobuf based on the content type.
-
-        Args:
-            content_type (ContentTypes): The content type data to extract.
+    def extract_asset_data(self):
+        """Extracts the data from the database row.
 
         Returns:
             Tuple[dict, AssetMetadata]: The dict representation of the asset
                 data and an Asset metadata along with it.
         """
         asset = json.loads(self.asset_data)
-
-        if content_type == ContentTypes.resource:
-            asset = asset['resource']['data']
-        elif content_type == ContentTypes.iam_policy:
-            asset = asset['iam_policy']
-
         asset_metadata = AssetMetadata(cai_name=self.name,
                                        cai_type=self.asset_type)
 
@@ -661,7 +655,7 @@ class CaiTemporaryStore(object):
             asset_json (str): The json representation of an Asset.
 
         Returns:
-            object: database row object or None if there is no data.
+            dict: database row dictionary or None if there is no data.
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
@@ -670,28 +664,33 @@ class CaiTemporaryStore(object):
             return None
 
         if 'resource' in asset:
-            content_type = ContentTypes.resource
+            content_type = 'resource'
             parent_name = cls._get_parent_name(asset)
+            resource_data = asset['resource']['data']
+            # Remove unused proto representation of asset
+            resource_data.pop('internal_data', None)
+            asset_data = json.dumps(resource_data, sort_keys=True)
         elif 'iam_policy' in asset:
-            content_type = ContentTypes.iam_policy
+            content_type = 'iam_policy'
             parent_name = asset['name']
+            asset_data = json.dumps(asset['iam_policy'], sort_keys=True)
         else:
+            LOGGER.warning('Unparsable asset, no resource or iam policy: %s',
+                           asset)
             return None
 
-        return cls(
-            name=asset['name'],
-            parent_name=parent_name,
-            content_type=content_type,
-            asset_type=asset['asset_type'],
-            asset_data=asset_json
-        )
+        return {'name': asset['name'],
+                'parent_name': parent_name,
+                'content_type': content_type,
+                'asset_type': asset['asset_type'],
+                'asset_data': asset_data.encode('utf-8')}
 
     @classmethod
-    def delete_all(cls, session):
+    def delete_all(cls, engine):
         """Deletes all rows from this table.
 
         Args:
-            session (object): db session
+            engine (object): db engine
 
         Returns:
             int: The number of rows deleted.
@@ -700,12 +699,10 @@ class CaiTemporaryStore(object):
             Exception: Reraises any exception.
         """
         try:
-            num_rows = session.query(cls).delete()
-            session.commit()
-            return num_rows
+            results = engine.execute(cls.__table__.delete())
+            return results.rowcount
         except Exception as e:
             LOGGER.exception(e)
-            session.rollback()
             raise
 
     # pylint: disable=too-many-return-statements
@@ -876,59 +873,56 @@ class CaiDataAccess(object):
     """Access to the CAI temporary store table."""
 
     @staticmethod
-    def clear_cai_data(session):
+    def clear_cai_data(engine):
         """Deletes all temporary CAI data from the cai temporary table.
 
         Args:
-            session (object): Database session.
+            engine (object): Database engine.
 
         Returns:
             int: The number of rows deleted.
         """
-        num_rows = 0
-        try:
-            num_rows = CaiTemporaryStore.delete_all(session)
-        except SQLAlchemyError as e:
-            LOGGER.exception('Attempt to delete data from CAI temporary store '
-                             'failed, disabling the use of CAI: %s', e)
-            session.rollback()
-
-        return num_rows
+        return CaiTemporaryStore.delete_all(engine)
 
     @staticmethod
-    def populate_cai_data(data, session):
+    def populate_cai_data(data, engine):
         """Add assets from cai data dump into cai temporary table.
 
         Args:
             data (file): A file like object, line delimeted text dump of json
                 data representing assets from Cloud Asset Inventory exportAssets
                 API.
-            session (object): Database session.
+            engine (object): Database engine.
 
         Returns:
             int: The number of rows inserted
         """
-        # CAI data can be large, so limit the number of rows written at one
-        # time to 512.
-        commit_buffer = BufferedDbWriter(session,
-                                         max_size=512,
-                                         commit_on_flush=True)
         num_rows = 0
+        cai_table_insert = CaiTemporaryStore.__table__.insert
         try:
+            rows_total_length = 0
+            rows = []
             for line in data:
                 if not line:
                     continue
 
                 row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
-                    # Overestimate the packet length to ensure max size is never
-                    # exceeded. The actual length is closer to len(line) * 1.5.
-                    commit_buffer.add(row, estimated_length=len(line) * 2)
                     num_rows += 1
-            commit_buffer.flush()
+                    rows.append(row)
+                    rows_total_length += sum(len(v) for v in row.values())
+                    if rows_total_length > MAX_ALLOWED_PACKET * .9:
+                        LOGGER.debug('Flushing %i rows to CAI table', len(rows))
+                        engine.execute(cai_table_insert(), rows)
+                        rows_total_length = 0
+                        rows = []
+
+            if rows:
+                LOGGER.debug('Flushing remaining %i rows to CAI table',
+                             len(rows))
+                engine.execute(cai_table_insert(), rows)
         except SQLAlchemyError as e:
-            LOGGER.exception('Error populating CAI data: %s', e)
-            session.rollback()
+            LOGGER.error('Error populating CAI data: %s', e)
         return num_rows
 
     @staticmethod
@@ -961,7 +955,7 @@ class CaiDataAccess(object):
         base_query = base_query.order_by(CaiTemporaryStore.name.asc())
 
         for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data(content_type)
+            yield row.extract_asset_data()
 
     @staticmethod
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -993,7 +987,7 @@ class CaiDataAccess(object):
         row = base_query.one_or_none()
 
         if row:
-            return row.extract_asset_data(content_type)
+            return row.extract_asset_data()
 
         return {}, None
 

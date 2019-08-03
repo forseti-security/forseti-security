@@ -189,7 +189,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertTrue(results)
         self.validate_data_in_table()
@@ -228,7 +228,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   inventory_config)
         expected_results = 12  # Total of resources and IAM policies in dumps.
         self.assertEqual(expected_results, results)
@@ -267,7 +267,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         # Expect only the resource with the short name got imported.
         expected_results = 1
@@ -300,14 +300,14 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         self.mock_export_assets.side_effect = (
             api_errors.ApiExecutionError('organizations/987654321', error_403)
         )
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
         self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_valueerror(self):
-        """Validate load_cloud_asset handles a bad root resource id."""
+        """Validate load_cloud_asset raises exception on bad root resource."""
         inventory_config = InventoryConfig('bad_resource/987654321',
                                            '',
                                            {},
@@ -317,9 +317,8 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         self.mock_export_assets.side_effect = (
             ValueError('parent must start with folders/, projects/, or '
                        'organizations/'))
-        results = cloudasset.load_cloudasset_data(self.session,
-                                                  inventory_config)
-        self.assertIsNone(results)
+        with self.assertRaises(ValueError):
+            cloudasset.load_cloudasset_data(self.engine, inventory_config)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
         self.validate_no_data_in_table()
 
@@ -327,7 +326,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         """Validate load_cloud_asset handles a timeout error."""
         self.mock_export_assets.side_effect = (
             api_errors.OperationTimeoutError('organizations/987654321', {}))
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
@@ -336,7 +335,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
     def test_load_cloudasset_data_cai_error_response(self):
         """Validate load_cloud_asset handles an error result from CAI."""
         self.mock_export_assets.return_value = EXPORT_ASSETS_ERROR
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
@@ -353,7 +352,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         error_403 = errors.HttpError(response, content)
         self.mock_copy_file_from_gcs.side_effect = error_403
 
-        results = cloudasset.load_cloudasset_data(self.session,
+        results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.validate_no_data_in_table()
