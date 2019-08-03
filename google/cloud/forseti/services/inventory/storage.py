@@ -26,6 +26,7 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import exists
+from sqlalchemy import ForeignKey
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
@@ -38,7 +39,9 @@ from sqlalchemy import Text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import backref
 from sqlalchemy.orm import mapper
+from sqlalchemy.orm import relationship
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
@@ -307,7 +310,11 @@ class Inventory(BASE):
     resource_type = Column(String(255))
     resource_id = Column(Text)
     resource_data = Column(Text(16777215))
-    parent_id = Column(Integer)
+    parent_id = Column(Integer, ForeignKey('gcp_inventory.id'), nullable=True)
+    parent = relationship('Inventory', remote_side=[id])
+    children = relationship("Node",
+                            backref=backref('parent', remote_side=[id])
+                            )
     other = Column(Text)
     inventory_errors = Column(Text)
 
@@ -345,9 +352,10 @@ class Inventory(BASE):
             resource (Resource): Crawled resource.
 
         Returns:
-            object: database row object.
+            Inventory: database row object.
+            int: Count of the objects.
         """
-
+        count = 1
         parent = resource.parent()
         iam_policy = resource.get_iam_policy()
         gcs_policy = resource.get_gcs_policy()
@@ -364,7 +372,7 @@ class Inventory(BASE):
             cai_resource_name = resource.metadata().cai_name
             cai_resource_type = resource.metadata().cai_type
 
-        rows = [Inventory(
+        inventory_resource = Inventory(
             cai_resource_name=cai_resource_name,
             cai_resource_type=cai_resource_type,
             inventory_index_id=index.id,
@@ -374,11 +382,11 @@ class Inventory(BASE):
             resource_data=json.dumps(resource.data(), sort_keys=True),
             parent_id=None if not parent else parent.inventory_key(),
             other=other,
-            inventory_errors=resource.get_warning())]
+            inventory_errors=resource.get_warning())
 
         if iam_policy:
-            rows.append(
-                Inventory(
+            count += 1
+            inventory_resource.children.append(Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
@@ -390,7 +398,8 @@ class Inventory(BASE):
                     inventory_errors=None))
 
         if gcs_policy:
-            rows.append(
+            count += 1
+            inventory_resource.children.append(
                 Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
@@ -403,7 +412,8 @@ class Inventory(BASE):
                     inventory_errors=None))
 
         if dataset_policy:
-            rows.append(
+            count += 1
+            inventory_resource.children.append(
                 Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
@@ -416,7 +426,8 @@ class Inventory(BASE):
                     inventory_errors=None))
 
         if billing_info:
-            rows.append(
+            count += 1
+            inventory_resource.children.append(
                 Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
@@ -429,7 +440,7 @@ class Inventory(BASE):
                     inventory_errors=None))
 
         if enabled_apis:
-            rows.append(
+            inventory_resource.children.append(
                 Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
@@ -442,7 +453,8 @@ class Inventory(BASE):
                     inventory_errors=None))
 
         if service_config:
-            rows.append(
+            count += 1
+            inventory_resource.children.append(
                 Inventory(
                     cai_resource_name=cai_resource_name,
                     cai_resource_type=cai_resource_type,
@@ -454,7 +466,7 @@ class Inventory(BASE):
                     other=other,
                     inventory_errors=None))
 
-        return rows
+        return inventory_resource.children, count
 
     def copy_inplace(self, new_row):
         """Update a database row object from a resource.
@@ -1350,32 +1362,12 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
 
-        resource_data = resource.data()
-        # Group members do not need to be checked if it already exists
-        # in Inventory, as a user can be members in multiple groups.
-        if resource_data.get('kind') != 'admin#directory#member':
-            previous_id = self._get_resource_id(resource)
-            if previous_id:
-                resource.set_inventory_key(previous_id)
-                self.update(resource)
-                return
+        inventory_resource, count = Inventory.from_resource(
+            self.inventory_index, resource)
 
-        rows = Inventory.from_resource(self.inventory_index, resource)
+        self.buffer.add(inventory_resource)
 
-        for row in rows:
-            if row.category == Categories.resource:
-                # Force flush to insert the resource row in order to get the
-                # inventory id value. This is used to tie child resources
-                # and related data back to the parent resource row and to
-                # check for duplicate resources.
-                self.session.add(row)
-                self.session.flush()
-                resource.set_inventory_key(row.id)
-            else:
-                row.parent_id = resource.inventory_key()
-                self.buffer.add(row)
-
-        self.inventory_index.counter += len(rows)
+        self.inventory_index.counter += len(count)
 
     def update(self, resource):
         """Update a resource in the storage.
