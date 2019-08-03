@@ -312,7 +312,7 @@ class Inventory(BASE):
     resource_data = Column(Text(16777215))
     parent_id = Column(Integer, ForeignKey('gcp_inventory.id'), nullable=True)
     parent = relationship('Inventory', remote_side=[id])
-    children = relationship("Node",
+    children = relationship("Inventory",
                             backref=backref('parent', remote_side=[id])
                             )
     other = Column(Text)
