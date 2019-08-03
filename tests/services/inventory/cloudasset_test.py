@@ -20,7 +20,6 @@ import httplib2
 import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
-from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine_with_file
 from tests import unittest_utils
@@ -75,8 +74,6 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         """Setup method."""
         unittest_utils.ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
         storage.initialize(self.engine)
         self.inventory_config = InventoryConfig('organizations/987654321',
                                                 '',
@@ -119,7 +116,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             storage.ContentTypes.resource,
             cai_type,
             cai_name,
-            self.session)
+            self.engine)
         expected_resource = ({
             'creationTime': '2015-09-09T19:34:18.591Z',
             'displayName': 'forseti.test',
@@ -136,7 +133,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             storage.ContentTypes.iam_policy,
             cai_type,
             cai_name,
-            self.session)
+            self.engine)
         expected_iam_policy = ({
             'bindings': [
                 {'members': ['user:a_user@forseti.test'],
@@ -150,7 +147,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             storage.ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/organizations/111222333',
-            self.session)
+            self.engine)
         expected_resource = ({}, None)
         self.assertEqual(expected_resource, resource)
 
@@ -158,7 +155,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             storage.ContentTypes.iam_policy,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/folders/1033',
-            self.session)
+            self.engine)
         expected_iam_policy = ({}, None)
         self.assertEqual(expected_iam_policy, iam_policy)
 
@@ -244,7 +241,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                     content_type,
                     'cloudresourcemanager.googleapis.com/Project',
                     expected_resource_name,
-                    self.session)
+                    self.engine)
                 self.assertTrue(resource,
                                 msg=('Resource %s type %s is missing'
                                      % (root_id, content_type)))
@@ -281,7 +278,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             storage.ContentTypes.resource,
             cai_type,
             cai_name,
-            self.session)
+            self.engine)
         expected_resource = ({
             'config': 'projects/project2/instanceConfigs/regional-us-east1',
             'displayName': 'Test123',

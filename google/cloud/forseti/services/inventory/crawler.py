@@ -290,13 +290,11 @@ class ParallelCrawler(Crawler):
             raise
 
 
-def _api_client_factory(storage, config, parallel):
+def _api_client_factory(config):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
-        storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
-        parallel (bool): If true, use the parallel crawler implementation.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -314,10 +312,7 @@ def _api_client_factory(storage, config, parallel):
                     asset_count)
 
         if asset_count:
-            return cai_gcp_client.CaiApiClientImpl(client_config,
-                                                   engine,
-                                                   parallel,
-                                                   storage.session)
+            return cai_gcp_client.CaiApiClientImpl(client_config, engine)
 
     # Default to the non-CAI implementation
     return gcp.ApiClientImpl(client_config)
@@ -390,7 +385,7 @@ def run_crawler(storage,
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
 
-    client = _api_client_factory(storage, config, parallel)
+    client = _api_client_factory(config)
     crawler_impl = _crawler_factory(storage, progresser, client, parallel)
     resource = _root_resource_factory(config, client)
 

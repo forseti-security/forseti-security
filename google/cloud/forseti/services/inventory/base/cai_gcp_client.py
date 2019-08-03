@@ -16,16 +16,13 @@
 # pylint: disable=too-many-lines
 
 import itertools
-import threading
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import iam_helpers
 from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 from google.cloud.forseti.services.inventory.storage import ContentTypes
 
-LOCAL_THREAD = threading.local()
 LOGGER = logger.get_logger(__name__)
 
 
@@ -76,39 +73,16 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
 
-    def __init__(self, config, engine, parallel, session):
+    def __init__(self, config, engine):
         """Initialize.
 
         Args:
             config (dict): GCP API client configuration.
             engine (object): Database engine to operate on.
-            parallel (bool): If true, use the parallel crawler implementation.
-            session (object): Database session.
         """
         super(CaiApiClientImpl, self).__init__(config)
         self.dao = CaiDataAccess()
         self.engine = engine
-        self.parallel = parallel
-        self.cai_session = session
-        self._local = LOCAL_THREAD
-
-    @property
-    def session(self):
-        """Return a thread local CAI read only session object.
-
-        Returns:
-            object: A thread local Session.
-        """
-        if not self.parallel:
-            # SQLite doesn't support per thread sessions cleanly, so use global
-            # session.
-            return self.cai_session
-
-        if hasattr(self._local, 'cai_session'):
-            return self._local.cai_session
-
-        self._local.cai_session = db.create_readonly_session(engine=self.engine)
-        return self._local.cai_session
 
     def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from Cloud Asset data.
@@ -129,14 +103,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'bigquery.googleapis.com/Dataset',
             bigquery_name_fmt.format(project_id, dataset_id),
-            self.session)
+            self.engine)
 
         if not resource:
             resource, meta_data = self.dao.fetch_cai_asset(
                 ContentTypes.iam_policy,
                 'bigquery.googleapis.com/Dataset',
                 bigquery_name_fmt.format(project_number, dataset_id),
-                self.session)
+                self.engine)
 
         if resource:
             return resource, meta_data
@@ -182,7 +156,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigquery.googleapis.com/Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
 
         for dataset in resources:
             yield dataset
@@ -200,7 +174,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'cloudbilling.googleapis.com/BillingAccount',
             '//cloudbilling.googleapis.com/{}'.format(account_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -217,7 +191,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudbilling.googleapis.com/BillingAccount',
             '',  # Billing accounts have no parent resource.
-            self.session)
+            self.engine)
         for account in resources:
             yield account
 
@@ -236,14 +210,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'sqladmin.googleapis.com/Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session))
+            self.engine))
         if not resources:
             # CloudSQL instances may not have parent data from CAI.
             resources = list(self.dao.iter_cai_assets(
                 ContentTypes.resource,
                 'sqladmin.googleapis.com/Instance',
                 '//cloudsql.googleapis.com/projects/{}'.format(project_id),
-                self.session))
+                self.engine))
 
         for instance in resources:
             yield instance
@@ -263,7 +237,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'compute.googleapis.com/{}'.format(asset_type),
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from Cloud Asset data.
@@ -853,7 +827,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'container.googleapis.com/Cluster',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for cluster in resources:
             yield cluster
 
@@ -870,7 +844,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -889,7 +863,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -909,7 +883,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -928,7 +902,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -949,7 +923,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -969,7 +943,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -989,7 +963,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(parent_id),
-            self.session)
+            self.engine)
         for folder in resources:
             yield folder
 
@@ -1009,7 +983,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'k8s.io/Node',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
             .format(project_id, zone, cluster),
-            self.session)
+            self.engine)
         for node in resources:
             yield node
 
@@ -1030,7 +1004,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'k8s.io/Pod',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
             'namespaces/{}'.format(project_id, zone, cluster, namespace),
-            self.session)
+            self.engine)
         for pod in resources:
             yield pod
 
@@ -1050,7 +1024,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'k8s.io/Namespace',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
             .format(project_id, zone, cluster),
-            self.session)
+            self.engine)
         for namespace in resources:
             yield namespace
 
@@ -1071,7 +1045,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'rbac.authorization.k8s.io/Role',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
             'namespaces/{}'.format(project_id, zone, cluster, namespace),
-            self.session)
+            self.engine)
         for role in resources:
             yield role
 
@@ -1096,7 +1070,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'rbac.authorization.k8s.io/RoleBinding',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
             'namespaces/{}'.format(project_id, zone, cluster, namespace),
-            self.session)
+            self.engine)
         for role_binding in resources:
             yield role_binding
 
@@ -1116,7 +1090,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'rbac.authorization.k8s.io/ClusterRole',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
             .format(project_id, zone, cluster),
-            self.session)
+            self.engine)
         for cluster_role in resources:
             yield cluster_role
 
@@ -1136,7 +1110,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'rbac.authorization.k8s.io/ClusterRoleBinding',
             '//container.googleapis.com/projects/{}/zones/{}/clusters/{}'
             .format(project_id, zone, cluster),
-            self.session)
+            self.engine)
         for cluster_role_binding in resources:
             yield cluster_role_binding
 
@@ -1155,7 +1129,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/{}s/{}'.format(parent_type,
                                                                   parent_id),
-            self.session)
+            self.engine)
         for project in resources:
             yield project
 
@@ -1173,7 +1147,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'dataproc.googleapis.com/Cluster',
             '//dataproc.googleapis.com/{}'.format(cluster),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1196,7 +1170,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'dataproc.googleapis.com/Cluster',
             '//dataproc.googleapis.com/projects/{}'.format(project_id),
-            self.session)
+            self.engine)
         for cluster in resources:
             yield cluster
 
@@ -1214,7 +1188,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'dns.googleapis.com/ManagedZone',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for managedzone in resources:
             yield managedzone
 
@@ -1232,7 +1206,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'dns.googleapis.com/Policy',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for policy in resources:
             yield policy
 
@@ -1249,7 +1223,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'appengine.googleapis.com/Application',
             '//appengine.googleapis.com/apps/{}'.format(project_id),
-            self.session)
+            self.engine)
         return resource
 
     def iter_gae_services(self, project_id):
@@ -1265,7 +1239,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'appengine.googleapis.com/Service',
             '//appengine.googleapis.com/apps/{}'.format(project_id),
-            self.session)
+            self.engine)
         for service in resources:
             yield service
 
@@ -1284,7 +1258,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'appengine.googleapis.com/Version',
             '//appengine.googleapis.com/apps/{}/services/{}'.format(project_id,
                                                                     service_id),
-            self.session)
+            self.engine)
         for version in resources:
             yield version
 
@@ -1309,7 +1283,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'iam.googleapis.com/ServiceAccount',
             '//iam.googleapis.com/{}'.format(name),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1329,7 +1303,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'iam.googleapis.com/Role',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
-            self.session)
+            self.engine)
         for role in resources:
             yield role
 
@@ -1349,7 +1323,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'iam.googleapis.com/Role',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for role in resources:
             yield role
 
@@ -1369,7 +1343,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'iam.googleapis.com/ServiceAccount',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for serviceaccount in resources:
             yield serviceaccount
 
@@ -1388,7 +1362,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'cloudkms.googleapis.com/CryptoKey',
             '//cloudkms.googleapis.com/{}'.format(cryptokey),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1409,7 +1383,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'cloudkms.googleapis.com/KeyRing',
             '//cloudkms.googleapis.com/{}'.format(keyring),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1430,7 +1404,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudkms.googleapis.com/CryptoKey',
             '//cloudkms.googleapis.com/{}'.format(parent),
-            self.session)
+            self.engine)
         for cryptokey in resources:
             yield cryptokey
 
@@ -1449,7 +1423,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudkms.googleapis.com/CryptoKeyVersion',
             '//cloudkms.googleapis.com/{}'.format(parent),
-            self.session)
+            self.engine)
         for cryptokeyversion in resources:
             yield cryptokeyversion
 
@@ -1469,7 +1443,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'cloudkms.googleapis.com/KeyRing',
             '//cloudkms.googleapis.com/projects/{}'.format(project_id),
-            self.session)
+            self.engine)
         for keyring in resources:
             yield keyring
 
@@ -1487,7 +1461,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'pubsub.googleapis.com/Subscription',
             '//pubsub.googleapis.com/{}'.format(name),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1508,7 +1482,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'pubsub.googleapis.com/Topic',
             '//pubsub.googleapis.com/{}'.format(name),
-            self.session)
+            self.engine)
         if resource:
             return resource
 
@@ -1531,7 +1505,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'pubsub.googleapis.com/Subscription',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for subscription in resources:
             yield subscription
 
@@ -1551,7 +1525,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'pubsub.googleapis.com/Topic',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for topic in resources:
             yield topic
 
@@ -1569,7 +1543,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'spanner.googleapis.com/Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for spanner_instance in resources:
             yield spanner_instance
 
@@ -1586,7 +1560,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'spanner.googleapis.com/Database',
             '//spanner.googleapis.com/{}'.format(parent),
-            self.session)
+            self.engine)
         for spanner_database in resources:
             yield spanner_database
 
@@ -1624,7 +1598,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'storage.googleapis.com/Bucket',
             '//storage.googleapis.com/{}'.format(bucket_id),
-            self.session)
+            self.engine)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -1645,6 +1619,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'storage.googleapis.com/Bucket',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
         for bucket in resources:
             yield bucket

@@ -634,19 +634,6 @@ class CaiTemporaryStore(object):
             cls.__table__ = my_table
             mapper(cls, my_table)
 
-    def extract_asset_data(self):
-        """Extracts the data from the database row.
-
-        Returns:
-            Tuple[dict, AssetMetadata]: The dict representation of the asset
-                data and an Asset metadata along with it.
-        """
-        asset = json.loads(self.asset_data)
-        asset_metadata = AssetMetadata(cai_name=self.name,
-                                       cai_type=self.asset_type)
-
-        return asset, asset_metadata
-
     @classmethod
     def from_json(cls, asset_json):
         """Creates a database row object from the json data in a dump file.
@@ -928,7 +915,7 @@ class CaiDataAccess(object):
     @staticmethod
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def iter_cai_assets(content_type, asset_type, parent_name, session):
+    def iter_cai_assets(content_type, asset_type, parent_name, engine):
         """Iterate the objects in the cai temporary table.
 
         Retries query on exception up to 5 times.
@@ -937,30 +924,31 @@ class CaiDataAccess(object):
             content_type (ContentTypes): The content type to return.
             asset_type (str): The asset type to return.
             parent_name (str): The parent resource to iter children under.
-            session (object): Database session.
+            engine (object): Database engine.
 
         Yields:
             object: The content_type data for each resource.
         """
+        base_query = CaiTemporaryStore.__table__.select()
         filters = [
             CaiTemporaryStore.content_type == content_type,
             CaiTemporaryStore.asset_type == asset_type,
             CaiTemporaryStore.parent_name == parent_name,
         ]
-        base_query = session.query(CaiTemporaryStore)
 
         for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
+            base_query = base_query.where(qry_filter)
 
         base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+        results = engine.execute(base_query)
 
-        for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data()
+        for row in results:
+            yield CaiDataAccess._extract_asset_data(row)
 
     @staticmethod
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def fetch_cai_asset(content_type, asset_type, name, session):
+    def fetch_cai_asset(content_type, asset_type, name, engine):
         """Returns a single resource from the cai temporary store.
 
         Retries query on exception up to 5 times.
@@ -969,27 +957,45 @@ class CaiDataAccess(object):
             content_type (ContentTypes): The content type to return.
             asset_type (str): The asset type to return.
             name (str): The resource to return.
-            session (object): Database session.
+            engine (object): Database engine.
 
         Returns:
             dict: The content data for the specified resource.
         """
+        base_query = CaiTemporaryStore.__table__.select()
         filters = [
             CaiTemporaryStore.content_type == content_type,
             CaiTemporaryStore.asset_type == asset_type,
             CaiTemporaryStore.name == name,
         ]
-        base_query = session.query(CaiTemporaryStore)
 
         for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
+            base_query = base_query.where(qry_filter)
 
-        row = base_query.one_or_none()
+        results = engine.execute(base_query)
+        row = results.first()
 
         if row:
-            return row.extract_asset_data()
+            return CaiDataAccess._extract_asset_data(row)
 
         return {}, None
+
+    @staticmethod
+    def _extract_asset_data(row):
+        """Extracts the data from the database row.
+
+        Args:
+            row (dict): Database row from select query.
+
+        Returns:
+            Tuple[dict, AssetMetadata]: The dict representation of the asset
+                data and an Asset metadata along with it.
+        """
+        asset = json.loads(row['asset_data'])
+        asset_metadata = AssetMetadata(cai_name=row['name'],
+                                       cai_type=row['asset_type'])
+
+        return asset, asset_metadata
 
 
 class DataAccess(object):

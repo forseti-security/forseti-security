@@ -328,8 +328,6 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         """Setup method."""
         ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
         initialize(self.engine)
 
     def _add_resources(self):
@@ -363,7 +361,7 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
             ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/organizations/1234567890',
-            self.session)
+            self.engine)
         self.assertEqual(0, len(list(results)))
 
     def test_iter_cai_assets(self):
@@ -376,13 +374,18 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
             ContentTypes.resource,
             cai_type,
             '//cloudresourcemanager.googleapis.com/organizations/1234567890',
-            self.session)
+            self.engine)
 
-        expected_results = [('folders/11111',
-                             AssetMetadata(
-                                 cai_type=cai_type,
-                                 cai_name='//cloudresourcemanager.googleapis.com/folders/11111'))]
-        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
+        expected_results = [
+            ('folders/11111',
+             AssetMetadata(
+                 cai_type=cai_type,
+                 cai_name='//cloudresourcemanager.googleapis.com/folders/11111')
+             )
+        ]
+        self.assertEqual(expected_results,
+                         [(asset['name'], metadata)
+                          for asset, metadata in results])
 
         cai_type = 'appengine.googleapis.com/Service'
 
@@ -390,26 +393,31 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
             ContentTypes.resource,
             cai_type,
             '//appengine.googleapis.com/apps/forseti-test-project',
-            self.session)
+            self.engine)
 
-        expected_results = [('apps/forseti-test-project/services/default',
-                             AssetMetadata(
-                                 cai_name='//appengine.googleapis.com/apps/forseti-test-project/services/default',
-                                 cai_type=cai_type))]
-        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
+        expected_results = [
+          ('apps/forseti-test-project/services/default',
+           AssetMetadata(
+               cai_name=('//appengine.googleapis.com/apps/forseti-test-project/'
+                         'services/default'),
+               cai_type=cai_type))]
+        self.assertEqual(expected_results,
+                         [(asset['name'], metadata)
+                          for asset, metadata in results])
 
     def test_fetch_cai_asset(self):
         """Validate querying single CAI asset."""
         self._add_iam_policies()
 
         cai_type = 'cloudresourcemanager.googleapis.com/Organization'
-        cai_name = '//cloudresourcemanager.googleapis.com/organizations/1234567890'
+        cai_name = ('//cloudresourcemanager.googleapis.com/organizations/'
+                    '1234567890')
 
         results = CaiDataAccess.fetch_cai_asset(
             ContentTypes.iam_policy,
             cai_type,
             cai_name,
-            self.session)
+            self.engine)
         expected_iam_policy = {
             'etag': 'BwVvLqcT+M4=',
             'bindings': [
