@@ -175,8 +175,9 @@ def traced(methods=None, attr=None):
 
 # pylint: disable=redundant-returns-doc
 def trace_init(attr=None):
-    """Method decorator for a class's __init__ method. Set `self.tracer` (either
-    from instance kwargs, attribute, or execution context).
+    """Method decorator for a class's __init__ method.
+    Set `self.tracer` (either from instance kwargs, attribute,
+    or execution context).
 
     Args:
         attr (str, optional): If the tracer was passed explicitly to the class
@@ -303,10 +304,12 @@ def trace():
 
 def rgetattr(obj, attr, *args):
     """Get nested attribute from object.
+
     Args:
         obj (Object): An instance of a class.
         attr (str): The attribute to get the tracer from.
         *args: Argument list passed to a function.
+
     Returns:
         object: Fetched attribute.
     """
@@ -324,15 +327,14 @@ def rgetattr(obj, attr, *args):
 
 # pylint: disable=deprecated-method, broad-except, missing-return-type-doc
 def get_fname(function, *args):
-    """Find out if a function is a class method or a standard function, and
-    return it's name.
+    """Find out if a function is a class method or not, and return it's name.
 
     Args:
         function (object): Input function or class method.
         *args: list of arguments
 
     Returns:
-        is_cls_method, fname (bool, str): Class method, function name.
+        is_cls_method, fname (bool, str): True if class method, function name.
     """
     try:
         is_cls_method = inspect.getargspec(function)[0][0] == 'self'
