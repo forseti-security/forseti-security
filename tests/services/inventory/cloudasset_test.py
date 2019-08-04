@@ -28,7 +28,7 @@ from google.cloud.forseti.common.gcp_api import cloudasset as cloudasset_api
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.services.base.config import InventoryConfig
-from google.cloud.forseti.services.inventory import storage
+from google.cloud.forseti.services.inventory import cai_temporary_storage
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 
@@ -73,8 +73,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
     def setUp(self):
         """Setup method."""
         unittest_utils.ForsetiTestCase.setUp(self)
-        self.engine, self.dbfile = create_test_engine_with_file()
-        storage.initialize(self.engine)
+        self.engine, self.dbfile = cai_temporary_storage.create_sqlite_db()
         self.inventory_config = InventoryConfig('organizations/987654321',
                                                 '',
                                                 {},
@@ -112,8 +111,8 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         """Validate there is actual data in the CAI table."""
         cai_name = '//cloudresourcemanager.googleapis.com/organizations/111222333'
         cai_type = 'cloudresourcemanager.googleapis.com/Organization'
-        resource = storage.CaiDataAccess.fetch_cai_asset(
-            storage.ContentTypes.resource,
+        resource = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
+            cai_temporary_storage.ContentTypes.resource,
             cai_type,
             cai_name,
             self.engine)
@@ -129,8 +128,8 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         cai_name = '//cloudresourcemanager.googleapis.com/folders/1033'
         cai_type = 'cloudresourcemanager.googleapis.com/Folder'
 
-        iam_policy = storage.CaiDataAccess.fetch_cai_asset(
-            storage.ContentTypes.iam_policy,
+        iam_policy = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
+            cai_temporary_storage.ContentTypes.iam_policy,
             cai_type,
             cai_name,
             self.engine)
@@ -143,16 +142,16 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
     def validate_no_data_in_table(self):
         """Validate there is not data in the CAI table."""
-        resource = storage.CaiDataAccess.fetch_cai_asset(
-            storage.ContentTypes.resource,
+        resource = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
+            cai_temporary_storage.ContentTypes.resource,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/organizations/111222333',
             self.engine)
         expected_resource = ({}, None)
         self.assertEqual(expected_resource, resource)
 
-        iam_policy = storage.CaiDataAccess.fetch_cai_asset(
-            storage.ContentTypes.iam_policy,
+        iam_policy = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
+            cai_temporary_storage.ContentTypes.iam_policy,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/folders/1033',
             self.engine)
@@ -232,12 +231,12 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         # Validate data from both projects in database.
         for root_id in composite_root_resources:
-            for content_type in [storage.ContentTypes.resource,
-                                 storage.ContentTypes.iam_policy]:
+            for content_type in [cai_temporary_storage.ContentTypes.resource,
+                                 cai_temporary_storage.ContentTypes.iam_policy]:
 
                 expected_resource_name = (
                     '//cloudresourcemanager.googleapis.com/%s' % root_id)
-                resource = storage.CaiDataAccess.fetch_cai_asset(
+                resource = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
                     content_type,
                     'cloudresourcemanager.googleapis.com/Project',
                     expected_resource_name,
@@ -274,8 +273,8 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         cai_name = '//spanner.googleapis.com/projects/project2/instances/test123'
 
         # Validate resource with short name is in database.
-        resource = storage.CaiDataAccess.fetch_cai_asset(
-            storage.ContentTypes.resource,
+        resource = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
+            cai_temporary_storage.ContentTypes.resource,
             cai_type,
             cai_name,
             self.engine)

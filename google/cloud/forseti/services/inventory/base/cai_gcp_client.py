@@ -16,12 +16,15 @@
 # pylint: disable=too-many-lines
 
 import itertools
+import os
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import iam_helpers
-from google.cloud.forseti.services.inventory.storage import CaiDataAccess
-from google.cloud.forseti.services.inventory.storage import ContentTypes
+from google.cloud.forseti.services.inventory.cai_temporary_storage import (
+    CaiDataAccess)
+from google.cloud.forseti.services.inventory.cai_temporary_storage import (
+    ContentTypes)
 
 LOGGER = logger.get_logger(__name__)
 
@@ -73,16 +76,23 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
 
-    def __init__(self, config, engine):
+    def __init__(self, config, engine, tmpfile):
         """Initialize.
 
         Args:
             config (dict): GCP API client configuration.
             engine (object): Database engine to operate on.
+            tmpfile (str): The temporary file storing the cai sqlite database.
         """
         super(CaiApiClientImpl, self).__init__(config)
         self.dao = CaiDataAccess()
         self.engine = engine
+        self.tmpfile = tmpfile
+
+    def __del__(self):
+        """Destructor."""
+        if os.path.exists(self.tmpfile):
+            os.unlink(self.tmpfile)
 
     def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from Cloud Asset data.

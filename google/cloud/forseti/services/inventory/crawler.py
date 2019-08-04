@@ -23,6 +23,7 @@ import time
 
 from future import standard_library
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory import cai_temporary_storage
 from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
@@ -306,13 +307,15 @@ def _api_client_factory(config):
     if config.get_cai_enabled():
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
-        engine = config.get_service_config().get_engine()
+        engine, tmpfile = cai_temporary_storage.create_sqlite_db()
         asset_count = cloudasset.load_cloudasset_data(engine, config)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
         if asset_count:
-            return cai_gcp_client.CaiApiClientImpl(client_config, engine)
+            return cai_gcp_client.CaiApiClientImpl(client_config,
+                                                   engine,
+                                                   tmpfile)
 
     # Default to the non-CAI implementation
     return gcp.ApiClientImpl(client_config)
