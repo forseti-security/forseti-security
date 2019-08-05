@@ -20,9 +20,6 @@ import unittest.mock as mock
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.mock import MockServerConfig
 from tests import unittest_utils
-import google.auth
-from google.oauth2 import credentials
-from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory import cai_temporary_storage
