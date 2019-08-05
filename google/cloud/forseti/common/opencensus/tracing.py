@@ -21,8 +21,7 @@ import logging
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-# set debug level for opencensus
-logger.get_logger('opencensus').setLevel(logging.DEBUG)
+
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 # pylint: disable=line-too-long
@@ -79,7 +78,7 @@ def create_server_interceptor(extras=True):
         exporter)
     if extras:
         trace_integrations(DEFAULT_INTEGRATIONS)
-    LOGGER.info(f'Tracing interceptor created.')
+    LOGGER.debug(f'Tracing interceptor created.')
     return interceptor
 
 
@@ -162,7 +161,7 @@ def traced(methods=None, attr=None):
         # Adds `self.tracer` in class to give access to the tracer from within.
         if OPENCENSUS_ENABLED:
             for name, func in to_trace:
-                LOGGER.info(f'Tracing - Adding decorator to {name}')
+                LOGGER.debug(f'Tracing - Adding decorator to {name}')
                 if name == '__init__':
                     # __init__ decorator to add tracer as instance attribute
                     decorator = trace_init(attr=attr)
@@ -207,28 +206,28 @@ def trace_init(attr=None):
                 func: Method decorator for a class's __init__ method.
             """
             cls_name = self.__class__.__name__
-            LOGGER.info(f'Decorating {cls_name}')
+            LOGGER.debug(f'Decorating {cls_name}')
             init(self, *args, **kwargs)
 
             if OPENCENSUS_ENABLED:
                 if 'tracer' in kwargs:
                     # If `tracer` is passed explicitly to our class at __init__,
                     # we use that tracer.
-                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                    LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
                                 f'from kwargs')
                     self.tracer = kwargs['tracer']
                 elif attr is not None:
                     # If `attr` is passed to this decorator, then get the tracer
                     # from the instance attribute.
-                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                    LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
                                 f'from class attribute {cls_name}')
                     self.tracer = rgetattr(self, cls_name)
                 else:
                     # Otherwise, get tracer from current execution context.
-                    LOGGER.info(f'Tracing - {cls_name}.__init__ - set tracer '
+                    LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
                                 f'from execution context')
                     self.tracer = execution_context.get_opencensus_tracer()
-                LOGGER.info(f'Tracing - {cls_name}.__init__ - '
+                LOGGER.debug(f'Tracing - {cls_name}.__init__ - '
                             f'context: {self.tracer.span_context}')
         return inner_wrapper
     return outer_wrapper
