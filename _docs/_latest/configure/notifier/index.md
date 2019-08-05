@@ -206,7 +206,7 @@ setup and configure.
 
 #### Prerequisites
 1. [Install]({% link _docs/latest/setup/install.md %})
-or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14. 
+or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14+. 
 1. The person performing the onboarding needs the following org-level IAM roles:
 - `Organization Admin`
 - `Security Center Admin`
@@ -214,7 +214,7 @@ or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14.
 - `Service Account Admin`
 
 #### Setup
-1. Select `Add Security Sources` on the Cloud SCC Beta Dashboard.
+1. Select `Add Security Sources` on the Cloud SCC Dashboard.
 
 1. Find the [Forseti Cloud SCC Connector](https://console.cloud.google.com/marketplace/details/forseti/forseti-security-cloud-scc-connector)
 in Cloud Marketplace.
@@ -224,16 +224,17 @@ in Cloud Marketplace.
 - Use the existing Forseti server service account (which will be assigned the
 `Security Center Findings Editor` role)
 - Note: The on-boarding flow will generate a source_id and assign the `Security
-  Center Findings Editor` role, which is required to write to the Cloud SCC Beta API
+  Center Findings Editor` role, which is required to write to the Cloud SCC API
   to surface the findings in the Cloud SCC.
 
-1. Enable the Cloud SCC Beta API in the Forseti project either via either
+1. Enable the Cloud SCC API in the Forseti project either via either
 the UI or API: 
 - via the UI (`API & Services ->  Library`)
 - via the command line in Cloud Shell `gcloud services enable securitycenter.googleapis.com`
 - Note: You will need to have either owner, editor or service management roles
   in the Project in order to enable the API
 
+**Using Deployment Manager**
 1. Enable the  API connector config to Cloud SCC.  Specifically, this means
 in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
  as follows:
@@ -248,12 +249,26 @@ in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml
     * **Valid values**: one of valid `true` or `false`
   
   * `source_id`
-    * **Description**: ID from the Cloud SCC beta on-boarding. **This must be added**
-    to use the Beta API integration.
+    * **Description**: ID from the Cloud SCC on-boarding. **This must be added**
+    to use the API integration.
     * **Valid values**: String
     * **Note**: It is in the form: source_id: <organizations/ORG_ID/sources/SOURCE_ID>
 
-To verify violations appear in the Cloud SCC Beta Dashboard, [run the notifier]({% link _docs/latest/use/cli/notifier.md %})
+**Using Terraform**
+1. Enable the  API connector config to Cloud SCC by configuring the following fields in 
+your Terraform configuration:
+
+  * `cscc_violations_enabled`
+    * **Description**: Whether to send notification to Cloud SCC.
+    * **Valid values**: One of valid `true` or `false`
+  
+  * `cscc_source_id`
+    * **Description**: ID from the Cloud SCC on-boarding. **This must be added**
+    to use the API integration.
+    * **Valid values**: String
+    * **Note**: It is in the form: `<organizations/ORG_ID/sources/SOURCE_ID>`
+
+To verify violations appear in the Cloud SCC Dashboard, [run the notifier]({% link _docs/latest/use/cli/notifier.md %})
 after you have [built an inventory]({% link _docs/latest/use/cli/inventory.md %})
 and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
 

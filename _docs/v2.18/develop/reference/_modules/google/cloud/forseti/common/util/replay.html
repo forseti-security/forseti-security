@@ -1,0 +1,206 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.replay"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.replay</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper functions used to record and replay API responses.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">RECORD_ENVIRONMENT_VAR</span> <span class="o">=</span> <span class="s1">&#39;FORSETI_RECORD_FILE&#39;</span>
+<span class="n">REPLAY_ENVIRONMENT_VAR</span> <span class="o">=</span> <span class="s1">&#39;FORSETI_REPLAY_FILE&#39;</span>
+
+
+<div class="viewcode-block" id="_key_from_request"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.replay.html#google.cloud.forseti.common.util.replay._key_from_request">[docs]</a><span class="k">def</span> <span class="nf">_key_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate a unique key from a request.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request (HttpRequest): a googleapiclient HttpRequest object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A unique key from the request uri and body.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="record"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.replay.html#google.cloud.forseti.common.util.replay.record">[docs]</a><span class="k">def</span> <span class="nf">record</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Record and serialize GCP API call answers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requests (dict): A dictionary to store a copy of all requests and</span>
+<span class="sd">            responses in, before pickling.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        function: Decorator function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator function for the wrapper.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            f(function): passes a function into the wrapper.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            function: Wrapped function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">record_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Record and serialize GCP API call answers.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                self (object): Self of the caller.</span>
+<span class="sd">                request (HttpRequest): The HttpRequest object to execute.</span>
+<span class="sd">                **args (list): Additional args to pass through to function.</span>
+<span class="sd">                **kwargs (dict): Additional key word args to pass through to</span>
+<span class="sd">                    function.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                object: The result from the wrapped function.</span>
+
+<span class="sd">            Raises:</span>
+<span class="sd">                HttpError: Raised by any fatal HTTP error when executing the</span>
+<span class="sd">                    HttpRequest.</span>
+<span class="sd">                Exception: Any exception raised by the wrapped function.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">record_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">RECORD_ENVIRONMENT_VAR</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">record_file</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">record_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+                <span class="n">pickler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">Pickler</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+                <span class="n">request_key</span> <span class="o">=</span> <span class="n">_key_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                    <span class="n">request_key</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">())</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">obj</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;exception_args&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="s1">&#39;raised&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
+                        <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+                        <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">uri</span><span class="p">}</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">result</span>
+                <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># HttpError won&#39;t unpickle without all three arguments.</span>
+                    <span class="n">obj</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;raised&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
+                        <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+                        <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span>
+                        <span class="s1">&#39;exception_args&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">resp</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">uri</span><span class="p">)</span>
+                    <span class="p">}</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="k">raise</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">obj</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;raised&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
+                        <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+                        <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span>
+                        <span class="s1">&#39;exception_args&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)]</span>
+                    <span class="p">}</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="k">raise</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Recording key </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">request_key</span><span class="p">)</span>
+                    <span class="n">pickler</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">record_wrapper</span>
+
+    <span class="k">return</span> <span class="n">decorate</span></div>
+
+
+<div class="viewcode-block" id="replay"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.replay.html#google.cloud.forseti.common.util.replay.replay">[docs]</a><span class="k">def</span> <span class="nf">replay</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Record and serialize GCP API call answers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requests (dict): A dictionary to store a copy of all requests and</span>
+<span class="sd">            responses in, after unpickling.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        function: Decorator function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Replay GCP API call answers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            f (function): Function to decorate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            function: Wrapped function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">replay_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Replay and deserialize GCP API call answers.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                self (object): Self of the caller.</span>
+<span class="sd">                request (HttpRequest): The HttpRequest object to execute.</span>
+<span class="sd">                **args (list): Additional args to pass through to function.</span>
+<span class="sd">                **kwargs (dict): Additional key word args to pass through to</span>
+<span class="sd">                    function.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                object: The result object from the previous recording.</span>
+
+<span class="sd">            Raises:</span>
+<span class="sd">                Exception: Any exception raised during the previous recording.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">replay_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">REPLAY_ENVIRONMENT_VAR</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">replay_file</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">requests</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading replay file </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">replay_file</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">replay_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+                    <span class="n">unpickler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">Unpickler</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+                    <span class="n">requests</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">unpickler</span><span class="o">.</span><span class="n">load</span><span class="p">())</span>
+
+            <span class="n">request_key</span> <span class="o">=</span> <span class="n">_key_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">request_key</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">requests</span><span class="p">[</span><span class="n">request_key</span><span class="p">]</span>
+                <span class="c1"># Pull the first result from the queue.</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;raised&#39;</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">](</span><span class="o">*</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;exception_args&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Request URI </span><span class="si">%s</span><span class="s1"> with body </span><span class="si">%s</span><span class="s1"> not found in recorded &#39;</span>
+                    <span class="s1">&#39;requests, executing live http request instead.&#39;</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">replay_wrapper</span>
+
+    <span class="k">return</span> <span class="n">decorate</span></div>
+</pre></div>
