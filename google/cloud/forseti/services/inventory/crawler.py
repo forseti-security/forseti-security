@@ -58,7 +58,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, threads=10,
+    def __init__(self, storage, progresser, api_client, threads,
                  variables=None):
         """Initialize
 
@@ -291,11 +291,12 @@ class ParallelCrawler(Crawler):
             raise
 
 
-def _api_client_factory(config):
+def _api_client_factory(config, threads):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         config (object): Inventory configuration on server.
+        threads (int): how many threads to use.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -307,7 +308,7 @@ def _api_client_factory(config):
     if config.get_cai_enabled():
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
-        engine, tmpfile = cai_temporary_storage.create_sqlite_db()
+        engine, tmpfile = cai_temporary_storage.create_sqlite_db(threads)
         asset_count = cloudasset.load_cloudasset_data(engine, config)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
@@ -321,7 +322,7 @@ def _api_client_factory(config):
     return gcp.ApiClientImpl(client_config)
 
 
-def _crawler_factory(storage, progresser, client, parallel):
+def _crawler_factory(storage, progresser, client, parallel, threads):
     """Creates the proper initialized crawler based on the configuration.
 
     Args:
@@ -329,6 +330,7 @@ def _crawler_factory(storage, progresser, client, parallel):
         progresser (object): Progresser to notify status updates.
         client (object): The API client instance.
         parallel (bool): If true, use the parallel crawler implementation.
+        threads (int): how many threads to use when running in parallel
 
     Returns:
         Union[Crawler, ParallelCrawler]:
@@ -340,6 +342,7 @@ def _crawler_factory(storage, progresser, client, parallel):
         parallel_config = ParallelCrawlerConfig(storage,
                                                 progresser,
                                                 client,
+                                                threads=threads,
                                                 variables=config_variables)
         return ParallelCrawler(parallel_config)
 
@@ -372,7 +375,8 @@ def _root_resource_factory(config, client):
 def run_crawler(storage,
                 progresser,
                 config,
-                parallel=True):
+                parallel=True,
+                threads=10):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -380,6 +384,7 @@ def run_crawler(storage,
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        threads (int): how many threads to use when running in parallel.
 
     Returns:
         QueueProgresser: The progresser implemented in inventory
@@ -387,9 +392,11 @@ def run_crawler(storage,
     if parallel and 'sqlite' in str(config.get_service_config().get_engine()):
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
+        threads = 1
 
-    client = _api_client_factory(config)
-    crawler_impl = _crawler_factory(storage, progresser, client, parallel)
+    client = _api_client_factory(config, threads)
+    crawler_impl = _crawler_factory(storage, progresser, client, parallel,
+                                    threads)
     resource = _root_resource_factory(config, client)
 
     progresser = crawler_impl.run(resource)

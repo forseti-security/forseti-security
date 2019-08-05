@@ -386,19 +386,24 @@ class CaiDataAccess(object):
         return asset, asset_metadata
 
 
-def create_sqlite_db():
+def create_sqlite_db(threads=1):
     """Create and initialize a sqlite db engine for use as the CAI temp store.
 
+    Args:
+        threads (int): The number of threads to support. Pool size is set to 5
+            greater than the number of threads, so that each thread can get its
+            own connection to the temp database, with a few spare.
     Returns:
         Tuple[sqlalchemy.engine.Engine, str]: A tuple containing an engine
             object initialized to a temporary sqlite db file, and the path to
             the temporary file.
     """
     dbfile, tmpfile = tempfile.mkstemp('.db', 'forseti-cai-store-')
+    pool_size = threads + 5
     try:
         engine = create_engine('sqlite:///{}'.format(tmpfile),
                                sqlite_enforce_fks=False,
-                               pool_size=15,
+                               pool_size=pool_size,
                                connect_args={'check_same_thread': False},
                                poolclass=SingletonThreadPool)
         _initialize(engine)
