@@ -97,6 +97,7 @@ DEFAULT_ASSET_TYPES = [
     'storage.googleapis.com/Bucket',
 ]
 
+
 class StreamError(Exception):
     """Raised for errors streaming results from GCS to local DB."""
 
@@ -162,6 +163,7 @@ def _stream_cloudasset_worker(cai_data, engine, output_queue):
         output_queue (collections.deque): A queue storing the results of this
             thread.
     """
+    # Codecs transforms the raw byte stream into an iterable of lines.
     cai_iter = codecs.getreader('utf-8')(cai_data)
     rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
         cai_iter, engine)
