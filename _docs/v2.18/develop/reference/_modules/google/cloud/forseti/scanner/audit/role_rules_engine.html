@@ -1,0 +1,284 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.role_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.role_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Rules engine for Roles.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">relationship</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">VIOLATION_TYPE</span> <span class="o">=</span> <span class="s1">&#39;CUSTOM_ROLE_VIOLATION&#39;</span>
+
+<span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s1">&#39;resource_name&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;full_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_data&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_data&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;resource_id&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="RoleRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">RoleRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for roles.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RoleRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RoleRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build RoleRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">RoleRuleBook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RoleRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the role violates rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role (Role): Role to be tested.</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+
+        <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">()</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">get_rule_by_role_name</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                <span class="n">violations</span><span class="p">,</span>
+                <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">role</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RoleRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRuleBook">[docs]</a><span class="k">class</span> <span class="nc">RoleRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for Role resources.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RoleRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_sema</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">BoundedSemaphore</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RoleRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RoleRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Lack of role_name in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;role_name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Lack of role_name in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+        <span class="n">role_name</span> <span class="o">=</span> <span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;role_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;permissions&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Lack of permissions in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;resource&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Lack of resource in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">]</span>
+
+        <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">rule_index</span><span class="o">=</span><span class="n">rule_index</span><span class="p">,</span>
+                    <span class="n">rule_name</span><span class="o">=</span><span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                    <span class="n">permissions</span><span class="o">=</span><span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;permissions&#39;</span><span class="p">],</span>
+                    <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">role_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_map</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_map</span><span class="p">[</span><span class="n">role_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">rule</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_map</span><span class="p">[</span><span class="n">role_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RoleRuleBook.get_rule_by_role_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.RoleRuleBook.get_rule_by_role_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_rule_by_role_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the rule of a given role.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role_name (str): Name of a role.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Rule list of the given role.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role_name</span><span class="p">,</span> <span class="p">[])</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file. Also finds violations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">permissions</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_index (int): The index of the rule.</span>
+<span class="sd">            rule_name (str): Name of the rule.</span>
+<span class="sd">            permissions (int): Expected permissions of the role.</span>
+<span class="sd">            res (dict): Parent resource of the role that should obey the rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permissions</span> <span class="o">=</span> <span class="n">permissions</span><span class="p">[:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_types</span> <span class="o">=</span> <span class="n">res</span><span class="p">[:]</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">res_item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res_types</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res_item</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Lack of resource:type in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">res_item</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;folder&#39;</span><span class="p">,</span> <span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="s1">&#39;role&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Wrong resource:type </span><span class="si">{}</span><span class="s1"> in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">res_item</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="n">rule_index</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s1">&#39;resource_ids&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res_item</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Lack of resource:resource_ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">rule_index</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">res_item</span><span class="p">[</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">res_types</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Rule.generate_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.Rule.generate_violation">[docs]</a>    <span class="k">def</span> <span class="nf">generate_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a violation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role (Role): The role that triggers the violation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: The violation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="n">role</span><span class="o">.</span><span class="n">get_permissions</span><span class="p">()</span>
+        <span class="n">permissions_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">permissions</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="n">violation_type</span><span class="o">=</span><span class="n">VIOLATION_TYPE</span><span class="p">,</span>
+            <span class="n">violation_data</span><span class="o">=</span><span class="n">permissions_str</span><span class="p">,</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a generator for violations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            res (Resource): A class derived from Resource.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Generator: All violations of the resource breaking the rule.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised if the resource type is bucket.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">find_violations_in_role</span><span class="p">(</span><span class="n">role</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Get a generator for violations.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                role (role): Find violation from the role.</span>
+<span class="sd">            Returns:</span>
+<span class="sd">                RuleViolation: All violations of the role breaking the rule.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="p">(</span><span class="n">relationship</span><span class="o">.</span><span class="n">find_ancestors</span><span class="p">(</span>
+                <span class="n">role</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">full_name</span><span class="p">))</span>
+
+            <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">related_resources</span> <span class="ow">in</span> <span class="n">resource_ancestors</span><span class="p">:</span>
+                <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="n">violations</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">find_violations_by_ancestor</span><span class="p">(</span><span class="n">related_resources</span><span class="p">,</span> <span class="n">role</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">violations</span>
+
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;role&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">find_violations_in_role</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;only role is supported.&#39;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations_by_ancestor"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.role_rules_engine.html#google.cloud.forseti.scanner.audit.role_rules_engine.Rule.find_violations_by_ancestor">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations_by_ancestor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ancestor</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a generator on a given ancestor of the role.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role (role): Role to find violation from.</span>
+<span class="sd">            ancestor (Resource): Ancestor of the role or the role itself.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            RuleViolation: All violations of the role breaking the rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ancestor</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">get_permissions</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">permissions</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_violation</span><span class="p">(</span><span class="n">role</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">res_id</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">res_id</span> <span class="o">==</span> <span class="n">ancestor</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">get_permissions</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">permissions</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_violation</span><span class="p">(</span><span class="n">role</span><span class="p">)</span></div></div>
+</pre></div>

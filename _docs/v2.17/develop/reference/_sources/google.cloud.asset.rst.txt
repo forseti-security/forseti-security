@@ -1,0 +1,15 @@
+google.cloud.asset package
+==========================
+
+.. automodule:: google.cloud.asset
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.asset.v1
+
