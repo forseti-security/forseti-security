@@ -34,7 +34,18 @@ from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
-MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
+
+# Maximum insert size, used to bound the memory used to cache rows to insert
+# before they are flushed to the database. Larger values allow for more
+# efficient index writing by sqlite at the cost of more process memory.
+#
+# NOTE: This is different from https://www.sqlite.org/limits.html#max_sql_length
+# as that limit applies to the individual SQL insert statements, not the
+# combined size of all values inserted at one time.
+#
+# Set to 32 MB as a balance between frequency of writes and memory. This value
+# should be re-evaluated for large Virtual Machines.
+MAX_ALLOWED_INSERT_SIZE = 32 * 1024 * 1024  # 32 Megabytes
 
 
 class ContentTypes(enum.Enum):
@@ -52,7 +63,7 @@ class CaiTemporaryStore(BASE):
     __tablename__ = 'cai_temporary_store'
 
     # Class members created in initialize() by mapper()
-    name = Column(String(512, collation='binary'), nullable=False)
+    name = Column(String(2048, collation='binary'), nullable=False)
     parent_name = Column(String(255), nullable=True)
     content_type = Column(Enum(ContentTypes), nullable=False)
     asset_type = Column(String(255), nullable=False)
@@ -82,7 +93,7 @@ class CaiTemporaryStore(BASE):
             dict: database row dictionary or None if there is no data.
         """
         asset = json.loads(asset_json)
-        if len(asset['name']) > 512:
+        if len(asset['name']) > 2048:
             LOGGER.warning('Skipping insert of asset %s, name too long.',
                            asset['name'])
             return None
@@ -286,7 +297,7 @@ class CaiDataAccess(object):
                     num_rows += 1
                     rows.append(row)
                     rows_total_length += sum(len(v) for v in row.values())
-                    if rows_total_length > MAX_ALLOWED_PACKET * .9:
+                    if rows_total_length > MAX_ALLOWED_INSERT_SIZE * .9:
                         LOGGER.debug('Flushing %i rows to CAI table', len(rows))
                         engine.execute(cai_table_insert(), rows)
                         rows_total_length = 0

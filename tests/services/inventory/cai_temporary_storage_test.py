@@ -1,4 +1,4 @@
-"""Tests for google3.experimental.users.ahoying.forseti-security.tests.services.inventory.cai_temporary_storage."""
+"""Tests for google.services.inventory.cai_temporary_storage."""
 
 from future import standard_library
 standard_library.install_aliases()

@@ -265,8 +265,8 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
-        # Expect only the resource with the short name got imported.
-        expected_results = 1
+        # Expect both resources got imported.
+        expected_results = 2
         self.assertEqual(results, expected_results)
 
         cai_type = 'spanner.googleapis.com/Instance'
