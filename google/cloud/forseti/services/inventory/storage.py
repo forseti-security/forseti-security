@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Inventory storage implementation."""
-# NOTE: no-value-for-parameter disabled due to sqlalchemy issue
-# https://github.com/sqlalchemy/sqlalchemy/issues/4656.
-# pylint: disable=too-many-lines, no-value-for-parameter
+# pylint: disable=too-many-lines
 
 from builtins import object
 import json
 import enum
 
-from retrying import retry
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import case
@@ -31,22 +28,16 @@ from sqlalchemy import exists
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
-from sqlalchemy import LargeBinary
 from sqlalchemy import or_
-from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
-from sqlalchemy import Table
 from sqlalchemy import Text
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm import mapper
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
-from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
@@ -69,14 +60,7 @@ class Categories(enum.Enum):
     kubernetes_service_config = 7
 
 
-class ContentTypes(enum.Enum):
-    """Cloud Asset Inventory Content Types."""
-    resource = 1
-    iam_policy = 2
-
-
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
-SUPPORTED_CONTENT_TYPES = frozenset(item.name for item in list(ContentTypes))
 
 
 class InventoryIndex(BASE):
@@ -566,260 +550,6 @@ class Inventory(BASE):
         return self.inventory_errors
 
 
-class CaiTemporaryStore(object):
-    """CAI temporary inventory table."""
-
-    __tablename__ = 'cai_temporary_store'
-
-    # Class members created in initialize() by mapper()
-    name = None
-    parent_name = None
-    content_type = None
-    asset_type = None
-    asset_data = None
-
-    # Assets with no parent resource.
-    UNPARENTED_ASSETS = frozenset([
-        'cloudresourcemanager.googleapis.com/Organization',
-        'cloudbilling.googleapis.com/BillingAccount',
-    ])
-
-    def __init__(self, name, parent_name, content_type, asset_type, asset_data):
-        """Initialize database column.
-
-        Manually defined so that the collation value can be overridden at run
-        time for this database table.
-
-        Args:
-            name (str): The asset name.
-            parent_name (str): The asset name of the parent resource.
-            content_type (ContentTypes): The asset data content type.
-            asset_type (str): The asset data type.
-            asset_data (str): The asset data as a serialized binary blob.
-        """
-        self.name = name
-        self.parent_name = parent_name
-        self.content_type = content_type
-        self.asset_type = asset_type
-        self.asset_data = asset_data
-
-    @classmethod
-    def initialize(cls, metadata, collation='utf8_bin'):
-        """Create the table schema based on run time arguments.
-
-        Used to fix the column collation value for non-MySQL database engines.
-
-        Args:
-            metadata (object): The sqlalchemy MetaData to associate the table
-                with.
-            collation (str): The collation value to use.
-        """
-        if 'cai_temporary_store' not in metadata.tables:
-            my_table = Table('cai_temporary_store', metadata,
-                             Column('name', String(512, collation=collation),
-                                    nullable=False),
-                             Column('parent_name', String(255), nullable=True),
-                             Column('content_type', Enum(ContentTypes),
-                                    nullable=False),
-                             Column('asset_type', String(255), nullable=False),
-                             Column('asset_data',
-                                    LargeBinary(length=(2**32) - 1),
-                                    nullable=False),
-                             Index('idx_parent_name', 'parent_name'),
-                             PrimaryKeyConstraint('content_type',
-                                                  'asset_type',
-                                                  'name',
-                                                  name='cai_temp_store_pk'))
-
-            cls.__table__ = my_table
-            mapper(cls, my_table)
-
-    def extract_asset_data(self):
-        """Extracts the data from the database row.
-
-        Returns:
-            Tuple[dict, AssetMetadata]: The dict representation of the asset
-                data and an Asset metadata along with it.
-        """
-        asset = json.loads(self.asset_data)
-        asset_metadata = AssetMetadata(cai_name=self.name,
-                                       cai_type=self.asset_type)
-
-        return asset, asset_metadata
-
-    @classmethod
-    def from_json(cls, asset_json):
-        """Creates a database row object from the json data in a dump file.
-
-        Args:
-            asset_json (str): The json representation of an Asset.
-
-        Returns:
-            dict: database row dictionary or None if there is no data.
-        """
-        asset = json.loads(asset_json)
-        if len(asset['name']) > 512:
-            LOGGER.warning('Skipping insert of asset %s, name too long.',
-                           asset['name'])
-            return None
-
-        if 'resource' in asset:
-            content_type = 'resource'
-            parent_name = cls._get_parent_name(asset)
-            resource_data = asset['resource']['data']
-            # Remove unused proto representation of asset
-            resource_data.pop('internal_data', None)
-            asset_data = json.dumps(resource_data, sort_keys=True)
-        elif 'iam_policy' in asset:
-            content_type = 'iam_policy'
-            parent_name = asset['name']
-            asset_data = json.dumps(asset['iam_policy'], sort_keys=True)
-        else:
-            LOGGER.warning('Unparsable asset, no resource or iam policy: %s',
-                           asset)
-            return None
-
-        return {'name': asset['name'],
-                'parent_name': parent_name,
-                'content_type': content_type,
-                'asset_type': asset['asset_type'],
-                'asset_data': asset_data.encode('utf-8')}
-
-    @classmethod
-    def delete_all(cls, engine):
-        """Deletes all rows from this table.
-
-        Args:
-            engine (object): db engine
-
-        Returns:
-            int: The number of rows deleted.
-
-        Raises:
-            Exception: Reraises any exception.
-        """
-        try:
-            results = engine.execute(cls.__table__.delete())
-            return results.rowcount
-        except Exception as e:
-            LOGGER.exception(e)
-            raise
-
-    # pylint: disable=too-many-return-statements
-    @staticmethod
-    def _get_parent_name(asset):
-        """Determines the parent name from the resource data.
-
-        Args:
-            asset (dict): An Asset object.
-
-        Returns:
-            str: The parent name for the resource.
-        """
-        if 'parent' in asset['resource']:
-            return asset['resource']['parent']
-
-        if asset['asset_type'] == 'cloudkms.googleapis.com/KeyRing':
-            # KMS KeyRings are parented by a location under a project, but
-            # the location is not directly discoverable without iterating all
-            # locations, so instead this creates an artificial parent at the
-            # project level, which acts as an aggregated list of all keyrings
-            # in all locations to fix this broken behavior.
-            #
-            # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
-            # parent project.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        elif asset['asset_type'] == 'dataproc.googleapis.com/Cluster':
-            # Dataproc Clusters are parented by a region under a project, but
-            # the region is not directly discoverable without iterating all
-            # regions, so instead this creates an artificial parent at the
-            # project level, which acts as an aggregated list of all clusters
-            # in all regions to fix this broken behavior.
-            #
-            # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
-            # parent project.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        elif (asset['asset_type'].startswith('appengine.googleapis.com/') or
-              asset['asset_type'].startswith('bigquery.googleapis.com/') or
-              asset['asset_type'].startswith('cloudkms.googleapis.com/') or
-              asset['asset_type'].startswith('sqladmin.googleapis.com/') or
-              asset['asset_type'].startswith('spanner.googleapis.com/')):
-            # Strip off the last two segments of the name to get the parent
-            return '/'.join(asset['name'].split('/')[:-2])
-
-        elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/nodes/test-node"
-            #
-            # Strip k8s/nodes/{NODE} off name to get the parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace"
-            #
-            # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-3])
-
-        elif asset['asset_type'] == 'k8s.io/Pod':
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/
-            # test-namespace/pods/test-pod"
-            #
-            # Strip pods/{POD} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-2])
-
-        elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
-                                     'rbac.authorization.k8s.io/RoleBinding'):
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/
-            # test-namespace/rbac.authorization.k8s.io/roles/
-            # extension-apiserver-authentication-reader"
-            #
-            # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
-            # parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace/
-            # rbac.authorization.k8s.io/rolebindings/
-            # system:controller:bootstrap-signer"
-            #
-            # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
-            # name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-3])
-
-        elif asset['asset_type'] in (
-                'rbac.authorization.k8s.io/ClusterRole',
-                'rbac.authorization.k8s.io/ClusterRoleBinding'):
-            # Kubernetes ClusterRoles and ClusterRoleBindings are parented by a
-            # k8s under a cluster, but the k8 is not directly discoverable
-            # without iterating all k8s, so instead this creates an artificial
-            # parent at the cluster level, which acts as an aggregated list of
-            # all cluster roles and cluster role bindings in all k8s to fix this
-            # broken behavior.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/rbac.authorization.k8s.io/
-            # clusterroles/cloud-provider"
-            #
-            # Strip k8s/rbac.authorization.k8s.io/clusterroles/
-            # {CLUSTERROLE} off name to get the parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/
-            # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
-            #
-            # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/
-            # {CLUSTERROLEBINDING} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        # Known unparented asset types.
-        if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
-            LOGGER.debug('Could not determine parent name for %s', asset)
-
-        return ''
-
-
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
@@ -867,129 +597,6 @@ class BufferedDbWriter(object):
             self.session.commit()
         self.estimated_packet_size = 0
         self.buffer = []
-
-
-class CaiDataAccess(object):
-    """Access to the CAI temporary store table."""
-
-    @staticmethod
-    def clear_cai_data(engine):
-        """Deletes all temporary CAI data from the cai temporary table.
-
-        Args:
-            engine (object): Database engine.
-
-        Returns:
-            int: The number of rows deleted.
-        """
-        return CaiTemporaryStore.delete_all(engine)
-
-    @staticmethod
-    def populate_cai_data(data, engine):
-        """Add assets from cai data dump into cai temporary table.
-
-        Args:
-            data (file): A file like object, line delimeted text dump of json
-                data representing assets from Cloud Asset Inventory exportAssets
-                API.
-            engine (object): Database engine.
-
-        Returns:
-            int: The number of rows inserted
-        """
-        num_rows = 0
-        cai_table_insert = CaiTemporaryStore.__table__.insert
-        try:
-            rows_total_length = 0
-            rows = []
-            for line in data:
-                if not line:
-                    continue
-
-                row = CaiTemporaryStore.from_json(line.strip().encode())
-                if row:
-                    num_rows += 1
-                    rows.append(row)
-                    rows_total_length += sum(len(v) for v in row.values())
-                    if rows_total_length > MAX_ALLOWED_PACKET * .9:
-                        LOGGER.debug('Flushing %i rows to CAI table', len(rows))
-                        engine.execute(cai_table_insert(), rows)
-                        rows_total_length = 0
-                        rows = []
-
-            if rows:
-                LOGGER.debug('Flushing remaining %i rows to CAI table',
-                             len(rows))
-                engine.execute(cai_table_insert(), rows)
-        except SQLAlchemyError as e:
-            LOGGER.error('Error populating CAI data: %s', e)
-        return num_rows
-
-    @staticmethod
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
-           stop_max_attempt_number=5)
-    def iter_cai_assets(content_type, asset_type, parent_name, session):
-        """Iterate the objects in the cai temporary table.
-
-        Retries query on exception up to 5 times.
-
-        Args:
-            content_type (ContentTypes): The content type to return.
-            asset_type (str): The asset type to return.
-            parent_name (str): The parent resource to iter children under.
-            session (object): Database session.
-
-        Yields:
-            object: The content_type data for each resource.
-        """
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.parent_name == parent_name,
-        ]
-        base_query = session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
-
-        for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data()
-
-    @staticmethod
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
-           stop_max_attempt_number=5)
-    def fetch_cai_asset(content_type, asset_type, name, session):
-        """Returns a single resource from the cai temporary store.
-
-        Retries query on exception up to 5 times.
-
-        Args:
-            content_type (ContentTypes): The content type to return.
-            asset_type (str): The asset type to return.
-            name (str): The resource to return.
-            session (object): Database session.
-
-        Returns:
-            dict: The content data for the specified resource.
-        """
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.name == name,
-        ]
-        base_query = session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        row = base_query.one_or_none()
-
-        if row:
-            return row.extract_asset_data()
-
-        return {}, None
 
 
 class DataAccess(object):
@@ -1131,13 +738,6 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
-    dialect = engine.dialect.name
-    if dialect == 'sqlite':
-        collation = 'binary'
-    else:
-        collation = 'utf8_bin'
-
-    CaiTemporaryStore.initialize(BASE.metadata, collation)
     BASE.metadata.create_all(engine)
 
 

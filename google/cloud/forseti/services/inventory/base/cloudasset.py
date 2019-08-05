@@ -24,7 +24,8 @@ from google.cloud.forseti.common.gcp_api import cloudasset
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.inventory.storage import CaiDataAccess
+from google.cloud.forseti.services.inventory.cai_temporary_storage import (
+    CaiDataAccess)
 
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
