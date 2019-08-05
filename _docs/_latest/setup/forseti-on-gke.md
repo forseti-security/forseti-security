@@ -19,7 +19,7 @@ There are multiple scenarios for installation depending on what GCP components (
 | No | Yes | Yes | [Deploy Forseti in an Existing GKE Cluster](#deploy-forseti-in-an-existing-gke-cluster) |
 | No | Yes | Yes | [Deploy Forseti in an Existing GKE Cluster (Helm)](#deploy-forseti-in-an-existing-gke-cluster-helm) |
 
-## Install Pre-Requisties
+## Install Pre-Requisites
 
 The following tools are required:
 * [Terraform](https://www.terraform.io/downloads.html) - 0.12.x
