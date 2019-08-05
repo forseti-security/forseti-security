@@ -31,7 +31,7 @@ err() {
 #   array - unique versions
 #######################################
 function uniq_major_minor_filter() {
-    echo "$1" | grep -Po '^v2\.([7-9]|[1-9][0-9])+(?=\.|$)' | uniq | sed '/v1.0/d'
+    echo "$1" | grep -Po '^v2\.([8-9]|[1-9][0-9])+(?=\.|$)' | uniq | sed '/v1.0/d'
 }
 
 function main() {
