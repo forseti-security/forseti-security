@@ -335,14 +335,14 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
     def _add_resources(self):
         """Add CAI resources to temporary table."""
         resource_data = StringIO(CAI_RESOURCE_DATA)
-        rows = CaiDataAccess.populate_cai_data(resource_data, self.session)
+        rows = CaiDataAccess.populate_cai_data(resource_data, self.engine)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 
     def _add_iam_policies(self):
         """Add CAI IAM Policies to temporary table."""
         iam_policy_data = StringIO(CAI_IAM_POLICY_DATA)
-        rows = CaiDataAccess.populate_cai_data(iam_policy_data, self.session)
+        rows = CaiDataAccess.populate_cai_data(iam_policy_data, self.engine)
         expected_rows = len(CAI_IAM_POLICY_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 
@@ -355,7 +355,7 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         """Validate CAI data delete."""
         self._add_resources()
 
-        rows = CaiDataAccess.clear_cai_data(self.session)
+        rows = CaiDataAccess.clear_cai_data(self.engine)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 

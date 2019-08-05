@@ -725,13 +725,13 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         # Validate export_assets called with asset_types
                         expected_calls = [
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      mock.ANY,
+                                      output_config=mock.ANY,
                                       content_type='RESOURCE',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,
                                       timeout=mock.ANY),
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      mock.ANY,
+                                      output_config=mock.ANY,
                                       content_type='IAM_POLICY',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,

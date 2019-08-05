@@ -305,20 +305,19 @@ def _api_client_factory(storage, config, parallel):
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
     client_config['excluded_resources'] = config.get_excluded_resources()
-    asset_count = 0
     if config.get_cai_enabled():
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
-        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
+        engine = config.get_service_config().get_engine()
+        asset_count = cloudasset.load_cloudasset_data(engine, config)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
-    if asset_count:
-        engine = config.get_service_config().get_engine()
-        return cai_gcp_client.CaiApiClientImpl(client_config,
-                                               engine,
-                                               parallel,
-                                               storage.session)
+        if asset_count:
+            return cai_gcp_client.CaiApiClientImpl(client_config,
+                                                   engine,
+                                                   parallel,
+                                                   storage.session)
 
     # Default to the non-CAI implementation
     return gcp.ApiClientImpl(client_config)

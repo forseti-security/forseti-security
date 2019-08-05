@@ -96,11 +96,11 @@ DEFAULT_ASSET_TYPES = [
 ]
 
 
-def load_cloudasset_data(session, config):
+def load_cloudasset_data(engine, config):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
-        session (object): Database session.
+        engine (object): Database engine.
         config (object): Inventory configuration on server.
 
     Returns:
@@ -108,7 +108,7 @@ def load_cloudasset_data(session, config):
             is an error.
     """
     # Start by ensuring that there is no existing CAI data in storage.
-    _clear_cai_data(session)
+    _clear_cai_data(engine)
 
     cloudasset_client = cloudasset.CloudAssetClient(
         config.get_api_quota_configs())
@@ -135,12 +135,12 @@ def load_cloudasset_data(session, config):
             try:
                 temporary_file = future.result()
                 if not temporary_file:
-                    return _clear_cai_data(session)
+                    return _clear_cai_data(engine)
 
                 LOGGER.debug('Importing Cloud Asset data from %s to database.',
                              temporary_file)
                 with open(temporary_file, 'r') as cai_data:
-                    rows = CaiDataAccess.populate_cai_data(cai_data, session)
+                    rows = CaiDataAccess.populate_cai_data(cai_data, engine)
                     imported_assets += rows
                     LOGGER.info('%s assets imported to database.', rows)
             finally:
@@ -162,6 +162,10 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
     Returns:
         str: The path to the temporary file downloaded from GCS or None on
             error.
+
+    Raises:
+        ValueError: Raised if the server configuration for CAI export is
+            invalid.
     """
     asset_types = config.get_cai_asset_types()
     if not asset_types:
@@ -181,8 +185,9 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
             LOGGER.info('Limiting export to the following asset types: %s',
                         asset_types)
 
+        output_config = cloudasset_client.build_gcs_object_output(export_path)
         results = cloudasset_client.export_assets(root_id,
-                                                  export_path,
+                                                  output_config=output_config,
                                                   content_type=content_type,
                                                   asset_types=asset_types,
                                                   blocking=True,
@@ -197,8 +202,9 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         LOGGER.warning('Timeout getting cloud asset data: %s', e)
         return None
     except ValueError as e:
-        LOGGER.warning('Invalid root resource id: %s', e)
-        return None
+        LOGGER.error('Invalid configuration, could not export assets from CAI: '
+                     '%s', e)
+        raise
 
     if 'error' in results:
         LOGGER.error('Export of cloud asset data had an error, aborting: '
@@ -213,14 +219,14 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         return None
 
 
-def _clear_cai_data(session):
+def _clear_cai_data(engine):
     """Clear CAI data from storage.
 
     Args:
-        session (object): Database session.
+        engine (object): Database engine.
     """
     LOGGER.debug('Deleting Cloud Asset data from database.')
-    count = CaiDataAccess.clear_cai_data(session)
+    count = CaiDataAccess.clear_cai_data(engine)
     LOGGER.debug('%s assets deleted from database.', count)
     return None
 
