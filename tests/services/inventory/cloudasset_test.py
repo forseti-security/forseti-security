@@ -21,12 +21,11 @@ import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
-from tests.services.util.db import create_test_engine_with_file
 from tests import unittest_utils
 
 from google.cloud.forseti.common.gcp_api import cloudasset as cloudasset_api
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory import cai_temporary_storage
 from google.cloud.forseti.services.inventory.base import cloudasset
@@ -81,23 +80,20 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                                                 {'enabled': True,
                                                  'gcs_path': 'gs://test-bucket'}
                                                )
-
-        # Ensure test data doesn't get deleted
-        self.mock_unlink = mock.patch.object(
-            os, 'unlink', autospec=True).start()
-        self.mock_export_assets = mock.patch.object(
-            cloudasset_api.CloudAssetClient,
-            'export_assets',
-            autospec=True).start()
-        self.mock_copy_file_from_gcs = mock.patch.object(
-            file_loader,
-            'copy_file_from_gcs',
-            autospec=True).start()
         self.mock_auth = mock.patch.object(
             google.auth,
             'default',
             return_value=(mock.Mock(
                 spec_set=credentials.Credentials), 'test-project')).start()
+
+        self.mock_export_assets = mock.patch.object(
+            cloudasset_api.CloudAssetClient,
+            'export_assets',
+            autospec=True).start()
+        self.mock_download = mock.patch.object(
+            storage.StorageClient,
+            'download',
+            autospec=True).start()
 
     def tearDown(self):
         """tearDown."""
@@ -173,17 +169,19 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         # Ignore call to export_assets for this test.
         self.mock_export_assets.return_value = {'done': True}
 
-        # Mock copy_file_from_gcs to return correct test data file
-        def _copy_file_from_gcs(file_path, *args, **kwargs):
+        # Mock download to return correct test data file
+        def _fake_download(self, full_bucket_path, output_file):
             """Fake copy_file_from_gcs."""
-            if 'resource' in file_path:
-                return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                    'mock_cai_resources.dump')
-            elif 'iam_policy' in file_path:
-                return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                    'mock_cai_iam_policies.dump')
+            if 'resource' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_resources.dump')
+            elif 'iam_policy' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_iam_policies.dump')
+            with open(fake_file, 'rb') as f:
+                output_file.write(f.read())
 
-        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+        self.mock_download.side_effect = _fake_download
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
@@ -204,25 +202,31 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         # Ignore call to export_assets for this test.
         self.mock_export_assets.return_value = {'done': True}
 
-        # Mock copy_file_from_gcs to return correct test data file
-        def _copy_file_from_gcs(file_path, *args, **kwargs):
+        # Mock download to return correct test data file
+        def _fake_download(self, full_bucket_path, output_file):
             """Fake copy_file_from_gcs."""
-            if 'resource' in file_path:
-                if 'projects-1043' in file_path:
-                    return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                        'mock_cai_project3_resources.dump')
-                if 'projects-1044' in file_path:
-                    return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                        'mock_cai_project4_resources.dump')
-            elif 'iam_policy' in file_path:
-                if 'projects-1043' in file_path:
-                    return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                        'mock_cai_project3_iam_policies.dump')
-                if 'projects-1044' in file_path:
-                    return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                        'mock_cai_project4_iam_policies.dump')
+            if 'resource' in full_bucket_path:
+                if 'projects-1043' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project3_resources.dump')
+                if 'projects-1044' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project4_resources.dump')
+            elif 'iam_policy' in full_bucket_path:
+                if 'projects-1043' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project3_iam_policies.dump')
+                if 'projects-1044' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project4_iam_policies.dump')
+            with open(fake_file, 'rb') as f:
+                output_file.write(f.read())
 
-        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+        self.mock_download.side_effect = _fake_download
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   inventory_config)
@@ -250,18 +254,20 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         # Ignore call to export_assets for this test.
         self.mock_export_assets.return_value = {'done': True}
 
-        # Mock copy_file_from_gcs to return correct test data file
-        def _copy_file_from_gcs(file_path, *args, **kwargs):
+        # Mock download to return correct test data file
+        def _fake_download(self, full_bucket_path, output_file):
             """Fake copy_file_from_gcs."""
-            if 'resource' in file_path:
-                return os.path.join(
-                    TEST_RESOURCE_DIR_PATH,
-                    'mock_cai_long_resource_name.dump')
-            elif 'iam_policy' in file_path:
-                return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                    'mock_cai_empty_iam_policies.dump')
+            if 'resource' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_long_resource_name.dump')
+            elif 'iam_policy' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_empty_iam_policies.dump')
+            with open(fake_file, 'rb') as f:
+                output_file.write(f.read())
 
-        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+        self.mock_download.side_effect = _fake_download
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
@@ -299,7 +305,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
-        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.assertFalse(self.mock_download.called)
         self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_valueerror(self):
@@ -315,7 +321,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                        'organizations/'))
         with self.assertRaises(ValueError):
             cloudasset.load_cloudasset_data(self.engine, inventory_config)
-        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.assertFalse(self.mock_download.called)
         self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_timeout(self):
@@ -325,7 +331,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
-        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.assertFalse(self.mock_download.called)
         self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_error_response(self):
@@ -334,7 +340,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)
         self.assertIsNone(results)
-        self.assertFalse(self.mock_copy_file_from_gcs.called)
+        self.assertFalse(self.mock_download.called)
         self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_download_error(self):
@@ -346,7 +352,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             {'status': '403', 'content-type': 'application/json'})
         content = PERMISSION_DENIED.encode()
         error_403 = errors.HttpError(response, content)
-        self.mock_copy_file_from_gcs.side_effect = error_403
+        self.mock_download.side_effect = error_403
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   self.inventory_config)

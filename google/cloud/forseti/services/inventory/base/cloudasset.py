@@ -13,8 +13,10 @@
 # limitations under the License.
 
 """Forseti Inventory Cloud Asset API integration."""
-
+import codecs
+from collections import deque
 import os
+import threading
 import time
 
 import concurrent.futures
@@ -22,10 +24,9 @@ from googleapiclient import errors
 
 from google.cloud.forseti.common.gcp_api import cloudasset
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.inventory.cai_temporary_storage import (
-    CaiDataAccess)
+from google.cloud.forseti.services.inventory import cai_temporary_storage
 
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
@@ -97,6 +98,10 @@ DEFAULT_ASSET_TYPES = [
 ]
 
 
+class StreamError(Exception):
+    """Raised for errors streaming results from GCS to local DB."""
+
+
 def load_cloudasset_data(engine, config):
     """Export asset data from Cloud Asset API and load into storage.
 
@@ -108,12 +113,9 @@ def load_cloudasset_data(engine, config):
         int: The count of assets imported into the database, or None if there
             is an error.
     """
-    # Start by ensuring that there is no existing CAI data in storage.
-    _clear_cai_data(engine)
-
     cloudasset_client = cloudasset.CloudAssetClient(
         config.get_api_quota_configs())
-    imported_assets = 0
+    storage_client = storage.StorageClient()
 
     root_resources = []
     if config.use_composite_root():
@@ -121,6 +123,7 @@ def load_cloudasset_data(engine, config):
     else:
         root_resources.append(config.get_root_resource_id())
 
+    imported_assets = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         for root_id in root_resources:
@@ -132,23 +135,101 @@ def load_cloudasset_data(engine, config):
                                                content_type))
 
         for future in concurrent.futures.as_completed(futures):
-            temporary_file = ''
+            gcs_object = future.result()
             try:
-                temporary_file = future.result()
-                if not temporary_file:
-                    return _clear_cai_data(engine)
+                assets = _stream_gcs_to_database(gcs_object,
+                                                 engine,
+                                                 storage_client)
+                imported_assets += assets
+            except StreamError as e:
+                LOGGER.error('Error streaming data from GCS to Database: %s', e)
+                return _clear_cai_data(engine)
 
-                LOGGER.debug('Importing Cloud Asset data from %s to database.',
-                             temporary_file)
-                with open(temporary_file, 'r') as cai_data:
-                    rows = CaiDataAccess.populate_cai_data(cai_data, engine)
-                    imported_assets += rows
-                    LOGGER.info('%s assets imported to database.', rows)
-            finally:
-                if temporary_file:
-                    os.unlink(temporary_file)
+    # Each worker's imported asset count is appended to the deque, sum them all
+    # to get total imported assets.
+    LOGGER.info('%i assets imported to database.', imported_assets)
 
+    # Optimize the new database before returning
+    engine.execute('pragma optimize;')
     return imported_assets
+
+
+def _stream_cloudasset_worker(cai_data, engine, output_queue):
+    """Worker to stream data from GCS into sqlite temporary table.
+
+    Args:
+        cai_data (file): An open file like pipe.
+        engine (sqlalchemy.engine.Engine): Database engine to write data to.
+        output_queue (collections.deque): A queue storing the results of this
+            thread.
+    """
+    # Codecs transforms the raw byte stream into an iterable of lines.
+    cai_iter = codecs.getreader('utf-8')(cai_data)
+    rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
+        cai_iter, engine)
+    LOGGER.info('%s assets imported to database.', rows)
+    output_queue.append(rows)
+
+
+def _stream_gcs_to_database(gcs_object, engine, storage_client):
+    """Stream data from GCS into a local database using pipes.
+
+    Args:
+        gcs_object (str): The full path to the GCS object to read.
+        engine (sqlalchemy.engine.Engine): The db engine to store the data in.
+        storage_client (storage.StorageClient): The storage client to use to
+            download data from GCS.
+
+    Returns:
+        int: The number of rows stored in the database.
+
+    Raises:
+        StreamError: Raised on any errors streaming data from GCS.
+    """
+    if not gcs_object:
+        raise StreamError('GCS Object name not defined.')
+
+    LOGGER.info('Importing Cloud Asset data from %s to database.',
+                gcs_object)
+
+    # Use a deque to store the output of the worker threads as appends are
+    # atomic and thread safe.
+    imported_rows = deque()
+
+    # Create a pair of connected pipe objects to stream the data from
+    # GCS into the sqlite database without having to download the data
+    # to the local system first.
+    read_pipe, write_pipe = os.pipe()
+    # Create file like objects for each pipe
+    read_file = os.fdopen(read_pipe, mode='rb')
+    write_file = os.fdopen(write_pipe, mode='wb')
+    # Create a separate thread for writing the data to sqlite, reading
+    # from the input side of the pipe.
+    worker = threading.Thread(target=_stream_cloudasset_worker,
+                              args=(read_file, engine, imported_rows))
+    worker.start()
+
+    try:
+        # Stream data from GCS into the output side of the pip
+        storage_client.download(full_bucket_path=gcs_object,
+                                output_file=write_file)
+    except errors.HttpError as e:
+        LOGGER.error('Could not download %s from GCS: %s',
+                     gcs_object, e)
+        raise StreamError('Could not download %s from GCS : %s' %
+                          (gcs_object, e))
+    finally:
+        # Close the write side of the pipe so the read side will know
+        # when it reaches EOF and the tread will return.
+        write_file.close()
+
+        # Wait for thread to complete before continuing
+        worker.join()
+
+        # Don't leak resources, ensure both sides of pipe are closed.
+        read_file.close()
+
+    return imported_rows.popleft()
 
 
 def _export_assets(cloudasset_client, config, root_id, content_type):
@@ -161,8 +242,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         content_type (ContentTypes): The content type to export.
 
     Returns:
-        str: The path to the temporary file downloaded from GCS or None on
-            error.
+        str: The path to the GCS object created by the CloudAsset API.
 
     Raises:
         ValueError: Raised if the server configuration for CAI export is
@@ -212,12 +292,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                      '%s', results)
         return None
 
-    try:
-        LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
-        return file_loader.copy_file_from_gcs(export_path)
-    except errors.HttpError as e:
-        LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
-        return None
+    return export_path
 
 
 def _clear_cai_data(engine):
@@ -227,7 +302,7 @@ def _clear_cai_data(engine):
         engine (object): Database engine.
     """
     LOGGER.debug('Deleting Cloud Asset data from database.')
-    count = CaiDataAccess.clear_cai_data(engine)
+    count = cai_temporary_storage.CaiDataAccess.clear_cai_data(engine)
     LOGGER.debug('%s assets deleted from database.', count)
     return None
 
