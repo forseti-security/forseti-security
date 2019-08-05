@@ -26,12 +26,12 @@ organization Cloud IAM policy.
 
 Users can install Forseti using Terraform by clicking the button below.
 
-[![install forseti using cloud shell tutorial]({{site.url}}/images/docs/setup/install_button_using_cloud_shell_tutorial.png)](http://www.google.com)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=master&cloudshell_working_dir=examples/install_simple&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 Documentation on installing can be found [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google).
 
 If you still need to use the legacy and soon-to-be-deprecated python-based
-installer, it be found [here]({% link _docs/latest/setup/install-with-python-installer.md %}).
+installer, it can be found [here]({% link _docs/latest/setup/install-with-python-installer.md %}).
 
 ## What's next
 
