@@ -26,7 +26,7 @@ from sqlalchemy import String
 from sqlalchemy import LargeBinary
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import SingletonThreadPool
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import create_engine
@@ -319,9 +319,9 @@ class CaiDataAccess(object):
         """
         base_query = CaiTemporaryStore.__table__.select()
         filters = [
+            CaiTemporaryStore.parent_name == parent_name,
             CaiTemporaryStore.content_type == content_type,
             CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.parent_name == parent_name,
         ]
 
         for qry_filter in filters:
@@ -398,10 +398,9 @@ def create_sqlite_db():
     try:
         engine = create_engine('sqlite:///{}'.format(tmpfile),
                                sqlite_enforce_fks=False,
+                               pool_size=15,
                                connect_args={'check_same_thread': False},
-                               poolclass=StaticPool)
-        engine.execute('pragma journal_mode=wal;')
-        engine.execute('pragma synchronous=normal;')
+                               poolclass=SingletonThreadPool)
         _initialize(engine)
         return engine, tmpfile
     finally:
