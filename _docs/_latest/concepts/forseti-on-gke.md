@@ -33,8 +33,8 @@ This is illustrated in the following diagram.
 
 The container images can be found in the following repositories
 
-* [gcr.io/forseti-containers](gcr.io/forseti-containers)
-* [hub.docker.com/u/forsetisecurity](hub.docker.com/u/forsetisecurity)
+* [gcr.io/forseti-containers](https://console.cloud.google.com/gcr/images/forseti-containers/GLOBAL)
+* [hub.docker.com/u/forsetisecurity](https://hub.docker.com/u/forsetisecurity)
 
 The following describes the container image tags used in a Forseti on GKE installation.
 
