@@ -1,0 +1,130 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.base_scanner"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.base_scanner</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Base scanner.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">from</span> <span class="nn">future.utils</span> <span class="k">import</span> <span class="n">with_metaclass</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">storage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">string_formats</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util.index_state</span> <span class="k">import</span> <span class="n">IndexState</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.scanner</span> <span class="k">import</span> <span class="n">dao</span> <span class="k">as</span> <span class="n">scanner_dao</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BaseScanner"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner">[docs]</a><span class="k">class</span> <span class="nc">BaseScanner</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;This is a base class skeleton for scanners.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">scanner_configs</span><span class="p">,</span> <span class="n">service_config</span><span class="p">,</span>
+                 <span class="n">model_name</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor for the base pipeline.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            scanner_configs (dict): Scanner configurations.</span>
+<span class="sd">            service_config (ServiceConfig): Service configuration.</span>
+<span class="sd">            model_name (str): name of the data model</span>
+<span class="sd">            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.</span>
+<span class="sd">            rules (str): Fully-qualified path and filename of the rules file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_configs</span> <span class="o">=</span> <span class="n">global_configs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scanner_configs</span> <span class="o">=</span> <span class="n">scanner_configs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span> <span class="o">=</span> <span class="n">service_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span> <span class="o">=</span> <span class="n">snapshot_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+
+<div class="viewcode-block" id="BaseScanner.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner.run">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the pipeline.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseScanner._upload_csv"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner._upload_csv">[docs]</a>    <span class="k">def</span> <span class="nf">_upload_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">now_utc</span><span class="p">,</span> <span class="n">csv_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Upload CSV to Cloud Storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_path (str): The output path for the csv.</span>
+<span class="sd">            now_utc (datetime): The UTC timestamp of &quot;now&quot;.</span>
+<span class="sd">            csv_name (str): The csv_name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_filename</span><span class="p">(</span><span class="n">now_utc</span><span class="p">)</span>
+
+        <span class="c1"># If output path was specified, copy the csv temp file either to</span>
+        <span class="c1"># a local file or upload it to Google Cloud Storage.</span>
+        <span class="n">full_output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Output path: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">full_output_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+            <span class="c1"># An output path for GCS must be the full</span>
+            <span class="c1"># `gs://bucket-name/path/for/output`</span>
+            <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">StorageClient</span><span class="p">()</span>
+            <span class="n">storage_client</span><span class="o">.</span><span class="n">put_text_file</span><span class="p">(</span>
+                <span class="n">csv_name</span><span class="p">,</span> <span class="n">full_output_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Otherwise, just copy it to the output path.</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">csv_name</span><span class="p">,</span> <span class="n">full_output_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseScanner.get_output_filename"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner.get_output_filename">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_output_filename</span><span class="p">(</span><span class="n">now_utc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the output filename.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            now_utc (datetime): The datetime now in UTC. Generated at the top</span>
+<span class="sd">                level to be consistent across the scan.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The output filename for the csv, formatted with the</span>
+<span class="sd">                now_utc timestamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_timestamp</span> <span class="o">=</span> <span class="n">now_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+            <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_TIMEZONE_FILES</span><span class="p">)</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">string_formats</span><span class="o">.</span><span class="n">SCANNER_OUTPUT_CSV_FMT</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">output_timestamp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_filename</span></div>
+
+<div class="viewcode-block" id="BaseScanner._output_results_to_db"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner._output_results_to_db">[docs]</a>    <span class="k">def</span> <span class="nf">_output_results_to_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Output scanner results to DB.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            violations (list): A list of violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model_description</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">model_manager</span><span class="o">.</span><span class="n">get_description</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">))</span>
+        <span class="n">inventory_index_id</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">model_description</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_info&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;inventory_index_id&#39;</span><span class="p">))</span>
+
+        <span class="n">violation_access</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">violation_access</span>
+        <span class="n">scanner_index_id</span> <span class="o">=</span> <span class="n">scanner_dao</span><span class="o">.</span><span class="n">get_latest_scanner_index_id</span><span class="p">(</span>
+            <span class="n">violation_access</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span>
+            <span class="n">index_state</span><span class="o">=</span><span class="n">IndexState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+        <span class="n">violation_access</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">violations</span><span class="p">,</span> <span class="n">scanner_index_id</span><span class="p">)</span></div></div>
+</pre></div>

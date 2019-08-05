@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.kms\_scanner module
+=========================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.kms_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:
