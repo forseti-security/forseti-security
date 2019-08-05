@@ -59,6 +59,7 @@ class Categories(enum.Enum):
     enabled_apis = 6
     kubernetes_service_config = 7
 
+
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
 
 
