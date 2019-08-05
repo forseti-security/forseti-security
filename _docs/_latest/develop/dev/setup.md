@@ -89,7 +89,7 @@ to create a fork of the Forseti code, and learn how to submit a pull request (PR
 
 ## Installing build dependencies
 
-Use the following command to install required build dependencies:
+Use the following command to navigate to your cloned repository and install required build dependencies:
 
   ```bash
   cd forseti-security
@@ -99,11 +99,9 @@ Use the following command to install required build dependencies:
 
 ## Running the Python setup
 
-Use the following commands to navigate to your cloned repository and run the Python setup:
+Use the following commands to run the Python setup:
 
-  ```bash
-  cd forseti-security
-
+  ```
   python3 setup.py install
   ```
 
