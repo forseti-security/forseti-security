@@ -136,7 +136,6 @@ class Crawler(crawler.Crawler):
         except Exception as e:
             LOGGER.exception(e)
             progresser.on_error(e)
-            attrs['exception'] = e
             attrs['success'] = False
             raise
         else:
