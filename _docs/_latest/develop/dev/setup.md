@@ -245,13 +245,20 @@ ln -s <path to your git source code>/google/cloud/forseti forseti
 ## Setting up instrumentation
 * To collect performance stats, tracing libraries needs to be installed.
 ```
-sudo pip3 install .[tracing]
+pip3 install opencensus==0.6.0    
+pip3 install google-cloud-trace==0.19.0   
+pip3 install opencensus-ext-grpc==0.3.0   
+pip3 install opencensus-ext-stackdriver==0.4.0   
+pip3 install opencensus-ext-sqlalchemy==0.1.2
 ```
+* Add `roles/cloudtrace.agent` to the server service account of the project
+whose JSON key is referenced in `GOOGLE_APPLICATION_CREDENTIALS` variable.
 * Enable tracing by running:
 ```
 export FORSETI_ENABLE_TRACING=True
 ```
-* Run the server with `--enable_tracing=${FORSETI_ENABLE_TRACING}`.
+* Run the server with `--enable_tracing=True`.
+* Navigate to Trace list on the GCP console to view trace chart.
 ------------------
 
 
