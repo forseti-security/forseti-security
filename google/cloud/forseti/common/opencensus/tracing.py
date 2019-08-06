@@ -16,7 +16,6 @@
 
 import functools
 import inspect
-import logging
 
 from google.cloud.forseti.common.util import logger
 
@@ -214,21 +213,21 @@ def trace_init(attr=None):
                     # If `tracer` is passed explicitly to our class at __init__,
                     # we use that tracer.
                     LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
-                                f'from kwargs')
+                                 f'from kwargs')
                     self.tracer = kwargs['tracer']
                 elif attr is not None:
                     # If `attr` is passed to this decorator, then get the tracer
                     # from the instance attribute.
                     LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
-                                f'from class attribute {cls_name}')
+                                 f'from class attribute {cls_name}')
                     self.tracer = rgetattr(self, cls_name)
                 else:
                     # Otherwise, get tracer from current execution context.
                     LOGGER.debug(f'Tracing - {cls_name}.__init__ - set tracer '
-                                f'from execution context')
+                                 f'from execution context')
                     self.tracer = execution_context.get_opencensus_tracer()
                 LOGGER.debug(f'Tracing - {cls_name}.__init__ - '
-                            f'context: {self.tracer.span_context}')
+                             f'context: {self.tracer.span_context}')
         return inner_wrapper
     return outer_wrapper
 

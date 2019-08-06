@@ -46,6 +46,7 @@ SERVICE_MAP = {
 }
 
 
+# pylint: disable=too-many-locals
 def serve(endpoint,
           services,
           forseti_db_connect_string,
