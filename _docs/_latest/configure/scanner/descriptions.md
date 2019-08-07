@@ -121,6 +121,21 @@ For examples of how to define scanner rules for your G Suite groups, see the
 [`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
 rule file.
 
+## Groups Settings scanner
+
+Groups Settings scanner detects if the actual groups settings do not match
+with the configured G Suite group settings in order to prevent anomalies.
+For example, a user from outside of the organization can never get into the 
+group as  long as `allowExternalMembers: False` is in the group’s settings.
+Supported group settings are whoCanAdd, whoCanJoin, whoCanViewMembership, 
+whoCanViewGroup, whoCanInvite, allowExternalMembers, and whoCanLeaveGroup.
+The Groups Settings scanner supports a whitelist and blacklist mode, to prevent such 
+events from ever happening.
+
+For examples of how to define scanner rules for your G Suite Settings scanner, 
+see the [`groups_settings_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/groups_settings_rules.yaml)
+rule file.
+
 ## IAM policy scanner (organization resources)
 
 Cloud IAM policies directly grant access on GCP. To ensure only authorized
