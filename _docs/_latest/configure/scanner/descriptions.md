@@ -123,13 +123,13 @@ rule file.
 
 ## Groups Settings scanner
 
-Groups Settings scanner detects if the actual groups settings doesn't match
-with the configured G Suite group settings thereby preventing anomalies.
+Groups Settings scanner detects if the actual groups settings do not match
+with the configured G Suite group settings in order to prevent anomalies.
 For example, a user from outside of the organization can never get into the 
-group as  long as “allowExternalMembers: False” in the group’s settings.
+group as  long as `allowExternalMembers: False` in the group’s settings.
 Supported group settings are whoCanAdd, whoCanJoin, whoCanViewMembership, 
 whoCanViewGroup, whoCanInvite, allowExternalMembers, and whoCanLeaveGroup.
-The group scanner supports a whitelist and blacklist mode, to prevent such 
+The Groups Settings scanner supports a whitelist and blacklist mode, to prevent such 
 events from ever happening.
 
 For examples of how to define scanner rules for your G Suite Settings scanner, 
