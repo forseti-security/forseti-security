@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for Cloud Asset API client."""
+from builtins import object
 import time
 
 from googleapiclient import errors
@@ -129,8 +130,60 @@ class CloudAssetClient(object):
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def export_assets(self, parent, destination_object, content_type=None,
-                      asset_types=None, blocking=False, timeout=0):
+    @staticmethod
+    def build_gcs_object_output(destination_object):
+        """Creates an OutputConfig message for output to GCS object.
+
+        Args:
+            destination_object (str): The GCS path and file name to store the
+                results in. The bucket must be in the same project that has the
+                Cloud Asset API enabled and the object must not exist.
+
+        Returns:
+            dict: an OutputConfig message.
+        """
+        return {'gcsDestination': {'uri': destination_object}}
+
+    @staticmethod
+    def build_gcs_prefix_output(destination_prefix):
+        """Creates an OutputConfig message for sharding output to a GCS prefix.
+
+        Args:
+            destination_prefix (str): The GCS bucket and folder path to store
+                the results in. The bucket must be in the same project that has
+                the Cloud Asset API enabled and the folder must not exist.
+
+        Returns:
+            dict: an OutputConfig message.
+        """
+        return {'gcsDestination': {'uriPrefix': destination_prefix}}
+
+    @staticmethod
+    def build_bigquery_table_output(project_id, dataset, table, force=True):
+        """Creates an OutputConfig message for output to a BigQuery table.
+
+        Args:
+            project_id (str): The project that hosts the dataset.
+            dataset (str): The dataset name to output into.
+            table (str): The table name to create for the export, the table must
+                not exist.
+            force (bool): If true, force write rows even on error.
+        """
+        # TODO: Uncomment the below code and remove the exception when the
+        # bigquery support is live in the v1 API.
+        #
+        # dataset_full_name = 'projects/{}/datasets/{}'.format(project_id,
+        #                                                      dataset)
+        # return {'bigqueryDestination': {'dataset': dataset_full_name,
+        #                                 'table': table,
+        #                                 "force": force}}
+        raise NotImplementedError('The v1 API does not support this '
+                                  'destination, it will be enabled in a future '
+                                  'release.')
+
+    def export_assets(self, parent, destination_object=None, output_config=None,
+                      content_type=None, asset_types=None, blocking=False,
+                      timeout=0):
         """Export assets under a parent resource to the destination GCS object.
 
         Args:
@@ -139,6 +192,9 @@ class CloudAssetClient(object):
             destination_object (str): The GCS path and file name to store the
                 results in. The bucket must be in the same project that has the
                 Cloud Asset API enabled.
+            output_config (dict): The full outputConfig message to pass to the
+                export assets API. Should be built using one of the
+                build_*_output_config methods.
             content_type (str): The specific content type to export, currently
                 supports "RESOURCE" and "IAM_POLICY". If not specified only the
                 CAI metadata for assets are included.
@@ -164,10 +220,25 @@ class CloudAssetClient(object):
             raise ValueError('parent must start with folders/, projects/, or '
                              'organizations/')
 
+        if not destination_object and not output_config:
+            raise ValueError('Either destination_object or output_config must '
+                             'be set.')
+
+        if destination_object and output_config:
+            raise ValueError('destination_object and output_config must be not '
+                             'both be specified.')
+
+        if destination_object:
+            # Explicitly continue to support the original use of this method,
+            # which was output to a specific GCS object. There may be usage of
+            # this method from outside of Forseti, and thus backwards
+            # compatibility is required.
+            output_config = self.build_gcs_object_output(destination_object)
+
         repository = self.repository.top_level
         try:
             results = repository.export_assets(
-                parent, destination_object, content_type=content_type,
+                parent, output_config, content_type=content_type,
                 asset_types=asset_types)
             if blocking:
                 results = self.wait_for_completion(parent, results,
@@ -176,7 +247,8 @@ class CloudAssetClient(object):
             LOGGER.error('Error exporting assets for parent %s: %s', parent, e)
             raise api_errors.ApiExecutionError(parent, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn('Timeout exporting assets for parent %s: %s', parent, e)
+            LOGGER.warning('Timeout exporting assets for parent %s: %s',
+                           parent, e)
             raise
 
         LOGGER.info('Exporting assets for parent %s. Result: %s',

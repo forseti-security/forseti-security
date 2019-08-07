@@ -71,7 +71,8 @@ def get_logger(module_name):
 
     if os.path.exists('/var/log/forseti.log'):  # ubuntu on GCE
         try:
-            default_log_handler = logging.FileHandler('/var/log/forseti.log')
+            default_log_handler = logging.handlers.WatchedFileHandler(
+                '/var/log/forseti.log')
             default_log_handler.setFormatter(logging.Formatter(FORSETI_LOG_FMT))
         # users of CLI on server vm can not write to /var/log/forseti.log
         except IOError:
@@ -102,7 +103,7 @@ def _map_logger(func):
     Args:
         func (function): Function to call on every logger.
     """
-    for logger in LOGGERS.itervalues():
+    for logger in LOGGERS.values():
         func(logger)
 
 

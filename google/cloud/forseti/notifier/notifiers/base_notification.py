@@ -14,8 +14,11 @@
 
 """Base notifier to perform notifications"""
 
+from builtins import str
+from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -37,10 +40,8 @@ class InvalidDataFormatError(Exception):
             '%s: invalid data format: %s' % (notifier, invalid_data_format))
 
 
-class BaseNotification(object):
+class BaseNotification(with_metaclass(abc.ABCMeta, object)):
     """Base notifier to perform notifications"""
-
-    __metaclass__ = abc.ABCMeta
     supported_data_formats = ['csv', 'json']
 
     def __init__(self, resource, inventory_index_id,

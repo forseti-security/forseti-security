@@ -21,6 +21,12 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
+# There are certain PB2 that are not generated during the setup process,
+# we will need to keep them instead of deleting them.
+PB2_TO_KEEP = ['validator_pb2.py', 'validator_pb2_grpc.py', 'assets_pb2.py']
+
+
 def is_grpc_service_dir(files):
     """Returns true iff the directory hosts a gRPC service.
 
@@ -41,6 +47,7 @@ def clean(path):
     """
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
+    unlink_pb2 = ('_pb2.py', '_pb2_grpc.py', '_pb2.pyc', '_pb2_grpc.pyc')
     LOGGER.info('Cleaning out compiled protos.')
     cwd = os.path.dirname(path)
 
@@ -52,8 +59,9 @@ def clean(path):
                 root)
         for filename in files:
             full_filename = os.path.join(root, filename)
-            if full_filename.endswith('_pb2.py') or full_filename.endswith(
-                    '_pb2.pyc'):
+            if filename in PB2_TO_KEEP:
+                continue
+            if full_filename.endswith(unlink_pb2):
                 os.unlink(full_filename)
 
 
@@ -79,26 +87,40 @@ def make_proto(path):
                     if pb2_stat.st_mtime >= proto_stat.st_mtime:
                         continue
 
-                except (OSError, IOError):
+                except OSError:
                     pass
 
                 protos_to_compile.append(full_filename)
 
     if not protos_to_compile:
         LOGGER.info('No protos needed to be compiled.')
+
     else:
         for proto in protos_to_compile:
             LOGGER.info('Compiling %s', proto)
             protodir, protofile = os.path.split(proto)
+            protopath = protofile
+
+            if 'google/cloud/forseti/' in proto:
+                protopath = ''
+                while protofile != 'forseti-security':
+                    if not protopath:
+                        protopath = protofile
+                    else:
+                        protopath = protofile + '/' + protopath
+                    protodir, protofile = os.path.split(protodir)
+
+            protodir = protodir + '/' + protofile
+            cwd_path = protodir
 
             subprocess.check_call(
                 [
-                    'python',
+                    'python3',
                     '-m',
                     'grpc_tools.protoc',
-                    '-I.',
+                    '-I=.',
                     '--python_out=.',
                     '--grpc_python_out=.',
-                    protofile,
+                    protopath,
                 ],
-                cwd=protodir)
+                cwd=cwd_path)

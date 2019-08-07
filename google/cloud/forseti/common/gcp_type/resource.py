@@ -18,8 +18,11 @@ For now, this only represents Organization resources. In the future, we may
 need to separate the classes depending on implementation.
 """
 
+from builtins import str
+from builtins import object
 import abc
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.gcp_type import errors
 from google.cloud.forseti.services.inventory.base import resources
 
@@ -36,8 +39,10 @@ class ResourceType(object):
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
+    GROUPS_SETTINGS = resources.GsuiteGroupsSettings.type()
 
     # IAM
+    ROLE = resources.IamRole.type()
     SERVICE_ACCOUNT = resources.IamServiceAccount.type()
     SERVICE_ACCOUNT_KEY = resources.IamServiceAccountKey.type()
 
@@ -84,7 +89,8 @@ class ResourceType(object):
         LIEN,
         LOG_SINK,
         CRYPTO_KEY,
-        KEY_RING
+        KEY_RING,
+        DATASET
     ])
 
     @classmethod
@@ -114,9 +120,8 @@ class LifecycleState(object):
     UNSPECIFIED = 'LIFECYCLE_STATE_UNSPECIFIED'
 
 
-class Resource(object):
+class Resource(with_metaclass(abc.ABCMeta, object)):
     """Represents a GCP resource."""
-    __metaclass__ = abc.ABCMeta
 
     def __init__(
             self,

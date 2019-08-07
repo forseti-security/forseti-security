@@ -15,15 +15,16 @@
 """Forseti Server installer."""
 
 from __future__ import print_function
+from builtins import input
 import os
 import random
 import time
 
-from forseti_installer import ForsetiInstaller
-from util import constants
-from util import files
-from util import gcloud
-from util import utils
+from .forseti_installer import ForsetiInstaller
+from .util import constants
+from .util import files
+from .util import gcloud
+from .util import utils
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
@@ -140,7 +141,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             ['all'],
             constants.FirewallRuleDirection.INGRESS,
             200,
-            self.config.vpc_host_network)
+            self.config.vpc_host_network,
+            None,
+            self.config.vpc_host_project_id)
 
         # Rule to open only port tcp:50051 within the
         # internal network (ip-ranges - 10.128.0.0/9).
@@ -152,7 +155,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             100,
             self.config.vpc_host_network,
-            '10.128.0.0/9')
+            '10.128.0.0/9',
+            self.config.vpc_host_project_id)
 
         # Create firewall rule to open only port tcp:22 (ssh)
         # to all the external traffic from the internet to ssh into server VM.
@@ -165,7 +169,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             100,
             self.config.vpc_host_network,
-            '0.0.0.0/0')
+            '0.0.0.0/0',
+            self.config.vpc_host_project_id)
 
     def delete_firewall_rules(self):
         """Deletes default firewall rules as the forseti service account rules
@@ -218,7 +223,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             resource_root_id = self.resource_root_id
 
         return {
-            'CAI_ENABLED': 'organizations' in self.resource_root_id,
+            'CAI_ENABLED': True,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
@@ -235,18 +240,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             dict: A dictionary of default values.
         """
-        if self.composite_root_resources:
-            # split element 0 into type and id
-            rtype, rid = self.composite_root_resources[0].split('/')
-
-            organization_id = gcloud.lookup_organization(rid, rtype)
-        else:
-            organization_id = self.resource_root_id.split('/')[-1]
-
-        domain = gcloud.get_domain_from_organization_id(organization_id)
+        domain = gcloud.get_domain_from_organization_id(self.organization_id)
 
         return {
-            'ORGANIZATION_ID': organization_id,
+            'ORGANIZATION_ID': self.organization_id,
             'DOMAIN': domain
         }
 
@@ -277,7 +274,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                     print(constants.MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL)
                     for (i, choice) in enumerate(constants.RESOURCE_TYPES):
                         print('[%s] %s' % (i+1, choice))
-                    choice_input = raw_input(
+                    choice_input = input(
                         constants.QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL
                     ).strip()
                     choice_index = int(choice_input)
@@ -303,7 +300,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if not self.config.gsuite_superadmin_email:
             # Ask for GSuite Superadmin email.
             print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
-            self.config.gsuite_superadmin_email = raw_input(
+            self.config.gsuite_superadmin_email = input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
         if self.config.skip_sendgrid_config:
@@ -314,7 +311,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
             print(constants.MESSAGE_ASK_SENDGRID_API_KEY)
-            self.config.sendgrid_api_key = raw_input(
+            self.config.sendgrid_api_key = input(
                 constants.QUESTION_SENDGRID_API_KEY).strip()
         if self.config.sendgrid_api_key:
             if not self.config.notification_sender_email:
@@ -323,7 +320,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             # Ask for notification recipient email.
             if not self.config.notification_recipient_email:
-                self.config.notification_recipient_email = raw_input(
+                self.config.notification_recipient_email = input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
     def post_install_instructions(self, deploy_success, bucket_name):

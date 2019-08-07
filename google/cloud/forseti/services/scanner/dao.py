@@ -14,6 +14,7 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from builtins import object
 from collections import defaultdict
 import hashlib
 import json
@@ -169,8 +170,9 @@ class Violation(BASE):
     rule_index = Column(Integer, default=0)
     rule_name = Column(String(256))
     scanner_index_id = Column(BigInteger)
-    violation_data = Column(Text)
+    violation_data = Column(Text(16777215))
     violation_hash = Column(String(256))
+    violation_message = Column(Text)
     violation_type = Column(String(256), nullable=False)
 
     def __repr__(self):
@@ -193,9 +195,18 @@ class Violation(BASE):
         """
         columns_to_create = [Column('resource_name',
                                     String(256),
+                                    default=''),
+                             Column('violation_message',
+                                    Text(),
                                     default='')]
 
-        schema_update_actions = {'CREATE': columns_to_create}
+        columns_to_update = {
+            Column('violation_data', Text()):
+            Column('violation_data', Text(16777215))}
+
+        schema_update_actions = {'CREATE': columns_to_create,
+                                 'ALTER': columns_to_update}
+
         return schema_update_actions
 
 
@@ -239,6 +250,7 @@ class ViolationAccess(object):
                 violation_data=json.dumps(
                     violation.get('violation_data'), sort_keys=True),
                 violation_hash=violation_hash,
+                violation_message=violation.get('violation_message', ''),
                 violation_type=violation.get('violation_type')
             )
             self.session.add(violation)
@@ -331,8 +343,9 @@ def map_by_resource(violation_rows):
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
         except ValueError:
-            LOGGER.warn('Invalid violation data, unable to parse json for %s',
-                        v_data['violation_data'])
+            LOGGER.warning('Invalid violation data, unable to parse json '
+                           'for %s',
+                           v_data['violation_data'])
 
         # resource_data can be regular python string
         try:
@@ -375,9 +388,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
     try:
         # Group resources do not have full name.  Issue #1072
         violation_hash.update(
-            json.dumps(violation_full_name) +
-            json.dumps(resource_data, sort_keys=True) +
-            json.dumps(violation_data, sort_keys=True)
+            json.dumps(violation_full_name).encode() +
+            json.dumps(resource_data, sort_keys=True).encode() +
+            json.dumps(violation_data, sort_keys=True).encode()
         )
     except TypeError:
         LOGGER.exception('Cannot create hash for a violation: %s',

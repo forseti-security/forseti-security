@@ -15,48 +15,14 @@
 """ GCP Installer.
 This has been tested with python 2.7.
 """
+from __future__ import print_function
 
 import argparse
 import datetime
-import site
-import sys
-
-from installer.util.utils import run_command
-
-INSTALLER_REQUIRED_PACKAGES = [
-    'ruamel.yaml'
-]
-
-
-def install(package_name):
-    """Install package.
-    Args:
-        package_name (str): Name of the package to install.
-    """
-    # pip's python api is deprecated, we will run the pip command
-    # through subprocess directly instead.
-    return_code, _, err = run_command(
-        ['pip', 'install', package_name, '--user'])
-
-    if return_code:
-        print 'Error installing package {}'.format(package_name)
-        print err
-        sys.exit(1)
-
-
-def install_required_packages():
-    """Install required packages."""
-    for package in INSTALLER_REQUIRED_PACKAGES:
-        install(package)
 
 
 def run():
     """Run the steps for the gcloud setup."""
-
-    # We need to install all the required packages before importing our modules
-    # Installing required packages
-    install_required_packages()
-    site.main() # Load up the package
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
@@ -114,12 +80,25 @@ def run():
     args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     # import installers and configs
-    from installer.forseti_server_installer import ForsetiServerInstaller
-    from installer.forseti_client_installer import ForsetiClientInstaller
-    from installer.configs.client_config import ClientConfig
-    from installer.configs.server_config import ServerConfig
+    from .installer.forseti_server_installer import ForsetiServerInstaller
+    from .installer.forseti_client_installer import ForsetiClientInstaller
+    from .installer.configs.client_config import ClientConfig
+    from .installer.configs.server_config import ServerConfig
     client_config = ClientConfig(**args)
     server_config = ServerConfig(**args)
+
+    deprecation_message = (
+        '\n\n'
+        '##################################################################\n'
+        '#  ATTENTION: This python installer will be deprecated           #\n'
+        '#  on 9/30/2019, and will be replaced by the easier and simpler  #\n'
+        '#  to use terraform installer.  Try out this short, interactive  #\n'
+        '#  tutorial to learn how to use the terraform installer.         #\n'
+        '#  https://forsetisecurity.org/docs/latest/setup/install.html    #\n'
+        '##################################################################'
+        '\n\n'
+    )
+    print('\033[91m', deprecation_message, '\033[0m')
 
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client

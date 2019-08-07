@@ -15,7 +15,7 @@
 """Tests the CloudSQL API client."""
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
@@ -58,7 +58,7 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
 
         result = self.sql_api_client.get_instances(self.project_id)
 
-        self.assertEquals(fake_cloudsql.EXPECTED_FAKE_CLOUDSQL_FROM_API, result)
+        self.assertEqual(fake_cloudsql.EXPECTED_FAKE_CLOUDSQL_FROM_API, result)
 
     def test_get_instances_empty(self):
         """Test get cloudsql instances."""
@@ -66,7 +66,7 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
 
         result = self.sql_api_client.get_instances(self.project_id)
 
-        self.assertEquals([], result)
+        self.assertEqual([], result)
 
     def test_get_instances_raises(self):
         """Test get cloudsql instances."""

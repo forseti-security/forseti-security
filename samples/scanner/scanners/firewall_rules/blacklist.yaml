@@ -157,6 +157,51 @@ rules:
         - IPProtocol: 'tcp'
           ports:
             - '3389'
+            
+    # This rule will trigger on policies that allow SSH from any IP range.
+    #
+    # Example triggering firewall rule:
+    #  {
+    #    "name": "firewall1",
+    #    "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default",
+    #    "priority": 1000,
+    #    "sourceRanges": ["0.0.0.0/0"],
+    #    "allowed": [
+    #      {
+    #        "IPProtocol": "tcp",
+    #        "ports": ["22"]
+    #      }
+    #    ],
+    #     "direction": "INGRESS"
+    #  }
+    #
+    # Example firewall rule that WON'T trigger:
+    #
+    #  {
+    #    "name": "firewall2",
+    #    "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default",
+    #    "priority": 1000,
+    #    "sourceRanges": ["10.128.0.0/9"],
+    #    "allowed": [
+    #      {
+    #        "IPProtocol": "tcp",
+    #        "ports": ["22"]
+    #      }
+    #    ],
+    #     "direction": "INGRESS"
+    #  }
+  - rule_id: 'no_ssh_from_anywhere'
+    description: Don't allow SSH from anywhere
+    mode: blacklist
+    match_policies:
+      - direction: ingress
+        allowed: ['*']
+        sourceRanges: ['0.0.0.0/0']
+    verify_policies:
+      - allowed:
+        - IPProtocol: 'tcp'
+          ports:
+            - '22'
 
 org_policy:
   resources:
@@ -168,3 +213,4 @@ org_policy:
           - 'prevent_allow_all_ingress'
           - 'disallow_all_ports'
           - 'no_rdp_to_linux'
+          - 'no_ssh_from_anywhere'

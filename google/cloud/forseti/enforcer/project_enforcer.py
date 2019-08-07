@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import hashlib
 
 from google.cloud.forseti.common.gcp_api import compute
@@ -84,7 +86,7 @@ class ProjectEnforcer(object):
 
         self._project_sema = project_sema
         if max_running_operations:
-            LOGGER.warn(
+            LOGGER.warning(
                 'Max running operations is deprecated. Argument ignored.')
 
         self._operation_sema = None
@@ -211,7 +213,7 @@ class ProjectEnforcer(object):
         """
         rules_after_enforcement = None
         retry_enforcement_count = 0
-        while True and self.result.status not in (STATUS_ERROR, STATUS_DELETED):
+        while self.result.status not in (STATUS_ERROR, STATUS_DELETED):
             change_count = 0
             try:
                 change_count = firewall_enforcer.apply_firewall(
@@ -242,10 +244,10 @@ class ProjectEnforcer(object):
 
             retry_enforcement_count += 1
             if retry_enforcement_count <= maximum_retries:
-                LOGGER.warn('New firewall rules do not match the expected '
-                            'rules enforced by the policy for project %s, '
-                            'retrying. (Retry #%d)', self.project_id,
-                            retry_enforcement_count)
+                LOGGER.warning('New firewall rules do not match the expected '
+                               'rules enforced by the policy for project %s, '
+                               'retrying. (Retry #%d)',
+                               self.project_id, retry_enforcement_count)
                 firewall_enforcer.refresh_current_rules()
             else:
                 self._set_error_status('New firewall rules do not match '
@@ -308,7 +310,7 @@ class ProjectEnforcer(object):
         except api_errors.ApiExecutionError as e:
             http_error = e.http_error
             if _is_project_deleted_error(http_error):
-                LOGGER.warn('Project %s has been deleted.', self.project_id)
+                LOGGER.warning('Project %s has been deleted.', self.project_id)
                 raise ProjectDeletedError(str(http_error))
 
             LOGGER.exception('Error listing networks for project %s: %s',
@@ -381,7 +383,7 @@ class ProjectEnforcer(object):
         except api_errors.ApiExecutionError as e:
             http_error = e.http_error
             if _is_project_deleted_error(http_error):
-                LOGGER.warn('Project %s has been deleted.', self.project_id)
+                LOGGER.warning('Project %s has been deleted.', self.project_id)
                 raise ProjectDeletedError(str(http_error))
 
             raise EnforcementError(
@@ -437,16 +439,16 @@ class ProjectEnforcer(object):
             # required
             results.rules_before.json = rules_before_enforcement.as_json()
             results.rules_before.hash = (
-                hashlib.sha256(results.rules_before.json).hexdigest())
+                hashlib.sha256(results.rules_before.json.encode()).hexdigest())
             return
 
         if rules_before_enforcement != rules_after_enforcement:
             results.rules_before.json = rules_before_enforcement.as_json()
             results.rules_before.hash = (
-                hashlib.sha256(results.rules_before.json).hexdigest())
+                hashlib.sha256(results.rules_before.json.encode()).hexdigest())
             results.rules_after.json = rules_after_enforcement.as_json()
             results.rules_after.hash = (
-                hashlib.sha256(results.rules_after.json).hexdigest())
+                hashlib.sha256(results.rules_after.json.encode()).hexdigest())
 
         for (rule_name,
              rule) in sorted(rules_after_enforcement.rules.items()):
@@ -480,7 +482,7 @@ class ProjectEnforcer(object):
 
         self.result.status = STATUS_ERROR
         self.result.status_reason = msg
-        LOGGER.warn('Project %s had an error: %s', self.project_id, msg)
+        LOGGER.warning('Project %s had an error: %s', self.project_id, msg)
 
     def _set_deleted_status(self, e):
         """Set status of result to DELETED and update reason string.
@@ -492,13 +494,13 @@ class ProjectEnforcer(object):
         if isinstance(e, ProjectDeletedError):
             self.result.status_reason = (
                 'Project scheduled for deletion: %s' % e)
-            LOGGER.warn('Project %s scheduled for deletion: %s',
-                        self.project_id, e)
+            LOGGER.warning('Project %s scheduled for deletion: %s',
+                           self.project_id, e)
         elif isinstance(e, ComputeApiDisabledError):
             self.result.status_reason = (
                 'Project has GCE API disabled: %s' % e)
-            LOGGER.warn('Project %s has the GCE API disabled: %s',
-                        self.project_id, e)
+            LOGGER.warning('Project %s has the GCE API disabled: %s',
+                           self.project_id, e)
 
 
 def _is_project_deleted_error(err):

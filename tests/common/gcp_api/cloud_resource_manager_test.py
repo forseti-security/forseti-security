@@ -15,7 +15,7 @@
 """Tests the Cloud Resource Manager API client."""
 import json
 import unittest
-import mock
+import unittest.mock as mock
 import google.auth
 from google.oauth2 import credentials
 
@@ -77,7 +77,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             parent_id=fake_crm_responses.FAKE_ORG_ID,
             parent_type='organization',
             lifecycleState=LifecycleState.ACTIVE))
-        self.assertEquals(
+        self.assertEqual(
             fake_crm_responses.EXPECTED_FAKE_ACTIVE_PROJECTS1, result)
 
     def test_get_projects_all(self):
@@ -86,7 +86,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(response)
 
         result = list(self.crm_api_client.get_projects())
-        self.assertEquals(fake_crm_responses.EXPECTED_FAKE_PROJECTS1, result)
+        self.assertEqual(fake_crm_responses.EXPECTED_FAKE_PROJECTS1, result)
 
     def test_get_projects_api_error(self):
         """Test get_projects() raises ApiExecutionError on HTTP error."""
@@ -102,7 +102,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)
         result = self.crm_api_client.get_project_ancestry(
             fake_crm_responses.FAKE_PROJECT_ID)
-        self.assertEquals(fake_crm_responses.EXPECTED_PROJECT_ANCESTRY_IDS,
+        self.assertEqual(fake_crm_responses.EXPECTED_PROJECT_ANCESTRY_IDS,
                           [r['resourceId']['id'] for r in result])
 
     def test_get_project_ancestry_api_error(self):
@@ -169,7 +169,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         expected_orgs = fake_crm_responses.EXPECTED_FAKE_ORGS_FROM_API
 
         result = self.crm_api_client.get_organizations()
-        self.assertEquals(expected_orgs, result)
+        self.assertEqual(expected_orgs, result)
 
     def test_get_organizations_multiple_pages(self):
         """Test multiple pages when calling get_organizations()."""
@@ -179,7 +179,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.crm_api_client.get_organizations()
-        self.assertEquals(fake_crm_responses.EXPECTED_ORGANIZATIONS_FROM_SEARCH,
+        self.assertEqual(fake_crm_responses.EXPECTED_ORGANIZATIONS_FROM_SEARCH,
                           [r.get('name') for r in results])
 
     def test_get_organizations_raises_error(self):
@@ -253,7 +253,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         expected_folders = fake_crm_responses.EXPECTED_FAKE_FOLDERS1
 
         result = self.crm_api_client.get_folders(show_deleted=True)
-        self.assertEquals(expected_folders, result)
+        self.assertEqual(expected_folders, result)
 
     def test_get_folders_parent(self):
         """Test get_folders()."""
@@ -264,7 +264,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         parent = 'organizations/9999'
 
         result = self.crm_api_client.get_folders(parent=parent)
-        self.assertEquals(expected_folders, result)
+        self.assertEqual(expected_folders, result)
 
     def test_get_folders_active(self):
         """Test get_folders() only for lifecycle_state=ACTIVE."""
@@ -276,7 +276,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         expected_folders = fake_crm_responses.EXPECTED_FAKE_ACTIVE_FOLDERS1
 
         result = self.crm_api_client.get_folders(show_deleted=False)
-        self.assertEquals(expected_folders, result)
+        self.assertEqual(expected_folders, result)
 
     def test_get_folders_raises_error(self):
         """Test get_folders() raises ApiExecutionError on HTTP error."""

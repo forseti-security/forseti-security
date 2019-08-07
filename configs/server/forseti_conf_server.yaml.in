@@ -12,7 +12,18 @@ inventory:
 
     # Root resource to start crawling from, formatted as
     # <resource_type>/<resource_id>, (e.g. "organizations/12345677890")
+    # Note: For root resource id at a project level, you will need to use
+    # project number instead of project id, e.g. "projects/<project number>".
     root_resource_id: {ROOT_RESOURCE_ID}
+
+    # Resources to be excluded during the inventory process.
+    # Only organizations/<ORG_NUMBER>, folders/<FOLDER_NUMBER>,
+    # projects/<PROJECT_ID> or projects/<PROJECT_NUMBER> are accepted.
+    # The child resources under the excluded resources will also be excluded.
+    #
+    # Example:
+    # excluded_resources: ['folders/1234', 'projects/my-project-123', 'projects/4321']
+    excluded_resources: []
 
     # Composite root resources: combines multiple resource roots into a single
     # inventory, for use across all Forseti modules. Can contain one or more
@@ -27,10 +38,9 @@ inventory:
     # Resources can exist in multiple organizations.
     #
     #composite_root_resources:
-    #    - "folders/12345"
-    #    - "folders/45678"
-    #    - "projects/98765"
-    #    - "organizations/56789"
+    #    - "folders/<folder number>"
+    #    - "projects/<project number>"
+    #    - "organizations/<organization number>"
     composite_root_resources: {COMPOSITE_ROOT_RESOURCES}
 
     # gsuite access
@@ -143,6 +153,7 @@ inventory:
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck
         #    - compute.googleapis.com/HttpsHealthCheck
@@ -154,6 +165,7 @@ inventory:
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project
+        #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
         #    - compute.googleapis.com/Snapshot
@@ -175,8 +187,15 @@ inventory:
         #    - dns.googleapis.com/Policy
         #    - iam.googleapis.com/Role
         #    - iam.googleapis.com/ServiceAccount
+        #    - k8s.io/Namespace
+        #    - k8s.io/Node
+        #    - k8s.io/Pod
         #    - pubsub.googleapis.com/Subscription
         #    - pubsub.googleapis.com/Topic
+        #    - rbac.authorization.k8s.io/ClusterRole
+        #    - rbac.authorization.k8s.io/ClusterRoleBinding
+        #    - rbac.authorization.k8s.io/Role
+        #    - rbac.authorization.k8s.io/RoleBinding
         #    - spanner.googleapis.com/Database
         #    - spanner.googleapis.com/Instance
         #    - sqladmin.googleapis.com/Instance
@@ -216,6 +235,8 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: config_validator
+          enabled: false
         - name: enabled_apis
           enabled: false
         - name: firewall_rule
@@ -223,6 +244,8 @@ scanner:
         - name: forwarding_rule
           enabled: false
         - name: group
+          enabled: true
+        - name: groups_settings
           enabled: true
         - name: iam_policy
           enabled: true
@@ -343,6 +366,18 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
+        - resource: config_validator_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
         - resource: enabled_apis_violations
           should_notify: true
           notifiers:
@@ -368,6 +403,18 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: forwarding_rule_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: groups_settings_violations
           should_notify: true
           notifiers:
             # Email violations
@@ -527,16 +574,8 @@ notifier:
     violation:
       cscc:
         enabled: false
-        mode: api
-        # Alpha API
-        organization_id: {ROOT_RESOURCE_ID}
-        # gcs_path should begin with "gs://"
-        gcs_path:
-        # Beta API
-        # Cloud SCC Beta API uses a new source_id.  It is unique per
+        # Cloud SCC uses a source_id. It is unique per
         # organization and must be generated via a self-registration process.
-        # If source_id is used, then it will activate the Beta API,
-        # and the Beta API will take precedence over the Alpha API.
         # The format is: organizations/ORG_ID/sources/SOURCE_ID
         source_id:
 

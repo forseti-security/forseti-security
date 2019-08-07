@@ -26,11 +26,11 @@ if [ -x "$(command -v docker)" ]; then
         CI_ENV=`bash <(curl -s https://codecov.io/env) || echo ''`
         # Start the container for testing and code verification.
         echo "Starting our container for testing and code verification... "
-        docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash
+        docker run ${CI_ENV} -it -d --name build --entrypoint /bin/bash forseti/build
     else
         # We're not on Travis, run without the CI_ENV environment variable.
         echo "Starting our container for testing and code verification... "
-        docker run -it -d --name build forseti/build /bin/bash
+        docker run -d -i --name build --entrypoint /bin/bash forseti/build 
     fi
 else
     echo "Can\'t run docker, exiting."
@@ -40,8 +40,8 @@ fi
 # Test to see Forseti Security was installed, these should match the entry
 # points in setup.py
 echo "Testing the container for a successfull Forseti Security installation... "
-docker exec -it build /bin/bash -c "hash forseti" || exit 1
-docker exec -it build /bin/bash -c "hash forseti_enforcer" || exit 1
-docker exec -it build /bin/bash -c "hash forseti_server" || exit 1
+docker exec -i build /bin/bash -c "hash forseti" || exit 1
+docker exec -i build /bin/bash -c "hash forseti_enforcer" || exit 1
+docker exec -i build /bin/bash -c "hash forseti_server" || exit 1
 
 exit ${return_code}

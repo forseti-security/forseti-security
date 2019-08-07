@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
+from builtins import zip
+import unittest.mock as mock
 import json
 import unittest
 import parameterized
@@ -1032,8 +1033,7 @@ class RuleTest(ForsetiTestCase):
         sorted(violations, key=lambda k: k.resource_id)
         self.assertTrue(len(expected) == len(violations))
         for expected_dict, violation in zip(expected, violations):
-            self.assertItemsEqual(expected_dict.values(), list(violation))
-
+            self.assertCountEqual(list(expected_dict.values()), list(violation))
 
 class RuleBookTest(ForsetiTestCase):
 
@@ -1182,7 +1182,7 @@ class RuleBookTest(ForsetiTestCase):
         for group in group_defs:
             group_id = group.get('group_id')
             self.assertTrue(group_id in rule_book.rule_groups_map)
-            self.assertItemsEqual(
+            self.assertCountEqual(
                 group.get('rule_ids'), rule_book.rule_groups_map[group_id])
 
     @parameterized.parameterized.expand([
@@ -1259,10 +1259,10 @@ class RuleBookTest(ForsetiTestCase):
             resource_id='res1', resource_type='folder')
         gcp_resource_2 = fre.resource_util.create_resource(
             resource_id='res2', resource_type='folder')
-        self.assertItemsEqual(
+        self.assertCountEqual(
             rule_book.org_policy_rules_map[gcp_resource_1],
             ['rule1', 'rule2', 'rule3', 'rule4'])
-        self.assertItemsEqual(
+        self.assertCountEqual(
             rule_book.org_policy_rules_map[gcp_resource_2],
             ['rule1', 'rule2', 'rule3', 'rule4'])
 
@@ -1530,7 +1530,7 @@ class RuleBookTest(ForsetiTestCase):
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)
         sorted(violations, key=lambda k: k.resource_id)
-        self.assertItemsEqual(expected, violations)
+        self.assertCountEqual(expected, violations)
 
 class RuleEngineTest(ForsetiTestCase):
 
@@ -1673,7 +1673,7 @@ class RuleEngineTest(ForsetiTestCase):
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)
         sorted(violations, key=lambda k: k.resource_id)
-        self.assertItemsEqual(expected, violations)
+        self.assertCountEqual(expected, violations)
 
 
 if __name__ == '__main__':

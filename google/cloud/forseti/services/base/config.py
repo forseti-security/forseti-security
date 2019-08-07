@@ -18,11 +18,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import abc
+import re
 from multiprocessing.pool import ThreadPool
 import threading
 
+from future.utils import with_metaclass
 from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
@@ -54,13 +59,11 @@ def _validate_cai_enabled(cai_configs):
     return True
 
 
-class AbstractInventoryConfig(object):
+class AbstractInventoryConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def use_composite_root(self):
@@ -115,13 +118,11 @@ class AbstractInventoryConfig(object):
             service_config (object): Service configuration."""
 
 
-class AbstractServiceConfig(object):
+class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
     """Abstract base class for service configuration.
 
     This class is used to implement dependency injection for the gRPC
     services."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get_engine(self):
@@ -148,7 +149,45 @@ class AbstractServiceConfig(object):
 
 
 class InventoryConfig(AbstractInventoryConfig):
+    # pylint: disable=too-many-instance-attributes
     """Implements composed dependency injection for the inventory."""
+
+    @staticmethod
+    def _filter_valid_resources(excluded_resources):
+        """Filter valid excluded resources.
+
+        Args:
+            excluded_resources (list): A list of excluded resources to
+                validate against.
+
+        Returns:
+            list: List of valid resources to exclude.
+        """
+        if not excluded_resources:
+            return []
+
+        valid_resource_patterns = [
+            'organization/\\d+',
+            'folder/\\d+',
+            'project/\\d+',
+            'project/[a-z][-a-z0-9]{4,28}[a-z0-9]'
+        ]
+        valid_resources = []
+
+        for resource in excluded_resources:
+            # Note: Internally we are referring resource types as
+            # organization / folder / project so we need to replace
+            # the 's' out of the string.
+            resource = resource.replace('s/', '/')
+            for pattern in valid_resource_patterns:
+                if re.match(pattern, resource):
+                    valid_resources.append(resource)
+                    break
+            if resource not in valid_resources:
+                LOGGER.warning('Resource %s is invalid and will not be '
+                               'omitted during the inventory process.',
+                               resource)
+        return valid_resources
 
     def __init__(self,
                  root_resource_id,
@@ -156,7 +195,8 @@ class InventoryConfig(AbstractInventoryConfig):
                  api_quota_configs,
                  retention_days,
                  cai_configs,
-                 composite_root_resources=None):
+                 composite_root_resources=None,
+                 excluded_resources=None):
         """Initialize.
 
         Args:
@@ -167,6 +207,7 @@ class InventoryConfig(AbstractInventoryConfig):
             cai_configs (dict): Settings for the Cloud AssetInventory API
             composite_root_resources (list): The list of resources to use crawl
                 using a composite root.
+            excluded_resources (list): The list of resources to exclude.
 
         Raises:
             ValueError: Raised if neither or both root_resource_id and
@@ -194,6 +235,8 @@ class InventoryConfig(AbstractInventoryConfig):
         self.retention_days = retention_days
         self.cai_configs = cai_configs
         self.composite_root_resources = composite_root_resources
+        self.excluded_resources = self._filter_valid_resources(
+            excluded_resources)
 
     def use_composite_root(self):
         """Checks if inventory is configured to use a composite root resource.
@@ -202,6 +245,14 @@ class InventoryConfig(AbstractInventoryConfig):
             bool: True if using a composite root, else False.
         """
         return not self.root_resource_id
+
+    def get_excluded_resources(self):
+        """Return the list of excluded resources.
+
+        Returns:
+            list: List of excluded resources.
+        """
+        return self.excluded_resources
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -315,8 +366,12 @@ class ServiceConfig(AbstractServiceConfig):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
+
+        # Enable pool_pre_ping to ensure that disconnected or errored
+        # connections are dropped and recreated before use.
         self.engine = create_engine(forseti_db_connect_string,
-                                    pool_recycle=3600)
+                                    pool_recycle=3600,
+                                    pool_pre_ping=True)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
@@ -394,15 +449,26 @@ class ServiceConfig(AbstractServiceConfig):
                     # Default to disable CloudAsset Inventory if not configured.
                     forseti_inventory_config.get('cai', {'enabled': False}),
                     composite_root_resources=(
-                        forseti_inventory_config.get('composite_root_resources')
-                    )
+                        forseti_inventory_config.get(
+                            'composite_root_resources')
+                    ),
+                    excluded_resources=forseti_inventory_config.get(
+                        'excluded_resources', [])
                 )
             except ValueError as e:
                 return False, str(e)
 
             # TODO: Create Config classes to store scanner and notifier configs.
             forseti_scanner_config = forseti_config.get('scanner', {})
-
+            # The suffix is used to indicate which major feature is enabled for
+            # tracking purposes. For now only config validator is supported.
+            user_agent_suffix = ''
+            for scanner in forseti_scanner_config.get('scanners', {}):
+                if (scanner.get('enabled') and
+                        scanner.get('name') == 'config_validator'):
+                    user_agent_suffix = 'config-validator'
+                    break
+            http_helpers.set_user_agent_suffix(user_agent_suffix)
             forseti_notifier_config = forseti_config.get('notifier', {})
 
             forseti_global_config = forseti_config.get('global', {})

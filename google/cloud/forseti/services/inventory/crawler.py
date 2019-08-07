@@ -14,11 +14,14 @@
 
 """Crawler implementation."""
 
-from Queue import Empty
-from Queue import Queue
+from builtins import str
+from builtins import range
+from queue import Empty
+from queue import Queue
 import threading
 import time
 
+from future import standard_library
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
@@ -26,6 +29,7 @@ from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
 
+standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
@@ -200,7 +204,7 @@ class ParallelCrawler(Crawler):
     def _start_workers(self):
         """Start a pool of worker threads for processing the dispatch queue."""
         self._shutdown_event.clear()
-        for _ in xrange(self.config.threads):
+        for _ in range(self.config.threads):
             worker = threading.Thread(target=self._process_queue)
             worker.daemon = True
             worker.start()
@@ -300,8 +304,11 @@ def _api_client_factory(storage, config, parallel):
     """
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    client_config['excluded_resources'] = config.get_excluded_resources()
     asset_count = 0
     if config.get_cai_enabled():
+        # TODO: When CAI supports resource exclusion, update the following
+        #       method to handle resource exclusion during export time.
         asset_count = cloudasset.load_cloudasset_data(storage.session, config)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
@@ -330,12 +337,20 @@ def _crawler_factory(storage, progresser, client, parallel):
         Union[Crawler, ParallelCrawler]:
             The initialized crawler implementation class.
     """
+    excluded_resources = set(client.config.get('excluded_resources', []))
+    config_variables = {'excluded_resources': excluded_resources}
     if parallel:
-        parallel_config = ParallelCrawlerConfig(storage, progresser, client)
+        parallel_config = ParallelCrawlerConfig(storage,
+                                                progresser,
+                                                client,
+                                                variables=config_variables)
         return ParallelCrawler(parallel_config)
 
     # Default to the non-parallel crawler
-    crawler_config = CrawlerConfig(storage, progresser, client)
+    crawler_config = CrawlerConfig(storage,
+                                   progresser,
+                                   client,
+                                   variables=config_variables)
     return Crawler(crawler_config)
 
 

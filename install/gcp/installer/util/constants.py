@@ -103,10 +103,11 @@ GCP_WRITE_IAM_ROLES = [
 ]
 
 PROJECT_IAM_ROLES_SERVER = [
-    'roles/storage.objectViewer',
-    'roles/storage.objectCreator',
     'roles/cloudsql.client',
-    'roles/logging.logWriter'
+    'roles/logging.logWriter',
+    'roles/monitoring.metricWriter',
+    'roles/storage.objectCreator',
+    'roles/storage.objectViewer',
 ]
 
 PROJECT_IAM_ROLES_CLIENT = [
@@ -137,6 +138,8 @@ REQUIRED_APIS = [
      'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
+    {'name': 'Cloud Security Command Center',
+     'service': 'securitycenter.googleapis.com'},
     {'name': 'Cloud SQL',
      'service': 'sql-component.googleapis.com'},
     {'name': 'Cloud SQL Admin',

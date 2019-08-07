@@ -16,10 +16,12 @@
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 
+from builtins import object
 import json
-from StringIO import StringIO
+from io import StringIO
 import traceback
 
+from future import standard_library
 from sqlalchemy.exc import SQLAlchemyError
 
 from google.cloud.forseti.common.util import logger
@@ -29,7 +31,92 @@ from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
 
+standard_library.install_aliases()
+
 LOGGER = logger.get_logger(__name__)
+
+GCP_TYPE_LIST = [
+    'appengine_app',
+    'appengine_instance',
+    'appengine_service',
+    'appengine_version',
+    'backendservice',
+    'bigquery_table',
+    'billing_account',
+    'bucket',
+    'cloudsqlinstance',
+    'composite_root',
+    'compute_autoscaler',
+    'compute_backendbucket',
+    'compute_healthcheck',
+    'compute_httphealthcheck',
+    'compute_httpshealthcheck',
+    'compute_license',
+    'compute_project',
+    'compute_router',
+    'compute_sslcertificate',
+    'compute_targethttpproxy',
+    'compute_targethttpsproxy',
+    'compute_targetinstance',
+    'compute_targetpool',
+    'compute_targetsslproxy',
+    'compute_targettcpproxy',
+    'compute_targetvpngateway',
+    'compute_urlmap',
+    'compute_vpntunnel',
+    'crm_org_policy',
+    'dataproc_cluster',
+    'dataset',
+    'disk',
+    'dns_managedzone',
+    'dns_policy',
+    'firewall',
+    'folder',
+    'forwardingrule',
+    'image',
+    'instance',
+    'instancegroup',
+    'instancegroupmanager',
+    'instancetemplate',
+    'kms_cryptokey',
+    'kms_cryptokeyversion',
+    'kms_keyring',
+    'kubernetes_cluster',
+    'kubernetes_clusterrole',
+    'kubernetes_clusterrolebinding',
+    'kubernetes_namespace',
+    'kubernetes_node',
+    'kubernetes_pod',
+    'kubernetes_role',
+    'kubernetes_rolebinding',
+    'lien',
+    'network',
+    'organization',
+    'project',
+    'pubsub_subscription',
+    'pubsub_topic',
+    'serviceaccount',
+    'serviceaccount_key',
+    'sink',
+    'snapshot',
+    'spanner_database',
+    'spanner_instance',
+    'subnetwork',
+]
+
+GSUITE_TYPE_LIST = [
+    'gsuite_group',
+    'gsuite_user',
+]
+
+MEMBER_TYPE_LIST = [
+    'gsuite_user_member',
+    'gsuite_group_member',
+]
+
+GROUPS_SETTINGS_LIST = [
+    'gsuite_groups_settings',
+]
 
 
 class ResourceCache(dict):
@@ -150,82 +237,6 @@ class InventoryImporter(object):
             NotImplementedError: If the importer encounters an unknown
                 inventory type.
         """
-        gcp_type_list = [
-            'composite_root',
-            'organization',
-            'folder',
-            'project',
-            'appengine_app',
-            'appengine_service',
-            'appengine_version',
-            'appengine_instance',
-            'backendservice',
-            'billing_account',
-            'bucket',
-            'cloudsqlinstance',
-            'compute_autoscaler',
-            'compute_backendbucket',
-            'compute_healthcheck',
-            'compute_httphealthcheck',
-            'compute_httpshealthcheck',
-            'compute_license',
-            'compute_project',
-            'compute_router',
-            'compute_sslcertificate',
-            'compute_targethttpproxy',
-            'compute_targethttpsproxy',
-            'compute_targetinstance',
-            'compute_targetpool',
-            'compute_targetsslproxy',
-            'compute_targettcpproxy',
-            'compute_targetvpngateway',
-            'compute_urlmap',
-            'compute_vpntunnel',
-            'crm_org_policy',
-            'dataproc_cluster',
-            'dataset',
-            'disk',
-            'dns_managedzone',
-            'dns_policy',
-            'firewall',
-            'forwardingrule',
-            'image',
-            'instance',
-            'instancegroup',
-            'instancegroupmanager',
-            'instancetemplate',
-            'kms_cryptokey',
-            'kms_cryptokeyversion',
-            'kms_keyring',
-            'kubernetes_cluster',
-            'lien',
-            'network',
-            'pubsub_subscription',
-            'pubsub_topic',
-            'serviceaccount',
-            'serviceaccount_key',
-            'sink',
-            'snapshot',
-            'spanner_instance',
-            'spanner_database',
-            'subnetwork',
-            'bigquery_table',
-        ]
-
-        gsuite_type_list = [
-            'gsuite_group',
-            'gsuite_user',
-        ]
-
-        member_type_list = [
-            'gsuite_user_member',
-            'gsuite_group_member',
-        ]
-
-        groups_settings_list = [
-            'gsuite_groups_settings',
-        ]
-
         autocommit = self.session.autocommit
         autoflush = self.session.autoflush
         try:
@@ -254,7 +265,7 @@ class InventoryImporter(object):
 
                 item_counter = 0
                 LOGGER.debug('Start storing resources into models.')
-                for resource in inventory.iter(gcp_type_list):
+                for resource in inventory.iter(GCP_TYPE_LIST):
                     item_counter += 1
                     self._store_resource(resource)
                     if not item_counter % 1000:
@@ -275,48 +286,48 @@ class InventoryImporter(object):
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_dataset_policy=True),
                     self._convert_dataset_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_gcs_policy=True),
                     self._convert_gcs_policy
                 )
 
                 item_counter += self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_service_config=True),
                     self._convert_service_config
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gsuite_type_list),
+                    inventory.iter(GSUITE_TYPE_LIST),
                     self._store_gsuite_principal
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list, fetch_enabled_apis=True),
+                    inventory.iter(GCP_TYPE_LIST, fetch_enabled_apis=True),
                     self._convert_enabled_apis
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(member_type_list, with_parent=True),
+                    inventory.iter(MEMBER_TYPE_LIST, with_parent=True),
                     self._store_gsuite_membership,
                     post_action=self._store_gsuite_membership_post
                 )
 
                 self.model_action_wrapper(
-                    inventory.iter(groups_settings_list),
+                    inventory.iter(GROUPS_SETTINGS_LIST),
                     self._store_groups_settings
                 )
 
                 self.dao.denorm_group_in_group(self.session)
 
                 self.model_action_wrapper(
-                    inventory.iter(gcp_type_list,
+                    inventory.iter(GCP_TYPE_LIST,
                                    fetch_iam_policy=True),
                     self._store_iam_policy
                 )
@@ -598,6 +609,13 @@ class InventoryImporter(object):
             'kms_cryptokeyversion': self._convert_kms_ckv_resource,
             'kms_keyring': self._convert_kms_resource,
             'kubernetes_cluster': self._convert_kubernetes_cluster,
+            'kubernetes_clusterrole': self._convert_kubernetes_clusterrole,
+            'kubernetes_clusterrolebinding': self._convert_kubernetes_binding,
+            'kubernetes_namespace': self._convert_kubernetes_namespace,
+            'kubernetes_node': self._convert_kubernetes_node,
+            'kubernetes_pod': self._convert_kubernetes_pod,
+            'kubernetes_role': self._convert_kubernetes_role,
+            'kubernetes_rolebinding': self._convert_kubernetes_rolebinding,
             'lien': self._convert_lien,
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
@@ -626,7 +644,7 @@ class InventoryImporter(object):
         """Convert resource to a database object.
 
         Args:
-            resource (dict): A resource to store.
+            resource (Resource): A resource to store.
             cached (bool): Set to true for resources that have child resources
                 or policies associated with them.
             display_key (str): The key in the resource dictionary to lookup to
@@ -642,6 +660,8 @@ class InventoryImporter(object):
             parent, full_res_name, type_name = self._full_resource_name(
                 resource)
         row = self.dao.TBL_RESOURCE(
+            cai_resource_name=resource.get_cai_resource_name(),
+            cai_resource_type=resource.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=resource.get_resource_id(),
@@ -765,13 +785,90 @@ class InventoryImporter(object):
         self._convert_resource(resource, cached=True,
                                display_key='name')
 
-    def _convert_kubernetes_cluster(self, cluster):
-        """Convert an AppEngine resource to a database object.
+    def _convert_kubernetes_cluster(self, kubernetes_cluster):
+        """Convert a Kubernetes Cluster resource to a database object.
 
         Args:
-            cluster (dict): A Kubernetes cluster resource to store.
+            kubernetes_cluster (dict): A Kubernetes cluster resource to store.
         """
-        self._convert_resource(cluster, cached=True)
+        self._convert_resource(kubernetes_cluster,
+                               cached=True,
+                               display_key='kubernetesClusterName')
+
+    def _convert_kubernetes_clusterrole(self, kubernetes_clusterrole):
+        """Convert a Kubernetes ClusterRole resource to a database object.
+
+        Args:
+            kubernetes_clusterrole (dict): A Kubernetes ClusterRole resource to
+            store.
+        """
+        self._convert_resource(kubernetes_clusterrole,
+                               cached=False,
+                               display_key='kubernetesClusterRole')
+
+    def _convert_kubernetes_binding(self, kubernetes_clusterrolebinding):
+        """Convert a Kubernetes ClusterRoleBinding resource to a database
+           object.
+
+        Args:
+            kubernetes_clusterrolebinding (dict): A Kubernetes
+            ClusterRoleBinding resource to store.
+        """
+        self._convert_resource(kubernetes_clusterrolebinding,
+                               cached=False,
+                               display_key='kubernetesClusterRoleBinding')
+
+    def _convert_kubernetes_namespace(self, kubernetes_namespace):
+        """Convert a Kubernetes Namespace resource to a database object.
+
+        Args:
+            kubernetes_namespace (dict): A Kubernetes Namespace resource to
+            store.
+        """
+        self._convert_resource(kubernetes_namespace,
+                               cached=True,
+                               display_key='kubernetesNamespace')
+
+    def _convert_kubernetes_node(self, kubernetes_node):
+        """Convert a Kubernetes Node resource to a database object.
+
+        Args:
+            kubernetes_node (dict): A Kubernetes Node resource to store.
+        """
+        self._convert_resource(kubernetes_node,
+                               cached=False,
+                               display_key='kubernetesNode')
+
+    def _convert_kubernetes_pod(self, kubernetes_pod):
+        """Convert a Kubernetes Pod resource to a database object.
+
+        Args:
+            kubernetes_pod (dict): A Kubernetes Pod resource to store.
+        """
+        self._convert_resource(kubernetes_pod,
+                               cached=False,
+                               display_key='kubernetesPod')
+
+    def _convert_kubernetes_role(self, kubernetes_role):
+        """Convert a Kubernetes Role resource to a database object.
+
+        Args:
+            kubernetes_role (dict): A Kubernetes Role resource to store.
+        """
+        self._convert_resource(kubernetes_role,
+                               cached=False,
+                               display_key='kubernetesRole')
+
+    def _convert_kubernetes_rolebinding(self, kubernetes_rolebinding):
+        """Convert a Kubernetes RoleBinding resource to a database object.
+
+        Args:
+            kubernetes_rolebinding (dict): A Kubernetes RoleBinding resource to
+            store.
+        """
+        self._convert_resource(kubernetes_rolebinding,
+                               cached=False,
+                               display_key='kubernetesRoleBinding')
 
     def _convert_lien(self, lien):
         """Convert a lien to a database object.
@@ -865,6 +962,8 @@ class InventoryImporter(object):
                                  resource_identifier)
 
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=cloudsqlinstance.get_cai_resource_name(),
+            cai_resource_type=cloudsqlinstance.get_cai_resource_type(),
             full_name=full_res_name,
             type_name=type_name,
             name=cloudsqlinstance.get_resource_id(),
@@ -890,6 +989,8 @@ class InventoryImporter(object):
             dataset_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=dataset_policy.get_cai_resource_name(),
+            cai_resource_type=dataset_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=dataset_policy.get_resource_id(),
@@ -911,6 +1012,8 @@ class InventoryImporter(object):
             ':'.join(parent.type_name.split('/')))
         apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=enabled_apis.get_cai_resource_name(),
+            cai_resource_type=enabled_apis.get_cai_resource_type(),
             full_name=apis_res_name,
             type_name=apis_type_name,
             name=enabled_apis.get_resource_id(),
@@ -932,6 +1035,8 @@ class InventoryImporter(object):
             gcs_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=gcs_policy.get_cai_resource_name(),
+            cai_resource_type=gcs_policy.get_cai_resource_type(),
             full_name=policy_res_name,
             type_name=policy_type_name,
             name=gcs_policy.get_resource_id(),
@@ -956,6 +1061,8 @@ class InventoryImporter(object):
             full_res_name,
             iam_policy_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=iam_policy.get_cai_resource_name(),
+            cai_resource_type=iam_policy.get_cai_resource_type(),
             full_name=iam_policy_full_res_name,
             type_name=iam_policy_type_name,
             name=iam_policy.get_resource_id(),
@@ -1000,6 +1107,8 @@ class InventoryImporter(object):
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
             role_resource = self.dao.TBL_RESOURCE(
+                cai_resource_name=role.get_cai_resource_name(),
+                cai_resource_type=role.get_cai_resource_type(),
                 full_name=full_res_name,
                 type_name=type_name,
                 name=role.get_resource_id(),
@@ -1014,8 +1123,8 @@ class InventoryImporter(object):
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
 
-        self.session.add_all(self.permission_cache.values())
-        self.session.add_all(self.role_cache.values())
+        self.session.add_all(list(self.permission_cache.values()))
+        self.session.add_all(list(self.role_cache.values()))
 
     def _convert_service_config(self, service_config):
         """Convert Kubernetes Service Config to a database object.
@@ -1029,6 +1138,8 @@ class InventoryImporter(object):
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         resource = self.dao.TBL_RESOURCE(
+            cai_resource_name=service_config.get_cai_resource_name(),
+            cai_resource_type=service_config.get_cai_resource_type(),
             full_name=sc_res_name,
             type_name=sc_type_name,
             name=service_config.get_resource_id(),
@@ -1102,7 +1213,7 @@ class InventoryImporter(object):
         exists = role_name in self.role_cache
 
         if exists:
-            LOGGER.warn('Duplicate role_name: %s', role_name)
+            LOGGER.warning('Duplicate role_name: %s', role_name)
             return False
         return True
 

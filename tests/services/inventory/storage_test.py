@@ -14,10 +14,12 @@
 """Unit Tests: Inventory storage for Forseti Server."""
 
 
+from future import standard_library
+standard_library.install_aliases()
 from datetime import datetime
-import mock
+import unittest.mock as mock
 import os
-from StringIO import StringIO
+from io import StringIO
 import unittest
 from sqlalchemy.orm import sessionmaker
 
@@ -27,6 +29,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base.resources import Resource
+from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 from google.cloud.forseti.services.inventory.storage import ContentTypes
 from google.cloud.forseti.services.inventory.storage import initialize
@@ -46,6 +49,7 @@ class ResourceMock(Resource):
         self._contains = []
         self._timestamp = self._utcnow()
         self._inventory_key = None
+        self._metadata = None
 
     def type(self):
         return self._res_type
@@ -162,6 +166,91 @@ class StorageTest(ForsetiTestCase):
                 self.assertEqual(1, resource_count,
                                  'Unexpected number of resources in inventory')
 
+    def test_whether_resource_should_be_inserted_or_updated(self):
+        """Whether the resource should be inserted or updated.
+
+        All resources should not be written if they have been previously
+        written. Except group members, where members can be in multiple groups.
+        """
+
+        engine = create_test_engine()
+
+        initialize(engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
+        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_iam1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
+                                 res_proj1)
+        res_billing1 = ResourceMock('4', {'id': 'test'}, 'project',
+                                    'billing_info', res_proj1)
+        res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
+                                res_org)
+        res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_buc2 = ResourceMock('7', {'id': 'test'}, 'bucket', 'resource',
+                                res_proj2)
+        res_obj2 = ResourceMock('8', {'id': 'test'}, 'object', 'resource',
+                                res_buc2)
+        res_group1 =  ResourceMock('9', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group2 =  ResourceMock('10', {'id': 'test'}, 'google_group',
+                                   'resource', res_org)
+        res_group_member1 = ResourceMock('11', {'id': 'user111',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1)
+        res_group_member2 = ResourceMock('11', {'id': 'user111',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group2)
+        res_group_member3 = ResourceMock('12', {'id': 'user222',
+                                         'kind': 'admin#directory#member'},
+                                         'gsuite_group_member',
+                                         'resource', res_group1)
+        res_proj3 = ResourceMock('6', {'id': 'dup_proj'}, 'project',
+                                 'resource', res_org)
+
+        resources = [
+            res_org,
+            res_proj1,
+            res_iam1,
+            res_billing1,
+            res_buc1,
+            res_proj2,
+            res_buc2,
+            res_obj2,
+            res_proj3,
+            res_group1,
+            res_group2,
+            res_group_member1,
+            res_group_member2,
+            res_group_member3
+        ]
+
+        with scoped_sessionmaker() as session:
+            with Storage(session) as storage:
+                for resource in resources:
+                    storage.write(resource)
+                storage.commit()
+
+                self.assertEqual(5,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['organization', 'project'])),
+                                 'Only 1 organization and 2 unique projects')
+
+                self.assertEqual(3,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['gsuite_group_member'])),
+                                 'All group members should be stored.')
+
+                self.assertEqual(13,
+                                 len(self.reduced_inventory(storage, [])),
+                                 'No types should yield empty list')
+
 
 class InventoryIndexTest(ForsetiTestCase):
     """Test inventory storage."""
@@ -214,7 +303,7 @@ class InventoryIndexTest(ForsetiTestCase):
         inv_index = self.session.query(InventoryIndex).get(inv_index_id)
         expected = {'bucket': 2, 'object': 1, 'organization': 1, 'project': 2}
         inv_summary = inv_index.get_summary(self.session)
-        self.assertEquals(expected, inv_summary)
+        self.assertEqual(expected, inv_summary)
 
     @unittest.skip('The return value for query.all will leak to other tests.')
     def test_get_lifecycle_state_details_can_handle_none_result(self):
@@ -229,7 +318,7 @@ class InventoryIndexTest(ForsetiTestCase):
         details = inventory_index.get_lifecycle_state_details(mock_session,
                                                               'abc')
 
-        self.assertEquals({}, details)
+        self.assertEqual({}, details)
 
 
 class CaiTemporaryStoreTest(ForsetiTestCase):
@@ -281,32 +370,45 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         """Validate querying CAI asset data."""
         self._add_resources()
 
+        cai_type = 'cloudresourcemanager.googleapis.com/Folder'
+
         results = CaiDataAccess.iter_cai_assets(
             ContentTypes.resource,
-            'cloudresourcemanager.googleapis.com/Folder',
+            cai_type,
             '//cloudresourcemanager.googleapis.com/organizations/1234567890',
             self.session)
 
-        expected_names = ['folders/11111']
-        self.assertEqual(expected_names, [asset['name'] for asset in results])
+        expected_results = [('folders/11111',
+                             AssetMetadata(
+                                 cai_type=cai_type,
+                                 cai_name='//cloudresourcemanager.googleapis.com/folders/11111'))]
+        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
+
+        cai_type = 'appengine.googleapis.com/Service'
 
         results = CaiDataAccess.iter_cai_assets(
             ContentTypes.resource,
-            'appengine.googleapis.com/Service',
+            cai_type,
             '//appengine.googleapis.com/apps/forseti-test-project',
             self.session)
 
-        expected_names = ['apps/forseti-test-project/services/default']
-        self.assertEqual(expected_names, [asset['name'] for asset in results])
+        expected_results = [('apps/forseti-test-project/services/default',
+                             AssetMetadata(
+                                 cai_name='//appengine.googleapis.com/apps/forseti-test-project/services/default',
+                                 cai_type=cai_type))]
+        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
 
     def test_fetch_cai_asset(self):
         """Validate querying single CAI asset."""
         self._add_iam_policies()
 
+        cai_type = 'cloudresourcemanager.googleapis.com/Organization'
+        cai_name = '//cloudresourcemanager.googleapis.com/organizations/1234567890'
+
         results = CaiDataAccess.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'cloudresourcemanager.googleapis.com/Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            cai_type,
+            cai_name,
             self.session)
         expected_iam_policy = {
             'etag': 'BwVvLqcT+M4=',
@@ -321,7 +423,9 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
                 }
             ]
         }
-        self.assertDictEqual(expected_iam_policy, results)
+        self.assertEqual((expected_iam_policy,
+                          AssetMetadata(cai_type=cai_type, cai_name=cai_name)),
+                         results)
 
 
 

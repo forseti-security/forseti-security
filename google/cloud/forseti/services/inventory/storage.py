@@ -14,9 +14,11 @@
 """Inventory storage implementation."""
 # pylint: disable=too-many-lines
 
+from builtins import object
 import json
 import enum
 
+from retrying import retry
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import case
@@ -42,6 +44,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
+from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
@@ -183,20 +186,20 @@ class InventoryIndex(BASE):
                      resource_type_input, details)
 
         # Lifecycle can be None if Forseti is installed to a non-org level.
-        for key in details.keys():
+        for key in list(details.keys()):
             if key is None:
                 continue
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
             details[new_key] = details.pop(key)
 
-        if len(details) == 1 and details.keys()[0] is None:
+        if len(details) == 1 and list(details.keys())[0] is None:
             return {}
 
         if len(details) == 1:
-            if 'ACTIVE' in details.keys()[0]:
+            if 'ACTIVE' in list(details.keys())[0]:
                 added_key_str = 'DELETE PENDING'
-            elif 'DELETE PENDING' in details.keys()[0]:
+            elif 'DELETE PENDING' in list(details.keys())[0]:
                 added_key_str = 'ACTIVE'
             added_key = ' - '.join([resource_type_input, added_key_str])
             details[added_key] = 0
@@ -279,7 +282,7 @@ class InventoryIndex(BASE):
 
         details = {}
 
-        for key, value in resource_types_with_details.items():
+        for key, value in list(resource_types_with_details.items()):
             if key == 'lifecycle':
                 details_function = self.get_lifecycle_state_details
             elif key == 'hidden':
@@ -298,6 +301,8 @@ class Inventory(BASE):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     inventory_index_id = Column(BigInteger)
+    cai_resource_name = Column(String(4096))
+    cai_resource_type = Column(String(512))
     category = Column(Enum(Categories))
     resource_type = Column(String(255))
     resource_id = Column(Text)
@@ -314,13 +319,30 @@ class Inventory(BASE):
         Index('idx_parent_id',
               'parent_id'))
 
+    @staticmethod
+    def get_schema_update_actions():
+        """Maintain all the schema changes for this table.
+
+        Returns:
+            dict: A mapping of Action: Column.
+        """
+        columns_to_create = [Column('cai_resource_type',
+                                    String(512),
+                                    default=''),
+                             Column('cai_resource_name',
+                                    String(4096),
+                                    default='')]
+
+        schema_update_actions = {'CREATE': columns_to_create}
+        return schema_update_actions
+
     @classmethod
     def from_resource(cls, index, resource):
         """Creates a database row object from a crawled resource.
 
         Args:
-            index (object): InventoryIndex to associate.
-            resource (object): Crawled resource.
+            index (InventoryIndex): InventoryIndex to associate.
+            resource (Resource): Crawled resource.
 
         Returns:
             object: database row object.
@@ -335,7 +357,16 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
+        cai_resource_name = ''
+        cai_resource_type = ''
+
+        if resource.metadata():
+            cai_resource_name = resource.metadata().cai_name
+            cai_resource_type = resource.metadata().cai_type
+
         rows = [Inventory(
+            cai_resource_name=cai_resource_name,
+            cai_resource_type=cai_resource_type,
             inventory_index_id=index.id,
             category=Categories.resource,
             resource_id=resource.key(),
@@ -348,6 +379,8 @@ class Inventory(BASE):
         if iam_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.iam_policy,
                     resource_id=resource.key(),
@@ -359,6 +392,8 @@ class Inventory(BASE):
         if gcs_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.gcs_policy,
                     resource_id=resource.key(),
@@ -370,6 +405,8 @@ class Inventory(BASE):
         if dataset_policy:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.dataset_policy,
                     resource_id=resource.key(),
@@ -381,6 +418,8 @@ class Inventory(BASE):
         if billing_info:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.billing_info,
                     resource_id=resource.key(),
@@ -392,6 +431,8 @@ class Inventory(BASE):
         if enabled_apis:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.enabled_apis,
                     resource_id=resource.key(),
@@ -403,6 +444,8 @@ class Inventory(BASE):
         if service_config:
             rows.append(
                 Inventory(
+                    cai_resource_name=cai_resource_name,
+                    cai_resource_type=cai_resource_type,
                     inventory_index_id=index.id,
                     category=Categories.kubernetes_service_config,
                     resource_id=resource.key(),
@@ -439,6 +482,22 @@ class Inventory(BASE):
                     self.inventory_index_id,
                     self.resource_id,
                     self.resource_type)
+
+    def get_cai_resource_name(self):
+        """Get the row's cai resource name.
+
+        Returns:
+            str: cai resource name.
+        """
+        return self.cai_resource_name
+
+    def get_cai_resource_type(self):
+        """Get the row's cai resource type.
+
+        Returns:
+            str: cai resource type.
+        """
+        return self.cai_resource_type
 
     def get_resource_id(self):
         """Get the row's resource id.
@@ -579,15 +638,20 @@ class CaiTemporaryStore(object):
             content_type (ContentTypes): The content type data to extract.
 
         Returns:
-            dict: The dict representation of the asset data.
+            Tuple[dict, AssetMetadata]: The dict representation of the asset
+                data and an Asset metadata along with it.
         """
         asset = json.loads(self.asset_data)
-        if content_type == ContentTypes.resource:
-            return asset['resource']['data']
-        elif content_type == ContentTypes.iam_policy:
-            return asset['iam_policy']
 
-        return asset
+        if content_type == ContentTypes.resource:
+            asset = asset['resource']['data']
+        elif content_type == ContentTypes.iam_policy:
+            asset = asset['iam_policy']
+
+        asset_metadata = AssetMetadata(cai_name=self.name,
+                                       cai_type=self.asset_type)
+
+        return asset, asset_metadata
 
     @classmethod
     def from_json(cls, asset_json):
@@ -601,8 +665,8 @@ class CaiTemporaryStore(object):
         """
         asset = json.loads(asset_json)
         if len(asset['name']) > 512:
-            LOGGER.warn('Skipping insert of asset %s, name too long.',
-                        asset['name'])
+            LOGGER.warning('Skipping insert of asset %s, name too long.',
+                           asset['name'])
             return None
 
         if 'resource' in asset:
@@ -644,6 +708,7 @@ class CaiTemporaryStore(object):
             session.rollback()
             raise
 
+    # pylint: disable=too-many-return-statements
     @staticmethod
     def _get_parent_name(asset):
         """Determines the parent name from the resource data.
@@ -686,6 +751,70 @@ class CaiTemporaryStore(object):
               asset['asset_type'].startswith('spanner.googleapis.com/')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset['name'].split('/')[:-2])
+
+        elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/nodes/test-node"
+            #
+            # Strip k8s/nodes/{NODE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace"
+            #
+            # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] == 'k8s.io/Pod':
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/pods/test-pod"
+            #
+            # Strip pods/{POD} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-2])
+
+        elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
+                                     'rbac.authorization.k8s.io/RoleBinding'):
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/
+            # test-namespace/rbac.authorization.k8s.io/roles/
+            # extension-apiserver-authentication-reader"
+            #
+            # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
+            # parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace/
+            # rbac.authorization.k8s.io/rolebindings/
+            # system:controller:bootstrap-signer"
+            #
+            # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
+            # name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-3])
+
+        elif asset['asset_type'] in (
+                'rbac.authorization.k8s.io/ClusterRole',
+                'rbac.authorization.k8s.io/ClusterRoleBinding'):
+            # Kubernetes ClusterRoles and ClusterRoleBindings are parented by a
+            # k8s under a cluster, but the k8 is not directly discoverable
+            # without iterating all k8s, so instead this creates an artificial
+            # parent at the cluster level, which acts as an aggregated list of
+            # all cluster roles and cluster role bindings in all k8s to fix this
+            # broken behavior.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/rbac.authorization.k8s.io/
+            # clusterroles/cloud-provider"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterroles/
+            # {CLUSTERROLE} off name to get the parent.
+            #
+            # "name":"//container.googleapis.com/projects/test-project/zones/
+            # us-central1-b/clusters/test-cluster/k8s/
+            # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
+            #
+            # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/
+            # {CLUSTERROLEBINDING} off name to get the parent.
+            return '/'.join(asset['name'].split('/')[:-4])
 
         # Known unparented asset types.
         if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
@@ -790,7 +919,7 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip())
+                row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     # Overestimate the packet length to ensure max size is never
                     # exceeded. The actual length is closer to len(line) * 1.5.
@@ -803,8 +932,12 @@ class CaiDataAccess(object):
         return num_rows
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def iter_cai_assets(content_type, asset_type, parent_name, session):
         """Iterate the objects in the cai temporary table.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.
@@ -831,8 +964,12 @@ class CaiDataAccess(object):
             yield row.extract_asset_data(content_type)
 
     @staticmethod
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def fetch_cai_asset(content_type, asset_type, name, session):
         """Returns a single resource from the cai temporary store.
+
+        Retries query on exception up to 5 times.
 
         Args:
             content_type (ContentTypes): The content type to return.
@@ -858,7 +995,7 @@ class CaiDataAccess(object):
         if row:
             return row.extract_asset_data(content_type)
 
-        return {}
+        return {}, None
 
 
 class DataAccess(object):
@@ -1213,11 +1350,15 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
 
-        previous_id = self._get_resource_id(resource)
-        if previous_id:
-            resource.set_inventory_key(previous_id)
-            self.update(resource)
-            return
+        resource_data = resource.data()
+        # Group members do not need to be checked if it already exists
+        # in Inventory, as a user can be members in multiple groups.
+        if resource_data.get('kind') != 'admin#directory#member':
+            previous_id = self._get_resource_id(resource)
+            if previous_id:
+                resource.set_inventory_key(previous_id)
+                self.update(resource)
+                return
 
         rows = Inventory.from_resource(self.inventory_index, resource)
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for SQL API client."""
+from builtins import object
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -250,7 +251,7 @@ class ContainerClient(object):
             raise ValueError('get_serverconfig takes either zone or location, '
                              'got zone: %s, location: %s' % (zone, location))
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
+            LOGGER.warning(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError(project_id, e)
 
     def get_clusters(self, project_id, zone='-'):
@@ -286,5 +287,5 @@ class ContainerClient(object):
             results = repository.list(project_id, zone=zone)
             return api_helpers.flatten_list_results(results, 'clusters')
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
+            LOGGER.warning(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError(project_id, e)

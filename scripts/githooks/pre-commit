@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,39 +15,6 @@
 
 # A git pre-commit hook to perform linter checks to catch errors locally
 
-# Check if the user is in a virtual environment
-echo -n "Checking for a virtual env..."
-if [ -z $VIRTUAL_ENV ]; then
-    echo " Oops, need to be in a virtual env."
-    exit 1
-fi
-echo " ok."
-
-# Check if pylintrc exists and user is in the top repository directory
-if [ -e "./pylintrc" ]; then
-    echo -n "Executing pylint..."
-    pylint -s n --rcfile=pylintrc --output-format=text google || exit 1
-    if [ $? -ne 0 ]; then
-        echo " Oops, need to commit from top level repository dir."
-        exit 1
-    fi
-fi
-echo " ok."
-
-# Check for TODOs
-TODO_MATCH=false
-echo "Checking for TODOs..."
-for FILE in $(git diff --name-only --cached); do
-    if [ -a "$FILE" ]; then
-      if grep -qEi "'#\s*TODO(\([a-z0-9_-]+\))?\:'" "$FILE"; then
-          TODO_MATCH=true
-          echo "${FILE} contains a TODO"
-      fi
-    fi
-done
-if $TODO_MATCH; then
-    echo " Oops, there are some TODOs to fix. If you really must you can
-    pass in --no-verify."
-    exit 1
-fi
-echo " ok."
+../../install/scripts/docker_setup_forseti.sh
+../../install/scripts/docker_run_forseti.sh
+../../install/scripts/docker_pystyle_forseti.sh

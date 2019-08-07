@@ -13,9 +13,10 @@
 # limitations under the License.
 """Unit Tests: Forseti Server."""
 
+from builtins import object
 import argparse
 import unittest
-import mock
+import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services import server
@@ -46,7 +47,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -66,7 +67,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -86,7 +87,7 @@ class ServerTest(ForsetiTestCase):
 
         with self.assertRaises(SystemExit) as e:
             server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -110,7 +111,7 @@ class ServerTest(ForsetiTestCase):
                 mock_access.return_value = False
                 with self.assertRaises(SystemExit) as e:
                     server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
@@ -135,7 +136,7 @@ class ServerTest(ForsetiTestCase):
                 mock_access.return_value = True
                 with self.assertRaises(SystemExit) as e:
                     server.main()
-        self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertEqual(expected_exit_code, e.exception.code)
         self.assertTrue(mock_sys_error.write.called)
 
 

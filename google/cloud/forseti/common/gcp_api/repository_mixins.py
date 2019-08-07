@@ -14,6 +14,7 @@
 
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
+from builtins import object
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -261,17 +262,17 @@ class OrgPolicyQueryMixin(object):
 class ExportAssetsQueryMixin(object):
     """Mixin that implements the exportAssets query."""
 
-    def export_assets(self, parent, destination_object,
-                      content_type=None, asset_types=None,
-                      fields=None, verb='exportAssets', **kwargs):
+    def export_assets(self, parent, output_config, content_type=None,
+                      asset_types=None, fields=None, verb='exportAssets',
+                      **kwargs):
         """Export assets under a parent resource to a file on GCS.
 
         Args:
             parent (str): The name of the parent resource to export assests
                 under.
-            destination_object (str): The GCS path and file name to store the
-                results in. The bucket must be in the same project that has the
-                Cloud Asset API enabled.
+            output_config (dict): The full outputConfig message to pass to the
+                export assets API.
+                https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/reference/rest/v1/TopLevel/exportAssets#OutputConfig
             content_type (str): The specific content type to export, currently
                 supports "RESOURCE" and "IAM_POLICY". If not specified only the
                 CAI metadata for assets are included.
@@ -285,8 +286,9 @@ class ExportAssetsQueryMixin(object):
             dict: The response from the API.
         """
         body = {
-            'outputConfig': {'gcsDestination': {'uri': destination_object}}
+            'outputConfig': output_config
         }
+
         if content_type:
             body['contentType'] = content_type
 

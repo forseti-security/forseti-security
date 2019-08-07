@@ -16,7 +16,7 @@
 import copy
 import os
 import unittest
-import mock
+import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
@@ -127,7 +127,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
 
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
-        for item in storage.mem.values():
+        for item in list(storage.mem.values()):
             item_type = item.type()
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
@@ -200,6 +200,64 @@ class CrawlerTest(CrawlerBase):
 
         self.assertEqual(expected_counts, result_counts)
 
+    def test_crawling_to_memory_storage_exclude_all_folders_and_projects(self):
+        """Crawl mock environment, test that all the folders are excluded."""
+        config = InventoryConfig(
+            gcp_api_mocks.ORGANIZATION_ID,
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['folders/1031', 'folders/1032',
+                                'projects/project1', 'projects/project2'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'billing_account': {'iam_policy': 2, 'resource': 2},
+            'crm_org_policy': {'resource': 2},
+            'gsuite_group': {'resource': 4},
+            'gsuite_group_member': {'resource': 1},
+            'gsuite_groups_settings': {'resource': 4},
+            'gsuite_user': {'resource': 4},
+            'gsuite_user_member': {'resource': 3},
+            'organization': {'iam_policy': 1, 'resource': 1},
+            'role': {'resource': 19},
+            'sink': {'resource': 2}
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_to_memory_storage_exclude_all_folders_and_projects_using_projectNumber(self):
+        """Crawl mock environment, test that all the folders are excluded."""
+        config = InventoryConfig(
+            gcp_api_mocks.ORGANIZATION_ID,
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['folders/1031', 'folders/1032',
+                                'projects/1041', 'projects/1042'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'billing_account': {'iam_policy': 2, 'resource': 2},
+            'crm_org_policy': {'resource': 2},
+            'gsuite_group': {'resource': 4},
+            'gsuite_group_member': {'resource': 1},
+            'gsuite_groups_settings': {'resource': 4},
+            'gsuite_user': {'resource': 4},
+            'gsuite_user_member': {'resource': 3},
+            'organization': {'iam_policy': 1, 'resource': 1},
+            'role': {'resource': 19},
+            'sink': {'resource': 2}
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
     def test_crawling_from_folder(self):
         """Crawl from folder, verify expected resources crawled."""
         config = InventoryConfig(
@@ -222,6 +280,69 @@ class CrawlerTest(CrawlerBase):
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
             'role': {'resource': 1},
+            'sink': {'resource': 1},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder_exclude_project(self):
+        """Crawl from folder, and skip one project, verify
+        expected resources crawled."""
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['projects/project4'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'folder': {'iam_policy': 2, 'resource': 2},
+            'sink': {'resource': 1},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder_exclude_project_using_projectNumber(self):
+        """Crawl from folder, and skip one project, verify
+        expected resources crawled."""
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['projects/1044'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'folder': {'iam_policy': 2, 'resource': 2},
+            'sink': {'resource': 1},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder_exclude_folder(self):
+        """Crawl from folder, and skip one folder, verify
+        expected resources crawled."""
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            {},
+            '',
+            {},
+            excluded_resources=['folders/1033'])
+        config.set_service_config(FakeServerConfig('mock_engine'))
+
+        result_counts = self._run_crawler(config)
+
+        expected_counts = {
+            'folder': {'iam_policy': 1, 'resource': 1},
             'sink': {'resource': 1},
         }
 
@@ -419,6 +540,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
+            'backendservice': {'resource': 2},
             'cloudsqlinstance': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
@@ -441,9 +563,19 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'kubernetes_clusterrole': {'resource': 1},
+            'kubernetes_clusterrolebinding':
+                {'resource': 1},
+            'kubernetes_namespace': {'resource': 1},
+            'kubernetes_node': {'resource': 1},
+            'kubernetes_pod': {'resource': 1},
+            'kubernetes_role': {'resource': 1},
+            'kubernetes_rolebinding': {'resource': 1},
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'spanner_database': {'resource': 1},
@@ -476,7 +608,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'appengine_app': {'resource': 2},
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
-            'backendservice': {'resource': 1},
+            'backendservice': {'resource': 2},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
@@ -505,7 +637,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
-            'forwardingrule': {'resource': 1},
+            'forwardingrule': {'resource': 2},
             'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 2},
@@ -515,6 +647,14 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kms_cryptokeyversion': {'resource': 1},
             'kms_keyring': {'iam_policy': 1, 'resource': 1},
             'kubernetes_cluster': {'resource': 1},
+            'kubernetes_clusterrole': {'resource': 1},
+            'kubernetes_clusterrolebinding':
+                {'resource': 1},
+            'kubernetes_namespace': {'resource': 1},
+            'kubernetes_node': {'resource': 1},
+            'kubernetes_pod': {'resource': 1},
+            'kubernetes_role': {'resource': 1},
+            'kubernetes_rolebinding': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
@@ -623,6 +763,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()

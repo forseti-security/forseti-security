@@ -17,6 +17,9 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+from builtins import str
+from builtins import range
+from builtins import object
 import json
 import netaddr
 
@@ -341,16 +344,6 @@ class FirewallRule(object):
                 raise InvalidFirewallRuleError(
                     'targetTags cannot be set when source/targetServiceAccounts'
                     ' are set')
-
-        max_1_value_keys = [
-            ('sourceServiceAccount', self.source_service_accounts),
-            ('targetServiceAccount', self.target_service_accounts),
-        ]
-        for key, value in max_1_value_keys:
-            if value and len(value) > 1:
-                raise InvalidFirewallRuleError(
-                    'Rule entry "%s" may contain at most 1 value: "%s".'
-                    % (key, value))
 
     def _validate_direction(self):
         """Checks that the direction and associated fields are valid.
@@ -796,8 +789,8 @@ class FirewallAction(object):
         """
         return (self.action == other.action and
                 (self.any_value or other.any_value or
-                 self.expanded_rules.keys() == other.expanded_rules.keys() and
-                 all([
+                 list(self.expanded_rules.keys()) ==
+                 list(other.expanded_rules.keys()) and all([
                      self.ports_are_equal(
                          self.expanded_rules.get(protocol, []),
                          other.expanded_rules.get(protocol, []))
@@ -942,7 +935,7 @@ def expand_port_range(port_range):
       list: A list of string integers from number_1 to number_2.
     """
     start, end = port_range.split('-')
-    return [str(i) for i in xrange(int(start), int(end) + 1)]
+    return [str(i) for i in range(int(start), int(end) + 1)]
 
 
 def expand_ports(ports):
