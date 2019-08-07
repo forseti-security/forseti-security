@@ -161,7 +161,7 @@ rule file.
 
 ## KMS scanner
 
-Regularly rotating keys is a security best practice to ensure your system is 
+Regularly rotating keys is a security best practice as it ensures your system is 
 prepared if a key is leaked and to prevent use of key version that is 
 compromised. You can configure the KMS scanner to alert if the enabled
 cryptographic keys in the organization are not rotated within the 
