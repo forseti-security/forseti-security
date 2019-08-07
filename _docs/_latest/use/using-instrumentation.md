@@ -23,6 +23,9 @@ viewing traces in GCP console will keep you informed about the time taken for
 operations between client and server to complete, such as to create an inventory
 or data model. This is critical in analysing and debugging latency issues. 
 * Foresti tracing is optional and is disabled by default. 
+* Below APIs needs to be enabled to view traces:
+1. Stackdriver Monitoring API
+2. Stackdriver Trace API
 * The only step required to enable tracing is to pass `enable_tracing="true"`
 to the Terraform module.
 * Tracing can be disabled by passing the `enable_tracing="false"` to the 
