@@ -161,9 +161,12 @@ rule file.
 
 ## KMS scanner
 
-Alert or notify if the crypto keys in the organization are not rotated within the 
-time specified. This scanner can ensure that all the cryptographic keys are 
-properly configured. 
+Regularly rotating keys is a security best practice as it ensures your system is 
+prepared if a key is leaked and to prevent use of key version that is 
+compromised. You can configure the KMS scanner to alert if the enabled
+cryptographic keys in the organization are not rotated within the 
+time specified. You can also check if the algorithm, protection level 
+and purpose of the cryptographic key is correctly configured.
 
 For examples of how to define scanner rules for your crypto keys, see the
 [`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
