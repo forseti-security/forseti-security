@@ -636,7 +636,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
 
         Yields:
             InventoryIndex: Generates each row
@@ -651,8 +651,8 @@ class DataAccess(object):
         """Get an inventory index entry by id.
 
         Args:
-            session (object): Database session
-            inventory_index_id (str): Inventory id
+            session (object): Database session.
+            inventory_index_id (str): Inventory id.
 
         Returns:
             InventoryIndex: Entry corresponding the id
@@ -670,7 +670,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
 
         Returns:
             int64: inventory index id
@@ -695,7 +695,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
             scanner_index_id (int): id of the scanner in scanner_index table
 
         Returns:
@@ -718,7 +718,7 @@ class DataAccess(object):
         """Get all inventory index entries older than the cutoff.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
             cutoff_datetime (datetime): The cutoff point to find any
                 older inventory index entries.
 
@@ -731,6 +731,135 @@ class DataAccess(object):
         session.expunge_all()
         return inventory_indexes
 
+    @classmethod
+    def iter(cls,
+             session,
+             inventory_index_id,
+             type_list=None,
+             fetch_iam_policy=False,
+             fetch_gcs_policy=False,
+             fetch_dataset_policy=False,
+             fetch_billing_info=False,
+             fetch_enabled_apis=False,
+             fetch_service_config=False,
+             with_parent=False):
+        """Iterate the objects in the storage.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to open.
+            type_list (list): List of types to iterate over, or [] for all.
+            fetch_iam_policy (bool): Yield iam policies.
+            fetch_gcs_policy (bool): Yield gcs policies.
+            fetch_dataset_policy (bool): Yield dataset policies.
+            fetch_billing_info (bool): Yield project billing info.
+            fetch_enabled_apis (bool): Yield project enabled APIs info.
+            fetch_service_config (bool): Yield container service config info.
+            with_parent (bool): Join parent with results, yield tuples.
+
+        Yields:
+            object: Single row object or child/parent if 'with_parent' is set.
+        """
+
+        filters = [Inventory.inventory_index_id == inventory_index_id]
+
+        if fetch_iam_policy:
+            filters.append(
+                Inventory.category == Categories.iam_policy)
+
+        elif fetch_gcs_policy:
+            filters.append(
+                Inventory.category == Categories.gcs_policy)
+
+        elif fetch_dataset_policy:
+            filters.append(
+                Inventory.category == Categories.dataset_policy)
+
+        elif fetch_billing_info:
+            filters.append(
+                Inventory.category == Categories.billing_info)
+
+        elif fetch_enabled_apis:
+            filters.append(
+                Inventory.category == Categories.enabled_apis)
+
+        elif fetch_service_config:
+            filters.append(
+                Inventory.category == Categories.kubernetes_service_config)
+
+        else:
+            filters.append(
+                Inventory.category == Categories.resource)
+
+        if type_list:
+            filters.append(Inventory.resource_type.in_(type_list))
+
+        if with_parent:
+            parent_inventory = aliased(Inventory)
+            p_id = parent_inventory.id
+            base_query = (
+                session.query(Inventory, parent_inventory)
+                .filter(Inventory.parent_id == p_id))
+        else:
+            base_query = session.query(Inventory)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(Inventory.id.asc())
+
+        for row in base_query.yield_per(PER_YIELD):
+            yield row
+
+    @classmethod
+    def get_root(cls, session, inventory_index_id):
+        """get the resource root from the inventory.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to query.
+
+        Returns:
+            object: A row in gcp_inventory of the root
+        """
+        # Comparison to None needed to compare to Null in SQL.
+        # pylint: disable=singleton-comparison
+        root = session.query(Inventory).filter(
+            and_(
+                Inventory.inventory_index_id == inventory_index_id,
+                Inventory.parent_id == None,
+                Inventory.category == Categories.resource,
+                Inventory.resource_type.in_(['composite_root',
+                                             'organization',
+                                             'folder',
+                                             'project'])
+            )).first()
+        # pylint: enable=singleton-comparison
+
+        LOGGER.debug('Root resource: %s', root)
+        return root
+
+
+    @classmethod
+    def type_exists(self,
+                    session,
+                    inventory_index_id,
+                    type_list=None):
+        """Check if certain types of resources exists in the inventory.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to query.
+            type_list (list): List of types to check.
+
+        Returns:
+            bool: If these types of resources exists.
+        """
+        return session.query(exists().where(and_(
+            Inventory.inventory_index_id == inventory_index_id,
+            Inventory.category == Categories.resource,
+            Inventory.resource_type.in_(type_list)
+        ))).scalar()
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -1034,120 +1163,6 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
         self.inventory_index.add_warning(self.session, message)
-
-    def iter(self,
-             type_list=None,
-             fetch_iam_policy=False,
-             fetch_gcs_policy=False,
-             fetch_dataset_policy=False,
-             fetch_billing_info=False,
-             fetch_enabled_apis=False,
-             fetch_service_config=False,
-             with_parent=False):
-        """Iterate the objects in the storage.
-
-        Args:
-            type_list (list): List of types to iterate over, or [] for all.
-            fetch_iam_policy (bool): Yield iam policies.
-            fetch_gcs_policy (bool): Yield gcs policies.
-            fetch_dataset_policy (bool): Yield dataset policies.
-            fetch_billing_info (bool): Yield project billing info.
-            fetch_enabled_apis (bool): Yield project enabled APIs info.
-            fetch_service_config (bool): Yield container service config info.
-            with_parent (bool): Join parent with results, yield tuples.
-
-        Yields:
-            object: Single row object or child/parent if 'with_parent' is set.
-        """
-
-        filters = [Inventory.inventory_index_id == self.inventory_index.id]
-
-        if fetch_iam_policy:
-            filters.append(
-                Inventory.category == Categories.iam_policy)
-
-        elif fetch_gcs_policy:
-            filters.append(
-                Inventory.category == Categories.gcs_policy)
-
-        elif fetch_dataset_policy:
-            filters.append(
-                Inventory.category == Categories.dataset_policy)
-
-        elif fetch_billing_info:
-            filters.append(
-                Inventory.category == Categories.billing_info)
-
-        elif fetch_enabled_apis:
-            filters.append(
-                Inventory.category == Categories.enabled_apis)
-
-        elif fetch_service_config:
-            filters.append(
-                Inventory.category == Categories.kubernetes_service_config)
-
-        else:
-            filters.append(
-                Inventory.category == Categories.resource)
-
-        if type_list:
-            filters.append(Inventory.resource_type.in_(type_list))
-
-        if with_parent:
-            parent_inventory = aliased(Inventory)
-            p_id = parent_inventory.id
-            base_query = (
-                self.session.query(Inventory, parent_inventory)
-                .filter(Inventory.parent_id == p_id))
-        else:
-            base_query = self.session.query(Inventory)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        base_query = base_query.order_by(Inventory.id.asc())
-
-        for row in base_query.yield_per(PER_YIELD):
-            yield row
-
-    def get_root(self):
-        """get the resource root from the inventory
-
-        Returns:
-            object: A row in gcp_inventory of the root
-        """
-        # Comparison to None needed to compare to Null in SQL.
-        # pylint: disable=singleton-comparison
-        root = self.session.query(Inventory).filter(
-            and_(
-                Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.parent_id == None,
-                Inventory.category == Categories.resource,
-                Inventory.resource_type.in_(['composite_root',
-                                             'organization',
-                                             'folder',
-                                             'project'])
-            )).first()
-        # pylint: enable=singleton-comparison
-
-        LOGGER.debug('Root resource: %s', root)
-        return root
-
-    def type_exists(self,
-                    type_list=None):
-        """Check if certain types of resources exists in the inventory
-
-        Args:
-            type_list (list): List of types to check
-
-        Returns:
-            bool: If these types of resources exists
-        """
-        return self.session.query(exists().where(and_(
-            Inventory.inventory_index_id == self.inventory_index.id,
-            Inventory.category == Categories.resource,
-            Inventory.resource_type.in_(type_list)
-        ))).scalar()
 
     def __enter__(self):
         """To support with statement for auto closing.

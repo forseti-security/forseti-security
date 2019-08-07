@@ -29,6 +29,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base.resources import Resource
+from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
@@ -69,9 +70,11 @@ class StorageTest(ForsetiTestCase):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
 
-    def reduced_inventory(self, storage, types):
+    def reduced_inventory(self, session, inventory_index_id, types):
         result = (
-            [x for x in storage.iter(types)])
+            [x for x in DataAccess.iter(session,
+                                        inventory_index_id,
+                                        types)])
         return result
 
     def test_basic(self):
@@ -111,15 +114,18 @@ class StorageTest(ForsetiTestCase):
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
-
+                inventory_index_id = storage.inventory_index.id
                 self.assertEqual(3,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['organization', 'bucket'])),
                                  'Only 1 organization and 2 buckets')
 
                 self.assertEqual(6,
-                                 len(self.reduced_inventory(storage, [])),
+                                 len(self.reduced_inventory(session,
+                                                            inventory_index_id,
+                                                            [])),
                                  'No types should yield empty list')
 
         with scoped_sessionmaker() as session:
@@ -128,14 +134,18 @@ class StorageTest(ForsetiTestCase):
             for resource in resources:
                 storage.write(resource)
             storage.buffer.flush()
+            inventory_index_id = storage.inventory_index.id
             self.assertEqual(3,
                              len(self.reduced_inventory(
-                                 storage,
+                                 session,
+                                 inventory_index_id,
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
 
             self.assertEqual(6,
-                             len(self.reduced_inventory(storage, [])),
+                             len(self.reduced_inventory(session,
+                                                        inventory_index_id,
+                                                        [])),
                              'No types should yield empty list')
 
 
@@ -143,7 +153,12 @@ class StorageTest(ForsetiTestCase):
         """Crawl from project, verify every resource has a timestamp."""
 
         def verify_resource_timestamps_from_storage(storage):
-            for i, item in enumerate(storage.iter(list()), start=1):
+            session = storage.session
+            inventory_index_id = storage.inventory_index.id
+            for i, item in enumerate(DataAccess.iter(session,
+                                                     inventory_index_id,
+                                                     list()),
+                                     start=1):
                 self.assertTrue('timestamp' in item.get_other())
             return i
 
@@ -232,20 +247,26 @@ class StorageTest(ForsetiTestCase):
                     storage.write(resource)
                 storage.commit()
 
+                inventory_index_id = storage.inventory_index.id
                 self.assertEqual(5,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['organization', 'project'])),
                                  'Only 1 organization and 2 unique projects')
 
                 self.assertEqual(3,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['gsuite_group_member'])),
                                  'All group members should be stored.')
 
                 self.assertEqual(13,
-                                 len(self.reduced_inventory(storage, [])),
+                                 len(self.reduced_inventory(
+                                     session,
+                                     inventory_index_id,
+                                     [])),
                                  'No types should yield empty list')
 
 
