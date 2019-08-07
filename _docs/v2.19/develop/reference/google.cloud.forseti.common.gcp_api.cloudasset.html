@@ -1,0 +1,231 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloudasset module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.cloudasset">
+<span id="google-cloud-forseti-common-gcp-api-cloudasset-module"></span><h1>google.cloud.forseti.common.gcp_api.cloudasset module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.cloudasset" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Cloud Asset API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient">
+<em class="property">class </em><code class="descname">CloudAssetClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cloud Asset Client.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.OPERATION_DELAY_IN_SEC">
+<code class="descname">OPERATION_DELAY_IN_SEC</code><em class="property"> = 5.0</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.OPERATION_DELAY_IN_SEC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_bigquery_table_output">
+<em class="property">static </em><code class="descname">build_bigquery_table_output</code><span class="sig-paren">(</span><em>project_id</em>, <em>dataset</em>, <em>table</em>, <em>force=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.build_bigquery_table_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_bigquery_table_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an OutputConfig message for output to a BigQuery table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project that hosts the dataset.</li>
+<li><strong>dataset</strong> (<em>str</em>) – The dataset name to output into.</li>
+<li><strong>table</strong> (<em>str</em>) – The table name to create for the export, the table must
+not exist.</li>
+<li><strong>force</strong> (<em>bool</em>) – If true, force write rows even on error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_object_output">
+<em class="property">static </em><code class="descname">build_gcs_object_output</code><span class="sig-paren">(</span><em>destination_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.build_gcs_object_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_object_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an OutputConfig message for output to GCS object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>destination_object</strong> (<em>str</em>) – The GCS path and file name to store the
+results in. The bucket must be in the same project that has the
+Cloud Asset API enabled and the object must not exist.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">an OutputConfig message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_prefix_output">
+<em class="property">static </em><code class="descname">build_gcs_prefix_output</code><span class="sig-paren">(</span><em>destination_prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.build_gcs_prefix_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_prefix_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an OutputConfig message for sharding output to a GCS prefix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>destination_prefix</strong> (<em>str</em>) – The GCS bucket and folder path to store
+the results in. The bucket must be in the same project that has
+the Cloud Asset API enabled and the folder must not exist.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">an OutputConfig message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.export_assets">
+<code class="descname">export_assets</code><span class="sig-paren">(</span><em>parent</em>, <em>destination_object=None</em>, <em>output_config=None</em>, <em>content_type=None</em>, <em>asset_types=None</em>, <em>blocking=False</em>, <em>timeout=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.export_assets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.export_assets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export assets under a parent resource to the destination GCS object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parent</strong> (<em>str</em>) – The name of the parent resource to export assests
+under.</li>
+<li><strong>destination_object</strong> (<em>str</em>) – The GCS path and file name to store the
+results in. The bucket must be in the same project that has the
+Cloud Asset API enabled.</li>
+<li><strong>output_config</strong> (<em>dict</em>) – The full outputConfig message to pass to the
+export assets API. Should be built using one of the
+build_*_output_config methods.</li>
+<li><strong>content_type</strong> (<em>str</em>) – The specific content type to export, currently
+supports “RESOURCE” and “IAM_POLICY”. If not specified only the
+CAI metadata for assets are included.</li>
+<li><strong>asset_types</strong> (<em>list</em>) – The list of asset types to filter the results
+to, if not specified, exports all assets known to CAI.</li>
+<li><strong>blocking</strong> (<em>bool</em>) – If true, don’t return until the async operation
+completes on the backend or timeout seconds pass.</li>
+<li><strong>timeout</strong> (<em>float</em>) – If greater than 0 and blocking is True, then raise
+an exception if timeout seconds pass before the operation
+completes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Operation status and info.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – Returns if there is an error in the API response.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Raised on invalid parent resource name.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.get_operation">
+<code class="descname">get_operation</code><span class="sig-paren">(</span><em>operation_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.get_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.get_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Operations Status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>operation_name</strong> (<em>str</em>) – The name of the operation to get.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Operation status and info.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – Returns if there is an error in the API response.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Raised on invalid parent resource name.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.wait_for_completion">
+<code class="descname">wait_for_completion</code><span class="sig-paren">(</span><em>parent</em>, <em>operation</em>, <em>timeout=0</em>, <em>initial_delay=None</em>, <em>retry_delay=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetClient.wait_for_completion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.wait_for_completion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for the operation to complete.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parent</strong> (<em>str</em>) – The name of the parent resource to export assests
+under.</li>
+<li><strong>operation</strong> (<em>dict</em>) – The operation response from an API call.</li>
+<li><strong>timeout</strong> (<em>float</em>) – The maximum time to wait for the operation to
+complete.</li>
+<li><strong>initial_delay</strong> (<em>float</em>) – The time to wait before first checking if the
+API has completed. If None then the default value, configured as
+CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</li>
+<li><strong>retry_delay</strong> (<em>float</em>) – The time to wait between checking if the
+API has completed. If None then the default value, configured as
+CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Operation status and info.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">OperationTimeoutError</span></code> – Raised if the operation times out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient">
+<em class="property">class </em><code class="descname">CloudAssetRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=60.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#CloudAssetRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Cloud Asset API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.operations">
+<code class="descname">operations</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.operations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudAssetOperationsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.top_level">
+<code class="descname">top_level</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient.top_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudAssetV1Repository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetOperationsRepository">
+<em class="property">class </em><code class="descname">_CloudAssetOperationsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#_CloudAssetOperationsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetOperationsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Asset Operations repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetV1Repository">
+<em class="property">class </em><code class="descname">_CloudAssetV1Repository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudasset.html#_CloudAssetV1Repository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetV1Repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ExportAssetsQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Asset V1 repository.</p>
+</dd></dl>
+
+</div>
+
