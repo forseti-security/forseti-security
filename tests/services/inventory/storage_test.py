@@ -155,8 +155,8 @@ class StorageTest(ForsetiTestCase):
                 self.assertEqual(1, resource_count,
                                  'Unexpected number of resources in inventory')
 
-    def test_whether_resource_should_be_inserted_or_updated(self):
-        """Whether the resource should be inserted or updated.
+    def test_whether_resource_should_be_inserted_or_skipped(self):
+        """Whether the resource should be inserted or skipped.
 
         All resources should not be written if they have been previously
         written. Except group members, where members can be in multiple groups.

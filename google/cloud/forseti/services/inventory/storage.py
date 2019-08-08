@@ -333,7 +333,7 @@ class Inventory(BASE):
             resource (Resource): Crawled resource.
 
         Returns:
-            Tuple[list, list]: A tuple containing a single row for the main
+            Tuple[dict, list]: A tuple containing a single row for the main
                 resource, and a list of rows for any additional policies
                 attached to the resource.
         """
