@@ -709,7 +709,7 @@ class DataAccess(object):
 
     @classmethod
     def get_root(cls, session, inventory_index_id):
-        """get the resource root from the inventory.
+        """Get the resource root from the inventory.
 
         Args:
             session (object): Database session.
