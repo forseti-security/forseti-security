@@ -1565,8 +1565,8 @@ class PubsubSubscription(resource_class_factory('pubsub_subscription', 'name',
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             err_msg = ('Could not get PubSub Subscription IAM Policy for %s in '
-                       'project %s: %s' % (self['name'], self.parent().key(), e)
-                      )
+                       'project %s: %s' %
+                       (self['name'], self.parent().key(), e))
             LOGGER.warning(err_msg)
             self.add_warning(err_msg)
             return None
@@ -1591,8 +1591,8 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             err_msg = ('Could not get PubSub Topic IAM Policy for %s in '
-                       'project %s: %s' % (self['name'], self.parent().key(), e)
-                      )
+                       'project %s: %s' %
+                       (self['name'], self.parent().key(), e))
             LOGGER.warning(err_msg)
             self.add_warning(err_msg)
             return None

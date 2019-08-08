@@ -416,7 +416,6 @@ class Inventory(BASE):
 
         return resource_row, policy_rows
 
-
     @classmethod
     def _get_policy_full_name(cls, resource, policy_name):
         """Create a full name for a resource policy.
@@ -736,7 +735,6 @@ class DataAccess(object):
         LOGGER.debug('Root resource: %s', root)
         return root
 
-
     @classmethod
     def type_exists(cls,
                     session,
@@ -757,6 +755,7 @@ class DataAccess(object):
             Inventory.category == Categories.resource,
             Inventory.resource_type.in_(type_list)
         ))).scalar()
+
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -865,10 +864,9 @@ class Storage(BaseStorage):
         try:
             # Delete any rows that had been added to the inventory for this
             # instance of the inventory.
-            self.session.query(
-                Inventory).filter(
-                    Inventory.inventory_index_id == self.inventory_index.id
-                ).delete()
+            inventory_id = self.inventory_index.id
+            self.session.query(Inventory).filter(
+                Inventory.inventory_index_id == inventory_id).delete()
             self.inventory_index.complete(status=IndexState.FAILURE)
             self.session.commit()
         finally:
