@@ -155,6 +155,16 @@ def bigquery_dataset(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def bigquery_table(item):
+    name = '//bigquery.googleapis.com/projects/{}/datasets/{}/tables/{}'.format(
+        item['tableReference']['projectId'],
+        item['tableReference']['datasetId'],
+        item['tableReference']['tableId'])
+    asset_type = 'bigquery.googleapis.com/Table'
+    parent_name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+        item['tableReference']['projectId'], item['tableReference']['datasetId'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
 def billing_account(item):
     name = '//cloudbilling.googleapis.com/{}'.format(item['name'])
     asset_type = 'cloudbilling.googleapis.com/BillingAccount'
@@ -318,6 +328,7 @@ CAI_TYPE_MAP = {
     'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
+    'table': bigquery_table,
 }
 
 
