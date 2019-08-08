@@ -35,8 +35,8 @@ NAMESPACE_PACKAGES = [
 REQUIRED_PACKAGES = [
     # Installation related.
     'anytree==2.4.3',
-    'google-api-python-client==1.7.10',
-    'google-auth==1.6.3',
+    'google-api-python-client==1.7.7',
+    'google-auth==1.6.2',
     'google-auth-httplib2==0.0.3',
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
@@ -52,9 +52,9 @@ REQUIRED_PACKAGES = [
     'simple-crypt==4.1.7',
     'unicodecsv==0.14.1',
     # Setup related.
-    'grpcio==1.22.0',
-    'grpcio-tools==1.22.0',
-    'protobuf==3.9.0',
+    'grpcio==1.18.0',
+    'grpcio-tools==1.18.0',
+    'protobuf==3.7.1',
     # Testing related.
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',

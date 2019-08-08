@@ -31,15 +31,12 @@ from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit.external_project_access_rules_engine import Rule
 from google.cloud.forseti.scanner.scanners import external_project_access_scanner as epas
-from google.cloud.forseti.services import db
-from google.cloud.forseti.services.base.config import InventoryConfig
-from google.cloud.forseti.services.inventory.base.resources import Resource
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import Storage
 from tests.common.gcp_api.test_data import fake_crm_responses
+from tests.services.api_tests.inventory_test import TestServiceConfig
+from tests.services.inventory.storage_test import ResourceMock
 from tests.services.util.db import create_test_engine
-from tests.services.util.mock import MockServerConfig
-from tests.services.util.mock import ResourceMock
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 # pylint: enable=line-too-long
@@ -47,33 +44,6 @@ from tests.unittest_utils import get_datafile_path
 TEST_EMAILS = ['user1@example.com', 'user2@example.com']
 
 LOGGER = logger.get_logger(__name__)
-
-
-class TestServiceConfig(MockServerConfig):
-    """ServiceConfig Stub."""
-
-    def __init__(self):
-        self.engine = create_test_engine()
-        initialize(self.engine)
-        self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
-        self.inventory_config = InventoryConfig('organizations/1',
-                                                '',
-                                                {},
-                                                '',
-                                                {})
-        self.inventory_config.set_service_config(self)
-
-    def get_engine(self):
-        return self.engine
-
-    def scoped_session(self):
-        return self.sessionmaker()
-
-    def get_storage_class(self):
-        return Storage
-
-    def get_inventory_config(self):
-        return self.inventory_config
 
 
 class ExternalProjectAccessScannerTest(ForsetiTestCase):
@@ -87,13 +57,13 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
                  rules_path=__file__,
                  scanners=[dict(name='external_project_access', enabled=True)]))
 
-        mock_inventory_config = mock.MagicMock()
-        mock_inventory_config.get_root_resource_id.return_value = (
+        mock_invnetory_config = mock.MagicMock()
+        mock_invnetory_config.get_root_resource_id.return_value = (
             'organizations/567890')
 
         mock_service_config = mock.MagicMock()
         mock_service_config.get_inventory_config.return_value = (
-            mock_inventory_config)
+            mock_invnetory_config)
 
         self.service_config = mock_service_config
         self.model_name = 'TestModel'
@@ -135,7 +105,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1])
         mock_crm_client.get_project_ancestry.return_value = json.loads(
                 fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)['ancestor']
-
+        
         scanner._get_crm_client = mock.MagicMock()
         scanner._get_crm_client.return_value = mock_crm_client
 
@@ -233,8 +203,10 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 class GetUserEmailsTest(ForsetiTestCase):
     """Test the storage_helpers module."""
     def setUp(self):
-        self.service_config = TestServiceConfig()
-
+        self.engine = create_test_engine()
+        _session_maker = sessionmaker()
+        self.session = _session_maker(bind=self.engine)
+        initialize(self.engine)
         res_user1 = ResourceMock('1', {'primaryEmail': 'user1@example.com',
                                        'suspended': False},
                                  'gsuite_user',
@@ -247,22 +219,26 @@ class GetUserEmailsTest(ForsetiTestCase):
                                        'suspended': False},
                                  'gsuite_user',
                                  'resource')
-        resources = [res_user1, res_user2, res_user3]
-        with self.service_config.scoped_session() as session:
-            with Storage(session, self.service_config.get_engine()) as storage:
-                for resource in resources:
-                    storage.write(resource)
-                storage.commit()
+        self.resources = [res_user1, res_user2, res_user3]
+        self.storage = Storage(self.session)
+        _ = self.storage.open()
+        for resource in self.resources:
+            self.storage.write(resource)
+        self.storage.commit()
+        self.service_config = TestServiceConfig()
 
-    def test_get_emails(self):
+    #pylint: disable=C0301,W9016,W9015,W0613
+    @mock.patch('google.cloud.forseti.scanner.scanners.external_project_access_scanner._get_inventory_storage')
+    @mock.patch('google.cloud.forseti.services.inventory.storage.DataAccess.get_latest_inventory_index_id')
+    def test_get_emails(self, mock_get_latest_inv_ndx_id, mock_storage):
         """Test retrieving e-mails from storage"""
 
         expected_emails = [u'user1@example.com',
                            u'user2@example.com',
                            u'user3@example.com']
+        mock_storage.return_value = self.storage
         emails = epas.get_user_emails(self.service_config)
         self.assertListEqual(emails, expected_emails)
-
 
 if __name__ == '__main__':
     unittest.main()

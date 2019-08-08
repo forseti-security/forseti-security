@@ -59,11 +59,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             bool: True if Explainer module can be used.
         """
-        if not self.explainer.config.inventory_config.root_resource_id:
-            LOGGER.exception('root_resource_id is not set in the server '
-                             'config file. Explain will not be supported.')
-            return False
-
         root_resource_id = (
             self.explainer.config.inventory_config.root_resource_id)
         if 'organizations' in root_resource_id:

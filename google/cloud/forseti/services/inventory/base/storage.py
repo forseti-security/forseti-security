@@ -47,6 +47,17 @@ class Storage(object):
         """
         raise NotImplementedError()
 
+    def update(self, resource):
+        """Not Implemented.
+
+        Args:
+            resource (object): the resource object to update
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
+        raise NotImplementedError()
+
     def error(self, message):
         """Not Implemented.
 
@@ -132,6 +143,14 @@ class Memory(Storage):
             resource (object): the resource object to write
         """
         self.mem[resource.type() + resource.key()] = resource
+
+    def update(self, resource):
+        """Update a existing resource object in memory
+
+        Args:
+            resource (object): the resource object to update
+        """
+        pass
 
     def read(self, key):
         """Read a resource object from storage

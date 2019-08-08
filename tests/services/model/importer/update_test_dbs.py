@@ -30,8 +30,8 @@ from tests.services.inventory import gcp_api_mocks
 from tests.services.model.importer import importer_test
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
-from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.base.config import InventoryConfig
@@ -124,27 +124,29 @@ def main():
     # Ensure test data doesn't get deleted
     mock_unlink = mock.patch.object(
         os, 'unlink', autospec=True).start()
+    mock_copy_file_from_gcs = mock.patch.object(
+        file_loader,
+        'copy_file_from_gcs',
+        autospec=True).start()
 
-    # Mock download to return correct test data file
-    def _fake_download(full_bucket_path, output_file):
+    # Mock copy_file_from_gcs to return correct test data file
+    def _copy_file_from_gcs(file_path, *args, **kwargs):
         """Fake copy_file_from_gcs."""
-        if 'resource' in full_bucket_path:
-            fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                     'mock_cai_resources.dump')
-        elif 'iam_policy' in full_bucket_path:
-            fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                     'mock_cai_iam_policies.dump')
-        with open(fake_file, 'rb') as f:
-            output_file.write(f.read())
+        if 'resource' in file_path:
+            return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                'mock_cai_resources.dump')
+        elif 'iam_policy' in file_path:
+            return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                'mock_cai_iam_policies.dump')
+
+    mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
 
-    with gcp_api_mocks.mock_gcp() as gcp_mocks:
-        gcp_mocks.mock_storage.download.side_effect = _fake_download
+    with gcp_api_mocks.mock_gcp():
         runner = ApiTestRunner(config, [GrpcInventoryFactory])
         runner.run(create_inventory)
-        engine.dispose()
         time.sleep(5)
 
     copy_db_file_to_test(tmpfile, 'forseti-test.db')
@@ -152,11 +154,9 @@ def main():
     engine, tmpfile = create_test_engine_with_file()
     config = TestCompositeServiceConfig(engine)
 
-    with gcp_api_mocks.mock_gcp() as gcp_mocks:
-        gcp_mocks.mock_storage.download.side_effect = _fake_download
+    with gcp_api_mocks.mock_gcp():
         runner = ApiTestRunner(config, [GrpcInventoryFactory])
         runner.run(create_inventory)
-        engine.dispose()
         time.sleep(5)
 
     copy_db_file_to_test(tmpfile, 'forseti-composite-test.db')

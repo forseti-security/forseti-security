@@ -21,7 +21,6 @@ from __future__ import print_function
 from builtins import str
 from builtins import object
 import abc
-import re
 from multiprocessing.pool import ThreadPool
 import threading
 
@@ -149,45 +148,7 @@ class AbstractServiceConfig(with_metaclass(abc.ABCMeta, object)):
 
 
 class InventoryConfig(AbstractInventoryConfig):
-    # pylint: disable=too-many-instance-attributes
     """Implements composed dependency injection for the inventory."""
-
-    @staticmethod
-    def _filter_valid_resources(excluded_resources):
-        """Filter valid excluded resources.
-
-        Args:
-            excluded_resources (list): A list of excluded resources to
-                validate against.
-
-        Returns:
-            list: List of valid resources to exclude.
-        """
-        if not excluded_resources:
-            return []
-
-        valid_resource_patterns = [
-            'organization/\\d+',
-            'folder/\\d+',
-            'project/\\d+',
-            'project/[a-z][-a-z0-9]{4,28}[a-z0-9]'
-        ]
-        valid_resources = []
-
-        for resource in excluded_resources:
-            # Note: Internally we are referring resource types as
-            # organization / folder / project so we need to replace
-            # the 's' out of the string.
-            resource = resource.replace('s/', '/')
-            for pattern in valid_resource_patterns:
-                if re.match(pattern, resource):
-                    valid_resources.append(resource)
-                    break
-            if resource not in valid_resources:
-                LOGGER.warning('Resource %s is invalid and will not be '
-                               'omitted during the inventory process.',
-                               resource)
-        return valid_resources
 
     def __init__(self,
                  root_resource_id,
@@ -195,8 +156,7 @@ class InventoryConfig(AbstractInventoryConfig):
                  api_quota_configs,
                  retention_days,
                  cai_configs,
-                 composite_root_resources=None,
-                 excluded_resources=None):
+                 composite_root_resources=None):
         """Initialize.
 
         Args:
@@ -207,7 +167,6 @@ class InventoryConfig(AbstractInventoryConfig):
             cai_configs (dict): Settings for the Cloud AssetInventory API
             composite_root_resources (list): The list of resources to use crawl
                 using a composite root.
-            excluded_resources (list): The list of resources to exclude.
 
         Raises:
             ValueError: Raised if neither or both root_resource_id and
@@ -235,8 +194,6 @@ class InventoryConfig(AbstractInventoryConfig):
         self.retention_days = retention_days
         self.cai_configs = cai_configs
         self.composite_root_resources = composite_root_resources
-        self.excluded_resources = self._filter_valid_resources(
-            excluded_resources)
 
     def use_composite_root(self):
         """Checks if inventory is configured to use a composite root resource.
@@ -245,14 +202,6 @@ class InventoryConfig(AbstractInventoryConfig):
             bool: True if using a composite root, else False.
         """
         return not self.root_resource_id
-
-    def get_excluded_resources(self):
-        """Return the list of excluded resources.
-
-        Returns:
-            list: List of excluded resources.
-        """
-        return self.excluded_resources
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -451,9 +400,7 @@ class ServiceConfig(AbstractServiceConfig):
                     composite_root_resources=(
                         forseti_inventory_config.get(
                             'composite_root_resources')
-                    ),
-                    excluded_resources=forseti_inventory_config.get(
-                        'excluded_resources', [])
+                    )
                 )
             except ValueError as e:
                 return False, str(e)

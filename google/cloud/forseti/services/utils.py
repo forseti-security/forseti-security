@@ -172,13 +172,6 @@ def to_full_resource_name(full_parent_name, resource_type_name):
     if full_parent_name == 'composite_root/root/':
         return '{}/'.format(resource_type_name)
 
-    # For resource names that contain embedded /s, set the full type name
-    # to just the first and last part.
-    type_name_parts = resource_type_name.split('/')
-    if len(type_name_parts) > 2:
-        resource_type_name = '{}/{}'.format(type_name_parts[0],
-                                            type_name_parts[-1])
-
     return '{}{}/'.format(full_parent_name, resource_type_name)
 
 

@@ -262,17 +262,17 @@ class OrgPolicyQueryMixin(object):
 class ExportAssetsQueryMixin(object):
     """Mixin that implements the exportAssets query."""
 
-    def export_assets(self, parent, output_config, content_type=None,
-                      asset_types=None, fields=None, verb='exportAssets',
-                      **kwargs):
+    def export_assets(self, parent, destination_object,
+                      content_type=None, asset_types=None,
+                      fields=None, verb='exportAssets', **kwargs):
         """Export assets under a parent resource to a file on GCS.
 
         Args:
             parent (str): The name of the parent resource to export assests
                 under.
-            output_config (dict): The full outputConfig message to pass to the
-                export assets API.
-                https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/reference/rest/v1/TopLevel/exportAssets#OutputConfig
+            destination_object (str): The GCS path and file name to store the
+                results in. The bucket must be in the same project that has the
+                Cloud Asset API enabled.
             content_type (str): The specific content type to export, currently
                 supports "RESOURCE" and "IAM_POLICY". If not specified only the
                 CAI metadata for assets are included.
@@ -286,9 +286,8 @@ class ExportAssetsQueryMixin(object):
             dict: The response from the API.
         """
         body = {
-            'outputConfig': output_config
+            'outputConfig': {'gcsDestination': {'uri': destination_object}}
         }
-
         if content_type:
             body['contentType'] = content_type
 

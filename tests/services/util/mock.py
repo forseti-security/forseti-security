@@ -16,7 +16,6 @@
 
 from google.cloud.forseti.services.base.config import AbstractInventoryConfig
 from google.cloud.forseti.services.base.config import AbstractServiceConfig
-from google.cloud.forseti.services.inventory.base.resources import Resource
 
 
 class InventoryConfig(AbstractInventoryConfig):
@@ -122,43 +121,3 @@ class MockServerConfig(AbstractServiceConfig):
         """Get the inventory config."""
 
         raise NotImplementedError()
-
-
-
-
-class ResourceMock(Resource):
-
-    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
-        self._key = key
-        self._data = data
-        self._res_type = res_type
-        self._catetory = category
-        self._parent = parent if parent else self
-        self._warning = warning
-        self._contains = []
-        self._timestamp = self._utcnow()
-        self._inventory_key = None
-        self._full_resource_name = None
-        self._root = parent is None
-        self._metadata = None
-
-    def _set_cache(self, field_name, value):
-        """Manually set a cache value if it isn't already set."""
-        field_name = '__cached_{}'.format(field_name)
-        if not hasattr(self, field_name) or getattr(self, field_name) is None:
-            setattr(self, field_name, value)
-
-    def type(self):
-        return self._res_type
-
-    def key(self):
-        return self._key
-
-    def parent(self):
-        return self._parent
-
-    def set_iam_policy(self, iam_policy):
-        self._set_cache('iam_policy', iam_policy)
-
-    def set_billing_info(self, billing_info):
-        self._set_cache('billing_info', billing_info)

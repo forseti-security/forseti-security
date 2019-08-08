@@ -2388,13 +2388,6 @@ def create_engine(*args, **kwargs):
             """
             # Fix for nested transaction problems
             dbapi_connection.isolation_level = None
-
-            # Ensure efficent journaling and synchronization modes are set.
-            dbapi_connection.execute('pragma journal_mode=wal;')
-            dbapi_connection.execute('pragma synchronous=off;')
-            # 512 MB of RAM max for mmap operations, ensure shared memory for
-            # indexes across connections. (Size set in bytes)
-            dbapi_connection.execute('pragma mmap_size=536870912;')
             if kwargs.get(sqlite_enforce_fks, False):
                 # Enable foreign key constraints
                 dbapi_connection.execute('pragma foreign_keys=ON')

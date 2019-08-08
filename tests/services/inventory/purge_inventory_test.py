@@ -62,39 +62,33 @@ class PurgeInventoryTest(ForsetiTestCase):
                 session.add(i)
             session.commit()
             session.expunge_all()
-
+            
             inventory_resources = [
                 Inventory(
                     id=1,
-                    full_name=1,
                     inventory_index_id='one_day_old'),
                 Inventory(
                     id=2,
-                    full_name=2,
                     inventory_index_id='one_day_old'),
                 Inventory(
                     id=3,
-                    full_name=3,
                     inventory_index_id='seven_days_old'),
                 Inventory(
                     id=4,
-                    full_name=4,
                     inventory_index_id='seven_days_old'),
                 Inventory(
                     id=5,
-                    full_name=5,
                     inventory_index_id='nine_days_old'),
                 Inventory(
                     id=6,
-                    full_name=6,
                     inventory_index_id='nine_days_old'),
             ]
             for i in inventory_resources:
                 session.add(i)
             session.commit()
             session.expunge_all()
-
-        return session
+            
+        return session      
 
     def get_inventory_api(self):
 

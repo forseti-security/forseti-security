@@ -23,7 +23,6 @@ import os
 import tempfile
 import unittest
 import socket
-import sys
 from google.cloud.forseti.common.util import logger
 
 
@@ -56,15 +55,6 @@ class ForsetiTestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(ForsetiTestCase, self,).__init__(*args, **kwargs)
         logger.set_logger_level(logging.ERROR)
-
-    def setUp(self):
-        # Disable ResourceWarning messages in tests, be sure to call super in
-        # child classes as this gets reset for every test.
-        # See https://docs.python.org/3/library/warnings.html#overriding-the-default-filter
-        super(ForsetiTestCase, self).setUp()
-        if not sys.warnoptions:
-            import warnings
-            warnings.simplefilter('ignore', ResourceWarning)
 
     def assertStartsWith(self, actual, expected_start):
         """Assert that actual.startswith(expected_start) is True.

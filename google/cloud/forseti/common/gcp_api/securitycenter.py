@@ -14,7 +14,6 @@
 
 """Wrapper for Cloud Security Command Center API client."""
 from builtins import object
-import json
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -139,23 +138,15 @@ class SecurityCenterClient(object):
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding
             )
-            LOGGER.debug('Successfully created finding response: %s',
+            LOGGER.debug('Created finding response: %s',
                          response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            raw_error = e.args[1]
-            error = raw_error.decode('utf-8')
-            formatted_error = json.loads(error)
-            error_code = formatted_error['error']['code']
-            if error_code == 409:
-                LOGGER.debug('Unable to create finding. Finding already exists '
-                             'in CSCC. %s', finding)
-            else:
-                LOGGER.exception('Unable to create CSCC finding: Resource: %s',
-                                 finding)
-                violation_data = (
-                    finding.get('source_properties').get('violation_data'))
-                raise api_errors.ApiExecutionError(violation_data, e)
+            LOGGER.exception(
+                'Unable to create CSCC finding: Resource: %s', finding)
+            violation_data = (
+                finding.get('source_properties').get('violation_data'))
+            raise api_errors.ApiExecutionError(violation_data, e)
 
     def list_findings(self, source_id):
         """Lists all the findings in CSCC.
@@ -189,11 +180,11 @@ class SecurityCenterClient(object):
             response = self.repository.findings.patch(
                 '{}/findings/{}'.format(source_id, finding_id),
                 finding, updateMask='state,event_time')
-            LOGGER.debug('Successfully updated finding in CSCC:\n%s', finding)
+            LOGGER.debug('Updated finding.')
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.exception('Unable to update CSCC finding: Resource: %s',
-                             finding)
+            LOGGER.exception(
+                'Unable to update CSCC finding: Resource: %s', finding)
             violation_data = (
                 finding.get('source_properties').get('violation_data'))
             raise api_errors.ApiExecutionError(violation_data, e)

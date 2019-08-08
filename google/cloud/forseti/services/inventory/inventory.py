@@ -172,8 +172,7 @@ def run_inventory(service_config,
     """
 
     storage_cls = service_config.get_storage_class()
-    engine = service_config.get_engine()
-    with storage_cls(session, engine) as storage:
+    with storage_cls(session) as storage:
         try:
             progresser.inventory_index_id = storage.inventory_index.id
             progresser.final_message = True if background else False

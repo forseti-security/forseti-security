@@ -17,12 +17,14 @@ import copy
 import os
 import unittest
 import unittest.mock as mock
+from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
+from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
 from tests import unittest_utils
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
-from google.cloud.forseti.services.inventory import cai_temporary_storage
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
@@ -151,19 +153,20 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
 
         return result_counts
 
-    def _run_crawler(self, config, has_org_access=True):
+    def _run_crawler(self, config, has_org_access=True, session=None):
         """Runs the crawler with a specific InventoryConfig.
 
         Args:
             config (InventoryConfig): The configuration to test.
             has_org_access (bool): True if crawler has access to the org
                 resource.
-            client (object): An API Client implementation, used for CAI testing.
+            session (object): An existing sql session, required for testing
+                Cloud Asset API integration.
 
         Returns:
             dict: the resource counts returned by the crawler.
         """
-        with MemoryStorage() as storage:
+        with MemoryStorage(session=session) as storage:
             progresser = NullProgresser()
             with gcp_api_mocks.mock_gcp(has_org_access=has_org_access):
                 run_crawler(storage,
@@ -197,64 +200,6 @@ class CrawlerTest(CrawlerBase):
 
         self.assertEqual(expected_counts, result_counts)
 
-    def test_crawling_to_memory_storage_exclude_all_folders_and_projects(self):
-        """Crawl mock environment, test that all the folders are excluded."""
-        config = InventoryConfig(
-            gcp_api_mocks.ORGANIZATION_ID,
-            '',
-            {},
-            '',
-            {},
-            excluded_resources=['folders/1031', 'folders/1032',
-                                'projects/project1', 'projects/project2'])
-        config.set_service_config(FakeServerConfig('mock_engine'))
-
-        result_counts = self._run_crawler(config)
-
-        expected_counts = {
-            'billing_account': {'iam_policy': 2, 'resource': 2},
-            'crm_org_policy': {'resource': 2},
-            'gsuite_group': {'resource': 4},
-            'gsuite_group_member': {'resource': 1},
-            'gsuite_groups_settings': {'resource': 4},
-            'gsuite_user': {'resource': 4},
-            'gsuite_user_member': {'resource': 3},
-            'organization': {'iam_policy': 1, 'resource': 1},
-            'role': {'resource': 19},
-            'sink': {'resource': 2}
-        }
-
-        self.assertEqual(expected_counts, result_counts)
-
-    def test_crawling_to_memory_storage_exclude_all_folders_and_projects_using_projectNumber(self):
-        """Crawl mock environment, test that all the folders are excluded."""
-        config = InventoryConfig(
-            gcp_api_mocks.ORGANIZATION_ID,
-            '',
-            {},
-            '',
-            {},
-            excluded_resources=['folders/1031', 'folders/1032',
-                                'projects/1041', 'projects/1042'])
-        config.set_service_config(FakeServerConfig('mock_engine'))
-
-        result_counts = self._run_crawler(config)
-
-        expected_counts = {
-            'billing_account': {'iam_policy': 2, 'resource': 2},
-            'crm_org_policy': {'resource': 2},
-            'gsuite_group': {'resource': 4},
-            'gsuite_group_member': {'resource': 1},
-            'gsuite_groups_settings': {'resource': 4},
-            'gsuite_user': {'resource': 4},
-            'gsuite_user_member': {'resource': 3},
-            'organization': {'iam_policy': 1, 'resource': 1},
-            'role': {'resource': 19},
-            'sink': {'resource': 2}
-        }
-
-        self.assertEqual(expected_counts, result_counts)
-
     def test_crawling_from_folder(self):
         """Crawl from folder, verify expected resources crawled."""
         config = InventoryConfig(
@@ -277,69 +222,6 @@ class CrawlerTest(CrawlerBase):
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
             'role': {'resource': 1},
-            'sink': {'resource': 1},
-        }
-
-        self.assertEqual(expected_counts, result_counts)
-
-    def test_crawling_from_folder_exclude_project(self):
-        """Crawl from folder, and skip one project, verify
-        expected resources crawled."""
-        config = InventoryConfig(
-            'folders/1032',
-            '',
-            {},
-            '',
-            {},
-            excluded_resources=['projects/project4'])
-        config.set_service_config(FakeServerConfig('mock_engine'))
-
-        result_counts = self._run_crawler(config)
-
-        expected_counts = {
-            'folder': {'iam_policy': 2, 'resource': 2},
-            'sink': {'resource': 1},
-        }
-
-        self.assertEqual(expected_counts, result_counts)
-
-    def test_crawling_from_folder_exclude_project_using_projectNumber(self):
-        """Crawl from folder, and skip one project, verify
-        expected resources crawled."""
-        config = InventoryConfig(
-            'folders/1032',
-            '',
-            {},
-            '',
-            {},
-            excluded_resources=['projects/1044'])
-        config.set_service_config(FakeServerConfig('mock_engine'))
-
-        result_counts = self._run_crawler(config)
-
-        expected_counts = {
-            'folder': {'iam_policy': 2, 'resource': 2},
-            'sink': {'resource': 1},
-        }
-
-        self.assertEqual(expected_counts, result_counts)
-
-    def test_crawling_from_folder_exclude_folder(self):
-        """Crawl from folder, and skip one folder, verify
-        expected resources crawled."""
-        config = InventoryConfig(
-            'folders/1032',
-            '',
-            {},
-            '',
-            {},
-            excluded_resources=['folders/1033'])
-        config.set_service_config(FakeServerConfig('mock_engine'))
-
-        result_counts = self._run_crawler(config)
-
-        expected_counts = {
-            'folder': {'iam_policy': 1, 'resource': 1},
             'sink': {'resource': 1},
         }
 
@@ -487,6 +369,10 @@ class CloudAssetCrawlerTest(CrawlerBase):
     def setUp(self):
         """Setup method."""
         CrawlerBase.setUp(self)
+        self.engine, self.dbfile = create_test_engine_with_file()
+        session_maker = sessionmaker()
+        self.session = session_maker(bind=self.engine)
+        initialize(self.engine)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
                                                 {},
@@ -494,54 +380,42 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                                 {'enabled': True,
                                                  'gcs_path': 'gs://test-bucket'}
                                                )
-        self.inventory_config.set_service_config(
-            FakeServerConfig('mock_engine'))
+        self.inventory_config.set_service_config(FakeServerConfig(self.engine))
 
+        # Ensure test data doesn't get deleted
+        self.mock_unlink = mock.patch.object(
+            os, 'unlink', autospec=True).start()
+        self.mock_copy_file_from_gcs = mock.patch.object(
+            file_loader,
+            'copy_file_from_gcs',
+            autospec=True).start()
         self.maxDiff = None
 
-    def _run_crawler(self, config):
-        """Runs the crawler with a specific InventoryConfig.
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            del args, kwargs
+            if 'resource' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_resources.dump')
+            elif 'iam_policy' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_iam_policies.dump')
 
-        Args:
-            config (InventoryConfig): The configuration to test.
-
-        Returns:
-            dict: the resource counts returned by the crawler.
-        """
-        # Mock download to return correct test data file
-        def _fake_download(full_bucket_path, output_file):
-            if 'resource' in full_bucket_path:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_cai_resources.dump')
-            elif 'iam_policy' in full_bucket_path:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_cai_iam_policies.dump')
-            with open(fake_file, 'rb') as f:
-                output_file.write(f.read())
-
-        with MemoryStorage() as storage:
-            progresser = NullProgresser()
-            with gcp_api_mocks.mock_gcp() as gcp_mocks:
-                gcp_mocks.mock_storage.download.side_effect = _fake_download
-                run_crawler(storage,
-                            progresser,
-                            config,
-                            parallel=True)
-
-            self.assertEqual(0,
-                             progresser.errors,
-                             'No errors should have occurred')
-
-            return self._get_resource_counts_from_storage(storage)
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
     def tearDown(self):
         """tearDown."""
         CrawlerBase.tearDown(self)
         mock.patch.stopall()
 
+        # Stop mocks before unlinking the database file.
+        os.unlink(self.dbfile)
+
     def test_cai_crawl_to_memory(self):
         """Crawl mock environment, test that there are items in storage."""
-        result_counts = self._run_crawler(self.inventory_config)
+        result_counts = self._run_crawler(self.inventory_config,
+                                          session=self.session)
 
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
@@ -605,7 +479,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'sqladmin': {'disable_polling': True},
             'storage': {'disable_polling': True},
         }
-        result_counts = self._run_crawler(self.inventory_config)
+        result_counts = self._run_crawler(self.inventory_config,
+                                          session=self.session)
         # Any resource not included in Cloud Asset export will not be in the
         # inventory.
         expected_counts = {
@@ -685,7 +560,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                             'gcs_path': 'gs://test-bucket',
                                             'asset_types': asset_types}
                                           )
-        inventory_config.set_service_config(FakeServerConfig('fake_engine'))
+        inventory_config.set_service_config(FakeServerConfig(self.engine))
 
         # Create subsets of the mock resource dumps that only contain the
         # filtered asset types
@@ -711,20 +586,17 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         with unittest_utils.create_temp_file(filtered_assets) as resources:
             with unittest_utils.create_temp_file(filtered_iam) as iam_policies:
-                # Mock download to return correct test data file
-                def _fake_download(full_bucket_path, output_file):
-                    if 'resource' in full_bucket_path:
-                        fake_file = resources
-                    elif 'iam_policy' in full_bucket_path:
-                        fake_file = iam_policies
-                    with open(fake_file, 'rb') as f:
-                        output_file.write(f.read())
-
-                with MemoryStorage() as storage:
+                def _copy_file_from_gcs(file_path, *args, **kwargs):
+                    """Fake copy_file_from_gcs."""
+                    del args, kwargs
+                    if 'resource' in file_path:
+                        return resources
+                    elif 'iam_policy' in file_path:
+                        return iam_policies
+                self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+                with MemoryStorage(session=self.session) as storage:
                     progresser = NullProgresser()
                     with gcp_api_mocks.mock_gcp() as gcp_mocks:
-                        gcp_mocks.mock_storage.download.side_effect = (
-                            _fake_download)
                         run_crawler(storage,
                                     progresser,
                                     inventory_config)
@@ -732,13 +604,13 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         # Validate export_assets called with asset_types
                         expected_calls = [
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      output_config=mock.ANY,
+                                      mock.ANY,
                                       content_type='RESOURCE',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,
                                       timeout=mock.ANY),
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      output_config=mock.ANY,
+                                      mock.ANY,
                                       content_type='IAM_POLICY',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,

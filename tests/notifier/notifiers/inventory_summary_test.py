@@ -377,10 +377,6 @@ class InventorySummaryTest(ForsetiTestCase):
 
         notifier = inventory_summary.InventorySummary(mock_service_config,
                                                       'abcd')
-        mock_get_root_resources = mock.MagicMock()
-        mock_get_root_resources.return_value = ['111', '222', '333']
-        notifier._get_root_resources = mock_get_root_resources
-
         notifier._upload_to_gcs = mock.MagicMock()
         notifier._send_email = mock.MagicMock()
         notifier.run()
@@ -409,12 +405,7 @@ class InventorySummaryTest(ForsetiTestCase):
                 {'count': 2, 'resource_type': 'dataset - HIDDEN'},
                 {'count': 2, 'resource_type': 'dataset - SHOWN'},
                 {'count': 1, 'resource_type': 'project - ACTIVE'},
-                {'count': 1, 'resource_type': 'project - DELETE PENDING'}],
-            [
-                '111',
-                '222',
-                '333']
-        )
+                {'count': 1, 'resource_type': 'project - DELETE PENDING'}])
         
         self.assertEqual(1, notifier._upload_to_gcs.call_count)
         self.assertEqual(
