@@ -13,7 +13,11 @@ resource_structure:
         folder:
           - resource_count: 10
             project:
+              - resource_count: 15
+                service_account: []
               - resource_count: 10
                 bucket: []
               - resource_count: 5
-                bigquery_dataset: []
+                bigquery_dataset:
+                  - resource_count: 200
+                    bigquery_table: []

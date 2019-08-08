@@ -24,6 +24,7 @@ def create_file_and_writer_listener(file_path, content_queue):
     with open(file_path, 'w+') as f:
         while True:
             item = content_queue.get()
-            if item == 'EOQ':
+            if item is None:
                 break
             print(item, file=f)
+            content_queue.task_done()

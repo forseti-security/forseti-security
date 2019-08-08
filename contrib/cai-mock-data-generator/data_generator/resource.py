@@ -12,7 +12,20 @@ class Resource(object):
                  resource_number,
                  resource_type,
                  resource_data,
-                 resource_iam_policy=''):
+                 resource_iam_policy='',
+                 parent_resource=None):
+        """Init.
+
+        Args:
+            cai_name (str): CAI resource name.
+            cai_type (str): CAI resource type.
+            resource_id (str): Resource id.
+            resource_number (str): Resource number.
+            resource_type (str): Resource type.
+            resource_data (str): Resource data.
+            resource_iam_policy (str): Resource iam policy.
+            parent_resource (Resource): Parent resource.
+        """
         self.cai_resource_name = cai_name
         self.cai_resource_type = cai_type
         self.resource_id = resource_id
@@ -20,6 +33,7 @@ class Resource(object):
         self.resource_data = self.clean_up_format(resource_data)
         self.resource_iam_policy = self.clean_up_format(resource_iam_policy)
         self.resource_number = resource_number
+        self.parent_resource = parent_resource
 
     @staticmethod
     def clean_up_format(dirty_str):
@@ -146,7 +160,9 @@ def generate_folder(parent_resource=None, resource_id=''):
                     resource_number=resource_id,
                     resource_type=resource_type,
                     resource_data=resource_data,
-                    resource_iam_policy=resource_iam_policy)
+                    resource_iam_policy=resource_iam_policy,
+                    parent_resource=parent_resource)
+
 
 def generate_project(parent_resource=None, resource_id=''):
     """Generate project resource.
@@ -176,7 +192,8 @@ def generate_project(parent_resource=None, resource_id=''):
                     resource_number=resource_id,
                     resource_type=resource_type,
                     resource_data=resource_data,
-                    resource_iam_policy=resource_iam_policy)
+                    resource_iam_policy=resource_iam_policy,
+                    parent_resource=parent_resource)
 
 
 def generate_bucket(parent_resource, resource_id=''):
@@ -203,11 +220,12 @@ def generate_bucket(parent_resource, resource_id=''):
                     resource_number=resource_id,
                     resource_type=resource_type,
                     resource_data=resource_data,
-                    resource_iam_policy=resource_iam_policy)
+                    resource_iam_policy=resource_iam_policy,
+                    parent_resource=parent_resource)
 
 
 def generate_bigquery_dataset(parent_resource, resource_id=''):
-    """Generate bigquery dataset  resource.
+    """Generate bigquery dataset resource.
 
     Args:
         parent_resource (Resource): The parent resource.
@@ -224,14 +242,81 @@ def generate_bigquery_dataset(parent_resource, resource_id=''):
                                                  PARENT_CAI_NAME=parent_resource.cai_resource_name,
                                                  PROJECT_ID=parent_resource.resource_id,
                                                  LOCATION=parent_resource.resource_id)
-    resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.BUCKET_ROLES)
+    resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.BIGQUERY_ROLES)
     return Resource(cai_name=cai_resource_name,
                     cai_type=cai_resource_type,
                     resource_id=resource_id,
                     resource_number=resource_id,
                     resource_type=resource_type,
                     resource_data=resource_data,
-                    resource_iam_policy=resource_iam_policy)
+                    resource_iam_policy=resource_iam_policy,
+                    parent_resource=parent_resource)
+
+
+def generate_bigquery_table(parent_resource, resource_id=''):
+    """Generate bigquery table resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'bigquery_table'
+    cai_resource_name = '//bigquery.googleapis.com/projects/{}/datasets/{}/tables/{}'.format(
+        parent_resource.parent_resource.resource_id,
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'bigquery.googleapis.com/Table'
+    resource_data = tmpl.BIGQUERY_TABLE.format(
+        TABLE_ID=resource_id,
+        DATASET_ID=parent_resource.resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name,
+        PROJECT_ID=parent_resource.parent_resource.resource_id)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_service_account(parent_resource, resource_id=''):
+    """Generate service account resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'service_account'
+    cai_resource_name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'iam.googleapis.com/ServiceAccount'
+    resource_data = tmpl.SERVICE_ACCOUNT.format(
+        SERVICE_ACCOUNT_ID=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name,
+        DISPLAY_NAME=resource_id,
+        PROJECT_ID=parent_resource.resource_id)
+
+    resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.BIGQUERY_ROLES)
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy=resource_iam_policy,
+                    parent_resource=parent_resource)
 
 
 RESOURCE_GENERATOR_FACTORY = {
@@ -239,5 +324,17 @@ RESOURCE_GENERATOR_FACTORY = {
     'folder': generate_folder,
     'project': generate_project,
     'bucket': generate_bucket,
-    'bigquery_dataset': generate_bigquery_dataset
+    'bigquery_dataset': generate_bigquery_dataset,
+    'bigquery_table': generate_bigquery_table,
+    'service_account': generate_service_account
+}
+
+RESOURCE_DEPENDENCY_MAP = {
+    'organization': ['folder', 'project'],
+    'folder': ['project', 'folder'],
+    'project': ['bigquery_dataset', 'bucket', 'service_account'],
+    'bucket': [],
+    'bigquery_dataset': ['bigquery_table'],
+    'bigquery_table': [],
+    'service_account': []
 }
