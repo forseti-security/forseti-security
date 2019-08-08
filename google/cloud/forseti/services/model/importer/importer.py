@@ -25,6 +25,7 @@ from future import standard_library
 from sqlalchemy.exc import SQLAlchemyError
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.storage import Categories
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
@@ -253,10 +254,10 @@ class InventoryImporter(object):
                     'inventory_index_id': self.inventory_index_id},
                 'source_root': self._type_name(root),
                 'pristine': True,
-                'gsuite_enabled': DataAccess.type_exists(self.readonly_session,
-                                                         self.inventory_index_id,
-                                                         ['gsuite_group',
-                                                          'gsuite_user'])
+                'gsuite_enabled': DataAccess.type_exists(
+                    self.readonly_session,
+                    self.inventory_index_id,
+                    ['gsuite_group', 'gsuite_user'])
             }
             LOGGER.debug('Model description: %s', description)
             self.model.add_description(json.dumps(description,
@@ -296,24 +297,25 @@ class InventoryImporter(object):
             item_counter += self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
-                               GCP_TYPE_LIST,
-                               fetch_dataset_policy=True),
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.dataset_policy),
                 self._convert_dataset_policy
             )
 
             item_counter += self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
-                               GCP_TYPE_LIST,
-                               fetch_gcs_policy=True),
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.gcs_policy),
                 self._convert_gcs_policy
             )
 
             item_counter += self.model_action_wrapper(
-                DataAccess.iter(self.readonly_session,
-                                self.inventory_index_id,
-                               GCP_TYPE_LIST,
-                               fetch_service_config=True),
+                DataAccess.iter(
+                    self.readonly_session,
+                    self.inventory_index_id,
+                    GCP_TYPE_LIST,
+                    fetch_category=Categories.kubernetes_service_config),
                 self._convert_service_config
             )
 
@@ -327,8 +329,8 @@ class InventoryImporter(object):
             self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
-                               GCP_TYPE_LIST,
-                               fetch_enabled_apis=True),
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.enabled_apis),
                 self._convert_enabled_apis
             )
 
@@ -353,8 +355,8 @@ class InventoryImporter(object):
             self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
-                               GCP_TYPE_LIST,
-                               fetch_iam_policy=True),
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.iam_policy),
                 self._store_iam_policy
             )
 

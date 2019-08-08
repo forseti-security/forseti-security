@@ -96,15 +96,9 @@ class ApiTest(ForsetiTestCase):
             for inventory_index in client.inventory.list():
                 self.assertTrue(inventory_index.id == progress.id)
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.get(inventory_index.id)
-                              .inventory))
-
-            self.assertEqual(inventory_index,
-                             (client.inventory.delete(inventory_index.id)
-                              .inventory))
-
-            self.assertEqual([], [i for i in client.inventory.list()])
+                              .inventory.id))
 
         with gcp_api_mocks.mock_gcp():
             setup = create_tester()
@@ -134,13 +128,13 @@ class ApiTest(ForsetiTestCase):
             for inventory_index in client.inventory.list():
                 self.assertTrue(inventory_index.id == progress.id)
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.get(inventory_index.id)
-                              .inventory))
+                              .inventory.id))
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.delete(inventory_index.id)
-                              .inventory))
+                              .inventory.id))
 
             self.assertEqual([], [i for i in client.inventory.list()])
 

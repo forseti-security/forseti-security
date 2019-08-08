@@ -17,6 +17,7 @@
 from future import standard_library
 standard_library.install_aliases()
 from datetime import datetime
+import time
 import unittest.mock as mock
 import os
 from io import StringIO
@@ -25,38 +26,15 @@ from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine
 from tests.services.util.db import create_test_engine_with_file
+from tests.services.util.mock import ResourceMock
 from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.base.resources import Resource
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
 
-
-class ResourceMock(Resource):
-
-    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
-        self._key = key
-        self._data = data
-        self._res_type = res_type
-        self._catetory = category
-        self._parent = parent if parent else self
-        self._warning = warning
-        self._contains = []
-        self._timestamp = self._utcnow()
-        self._inventory_key = None
-        self._metadata = None
-
-    def type(self):
-        return self._res_type
-
-    def key(self):
-        return self._key
-
-    def parent(self):
-        return self._parent
 
 
 class StorageTest(ForsetiTestCase):
@@ -64,10 +42,14 @@ class StorageTest(ForsetiTestCase):
 
     def setUp(self):
         """Setup method."""
+        self.engine, self.dbfile = create_test_engine_with_file()
+
         ForsetiTestCase.setUp(self)
 
     def tearDown(self):
         """Tear down method."""
+        os.unlink(self.dbfile)
+        mock.patch.stopall()
         ForsetiTestCase.tearDown(self)
 
     def reduced_inventory(self, session, inventory_index_id, types):
@@ -79,18 +61,15 @@ class StorageTest(ForsetiTestCase):
 
     def test_basic(self):
         """Test storing a few resources, then iterate."""
-        engine = create_test_engine()
 
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'billing_info',
-                                 res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', 'resource',
                                 res_proj1)
         res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', 'resource',
@@ -110,7 +89,7 @@ class StorageTest(ForsetiTestCase):
         ]
 
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
@@ -129,11 +108,11 @@ class StorageTest(ForsetiTestCase):
                                  'No types should yield empty list')
 
         with scoped_sessionmaker() as session:
-            storage = Storage(session)
+            storage = Storage(session, self.engine)
             _ = storage.open()
             for resource in resources:
                 storage.write(resource)
-            storage.buffer.flush()
+            storage.commit()
             inventory_index_id = storage.inventory_index.id
             self.assertEqual(3,
                              len(self.reduced_inventory(
@@ -162,14 +141,12 @@ class StorageTest(ForsetiTestCase):
                 self.assertTrue('timestamp' in item.get_other())
             return i
 
-        engine = create_test_engine()
-
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 storage.write(res_org)
                 storage.commit()
 
@@ -185,18 +162,14 @@ class StorageTest(ForsetiTestCase):
         written. Except group members, where members can be in multiple groups.
         """
 
-        engine = create_test_engine()
-
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_iam1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_billing1 = ResourceMock('4', {'id': 'test'}, 'project',
-                                    'billing_info', res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
                                 res_org)
         res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
@@ -227,8 +200,6 @@ class StorageTest(ForsetiTestCase):
         resources = [
             res_org,
             res_proj1,
-            res_iam1,
-            res_billing1,
             res_buc1,
             res_proj2,
             res_buc2,
@@ -242,13 +213,13 @@ class StorageTest(ForsetiTestCase):
         ]
 
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
 
                 inventory_index_id = storage.inventory_index.id
-                self.assertEqual(5,
+                self.assertEqual(3,
                                  len(self.reduced_inventory(
                                      session,
                                      inventory_index_id,
@@ -262,7 +233,7 @@ class StorageTest(ForsetiTestCase):
                                      ['gsuite_group_member'])),
                                  'All group members should be stored.')
 
-                self.assertEqual(13,
+                self.assertEqual(11,
                                  len(self.reduced_inventory(
                                      session,
                                      inventory_index_id,
@@ -291,10 +262,8 @@ class InventoryIndexTest(ForsetiTestCase):
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_proj1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_proj1 = ResourceMock('4', {'id': 'test'}, 'project', 'billing_info',
-                                 res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
                                 res_proj1)
         res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
@@ -306,13 +275,13 @@ class InventoryIndexTest(ForsetiTestCase):
         resources = [
             res_org, res_proj1, res_buc1, res_proj2, res_buc2, res_obj2]
 
-        storage = Storage(self.session)
+        storage = Storage(self.session, self.engine)
         inv_index_id = storage.open()
         for resource in resources:
             storage.write(resource)
         storage.commit()
         # add more resource data that belongs to a different inventory index
-        storage = Storage(self.session)
+        storage = Storage(self.session, self.engine)
         storage.open()
         for resource in resources:
             storage.write(resource)
