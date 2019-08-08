@@ -19,12 +19,13 @@
 
 # Usage
 # <sudo> docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh
-# --log_level <info,debug,etc>  the Forseti server log level
-# --run_server                  start the Forseti server
-# --services <list of services> over-ride default services "scanner model inventory explain notifier"
-# --run_client                  just provide a container to run client commands
-# --sql_host <host ip>          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
-# --sql_port <port>             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
+# --log_level <info,debug,etc>   the Forseti server log level
+# --enable_tracing <True, False> enable Stackdriver tracing
+# --run_server                   start the Forseti server
+# --services <list of services>  over-ride default services "scanner model inventory explain notifier"
+# --run_client                   just provide a container to run client commands
+# --sql_host <host ip>           over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
+# --sql_port <port>              over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
 
 # Use cases
 
@@ -37,6 +38,7 @@
 set -e
 
 LOG_LEVEL=info
+ENABLE_TRACING=True
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=false
 RUN_CLIENT=false
@@ -69,6 +71,9 @@ while [[ "$1" != "" ]]; do
         --log_level )
             shift
             LOG_LEVEL=$1
+            ;;
+        --enable_tracing )
+            ENABLE_TRACING=$1
             ;;
         --run_server )
             RUN_SERVER=true
@@ -111,7 +116,8 @@ start_server(){
     --services ${SERVICES} \
     --config_file_path "/forseti-security/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
-    --enable_console_log
+    --enable_console_log \
+    --enable_tracing=${ENABLE_TRACING}
 }
 
 # Deprecated
@@ -124,7 +130,7 @@ run_forseti_job(){
 
     # Wait until the service is started
     sleep 10s
-    
+
     # Set the output format to json
     forseti config format json
     forseti config endpoint ${SERVER_HOST}:${SERVER_PORT}
@@ -188,22 +194,22 @@ run_forseti_job(){
 }
 
 run_test(){
-    
+
     # Set the output format to json
     forseti config format json
 
     # Set the endpoint
     forseti config endpoint $FORSETI_SERVER_SERVICE_HOST:$FORSETI_SERVER_SERVICE_PORT
-    
+
     result=$(forseti inventory list)
-    
+
     if [[ -z "$result" ]]; then
         exit 0
     fi
-    
+
     echo $result | grep "Error communicating to the Forseti server."
     if [[ $? == 0 ]]; then
-        exit 1 
+        exit 1
     fi
 
     exit 0
@@ -221,12 +227,12 @@ main(){
 
     elif ${RUN_CLIENT}; then
         run_forseti_job
-    
+
     elif ${RUN_TEST}; then
         run_test
-    
+
     fi
-        
+
 }
 
 
