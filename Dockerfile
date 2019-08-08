@@ -59,7 +59,6 @@ FROM pre-build AS build
 COPY --chown=forseti:forseti . ${WORK_DIR}
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt --user
-RUN pip install --no-cache-dir --user .[tracing]
 
 # Install Forseti Security.
 RUN python setup.py install --user

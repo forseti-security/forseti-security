@@ -21,7 +21,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
+DEFAULT_INTEGRATIONS = ['sqlalchemy']
 
 # pylint: disable=line-too-long
 try:
@@ -76,12 +76,12 @@ def create_server_interceptor(extras=True):
         sampler,
         exporter)
     if extras:
-        trace_integrations(DEFAULT_INTEGRATIONS)
+        trace_integrations()
     LOGGER.debug(f'Tracing interceptor created.')
     return interceptor
 
 
-def trace_integrations(integrations):
+def trace_integrations(integrations=None):
     """Add tracing to supported OpenCensus integration libraries.
 
     Args:
@@ -91,6 +91,8 @@ def trace_integrations(integrations):
         list: The integrated libraries names. The return value is used only for
             testing.
     """
+    if integrations is None:
+        integrations = DEFAULT_INTEGRATIONS
     tracer = execution_context.get_opencensus_tracer()
     integrated_libraries = config_integration.trace_integrations(
         integrations,

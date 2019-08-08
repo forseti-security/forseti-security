@@ -30,9 +30,6 @@ RUN pip3 install -q --upgrade -r requirements.txt 1> /dev/null
 # Expose our source so we can install Forseti Security.
 ADD . /forseti-security/
 
-# Install Forseti tracing libraries.
-RUN pip3 install .[tracing]
-
 # Install Forseti Security.
 RUN python3 setup.py install 1> /dev/null
 
