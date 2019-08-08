@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Inventory storage implementation."""
-# pylint: disable=too-many-lines
 
 from builtins import object
 import json
 import enum
+import threading
 
-from retrying import retry
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import case
@@ -29,22 +28,17 @@ from sqlalchemy import exists
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
-from sqlalchemy import LargeBinary
 from sqlalchemy import or_
-from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
-from sqlalchemy import Table
 from sqlalchemy import Text
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm import mapper
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
-from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
+from google.cloud.forseti.services import utils
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
@@ -53,7 +47,6 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
-MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
 
 
 class Categories(enum.Enum):
@@ -67,14 +60,7 @@ class Categories(enum.Enum):
     kubernetes_service_config = 7
 
 
-class ContentTypes(enum.Enum):
-    """Cloud Asset Inventory Content Types."""
-    resource = 1
-    iam_policy = 2
-
-
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
-SUPPORTED_CONTENT_TYPES = frozenset(item.name for item in list(ContentTypes))
 
 
 class InventoryIndex(BASE):
@@ -144,7 +130,7 @@ class InventoryIndex(BASE):
         else:
             self.inventory_index_warnings += warning_message
         session.add(self)
-        session.flush()
+        session.commit()
 
     def set_error(self, session, message):
         """Indicate a broken import.
@@ -155,7 +141,7 @@ class InventoryIndex(BASE):
         """
         self.inventory_index_errors = message
         session.add(self)
-        session.flush()
+        session.commit()
 
     def get_lifecycle_state_details(self, session, resource_type_input):
         """Count of lifecycle states of the specified resources.
@@ -301,6 +287,7 @@ class Inventory(BASE):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     inventory_index_id = Column(BigInteger)
+    full_name = Column(String(2048), nullable=False)
     cai_resource_name = Column(String(4096))
     cai_resource_type = Column(String(512))
     category = Column(Enum(Categories))
@@ -315,9 +302,7 @@ class Inventory(BASE):
         Index('idx_resource_category',
               'inventory_index_id',
               'resource_type',
-              'category'),
-        Index('idx_parent_id',
-              'parent_id'))
+              'category'),)
 
     @staticmethod
     def get_schema_update_actions():
@@ -331,7 +316,10 @@ class Inventory(BASE):
                                     default=''),
                              Column('cai_resource_name',
                                     String(4096),
-                                    default='')]
+                                    default=''),
+                             Column('full_name',
+                                    String(2048),
+                                    nullable=False)]
 
         schema_update_actions = {'CREATE': columns_to_create}
         return schema_update_actions
@@ -345,7 +333,9 @@ class Inventory(BASE):
             resource (Resource): Crawled resource.
 
         Returns:
-            object: database row object.
+            Tuple[dict, list]: A tuple containing a single row for the main
+                resource, and a list of rows for any additional policies
+                attached to the resource.
         """
 
         parent = resource.parent()
@@ -355,7 +345,6 @@ class Inventory(BASE):
         billing_info = resource.get_billing_info()
         enabled_apis = resource.get_enabled_apis()
         service_config = resource.get_kubernetes_service_config()
-        other = json.dumps({'timestamp': resource.get_timestamp()})
 
         cai_resource_name = ''
         cai_resource_type = ''
@@ -364,111 +353,83 @@ class Inventory(BASE):
             cai_resource_name = resource.metadata().cai_name
             cai_resource_type = resource.metadata().cai_type
 
-        rows = [Inventory(
-            cai_resource_name=cai_resource_name,
-            cai_resource_type=cai_resource_type,
-            inventory_index_id=index.id,
-            category=Categories.resource,
-            resource_id=resource.key(),
-            resource_type=resource.type(),
-            resource_data=json.dumps(resource.data(), sort_keys=True),
-            parent_id=None if not parent else parent.inventory_key(),
-            other=other,
-            inventory_errors=resource.get_warning())]
+        base_row = {
+            'cai_resource_name': cai_resource_name,
+            'cai_resource_type': cai_resource_type,
+            'inventory_index_id': index.id,
+            'resource_id': resource.key(),
+            'resource_type': resource.type(),
+            'other': json.dumps({'timestamp': resource.get_timestamp()}),
+        }
 
+        resource_row = dict(
+            base_row,
+            category=Categories.resource,
+            resource_data=json.dumps(resource.data(), sort_keys=True),
+            full_name=resource.get_full_resource_name(),
+            parent_id=None if not parent else parent.inventory_key(),
+            inventory_errors=resource.get_warning())
+
+        policy_rows = []
         if iam_policy:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.iam_policy,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(iam_policy, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.iam_policy,
+                full_name=cls._get_policy_full_name(resource, 'iam_policy'),
+                resource_data=json.dumps(iam_policy, sort_keys=True)))
 
         if gcs_policy:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.gcs_policy,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(gcs_policy, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.gcs_policy,
+                full_name=cls._get_policy_full_name(resource, 'gcs_policy'),
+                resource_data=json.dumps(gcs_policy, sort_keys=True)))
 
         if dataset_policy:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.dataset_policy,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(dataset_policy, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.dataset_policy,
+                full_name=cls._get_policy_full_name(resource, 'dataset_policy'),
+                resource_data=json.dumps(dataset_policy, sort_keys=True)))
 
         if billing_info:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.billing_info,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(billing_info, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.billing_info,
+                full_name=cls._get_policy_full_name(resource, 'billing_info'),
+                resource_data=json.dumps(billing_info, sort_keys=True)))
 
         if enabled_apis:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.enabled_apis,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(enabled_apis, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.enabled_apis,
+                full_name=cls._get_policy_full_name(resource, 'enabled_apis'),
+                resource_data=json.dumps(enabled_apis, sort_keys=True)))
 
         if service_config:
-            rows.append(
-                Inventory(
-                    cai_resource_name=cai_resource_name,
-                    cai_resource_type=cai_resource_type,
-                    inventory_index_id=index.id,
-                    category=Categories.kubernetes_service_config,
-                    resource_id=resource.key(),
-                    resource_type=resource.type(),
-                    resource_data=json.dumps(service_config, sort_keys=True),
-                    other=other,
-                    inventory_errors=None))
+            policy_rows.append(dict(
+                base_row,
+                category=Categories.kubernetes_service_config,
+                full_name=cls._get_policy_full_name(
+                    resource, 'kubernetes_service_config'),
+                resource_data=json.dumps(service_config, sort_keys=True)))
 
-        return rows
+        return resource_row, policy_rows
 
-    def copy_inplace(self, new_row):
-        """Update a database row object from a resource.
+    @classmethod
+    def _get_policy_full_name(cls, resource, policy_name):
+        """Create a full name for a resource policy.
 
         Args:
-            new_row (Inventory): the Inventory row of the new resource
+            resource (Resource): Crawled resource.
+            policy_name (str): The category name for the policy data.
 
+        Returns:
+            str: A full name for the policy.
         """
-        self.category = new_row.category
-        self.resource_id = new_row.resource_id
-        self.resource_type = new_row.resource_type
-        self.resource_data = new_row.resource_data
-        self.other = new_row.other
-        self.inventory_errors = new_row.inventory_errors
+        type_name = utils.to_type_name(policy_name, resource.key())
+        return utils.to_full_resource_name(resource.get_full_resource_name(),
+                                           type_name)
 
     def __repr__(self):
         """String representation of the database row object.
@@ -498,6 +459,14 @@ class Inventory(BASE):
             str: cai resource type.
         """
         return self.cai_resource_type
+
+    def get_full_name(self):
+        """Get the row's full name.
+
+        Returns:
+            str: resource full name.
+        """
+        return self.full_name
 
     def get_resource_id(self):
         """Get the row's resource id.
@@ -564,440 +533,6 @@ class Inventory(BASE):
         return self.inventory_errors
 
 
-class CaiTemporaryStore(object):
-    """CAI temporary inventory table."""
-
-    __tablename__ = 'cai_temporary_store'
-
-    # Class members created in initialize() by mapper()
-    name = None
-    parent_name = None
-    content_type = None
-    asset_type = None
-    asset_data = None
-
-    # Assets with no parent resource.
-    UNPARENTED_ASSETS = frozenset([
-        'cloudresourcemanager.googleapis.com/Organization',
-        'cloudbilling.googleapis.com/BillingAccount',
-    ])
-
-    def __init__(self, name, parent_name, content_type, asset_type, asset_data):
-        """Initialize database column.
-
-        Manually defined so that the collation value can be overriden at run
-        time for this database table.
-
-        Args:
-            name (str): The asset name.
-            parent_name (str): The asset name of the parent resource.
-            content_type (ContentTypes): The asset data content type.
-            asset_type (str): The asset data type.
-            asset_data (str): The asset data as a serialized binary blob.
-        """
-        self.name = name
-        self.parent_name = parent_name
-        self.content_type = content_type
-        self.asset_type = asset_type
-        self.asset_data = asset_data
-
-    @classmethod
-    def initialize(cls, metadata, collation='utf8_bin'):
-        """Create the table schema based on run time arguments.
-
-        Used to fix the column collation value for non-MySQL database engines.
-
-        Args:
-            metadata (object): The sqlalchemy MetaData to associate the table
-                with.
-            collation (str): The collation value to use.
-        """
-        if 'cai_temporary_store' not in metadata.tables:
-            my_table = Table('cai_temporary_store', metadata,
-                             Column('name', String(512, collation=collation),
-                                    nullable=False),
-                             Column('parent_name', String(255), nullable=True),
-                             Column('content_type', Enum(ContentTypes),
-                                    nullable=False),
-                             Column('asset_type', String(255), nullable=False),
-                             Column('asset_data',
-                                    LargeBinary(length=(2**32) - 1),
-                                    nullable=False),
-                             Index('idx_parent_name', 'parent_name'),
-                             PrimaryKeyConstraint('content_type',
-                                                  'asset_type',
-                                                  'name',
-                                                  name='cai_temp_store_pk'))
-
-            mapper(cls, my_table)
-
-    def extract_asset_data(self, content_type):
-        """Extracts the data from the asset protobuf based on the content type.
-
-        Args:
-            content_type (ContentTypes): The content type data to extract.
-
-        Returns:
-            Tuple[dict, AssetMetadata]: The dict representation of the asset
-                data and an Asset metadata along with it.
-        """
-        asset = json.loads(self.asset_data)
-
-        if content_type == ContentTypes.resource:
-            asset = asset['resource']['data']
-        elif content_type == ContentTypes.iam_policy:
-            asset = asset['iam_policy']
-
-        asset_metadata = AssetMetadata(cai_name=self.name,
-                                       cai_type=self.asset_type)
-
-        return asset, asset_metadata
-
-    @classmethod
-    def from_json(cls, asset_json):
-        """Creates a database row object from the json data in a dump file.
-
-        Args:
-            asset_json (str): The json representation of an Asset.
-
-        Returns:
-            object: database row object or None if there is no data.
-        """
-        asset = json.loads(asset_json)
-        if len(asset['name']) > 512:
-            LOGGER.warning('Skipping insert of asset %s, name too long.',
-                           asset['name'])
-            return None
-
-        if 'resource' in asset:
-            content_type = ContentTypes.resource
-            parent_name = cls._get_parent_name(asset)
-        elif 'iam_policy' in asset:
-            content_type = ContentTypes.iam_policy
-            parent_name = asset['name']
-        else:
-            return None
-
-        return cls(
-            name=asset['name'],
-            parent_name=parent_name,
-            content_type=content_type,
-            asset_type=asset['asset_type'],
-            asset_data=asset_json
-        )
-
-    @classmethod
-    def delete_all(cls, session):
-        """Deletes all rows from this table.
-
-        Args:
-            session (object): db session
-
-        Returns:
-            int: The number of rows deleted.
-
-        Raises:
-            Exception: Reraises any exception.
-        """
-        try:
-            num_rows = session.query(cls).delete()
-            session.commit()
-            return num_rows
-        except Exception as e:
-            LOGGER.exception(e)
-            session.rollback()
-            raise
-
-    # pylint: disable=too-many-return-statements
-    @staticmethod
-    def _get_parent_name(asset):
-        """Determines the parent name from the resource data.
-
-        Args:
-            asset (dict): An Asset object.
-
-        Returns:
-            str: The parent name for the resource.
-        """
-        if 'parent' in asset['resource']:
-            return asset['resource']['parent']
-
-        if asset['asset_type'] == 'cloudkms.googleapis.com/KeyRing':
-            # KMS KeyRings are parented by a location under a project, but
-            # the location is not directly discoverable without iterating all
-            # locations, so instead this creates an artificial parent at the
-            # project level, which acts as an aggregated list of all keyrings
-            # in all locations to fix this broken behavior.
-            #
-            # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
-            # parent project.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        elif asset['asset_type'] == 'dataproc.googleapis.com/Cluster':
-            # Dataproc Clusters are parented by a region under a project, but
-            # the region is not directly discoverable without iterating all
-            # regions, so instead this creates an artificial parent at the
-            # project level, which acts as an aggregated list of all clusters
-            # in all regions to fix this broken behavior.
-            #
-            # Strip regions/{REGION}/clusters/{CLUSTER_NAME} off name to get the
-            # parent project.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        elif (asset['asset_type'].startswith('appengine.googleapis.com/') or
-              asset['asset_type'].startswith('bigquery.googleapis.com/') or
-              asset['asset_type'].startswith('cloudkms.googleapis.com/') or
-              asset['asset_type'].startswith('sqladmin.googleapis.com/') or
-              asset['asset_type'].startswith('spanner.googleapis.com/')):
-            # Strip off the last two segments of the name to get the parent
-            return '/'.join(asset['name'].split('/')[:-2])
-
-        elif asset['asset_type'] in ('k8s.io/Node', 'k8s.io/Namespace'):
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/nodes/test-node"
-            #
-            # Strip k8s/nodes/{NODE} off name to get the parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace"
-            #
-            # Strip k8s/namespaces/{NAMESPACE} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-3])
-
-        elif asset['asset_type'] == 'k8s.io/Pod':
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/
-            # test-namespace/pods/test-pod"
-            #
-            # Strip pods/{POD} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-2])
-
-        elif asset['asset_type'] in ('rbac.authorization.k8s.io/Role',
-                                     'rbac.authorization.k8s.io/RoleBinding'):
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/
-            # test-namespace/rbac.authorization.k8s.io/roles/
-            # extension-apiserver-authentication-reader"
-            #
-            # Strip rbac.authorization.k8s.io/roles/{ROLE} off name to get the
-            # parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/namespaces/test-namespace/
-            # rbac.authorization.k8s.io/rolebindings/
-            # system:controller:bootstrap-signer"
-            #
-            # Strip rbac.authorization.k8s.io/rolebindings/{ROLEBINDING} off
-            # name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-3])
-
-        elif asset['asset_type'] in (
-                'rbac.authorization.k8s.io/ClusterRole',
-                'rbac.authorization.k8s.io/ClusterRoleBinding'):
-            # Kubernetes ClusterRoles and ClusterRoleBindings are parented by a
-            # k8s under a cluster, but the k8 is not directly discoverable
-            # without iterating all k8s, so instead this creates an artificial
-            # parent at the cluster level, which acts as an aggregated list of
-            # all cluster roles and cluster role bindings in all k8s to fix this
-            # broken behavior.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/rbac.authorization.k8s.io/
-            # clusterroles/cloud-provider"
-            #
-            # Strip k8s/rbac.authorization.k8s.io/clusterroles/
-            # {CLUSTERROLE} off name to get the parent.
-            #
-            # "name":"//container.googleapis.com/projects/test-project/zones/
-            # us-central1-b/clusters/test-cluster/k8s/
-            # rbac.authorization.k8s.io/clusterrolebindings/cluster-admin"
-            #
-            # Strip k8s/rbac.authorization.k8s.io/clusterrolebindings/
-            # {CLUSTERROLEBINDING} off name to get the parent.
-            return '/'.join(asset['name'].split('/')[:-4])
-
-        # Known unparented asset types.
-        if asset['asset_type'] not in CaiTemporaryStore.UNPARENTED_ASSETS:
-            LOGGER.debug('Could not determine parent name for %s', asset)
-
-        return ''
-
-
-class BufferedDbWriter(object):
-    """Buffered db writing."""
-
-    def __init__(self,
-                 session,
-                 max_size=1024,
-                 max_packet_size=MAX_ALLOWED_PACKET * .75,
-                 commit_on_flush=False):
-        """Initialize
-
-        Args:
-            session (object): db session
-            max_size (int): max size of buffer
-            max_packet_size (int): max size of a packet to send to SQL
-            commit_on_flush (bool): If true, the session is committed to the
-                database when the data is flushed.
-        """
-        self.session = session
-        self.buffer = []
-        self.estimated_packet_size = 0
-        self.max_size = max_size
-        self.max_packet_size = max_packet_size
-        self.commit_on_flush = commit_on_flush
-
-    def add(self, obj, estimated_length=0):
-        """Add an object to the buffer to write to db.
-
-        Args:
-            obj (object): Object to write to db.
-            estimated_length (int): The estimated length of this object.
-        """
-
-        self.buffer.append(obj)
-        self.estimated_packet_size += estimated_length
-        if (self.estimated_packet_size > self.max_packet_size or
-                len(self.buffer) >= self.max_size):
-            self.flush()
-
-    def flush(self):
-        """Flush all pending objects to the database."""
-
-        self.session.bulk_save_objects(self.buffer)
-        self.session.flush()
-        if self.commit_on_flush:
-            self.session.commit()
-        self.estimated_packet_size = 0
-        self.buffer = []
-
-
-class CaiDataAccess(object):
-    """Access to the CAI temporary store table."""
-
-    @staticmethod
-    def clear_cai_data(session):
-        """Deletes all temporary CAI data from the cai temporary table.
-
-        Args:
-            session (object): Database session.
-
-        Returns:
-            int: The number of rows deleted.
-        """
-        num_rows = 0
-        try:
-            num_rows = CaiTemporaryStore.delete_all(session)
-        except SQLAlchemyError as e:
-            LOGGER.exception('Attempt to delete data from CAI temporary store '
-                             'failed, disabling the use of CAI: %s', e)
-            session.rollback()
-
-        return num_rows
-
-    @staticmethod
-    def populate_cai_data(data, session):
-        """Add assets from cai data dump into cai temporary table.
-
-        Args:
-            data (file): A file like object, line delimeted text dump of json
-                data representing assets from Cloud Asset Inventory exportAssets
-                API.
-            session (object): Database session.
-
-        Returns:
-            int: The number of rows inserted
-        """
-        # CAI data can be large, so limit the number of rows written at one
-        # time to 512.
-        commit_buffer = BufferedDbWriter(session,
-                                         max_size=512,
-                                         commit_on_flush=True)
-        num_rows = 0
-        try:
-            for line in data:
-                if not line:
-                    continue
-
-                row = CaiTemporaryStore.from_json(line.strip().encode())
-                if row:
-                    # Overestimate the packet length to ensure max size is never
-                    # exceeded. The actual length is closer to len(line) * 1.5.
-                    commit_buffer.add(row, estimated_length=len(line) * 2)
-                    num_rows += 1
-            commit_buffer.flush()
-        except SQLAlchemyError as e:
-            LOGGER.exception('Error populating CAI data: %s', e)
-            session.rollback()
-        return num_rows
-
-    @staticmethod
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
-           stop_max_attempt_number=5)
-    def iter_cai_assets(content_type, asset_type, parent_name, session):
-        """Iterate the objects in the cai temporary table.
-
-        Retries query on exception up to 5 times.
-
-        Args:
-            content_type (ContentTypes): The content type to return.
-            asset_type (str): The asset type to return.
-            parent_name (str): The parent resource to iter children under.
-            session (object): Database session.
-
-        Yields:
-            object: The content_type data for each resource.
-        """
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.parent_name == parent_name,
-        ]
-        base_query = session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
-
-        for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data(content_type)
-
-    @staticmethod
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
-           stop_max_attempt_number=5)
-    def fetch_cai_asset(content_type, asset_type, name, session):
-        """Returns a single resource from the cai temporary store.
-
-        Retries query on exception up to 5 times.
-
-        Args:
-            content_type (ContentTypes): The content type to return.
-            asset_type (str): The asset type to return.
-            name (str): The resource to return.
-            session (object): Database session.
-
-        Returns:
-            dict: The content data for the specified resource.
-        """
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.name == name,
-        ]
-        base_query = session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        row = base_query.one_or_none()
-
-        if row:
-            return row.extract_asset_data(content_type)
-
-        return {}, None
-
-
 class DataAccess(object):
     """Access to inventory for services."""
 
@@ -1035,7 +570,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
 
         Yields:
             InventoryIndex: Generates each row
@@ -1050,8 +585,8 @@ class DataAccess(object):
         """Get an inventory index entry by id.
 
         Args:
-            session (object): Database session
-            inventory_index_id (str): Inventory id
+            session (object): Database session.
+            inventory_index_id (str): Inventory id.
 
         Returns:
             InventoryIndex: Entry corresponding the id
@@ -1069,7 +604,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
 
         Returns:
             int64: inventory index id
@@ -1094,7 +629,7 @@ class DataAccess(object):
         """List all inventory index entries.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
             scanner_index_id (int): id of the scanner in scanner_index table
 
         Returns:
@@ -1117,7 +652,7 @@ class DataAccess(object):
         """Get all inventory index entries older than the cutoff.
 
         Args:
-            session (object): Database session
+            session (object): Database session.
             cutoff_datetime (datetime): The cutoff point to find any
                 older inventory index entries.
 
@@ -1130,6 +665,97 @@ class DataAccess(object):
         session.expunge_all()
         return inventory_indexes
 
+    @classmethod
+    def iter(cls,
+             session,
+             inventory_index_id,
+             type_list=None,
+             fetch_category=Categories.resource,
+             with_parent=False):
+        """Iterate the objects in the storage.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to open.
+            type_list (list): List of types to iterate over, or [] for all.
+            fetch_category (Categories): The category of data to fetch.
+            with_parent (bool): Join parent with results, yield tuples.
+
+        Yields:
+            object: Single row object or child/parent if 'with_parent' is set.
+        """
+        filters = [Inventory.inventory_index_id == inventory_index_id,
+                   Inventory.category == fetch_category]
+
+        if type_list:
+            filters.append(Inventory.resource_type.in_(type_list))
+
+        if with_parent:
+            parent_inventory = aliased(Inventory)
+            p_id = parent_inventory.id
+            base_query = (
+                session.query(Inventory, parent_inventory)
+                .filter(Inventory.parent_id == p_id))
+        else:
+            base_query = session.query(Inventory)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(Inventory.id.asc())
+
+        for row in base_query.yield_per(PER_YIELD):
+            yield row
+
+    @classmethod
+    def get_root(cls, session, inventory_index_id):
+        """Get the resource root from the inventory.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to query.
+
+        Returns:
+            object: A row in gcp_inventory of the root
+        """
+        # Comparison to None needed to compare to Null in SQL.
+        # pylint: disable=singleton-comparison
+        root = session.query(Inventory).filter(
+            and_(
+                Inventory.inventory_index_id == inventory_index_id,
+                Inventory.parent_id == None,
+                Inventory.category == Categories.resource,
+                Inventory.resource_type.in_(['composite_root',
+                                             'organization',
+                                             'folder',
+                                             'project'])
+            )).first()
+        # pylint: enable=singleton-comparison
+
+        LOGGER.debug('Root resource: %s', root)
+        return root
+
+    @classmethod
+    def type_exists(cls,
+                    session,
+                    inventory_index_id,
+                    type_list=None):
+        """Check if certain types of resources exists in the inventory.
+
+        Args:
+            session (object): Database session.
+            inventory_index_id (str): the id of the inventory to query.
+            type_list (list): List of types to check.
+
+        Returns:
+            bool: If these types of resources exists.
+        """
+        return session.query(exists().where(and_(
+            Inventory.inventory_index_id == inventory_index_id,
+            Inventory.category == Categories.resource,
+            Inventory.resource_type.in_(type_list)
+        ))).scalar()
+
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -1137,35 +763,26 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
-    dialect = engine.dialect.name
-    if dialect == 'sqlite':
-        collation = 'binary'
-    else:
-        collation = 'utf8_bin'
-
-    CaiTemporaryStore.initialize(BASE.metadata, collation)
     BASE.metadata.create_all(engine)
 
 
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    def __init__(self, session, existing_id=0, readonly=False):
+    def __init__(self, session, engine):
         """Initialize
 
         Args:
             session (object): db session.
-            existing_id (int64): The inventory id if wants to open an existing
-                inventory.
-            readonly (bool): whether to keep the inventory read-only.
+            engine (sqlalchemy.engine.Engine): db engine.
         """
         self.session = session
+        self.engine = engine
         self.opened = False
         self.inventory_index = None
-        self.buffer = BufferedDbWriter(self.session)
-        self._existing_id = existing_id
         self.session_completed = False
-        self.readonly = readonly
+        self._wrote_resources = set()
+        self._storage_lock = threading.Lock()
 
     def _require_opened(self):
         """Make sure the storage is in 'open' state.
@@ -1190,6 +807,7 @@ class Storage(BaseStorage):
         try:
             index = InventoryIndex.create()
             self.session.add(index)
+            self.session.commit()
         except Exception as e:
             LOGGER.exception(e)
             self.session.rollback()
@@ -1214,55 +832,6 @@ class Storage(BaseStorage):
                         [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]))
             .one())
 
-    def _get_resource_rows(self, key, resource_type):
-        """ Get the rows in the database for a certain resource
-
-        Args:
-            key (str): The key of the resource
-            resource_type (str): The type of the resource
-
-        Returns:
-            object: The inventory db rows of the resource,
-            IAM policy and GCS policy.
-
-        Raises:
-            Exception: if there is no such row or more than one.
-        """
-
-        rows = self.session.query(Inventory).filter(
-            and_(
-                Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.resource_id == key,
-                Inventory.resource_type == resource_type
-            )).all()
-
-        if not rows:
-            raise Exception('Resource {} not found in the table'.format(key))
-        else:
-            return rows
-
-    def _get_resource_id(self, resource):
-        """Checks if a resource exists already in the inventory.
-
-        Args:
-            resource (object): Resource object to check against the db.
-
-        Returns:
-            int: The resource id of the existing resource, else 0.
-        """
-        row = self.session.query(Inventory.id).filter(
-            and_(
-                Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.category == Categories.resource,
-                Inventory.resource_type == resource.type(),
-                Inventory.resource_id == resource.key(),
-            )).one_or_none()
-
-        if row:
-            return row.id
-
-        return 0
-
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
 
@@ -1277,31 +846,27 @@ class Storage(BaseStorage):
             Exception: if open was called more than once
         """
 
-        existing_id = handle
         if self.opened:
             raise Exception('open called before')
 
-        # existing_id in open overrides potential constructor given id
-        existing_id = existing_id if existing_id else self._existing_id
-
         # Should we create a new entry or are we opening an existing one?
-        if existing_id:
-            self.inventory_index = self._open(existing_id)
+        if handle:
+            self.inventory_index = self._open(handle)
         else:
             self.inventory_index = self._create()
-            self.session.commit()  # commit only on create.
 
         self.opened = True
-        if not self.readonly:
-            self.session.begin_nested()
         return self.inventory_index.id
 
     def rollback(self):
         """Roll back the stored inventory, but keep the index entry."""
 
         try:
-            self.buffer.flush()
-            self.session.rollback()
+            # Delete any rows that had been added to the inventory for this
+            # instance of the inventory.
+            inventory_id = self.inventory_index.id
+            self.session.query(Inventory).filter(
+                Inventory.inventory_index_id == inventory_id).delete()
             self.inventory_index.complete(status=IndexState.FAILURE)
             self.session.commit()
         finally:
@@ -1314,8 +879,6 @@ class Storage(BaseStorage):
         else:
             status = IndexState.SUCCESS
         try:
-            self.buffer.flush()
-            self.session.commit()
             self.inventory_index.complete(status=status)
             self.session.commit()
         finally:
@@ -1333,7 +896,7 @@ class Storage(BaseStorage):
         if not self.opened:
             raise Exception('not open')
 
-        if not self.readonly and not self.session_completed:
+        if not self.session_completed:
             raise Exception('Need to perform commit or rollback before close')
 
         self.opened = False
@@ -1343,213 +906,50 @@ class Storage(BaseStorage):
 
         Args:
             resource (object): Resource object to store in db.
-
-        Raises:
-            Exception: If storage was opened readonly.
         """
-        if self.readonly:
-            raise Exception('Opened storage readonly')
+        # Use a lock to quickly check if this is a duplicate resource before
+        # updating the cache and proceeding.
+        with self._storage_lock:
+            if resource.get_full_resource_name() in self._wrote_resources:
+                LOGGER.warning('Duplicate Resource in inventory, skipping %s',
+                               resource.get_full_resource_name())
+                return
+            self._wrote_resources.add(resource.get_full_resource_name())
 
-        previous_id = self._get_resource_id(resource)
-        if previous_id:
-            resource.set_inventory_key(previous_id)
-            self.update(resource)
-            return
+        (resource_row, policy_rows) = Inventory.from_resource(
+            self.inventory_index, resource)
 
-        rows = Inventory.from_resource(self.inventory_index, resource)
+        # Insert first row to get the primary key for the resource
+        result = self.engine.execute(Inventory.__table__.insert(), resource_row)
+        resource_id = result.inserted_primary_key[0]
+        resource.set_inventory_key(resource_id)
 
-        for row in rows:
-            if row.category == Categories.resource:
-                # Force flush to insert the resource row in order to get the
-                # inventory id value. This is used to tie child resources
-                # and related data back to the parent resource row and to
-                # check for duplicate resources.
-                self.session.add(row)
-                self.session.flush()
-                resource.set_inventory_key(row.id)
-            else:
-                row.parent_id = resource.inventory_key()
-                self.buffer.add(row)
+        # Insert any remaining rows in bulk.
+        if policy_rows:
+            # Set the parent id for policies to the main resource
+            for row in policy_rows:
+                row['parent_id'] = resource_id
+            self.engine.execute(Inventory.__table__.insert(), policy_rows)
 
-        self.inventory_index.counter += len(rows)
-
-    def update(self, resource):
-        """Update a resource in the storage.
-
-        Args:
-            resource (object): Resource object to store in db.
-
-        Raises:
-            Exception: If storage was opened readonly.
-        """
-
-        if self.readonly:
-            raise Exception('Opened storage readonly')
-
-        self.buffer.flush()
-
-        try:
-            new_rows = Inventory.from_resource(self.inventory_index, resource)
-            old_rows = self._get_resource_rows(
-                resource.key(), resource.type())
-
-            new_dict = {row.category.name: row for row in new_rows}
-            old_dict = {row.category.name: row for row in old_rows}
-
-            for category in SUPPORTED_CATEGORIES:
-                if category in new_dict:
-                    if category in old_dict:
-                        old_dict[category].copy_inplace(
-                            new_dict[category])
-                    else:
-                        new_dict[category].parent_id = resource.inventory_key()
-                        self.session.add(new_dict[category])
-            self.session.commit()
-        except Exception as e:
-            LOGGER.exception(e)
-            raise Exception('Resource Update Unsuccessful: {}'.format(e))
+        self.inventory_index.counter += 1 + len(policy_rows)
 
     def error(self, message):
         """Store a fatal error in storage. This will help debug problems.
 
         Args:
             message (str): Error message describing the problem.
-
-        Raises:
-            Exception: If the storage was opened readonly.
         """
-
-        if self.readonly:
-            raise Exception('Opened storage readonly')
-        self.inventory_index.set_error(self.session, message)
+        with self._storage_lock:
+            self.inventory_index.set_error(self.session, message)
 
     def warning(self, message):
         """Store a Warning message in storage. This will help debug problems.
 
         Args:
             message (str): Warning message describing the problem.
-
-        Raises:
-            Exception: If the storage was opened readonly.
         """
-
-        if self.readonly:
-            raise Exception('Opened storage readonly')
-        self.inventory_index.add_warning(self.session, message)
-
-    def iter(self,
-             type_list=None,
-             fetch_iam_policy=False,
-             fetch_gcs_policy=False,
-             fetch_dataset_policy=False,
-             fetch_billing_info=False,
-             fetch_enabled_apis=False,
-             fetch_service_config=False,
-             with_parent=False):
-        """Iterate the objects in the storage.
-
-        Args:
-            type_list (list): List of types to iterate over, or [] for all.
-            fetch_iam_policy (bool): Yield iam policies.
-            fetch_gcs_policy (bool): Yield gcs policies.
-            fetch_dataset_policy (bool): Yield dataset policies.
-            fetch_billing_info (bool): Yield project billing info.
-            fetch_enabled_apis (bool): Yield project enabled APIs info.
-            fetch_service_config (bool): Yield container service config info.
-            with_parent (bool): Join parent with results, yield tuples.
-
-        Yields:
-            object: Single row object or child/parent if 'with_parent' is set.
-        """
-
-        filters = [Inventory.inventory_index_id == self.inventory_index.id]
-
-        if fetch_iam_policy:
-            filters.append(
-                Inventory.category == Categories.iam_policy)
-
-        elif fetch_gcs_policy:
-            filters.append(
-                Inventory.category == Categories.gcs_policy)
-
-        elif fetch_dataset_policy:
-            filters.append(
-                Inventory.category == Categories.dataset_policy)
-
-        elif fetch_billing_info:
-            filters.append(
-                Inventory.category == Categories.billing_info)
-
-        elif fetch_enabled_apis:
-            filters.append(
-                Inventory.category == Categories.enabled_apis)
-
-        elif fetch_service_config:
-            filters.append(
-                Inventory.category == Categories.kubernetes_service_config)
-
-        else:
-            filters.append(
-                Inventory.category == Categories.resource)
-
-        if type_list:
-            filters.append(Inventory.resource_type.in_(type_list))
-
-        if with_parent:
-            parent_inventory = aliased(Inventory)
-            p_id = parent_inventory.id
-            base_query = (
-                self.session.query(Inventory, parent_inventory)
-                .filter(Inventory.parent_id == p_id))
-        else:
-            base_query = self.session.query(Inventory)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        base_query = base_query.order_by(Inventory.id.asc())
-
-        for row in base_query.yield_per(PER_YIELD):
-            yield row
-
-    def get_root(self):
-        """get the resource root from the inventory
-
-        Returns:
-            object: A row in gcp_inventory of the root
-        """
-        # Comparison to None needed to compare to Null in SQL.
-        # pylint: disable=singleton-comparison
-        root = self.session.query(Inventory).filter(
-            and_(
-                Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.parent_id == None,
-                Inventory.category == Categories.resource,
-                Inventory.resource_type.in_(['composite_root',
-                                             'organization',
-                                             'folder',
-                                             'project'])
-            )).first()
-        # pylint: enable=singleton-comparison
-
-        LOGGER.debug('Root resource: %s', root)
-        return root
-
-    def type_exists(self,
-                    type_list=None):
-        """Check if certain types of resources exists in the inventory
-
-        Args:
-            type_list (list): List of types to check
-
-        Returns:
-            bool: If these types of resources exists
-        """
-        return self.session.query(exists().where(and_(
-            Inventory.inventory_index_id == self.inventory_index.id,
-            Inventory.category == Categories.resource,
-            Inventory.resource_type.in_(type_list)
-        ))).scalar()
+        with self._storage_lock:
+            self.inventory_index.add_warning(self.session, message)
 
     def __enter__(self):
         """To support with statement for auto closing.
