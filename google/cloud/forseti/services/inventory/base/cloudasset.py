@@ -180,13 +180,20 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         if asset_types:
             LOGGER.info('Limiting export to the following asset types: %s',
                         asset_types)
-
-        results = cloudasset_client.export_assets(root_id,
-                                                  export_path,
-                                                  content_type=content_type,
-                                                  asset_types=asset_types,
-                                                  blocking=True,
-                                                  timeout=timeout)
+        try:
+            results = cloudasset_client.export_assets(root_id,
+                                                      export_path,
+                                                      content_type=content_type,
+                                                      asset_types=asset_types,
+                                                      blocking=True,
+                                                      timeout=timeout)
+        except api_errors.HTTPError as e:
+            results = cloudasset_client.export_assets(root_id,
+                                                      export_path,
+                                                      content_type=content_type,
+                                                      asset_types=[],
+                                                      blocking=True,
+                                                      timeout=timeout)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
