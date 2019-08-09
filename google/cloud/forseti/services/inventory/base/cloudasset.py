@@ -37,6 +37,7 @@ DEFAULT_ASSET_TYPES = [
     'appengine.googleapis.com/Service',
     'appengine.googleapis.com/Version',
     'bigquery.googleapis.com/Dataset',
+    'bigquery.googleapis.com/Table',
     'cloudbilling.googleapis.com/BillingAccount',
     'cloudkms.googleapis.com/CryptoKey',
     'cloudkms.googleapis.com/CryptoKeyVersion',
