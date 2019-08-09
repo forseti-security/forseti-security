@@ -21,7 +21,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
-DEFAULT_INTEGRATIONS = ['sqlalchemy']
+DEFAULT_INTEGRATIONS = []
 
 # pylint: disable=line-too-long
 try:
