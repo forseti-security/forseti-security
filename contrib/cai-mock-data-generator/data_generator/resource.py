@@ -238,10 +238,11 @@ def generate_bigquery_dataset(parent_resource, resource_id=''):
     resource_type = 'bigquery_dataset'
     cai_resource_name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(parent_resource.resource_id, resource_id)
     cai_resource_type = 'bigquery.googleapis.com/Dataset'
+    resource_location = tmpl.RESOURCE_LOCATIONS[random.randint(0,1)]
     resource_data = tmpl.BIGQUERY_DATASET.format(DATASET_ID=resource_id,
                                                  PARENT_CAI_NAME=parent_resource.cai_resource_name,
                                                  PROJECT_ID=parent_resource.resource_id,
-                                                 LOCATION=parent_resource.resource_id)
+                                                 LOCATION=resource_location)
     resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.BIGQUERY_ROLES)
     return Resource(cai_name=cai_resource_name,
                     cai_type=cai_resource_type,
@@ -319,6 +320,193 @@ def generate_service_account(parent_resource, resource_id=''):
                     parent_resource=parent_resource)
 
 
+def generate_appengine_application(parent_resource, resource_id=''):
+    """Generate appengine application resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'appengine_application'
+    cai_resource_name = '//appengine.googleapis.com/apps/{}'.format(
+        resource_id)
+    cai_resource_type = 'appengine.googleapis.com/Application'
+    resource_data = tmpl.APPENGINE_APPLICATION.format(
+        APPENGINE_APPLICATION_ID=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_appengine_service(parent_resource, resource_id=''):
+    """Generate appengine service resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'appengine_service'
+    cai_resource_name = '//appengine.googleapis.com/apps/{}/services/{}'.format(
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'appengine.googleapis.com/Service'
+    resource_data = tmpl.APPENGINE_SERVICE.format(
+        APPENGINE_APPLICATION_ID=parent_resource.resource_id,
+        APPENGINE_SERVICE_ID=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_appengine_version(parent_resource, resource_id=''):
+    """Generate appengine version resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id()
+    resource_type = 'appengine_version'
+    cai_resource_name = '//appengine.googleapis.com/apps/{}/services/{}/versions/{}'.format(
+        parent_resource.parent_resource.resource_id,
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'appengine.googleapis.com/Version'
+    resource_data = tmpl.APPENGINE_VERSION.format(
+        APPENGINE_APPLICATION_ID=parent_resource.parent_resource.resource_id,
+        APPENGINE_SERVICE_ID=parent_resource.resource_id,
+        VERSION_NUMBER=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_compute_firewall_rule(parent_resource, resource_id=''):
+    """Generate compute firewall rule resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'compute_firewall_rule'
+    cai_resource_name = '//compute.googleapis.com/projects/{}/global/firewalls/{}'.format(
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'compute.googleapis.com/Firewall'
+    resource_data = tmpl.COMPUTE_FIREWALL_RULE.format(
+        PROJECT_ID=parent_resource.resource_id,
+        FIREWALL_RULE_ID=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_compute_disk(parent_resource, resource_id=''):
+    """Generate compute firewall rule resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'compute_disk'
+    cai_resource_name = '//compute.googleapis.com/projects/{}/zones/us-central1-c/disks/{}'.format(
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'compute.googleapis.com/Disk'
+    resource_data = tmpl.COMPUTE_DISK.format(
+        PROJECT_ID=parent_resource.resource_id,
+        DISK_NAME=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+def generate_compute_snapshot(parent_resource, resource_id=''):
+    """Generate compute snapshot resource.
+
+    Args:
+        parent_resource (Resource): The parent resource.
+        resource_id (str): The resource id for this resource.
+
+    Returns:
+        Resource: A resource object.
+    """
+    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_type = 'compute_snapshot'
+    cai_resource_name = '//compute.googleapis.com/projects/{}/global/snapshots/{}'.format(
+        parent_resource.resource_id,
+        resource_id)
+    cai_resource_type = 'compute.googleapis.com/Snapshot'
+    resource_data = tmpl.COMPUTE_SNAPSHOT.format(
+        PROJECT_ID=parent_resource.resource_id,
+        SNAPSHOT_ID=resource_id,
+        PARENT_CAI_NAME=parent_resource.cai_resource_name)
+
+    return Resource(cai_name=cai_resource_name,
+                    cai_type=cai_resource_type,
+                    resource_id=resource_id,
+                    resource_number=resource_id,
+                    resource_type=resource_type,
+                    resource_data=resource_data,
+                    resource_iam_policy='',
+                    parent_resource=parent_resource)
+
+
+
 RESOURCE_GENERATOR_FACTORY = {
     'organization': generate_organization,
     'folder': generate_folder,
@@ -326,15 +514,35 @@ RESOURCE_GENERATOR_FACTORY = {
     'bucket': generate_bucket,
     'bigquery_dataset': generate_bigquery_dataset,
     'bigquery_table': generate_bigquery_table,
-    'service_account': generate_service_account
+    'service_account': generate_service_account,
+    'appengine_application': generate_appengine_application,
+    'appengine_service': generate_appengine_service,
+    'appengine_version': generate_appengine_version,
+    'compute_firewall_rule': generate_compute_firewall_rule,
+    'compute_disk': generate_compute_disk,
+    'compute_snapshot': generate_compute_snapshot
 }
 
 RESOURCE_DEPENDENCY_MAP = {
-    'organization': ['folder', 'project'],
-    'folder': ['project', 'folder'],
-    'project': ['bigquery_dataset', 'bucket', 'service_account'],
+    'organization': ['folder',
+                     'project'],
+    'folder': ['project',
+               'folder'],
+    'project': ['appengine_application',
+                'bigquery_dataset',
+                'bucket',
+                'compute_firewall_rule',
+                'compute_disk',
+                'compute_snapshot',
+                'service_account'],
     'bucket': [],
     'bigquery_dataset': ['bigquery_table'],
     'bigquery_table': [],
-    'service_account': []
+    'service_account': [],
+    'appengine_application': ['appengine_service'],
+    'appengine_service': ['appengine_version'],
+    'appengine_version': [],
+    'compute_firewall_rule': [],
+    'compute_disk': [],
+    'compute_snapshot': []
 }

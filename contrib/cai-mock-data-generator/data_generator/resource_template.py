@@ -1,3 +1,8 @@
+RESOURCE_LOCATIONS = [
+    'US',
+    'EU'
+]
+
 FAKE_IAM_MEMBERS = [
     "allUsers",
     "allAuthenticatedUsers"
@@ -273,6 +278,188 @@ SERVICE_ACCOUNT = '''
 }}
 '''
 
+# APPENGINE Application params: APPENGINE_APPLICATION_ID and PARENT_CAI_NAME
+APPENGINE_APPLICATION = '''
+{{
+    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}",
+    "asset_type":"appengine.googleapis.com/Application",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest",
+        "discovery_name":"Application",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "authDomain":"gmail.com",
+            "codeBucket":"staging.{APPENGINE_APPLICATION_ID}.appspot.com",
+            "defaultBucket":"{APPENGINE_APPLICATION_ID}.appspot.com",
+            "defaultHostname":"{APPENGINE_APPLICATION_ID}.appspot.com",
+            "gcrDomain":"us.gcr.io",
+            "id":"{APPENGINE_APPLICATION_ID}",
+            "locationId":"us-central",
+            "name":"apps/{APPENGINE_APPLICATION_ID}",
+            "servingStatus":"SERVING"
+        }}
+    }}
+}}
+'''
 
+# APPENGINE Service params: APPENGINE_APPLICATION_ID, APPENGINE_SERVICE_ID and PARENT_CAI_NAME
+APPENGINE_SERVICE = '''
+{{
+    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}",
+    "asset_type":"appengine.googleapis.com/Service",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest",
+        "discovery_name":"Service",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "id":"default",
+            "name":"apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}",
+            "split":{{
+                "allocations":{{
+                    "1":1
+                }}
+            }}
+        }}
+    }}
+}}
+'''
 
+# APPENGINE Version params: APPENGINE_APPLICATION_ID, APPENGINE_SERVICE_ID, VERSION_NUMBER and PARENT_CAI_NAME
+APPENGINE_VERSION = '''
+{{
+    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
+    "asset_type":"appengine.googleapis.com/Version",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest",
+        "discovery_name":"Version",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "automaticScaling":{{
+                "coolDownPeriod":"120s",
+                "cpuUtilization":{{
+                    "targetUtilization":0.5
+                }},
+                "maxTotalInstances":20,
+                "minTotalInstances":2
+            }},
+            "betaSettings":{{
+                "source_reference":""
+            }},
+            "createTime":"2016-10-20T00:40:47Z",
+            "deployment":{{}},
+            "envVariables":{{}},
+            "healthCheck":{{}},
+            "id":"1",
+            "inboundServices":["INBOUND_SERVICE_WARMUP"],
+            "name":"apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
+            "runtime":"java7",
+            "runtimeApiVersion":"1.0",
+            "servingStatus":"STOPPED",
+            "threadsafe":true,
+            "versionUrl":"https://apple-pie.appspot.com",
+            "vm":true
+        }}
+    }}
+}}
+'''
 
+# Firewall Rule params: PROJECT_ID, FIREWALL_RULE_ID and PARENT_CAI_NAME
+
+COMPUTE_FIREWALL_RULE = '''
+{{
+    "name":"//compute.googleapis.com/projects/{PROJECT_ID}/global/firewalls/{FIREWALL_RULE_ID}",
+    "asset_type":"compute.googleapis.com/Firewall",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+        "discovery_name":"Firewall",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "allowed":[{{
+                "ipProtocol":"all"
+            }}],
+            "creationTimestamp":"2019-01-09T13:58:07.862-08:00",
+            "description":"",
+            "direction":"INGRESS",
+            "disabled":false,
+            "id":"12345678987654",
+            "logConfig":{{
+                "enable":false
+            }},
+            "name":"{FIREWALL_RULE_ID}",
+            "network":"https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/global/networks/default",
+            "priority":1000,
+            "selfLink":"https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/global/firewalls/{FIREWALL_RULE_ID}",
+            "sourceRange":["0.0.0.0/0"]
+        }}
+    }}
+}}
+'''
+
+# Compute Disk params: PROJECT_ID, DISK_NAME and PARENT_CAI_NAME
+COMPUTE_DISK = '''
+{{
+    "name":"//compute.googleapis.com/projects/{PROJECT_ID}/zones/us-central1-c/disks/{DISK_NAME}",
+    "asset_type":"compute.googleapis.com/Disk",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+        "discovery_name":"Disk",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "creationTimestamp":"2018-04-05T14:29:38.447-07:00",
+            "guestOsFeature":[{{
+                "type":"VIRTIO_SCSI_MULTIQUEUE"
+            }}],
+            "id":"11111111111111111",
+            "labelFingerprint":"2222222222",
+            "lastAttachTimestamp":"2018-04-05T14:29:38.454-07:00",
+            "license":["https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/licenses/ubuntu-1604-xenial"],
+            "licenseCode":["0000000"],
+            "name":"{DISK_NAME}",
+            "physicalBlockSizeBytes":"4096",
+            "selfLink":"https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/zones/us-central1-c/disks/{DISK_NAME}",
+            "sizeGb":"10",
+            "sourceImage":"https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20180323",
+            "sourceImageId":"333333333333333333",
+            "status":"READY",
+            "type":"https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/zones/us-central1-c/diskTypes/pd-standard",
+            "user":["https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/zones/us-central1-c/instances/{DISK_NAME}"],
+            "zone":"https://www.googleapis.com/compute/v1/projects/{PROJECT_ID}/zones/us-central1-c"
+        }}
+    }}
+}}
+'''
+
+# Snapshot params: PROJECT_ID, SNAPSHOT_ID and PARENT_CAI_NAME
+COMPUTE_SNAPSHOT = '''
+{{
+    "name":"//compute.googleapis.com/projects/{PROJECT_ID}/global/snapshots/{SNAPSHOT_ID}",
+    "asset_type":"compute.googleapis.com/Snapshot",
+    "resource":{{
+        "version":"v1",
+        "discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+        "discovery_name":"Snapshot",
+        "parent":"{PARENT_CAI_NAME}",
+        "data":{{
+            "creationTimestamp":"2018-07-12T09:45:32.866-07:00",
+            "diskSizeGb":"10",
+            "id":"222222222222222",
+            "labelFingerprint":"1111111111",
+            "license":["https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"],
+            "licenseCode":["000000"],
+            "name":"{SNAPSHOT_ID}",
+            "selfLink":"https://www.googleapis.com/compute/v1/projects/pwilthew-204422/global/snapshots/snapshot-1",
+            "sourceDisk":"https://www.googleapis.com/compute/v1/projects/pwilthew-204422/zones/us-east1-b/disks/dev-pwilthew",
+            "sourceDiskId":"3333333333333333333",
+            "status":"READY",
+            "storageBytes":"1570747328",
+            "storageBytesStatus":"UP_TO_DATE",
+            "storageLocation":["us"]
+        }}
+    }}
+}}
+'''

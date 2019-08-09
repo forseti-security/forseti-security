@@ -13,6 +13,18 @@ resource_structure:
         folder:
           - resource_count: 10
             project:
+              - resource_count: 5
+                compute_firewall_rule: []
+              - resource_count: 5
+                compute_disk: []
+              - resource_count: 5
+                compute_snapshot: []
+              - resource_count: 5
+                appengine_application:
+                  - resource_count: 3
+                    appengine_service:
+                      - resource_count: 3
+                        appengine_version: []
               - resource_count: 15
                 service_account: []
               - resource_count: 10
