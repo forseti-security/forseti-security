@@ -54,9 +54,9 @@ _FOLDER_ROLES = [
     'roles/role223',
     'roles/role224',
 ]
+
 FOLDER_ROLES = ORGANIZATION_ROLES[:]
 FOLDER_ROLES.extend(_FOLDER_ROLES)
-
 
 _PROJECT_ROLES = [
     'roles/role331',
@@ -65,9 +65,9 @@ _PROJECT_ROLES = [
     'roles/role334',
 
 ]
+
 PROJECT_ROLES = FOLDER_ROLES[:]
 PROJECT_ROLES.extend(_PROJECT_ROLES)
-
 
 BUCKET_ROLES = [
     'roles/bucket1',
@@ -87,7 +87,6 @@ SERVICE_ACCOUNT_ROLES = [
     'roles/serviceaccount3'
 ]
 
-
 # IAM Policy params: CAI_RESOURCE_NAME, CAI_RESOURCE_TYPE AND IAM_BINDING.
 IAM_POLICY = '''
 {{
@@ -100,7 +99,6 @@ IAM_POLICY = '''
 }}
 '''
 
-
 # IAM Binding params: ROLE and MEMBER_LIST
 IAM_BINDING = '''
 {{
@@ -108,7 +106,6 @@ IAM_BINDING = '''
     "members":{MEMBER_LIST}
 }}
 '''
-
 
 # Org params: ORGANIZATION_NUMBER and DISPLAY_NAME
 ORGANIZATION = '''
