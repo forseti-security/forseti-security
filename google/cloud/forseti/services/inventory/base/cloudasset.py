@@ -202,7 +202,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                     timeout=timeout)
             else:
                 LOGGER.warning('API Error getting cloud asset data: %s', e)
-                return None
+                raise e  # pylint: disable=missing-raises-doc
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
