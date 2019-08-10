@@ -398,7 +398,7 @@ COMPUTE_FIREWALL_RULE = '''
             "description":"",
             "direction":"INGRESS",
             "disabled":false,
-            "id":"12345678987654",
+            "id":"{FIREWALL_RULE_ID}",
             "logConfig":{{
                 "enable":false
             }},
@@ -427,7 +427,7 @@ COMPUTE_DISK = '''
             "guestOsFeature":[{{
                 "type":"VIRTIO_SCSI_MULTIQUEUE"
             }}],
-            "id":"11111111111111111",
+            "id":"{DISK_NAME}",
             "labelFingerprint":"2222222222",
             "lastAttachTimestamp":"2018-04-05T14:29:38.454-07:00",
             "license":["https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/licenses/ubuntu-1604-xenial"],
@@ -460,7 +460,7 @@ COMPUTE_SNAPSHOT = '''
         "data":{{
             "creationTimestamp":"2018-07-12T09:45:32.866-07:00",
             "diskSizeGb":"10",
-            "id":"222222222222222",
+            "id":"{SNAPSHOT_ID}",
             "labelFingerprint":"1111111111",
             "license":["https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"],
             "licenseCode":["000000"],
