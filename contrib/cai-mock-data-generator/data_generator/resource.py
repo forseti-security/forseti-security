@@ -61,7 +61,7 @@ class Resource(object):
         Returns:
             str: A clean string.
         """
-        return dirty_str.replace('\r', '').replace('\n', '').replace('\\\'', '\'').replace(' ', '')
+        return dirty_str.replace('\r', '').replace('\n', '').replace('\\\'', '\'').replace(' ', '').replace('\'{', '{').replace('}\'', '}').replace('\'', '"')
 
 
 def _generate_random_id(length=12, number_only=True):

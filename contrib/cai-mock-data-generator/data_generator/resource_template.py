@@ -202,7 +202,7 @@ BUCKET = '''
             "metageneration":2,
             "name":"{BUCKET_ID}",
             "owner":{{}},
-            "projectNumber":{PARENT_ID},
+            "projectNumber":"{PARENT_ID}",
             "retentionPolicy":{{}},
             "selfLink":"https://www.googleapis.com/storage/v1/b/{BUCKET_ID}","storageClass":"STANDARD",
             "timeCreated":"2019-03-13T19:22:22.504Z","updated":"2019-03-13T19:22:23.656Z",

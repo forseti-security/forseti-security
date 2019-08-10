@@ -37,10 +37,15 @@ def create_file_and_writer_listener(file_path, content_queue):
         file_path (str): The file path.
         content_queue (Queue): The content queue to listen to.
     """
+    first_line = True  # Need to make sure there is no empty line in the file.
     with open(file_path, 'w+') as f:
         while True:
             item = content_queue.get()
             if item is None:
                 break
-            print(item, file=f)
+            if first_line:
+                first_line = False
+                f.write(item)
+            else:
+                f.write('\n{}'.format(item))
             content_queue.task_done()
