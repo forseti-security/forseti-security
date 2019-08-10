@@ -102,28 +102,22 @@ class StreamError(Exception):
     """Raised for errors streaming results from GCS to local DB."""
 
 
-def load_cloudasset_data(engine, config):
-    """Export asset data from Cloud Asset API and load into storage.
+def _download_cloudasset_data(config):
+    """Download cloud asset data.
 
     Args:
-        engine (object): Database engine.
-        config (object): Inventory configuration on server.
+        config (InventoryConfig): Inventory config.
 
     Returns:
-        int: The count of assets imported into the database, or None if there
-            is an error.
+        list: GCS paths.
     """
-    cloudasset_client = cloudasset.CloudAssetClient(
-        config.get_api_quota_configs())
-    storage_client = storage.StorageClient()
-
     root_resources = []
     if config.use_composite_root():
         root_resources.extend(config.get_composite_root_resources())
     else:
         root_resources.append(config.get_root_resource_id())
-
-    imported_assets = 0
+    cloudasset_client = cloudasset.CloudAssetClient(
+        config.get_api_quota_configs())
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         for root_id in root_resources:
@@ -133,17 +127,43 @@ def load_cloudasset_data(engine, config):
                                                config,
                                                root_id,
                                                content_type))
+        gcs_paths = []
 
         for future in concurrent.futures.as_completed(futures):
-            gcs_object = future.result()
-            try:
-                assets = _stream_gcs_to_database(gcs_object,
-                                                 engine,
-                                                 storage_client)
-                imported_assets += assets
-            except StreamError as e:
-                LOGGER.error('Error streaming data from GCS to Database: %s', e)
-                return _clear_cai_data(engine)
+            gcs_paths.append(future.result())
+        return gcs_paths
+
+
+def load_cloudasset_data(engine, config):
+    """Export asset data from Cloud Asset API and load into storage.
+
+    Args:
+        engine (object): Database engine.
+        config (InventoryConfig): Inventory configuration on server.
+
+    Returns:
+        int: The count of assets imported into the database, or None if there
+            is an error.
+    """
+    cai_gcs_dump_paths = [config.get_cai_iam_dump_file_path(),
+                          config.get_cai_resource_dump_file_path()]
+
+    storage_client = storage.StorageClient()
+    imported_assets = 0
+
+    if '' in cai_gcs_dump_paths:
+        # Dump file paths not specified, download the dump files instead.
+        cai_gcs_dump_paths = _download_cloudasset_data(config)
+
+    for gcs_path in cai_gcs_dump_paths:
+        try:
+            assets = _stream_gcs_to_database(gcs_path,
+                                             engine,
+                                             storage_client)
+            imported_assets += assets
+        except StreamError as e:
+            LOGGER.error('Error streaming data from GCS to Database: %s', e)
+            return _clear_cai_data(engine)
 
     # Each worker's imported asset count is appended to the deque, sum them all
     # to get total imported assets.

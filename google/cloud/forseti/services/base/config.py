@@ -208,6 +208,8 @@ class InventoryConfig(AbstractInventoryConfig):
             composite_root_resources (list): The list of resources to use crawl
                 using a composite root.
             excluded_resources (list): The list of resources to exclude.
+            resource_dump_file_path (str): The path to the resource dump file.
+            iam_dump_file_path (str): The path to the iam dump file.
 
         Raises:
             ValueError: Raised if neither or both root_resource_id and
@@ -322,6 +324,22 @@ class InventoryConfig(AbstractInventoryConfig):
             str: The GCS bucket path for CAI data.
         """
         return self.cai_configs.get('gcs_path', '')
+
+    def get_cai_iam_dump_file_path(self):
+        """Returns the GCS bucket path to store the CAI data dumps in.
+
+        Returns:
+            str: The GCS bucket path for CAI data.
+        """
+        return self.cai_configs.get('iam_dump_file_gcs_path', '')
+
+    def get_cai_resource_dump_file_path(self):
+        """Returns the GCS bucket path to store the CAI data dumps in.
+
+        Returns:
+            str: The GCS bucket path for CAI data.
+        """
+        return self.cai_configs.get('resource_dump_file_gcs_path', '')
 
     def get_cai_timeout(self):
         """Returns the timeout in seconds for calls to the Cloud Asset API.
