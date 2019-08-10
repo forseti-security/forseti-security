@@ -201,7 +201,8 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                     blocking=True,
                     timeout=timeout)
             else:
-                raise e
+                LOGGER.warning('API Error getting cloud asset data: %s', e)
+                return None
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
