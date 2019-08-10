@@ -285,7 +285,7 @@ SERVICE_ACCOUNT = '''
             "name":"projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_ID}@{PROJECT_ID}.iam.gserviceaccount.com",
             "oauth2ClientId":"22222222222222222222",
             "projectId":"{PROJECT_ID}",
-            "uniqueId":"11111111111111111111"
+            "uniqueId":"{DISPLAY_NAME}"
         }}
     }}
 }}
