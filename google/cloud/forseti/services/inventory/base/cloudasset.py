@@ -189,17 +189,17 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
                                                       timeout=timeout)
         except api_errors.ApiExecutionError as e:
             if e.http_error.resp.status == 400:
-                LOGGER.debug('Bad request with unsupported resource types '
-                             'sent to CAI for %s under %s. Exporting all '
-                             ' resources for Cloud Asset export.',
-                             content_type, root_id)
-                results = cloudasset_client.export_assets(root_id,
-                                                          export_path,
-                                                          content_type=
-                                                          content_type,
-                                                          asset_types=[],
-                                                          blocking=True,
-                                                          timeout=timeout)
+                LOGGER.warning('Bad request with unsupported resource types '
+                               'sent to CAI for %s under %s. Exporting all '
+                               'resources for Cloud Asset export.',
+                               content_type, root_id)
+                results = cloudasset_client.export_assets(
+                    root_id,
+                    export_path,
+                    content_type=content_type,
+                    asset_types=[],
+                    blocking=True,
+                    timeout=timeout)
             else:
                 raise e
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
