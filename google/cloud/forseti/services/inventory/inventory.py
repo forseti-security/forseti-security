@@ -287,12 +287,12 @@ class Inventory(object):
         """List stored inventory.
 
         Yields:
-            object: Inventory metadata
+            object: Inventory metadata.
         """
 
         with self.config.scoped_session() as session:
-            for item in DataAccess.list(session):
-                yield item
+            for result in DataAccess.list(session):
+                yield result
 
     def get(self, inventory_id):
         """Get inventory metadata by id.
@@ -301,7 +301,7 @@ class Inventory(object):
             inventory_id (str): Id of the inventory.
 
         Returns:
-            object: Inventory metadata
+            object: Inventory metadata.
         """
 
         with self.config.scoped_session() as session:
@@ -315,7 +315,7 @@ class Inventory(object):
             inventory_id (str): Id of the inventory.
 
         Returns:
-            object: Inventory object that was deleted
+            object: Inventory object that was deleted.
         """
 
         with self.config.scoped_session() as session:

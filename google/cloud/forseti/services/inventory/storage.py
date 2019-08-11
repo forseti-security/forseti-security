@@ -25,6 +25,7 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import exists
+from sqlalchemy import ForeignKey
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
@@ -33,6 +34,8 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import relationship
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
@@ -78,6 +81,7 @@ class InventoryIndex(BASE):
     inventory_index_warnings = Column(Text(16777215))
     inventory_index_errors = Column(Text(16777215))
     message = Column(Text(16777215))
+    warning_messages = relationship('InventoryWarnings', cascade='expunge')
 
     def __repr__(self):
         """Object string representation.
@@ -117,31 +121,27 @@ class InventoryIndex(BASE):
         self.completed_at_datetime = date_time.get_utc_now_datetime()
         self.inventory_status = status
 
-    def add_warning(self, session, warning):
-        """Add a warning to the inventory.
+    def add_warning(self, engine, resource_full_name, warning):
+        """Add a warning to the inventory_warnings table.
 
         Args:
-            session (object): session object to work on.
+            engine (sqlalchemy.engine.Engine): Engine to write to.
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             warning (str): Warning message
         """
-        warning_message = '{}\n'.format(warning)
-        if not self.inventory_index_warnings:
-            self.inventory_index_warnings = warning_message
-        else:
-            self.inventory_index_warnings += warning_message
-        session.add(self)
-        session.commit()
+        inventory_warning = {'inventory_index_id': self.id,
+                             'resource_full_name': resource_full_name,
+                             'warning_message': warning}
+        engine.execute(InventoryWarnings.__table__.insert(), inventory_warning)
 
-    def set_error(self, session, message):
+    def set_error(self, message):
         """Indicate a broken import.
 
         Args:
-            session (object): session object to work on.
             message (str): Error message to set.
         """
         self.inventory_index_errors = message
-        session.add(self)
-        session.commit()
 
     def get_lifecycle_state_details(self, session, resource_type_input):
         """Count of lifecycle states of the specified resources.
@@ -278,6 +278,17 @@ class InventoryIndex(BASE):
                 details.update(resource_details)
 
         return details
+
+
+class InventoryWarnings(BASE):
+    """Warning messages generated during the creation of the inventory."""
+
+    __tablename__ = 'inventory_warnings'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inventory_index_id = Column(BigInteger, ForeignKey('inventory_index.id'))
+    resource_full_name = Column(String(2048))
+    warning_message = Column(Text)
 
 
 class Inventory(BASE):
@@ -555,9 +566,14 @@ class DataAccess(object):
         try:
             result = cls.get(session, inventory_index_id)
             session.query(Inventory).filter(
-                Inventory.inventory_index_id == inventory_index_id).delete()
+                Inventory.inventory_index_id == inventory_index_id
+            ).delete()
+            session.query(InventoryWarnings).filter(
+                InventoryWarnings.inventory_index_id == inventory_index_id
+            ).delete()
             session.query(InventoryIndex).filter(
-                InventoryIndex.id == inventory_index_id).delete()
+                InventoryIndex.id == inventory_index_id
+            ).delete()
             session.commit()
             return result
         except Exception as e:
@@ -569,6 +585,9 @@ class DataAccess(object):
     def list(cls, session):
         """List all inventory index entries.
 
+        Returns a maximum of PER_YIELD rows. If there are more rows than that
+        in the database, they will need to be deleted before they can be listed.
+
         Args:
             session (object): Database session.
 
@@ -576,7 +595,9 @@ class DataAccess(object):
             InventoryIndex: Generates each row
         """
 
-        for row in session.query(InventoryIndex).yield_per(PER_YIELD):
+        for row in session.query(InventoryIndex).options(
+                joinedload(InventoryIndex.warning_messages)).order_by(
+                    InventoryIndex.id.desc()).limit(PER_YIELD):
             session.expunge(row)
             yield row
 
@@ -592,10 +613,9 @@ class DataAccess(object):
             InventoryIndex: Entry corresponding the id
         """
 
-        result = (
-            session.query(InventoryIndex).filter(
+        result = session.query(InventoryIndex).options(
+            joinedload(InventoryIndex.warning_messages)).filter(
                 InventoryIndex.id == inventory_index_id).one()
-        )
         session.expunge(result)
         return result
 
@@ -941,15 +961,19 @@ class Storage(BaseStorage):
         """
         with self._storage_lock:
             self.inventory_index.set_error(self.session, message)
+            self.session.commit()
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Store a Warning message in storage. This will help debug problems.
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
         """
-        with self._storage_lock:
-            self.inventory_index.add_warning(self.session, message)
+        self.inventory_index.add_warning(self.engine,
+                                         resource_full_name,
+                                         message)
 
     def __enter__(self):
         """To support with statement for auto closing.

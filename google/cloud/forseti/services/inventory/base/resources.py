@@ -325,7 +325,7 @@ class Resource(object):
         except Exception as e:
             err_msg = 'Exception raised processing %s: %s' % (self, e)
             LOGGER.exception(err_msg)
-            visitor.on_child_error(err_msg)
+            visitor.on_child_error(self.get_full_resource_name(), e)
 
     def accept(self, visitor, stack=None):
         """Accept of resource in visitor pattern.
@@ -382,9 +382,8 @@ class Resource(object):
                     LOGGER.exception(err_msg)
                     self.add_warning(err_msg)
         if self._warning:
-            visitor.on_child_error('Errors raised processing %s: %s' %
-                                   (self, self.get_warning()))
-
+            visitor.on_child_error(self.get_full_resource_name(),
+                                   self.get_warning())
     # pylint: enable=broad-except
 
     @cached('iam_policy')
