@@ -155,7 +155,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         inventory_index = self.inventory.get(request.id)
         if inventory_index.warning_count:
-            inventory_warnings = [row.warning_message
+            inventory_warnings = ['{}: {}'.format(row.resource_full_name,
+                                                  row.warning_message)
                                   for row in inventory_index.warning_messages]
         elif inventory_index.inventory_index_warnings:
             inventory_warnings = [inventory_index.inventory_index_warnings]

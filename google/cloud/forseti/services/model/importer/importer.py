@@ -373,7 +373,8 @@ class InventoryImporter(object):
         else:
             LOGGER.debug('Set model status.')
             for row in inventory_index.warning_messages:
-                self.model.add_warning(row.warning_message)
+                self.model.add_warning('{}: {}'.format(row.resource_full_name,
+                                                       row.warning_message))
             self.model.set_done(item_counter)
         finally:
             LOGGER.debug('Finished running importer.')
