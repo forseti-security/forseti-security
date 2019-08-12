@@ -30,10 +30,12 @@ from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
 from sqlalchemy import or_
+from sqlalchemy import select
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import column_property
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import relationship
 
@@ -66,6 +68,18 @@ class Categories(enum.Enum):
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
 
 
+# InventoryWarnings defined first so it can be referenced by InventoryIndex.
+class InventoryWarnings(BASE):
+    """Warning messages generated during the creation of the inventory."""
+
+    __tablename__ = 'inventory_warnings'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inventory_index_id = Column(BigInteger, ForeignKey('inventory_index.id'))
+    resource_full_name = Column(String(2048))
+    warning_message = Column(Text)
+
+
 class InventoryIndex(BASE):
     """Represents a GCP inventory."""
 
@@ -78,9 +92,23 @@ class InventoryIndex(BASE):
     schema_version = Column(Integer)
     progress = Column(Text)
     counter = Column(Integer)
+    # The inventory_index_warnings column is no longer used by new inventory
+    # snapshots, but existing inventories may still have data in this field so
+    # it won't be deleted.
     inventory_index_warnings = Column(Text(16777215))
     inventory_index_errors = Column(Text(16777215))
     message = Column(Text(16777215))
+
+    # The warning_count virtual column should be used to test if there are
+    # warnings associated with the inventory before the more expensive
+    # warning_messages relationship is loaded.
+    warning_count = column_property(
+        select([func.count(InventoryWarnings.id)]).where(
+            InventoryWarnings.inventory_index_id == id).correlate_except(
+                InventoryWarnings))
+
+    # Enable cascade='expunge' to ensure the warnings are readable even after
+    # a row is expunged from the session.
     warning_messages = relationship('InventoryWarnings', cascade='expunge')
 
     def __repr__(self):
@@ -280,17 +308,6 @@ class InventoryIndex(BASE):
         return details
 
 
-class InventoryWarnings(BASE):
-    """Warning messages generated during the creation of the inventory."""
-
-    __tablename__ = 'inventory_warnings'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    inventory_index_id = Column(BigInteger, ForeignKey('inventory_index.id'))
-    resource_full_name = Column(String(2048))
-    warning_message = Column(Text)
-
-
 class Inventory(BASE):
     """Resource inventory table."""
 
@@ -307,6 +324,10 @@ class Inventory(BASE):
     resource_data = Column(Text(16777215))
     parent_id = Column(Integer)
     other = Column(Text)
+
+    # The inventory_errors column is no longer used by new inventory snapshots,
+    # but existing inventories may still have data in this field so it won't be
+    # deleted.
     inventory_errors = Column(Text)
 
     __table_args__ = (
@@ -585,9 +606,6 @@ class DataAccess(object):
     def list(cls, session):
         """List all inventory index entries.
 
-        Returns a maximum of PER_YIELD rows. If there are more rows than that
-        in the database, they will need to be deleted before they can be listed.
-
         Args:
             session (object): Database session.
 
@@ -595,9 +613,7 @@ class DataAccess(object):
             InventoryIndex: Generates each row
         """
 
-        for row in session.query(InventoryIndex).options(
-                joinedload(InventoryIndex.warning_messages)).order_by(
-                    InventoryIndex.id.desc()).limit(PER_YIELD):
+        for row in session.query(InventoryIndex).yield_per(PER_YIELD):
             session.expunge(row)
             yield row
 

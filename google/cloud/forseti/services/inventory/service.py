@@ -132,7 +132,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         for inventory_index in self.inventory.list():
-            if inventory_index.warning_messages:
+            if (inventory_index.warning_count or
+                    inventory_index.inventory_index_warnings):
                 inventory_warnings = [SUPPRESS_MESSAGE_TEMPLATE.format(
                     message_type='warning',
                     inventory_index_id=inventory_index.id)]
@@ -153,8 +154,11 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         inventory_index = self.inventory.get(request.id)
-        inventory_warnings = [row.warning_message
-                              for row in inventory_index.warning_messages]
+        if inventory_index.warning_count:
+            inventory_warnings = [row.warning_message
+                                  for row in inventory_index.warning_messages]
+        elif inventory_index.inventory_index_warnings:
+            inventory_warnings = [inventory_index.inventory_index_warnings]
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index,
                                                inventory_warnings))
