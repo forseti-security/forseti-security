@@ -108,8 +108,8 @@ def _download_cloudasset_data(config):
     Args:
         config (InventoryConfig): Inventory config.
 
-    Returns:
-        list: GCS paths.
+    Yields:
+        str: GCS path of the cloud asset file.
     """
     root_resources = []
     if config.use_composite_root():
@@ -127,11 +127,9 @@ def _download_cloudasset_data(config):
                                                config,
                                                root_id,
                                                content_type))
-        gcs_paths = []
 
         for future in concurrent.futures.as_completed(futures):
-            gcs_paths.append(future.result())
-        return gcs_paths
+            yield future.result()
 
 
 def load_cloudasset_data(engine, config):
@@ -145,8 +143,7 @@ def load_cloudasset_data(engine, config):
         int: The count of assets imported into the database, or None if there
             is an error.
     """
-    cai_gcs_dump_paths = [config.get_cai_iam_dump_file_path(),
-                          config.get_cai_resource_dump_file_path()]
+    cai_gcs_dump_paths = [config.get_cai_dump_files()]
 
     storage_client = storage.StorageClient()
     imported_assets = 0

@@ -127,8 +127,9 @@ inventory:
         # Path to the CAI dump files. This is used when you have access to the
         # dump files directly and would like forseti to parse them into the
         # gcp_inventory table to use scanner / explainer on top of the data.
-        # iam_dump_file_gcs_path: ""
-        # resource_dump_file_gcs_path: ""
+        # E.g. cai_dump_file_gcs_paths: ['gs://my-bucket/123-iam-policy.dump',
+        #                                'gs://my-bucket/123-resource.dump']
+        # cai_dump_file_gcs_paths: []
 
         # Optional list of asset types supported by Cloud Asset inventory API.
         # https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
