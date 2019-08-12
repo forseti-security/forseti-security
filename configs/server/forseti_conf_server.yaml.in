@@ -123,7 +123,7 @@ inventory:
         # Defaults to 3600 if not set.
         api_timeout: 3600
 
-	    # Path to the CAI dump files. This is used when you have access to the
+        # Path to the CAI dump files. This is used when you have access to the
         # dump files directly and would like forseti to parse them into the
         # gcp_inventory table to use scanner / explainer on top of the data.
         # E.g. cai_dump_file_gcs_paths: ['gs://my-bucket/123-iam-policy.dump',
