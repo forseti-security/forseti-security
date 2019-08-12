@@ -141,11 +141,17 @@ def load_cloudasset_data(session, config):
     # Start by ensuring that there is no existing CAI data in storage.
     _clear_cai_data(session)
 
+    cai_local_dump_paths = []
+
     if not cai_gcs_dump_paths:
         # Dump file paths not specified, download the dump files instead.
-        cai_gcs_dump_paths = _download_cloudasset_data(config)
+        cai_local_dump_paths = _download_cloudasset_data(config)
+    else:
+        for gcs_file_path in cai_gcs_dump_paths:
+            cai_local_dump_paths.append(
+                file_loader.copy_file_from_gcs(gcs_file_path))
 
-    for file_path in cai_gcs_dump_paths:
+    for file_path in cai_local_dump_paths:
         temporary_file = ''
         try:
             temporary_file = file_path
