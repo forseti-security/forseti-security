@@ -338,7 +338,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         }
         disks = self._iter_compute_resources('Disk', project_number)
 
-        region_disks = self._iter_compute_resources('RegionDisk', project_number)
+        region_disks = self._iter_compute_resources('RegionDisk',
+                                                    project_number)
 
         resources = itertools.chain(disks, region_disks)
 
