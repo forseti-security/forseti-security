@@ -143,7 +143,7 @@ def load_cloudasset_data(engine, config):
         int: The count of assets imported into the database, or None if there
             is an error.
     """
-    cai_gcs_dump_paths = [config.get_cai_dump_files()]
+    cai_gcs_dump_paths = config.get_cai_dump_file_paths()
 
     storage_client = storage.StorageClient()
     imported_assets = 0

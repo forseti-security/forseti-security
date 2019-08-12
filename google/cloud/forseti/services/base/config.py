@@ -323,7 +323,7 @@ class InventoryConfig(AbstractInventoryConfig):
         """
         return self.cai_configs.get('gcs_path', '')
 
-    def get_cai_dump_files_path(self):
+    def get_cai_dump_file_paths(self):
         """Returns the GCS file paths of the cai dump files.
 
         Returns:
