@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ##### BEGIN BASE IMAGE #####
-FROM python:3.6-slim as base
+FROM python:3.6-slim-stretch as base
 
 ENV HOME=/home/forseti \
     WORK_DIR=/home/forseti/forseti-security \
