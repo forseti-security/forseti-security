@@ -154,12 +154,13 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         inventory_index = self.inventory.get(request.id)
+        inventory_warnings = []
         if inventory_index.warning_count:
-            inventory_warnings = ['{}: {}'.format(row.resource_full_name,
-                                                  row.warning_message)
-                                  for row in inventory_index.warning_messages]
-        elif inventory_index.inventory_index_warnings:
-            inventory_warnings = [inventory_index.inventory_index_warnings]
+            inventory_warnings.extend(
+                '{}: {}'.format(row.resource_full_name, row.warning_message)
+                for row in inventory_index.warning_messages)
+        if inventory_index.inventory_index_warnings:
+            inventory_warnings.append(inventory_index.inventory_index_warnings)
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index,
                                                inventory_warnings))

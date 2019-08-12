@@ -976,7 +976,7 @@ class Storage(BaseStorage):
             message (str): Error message describing the problem.
         """
         with self._storage_lock:
-            self.inventory_index.set_error(self.session, message)
+            self.inventory_index.set_error(message)
             self.session.commit()
 
     def warning(self, resource_full_name, message):

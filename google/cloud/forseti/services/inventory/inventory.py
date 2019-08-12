@@ -19,8 +19,10 @@
 from builtins import str
 from builtins import object
 import datetime
+from io import StringIO
 from queue import Queue
 import threading
+import traceback
 
 from future import standard_library
 from google.cloud.forseti.common.util import date_time
@@ -183,11 +185,15 @@ def run_inventory(service_config,
                                  service_config.get_inventory_config())
         except Exception as e:
             LOGGER.exception(e)
+            buf = StringIO()
+            traceback.print_exc(file=buf)
+            buf.seek(0)
+            message = buf.read()
+            storage.error('Inventory raised an exception: %s' % message)
             storage.rollback()
-            raise
         else:
             storage.commit()
-        return result
+            return result
 
 
 def run_import(client, model_name, inventory_index_id, background):
@@ -257,6 +263,10 @@ class Inventory(object):
                             session,
                             progresser,
                             background)
+                        if not result:
+                            LOGGER.error('Error during inventory run.')
+                            queue.put(None)
+                            return None
 
                         if model_name:
                             run_import(self.config.client(),
