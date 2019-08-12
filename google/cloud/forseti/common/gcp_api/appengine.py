@@ -430,7 +430,7 @@ class AppEngineClient(object):
                          project_id, service_id, version_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if e.resp.status == 501:  # pylint: disable=no-member
+            if e.resp.status == 501:
                 LOGGER.debug(e)
                 return []
             if _is_status_not_found(e):
