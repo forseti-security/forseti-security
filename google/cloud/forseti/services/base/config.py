@@ -208,8 +208,6 @@ class InventoryConfig(AbstractInventoryConfig):
             composite_root_resources (list): The list of resources to use crawl
                 using a composite root.
             excluded_resources (list): The list of resources to exclude.
-            resource_dump_file_path (str): The path to the resource dump file.
-            iam_dump_file_path (str): The path to the iam dump file.
 
         Raises:
             ValueError: Raised if neither or both root_resource_id and
