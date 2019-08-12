@@ -342,7 +342,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'replicaZone': 'replicaZones',
             'licenseCode': 'licenseCodes',
         }
-        resources = self._iter_compute_resources('Disk', project_number)
+        disks = self._iter_compute_resources('Disk', project_number)
+
+        region_disks = self._iter_compute_resources('RegionDisk',
+                                                    project_number)
+
+        resources = itertools.chain(disks, region_disks)
+
         for disk, metadata in resources:
             yield (
                 _fixup_resource_keys(disk, cai_to_gcp_key_map),
