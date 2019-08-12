@@ -25,14 +25,19 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import exists
+from sqlalchemy import ForeignKey
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
 from sqlalchemy import or_
+from sqlalchemy import select
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import column_property
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import relationship
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
@@ -63,6 +68,18 @@ class Categories(enum.Enum):
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
 
 
+# InventoryWarnings defined first so it can be referenced by InventoryIndex.
+class InventoryWarnings(BASE):
+    """Warning messages generated during the creation of the inventory."""
+
+    __tablename__ = 'inventory_warnings'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inventory_index_id = Column(BigInteger, ForeignKey('inventory_index.id'))
+    resource_full_name = Column(String(2048))
+    warning_message = Column(Text)
+
+
 class InventoryIndex(BASE):
     """Represents a GCP inventory."""
 
@@ -75,9 +92,24 @@ class InventoryIndex(BASE):
     schema_version = Column(Integer)
     progress = Column(Text)
     counter = Column(Integer)
+    # The inventory_index_warnings column is no longer used by new inventory
+    # snapshots, but existing inventories may still have data in this field so
+    # it won't be deleted.
     inventory_index_warnings = Column(Text(16777215))
     inventory_index_errors = Column(Text(16777215))
     message = Column(Text(16777215))
+
+    # The warning_count virtual column should be used to test if there are
+    # warnings associated with the inventory before the more expensive
+    # warning_messages relationship is loaded.
+    warning_count = column_property(
+        select([func.count(InventoryWarnings.id)]).where(
+            InventoryWarnings.inventory_index_id == id).correlate_except(
+                InventoryWarnings))
+
+    # Enable cascade='expunge' to ensure the warnings are readable even after
+    # a row is expunged from the session.
+    warning_messages = relationship('InventoryWarnings', cascade='expunge')
 
     def __repr__(self):
         """Object string representation.
@@ -117,31 +149,27 @@ class InventoryIndex(BASE):
         self.completed_at_datetime = date_time.get_utc_now_datetime()
         self.inventory_status = status
 
-    def add_warning(self, session, warning):
-        """Add a warning to the inventory.
+    def add_warning(self, engine, resource_full_name, warning):
+        """Add a warning to the inventory_warnings table.
 
         Args:
-            session (object): session object to work on.
+            engine (sqlalchemy.engine.Engine): Engine to write to.
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             warning (str): Warning message
         """
-        warning_message = '{}\n'.format(warning)
-        if not self.inventory_index_warnings:
-            self.inventory_index_warnings = warning_message
-        else:
-            self.inventory_index_warnings += warning_message
-        session.add(self)
-        session.commit()
+        inventory_warning = {'inventory_index_id': self.id,
+                             'resource_full_name': resource_full_name,
+                             'warning_message': warning}
+        engine.execute(InventoryWarnings.__table__.insert(), inventory_warning)
 
-    def set_error(self, session, message):
+    def set_error(self, message):
         """Indicate a broken import.
 
         Args:
-            session (object): session object to work on.
             message (str): Error message to set.
         """
         self.inventory_index_errors = message
-        session.add(self)
-        session.commit()
 
     def get_lifecycle_state_details(self, session, resource_type_input):
         """Count of lifecycle states of the specified resources.
@@ -296,6 +324,10 @@ class Inventory(BASE):
     resource_data = Column(Text(16777215))
     parent_id = Column(Integer)
     other = Column(Text)
+
+    # The inventory_errors column is no longer used by new inventory snapshots,
+    # but existing inventories may still have data in this field so it won't be
+    # deleted.
     inventory_errors = Column(Text)
 
     __table_args__ = (
@@ -555,9 +587,14 @@ class DataAccess(object):
         try:
             result = cls.get(session, inventory_index_id)
             session.query(Inventory).filter(
-                Inventory.inventory_index_id == inventory_index_id).delete()
+                Inventory.inventory_index_id == inventory_index_id
+            ).delete()
+            session.query(InventoryWarnings).filter(
+                InventoryWarnings.inventory_index_id == inventory_index_id
+            ).delete()
             session.query(InventoryIndex).filter(
-                InventoryIndex.id == inventory_index_id).delete()
+                InventoryIndex.id == inventory_index_id
+            ).delete()
             session.commit()
             return result
         except Exception as e:
@@ -592,10 +629,9 @@ class DataAccess(object):
             InventoryIndex: Entry corresponding the id
         """
 
-        result = (
-            session.query(InventoryIndex).filter(
+        result = session.query(InventoryIndex).options(
+            joinedload(InventoryIndex.warning_messages)).filter(
                 InventoryIndex.id == inventory_index_id).one()
-        )
         session.expunge(result)
         return result
 
@@ -940,16 +976,20 @@ class Storage(BaseStorage):
             message (str): Error message describing the problem.
         """
         with self._storage_lock:
-            self.inventory_index.set_error(self.session, message)
+            self.inventory_index.set_error(message)
+            self.session.commit()
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Store a Warning message in storage. This will help debug problems.
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
         """
-        with self._storage_lock:
-            self.inventory_index.add_warning(self.session, message)
+        self.inventory_index.add_warning(self.engine,
+                                         resource_full_name,
+                                         message)
 
     def __enter__(self):
         """To support with statement for auto closing.

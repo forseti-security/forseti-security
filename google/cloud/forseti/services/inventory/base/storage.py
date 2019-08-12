@@ -58,10 +58,12 @@ class Storage(object):
         """
         raise NotImplementedError()
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Not Implemented.
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
 
         Raises:
@@ -152,10 +154,12 @@ class Memory(Storage):
         """
         pass
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Ignore the warning message
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
         """
         pass

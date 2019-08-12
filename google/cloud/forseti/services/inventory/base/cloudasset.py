@@ -37,6 +37,7 @@ DEFAULT_ASSET_TYPES = [
     'appengine.googleapis.com/Service',
     'appengine.googleapis.com/Version',
     'bigquery.googleapis.com/Dataset',
+    'bigquery.googleapis.com/Table',
     'cloudbilling.googleapis.com/BillingAccount',
     'cloudkms.googleapis.com/CryptoKey',
     'cloudkms.googleapis.com/CryptoKeyVersion',
@@ -282,14 +283,31 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         if asset_types:
             LOGGER.info('Limiting export to the following asset types: %s',
                         asset_types)
-
         output_config = cloudasset_client.build_gcs_object_output(export_path)
-        results = cloudasset_client.export_assets(root_id,
-                                                  output_config=output_config,
-                                                  content_type=content_type,
-                                                  asset_types=asset_types,
-                                                  blocking=True,
-                                                  timeout=timeout)
+        try:
+            results = cloudasset_client.export_assets(
+                root_id,
+                output_config=output_config,
+                content_type=content_type,
+                asset_types=asset_types,
+                blocking=True,
+                timeout=timeout)
+        except api_errors.ApiExecutionError as e:
+            if e.http_error.resp.status == 400:
+                LOGGER.warning('Bad request with unsupported resource types '
+                               'sent to CAI for %s under %s. Exporting all '
+                               'resources for Cloud Asset export.',
+                               content_type, root_id)
+                results = cloudasset_client.export_assets(
+                    root_id,
+                    output_config=output_config,
+                    content_type=content_type,
+                    asset_types=[],
+                    blocking=True,
+                    timeout=timeout)
+            else:
+                LOGGER.warning('API Error getting cloud asset data: %s', e)
+                return None
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)
