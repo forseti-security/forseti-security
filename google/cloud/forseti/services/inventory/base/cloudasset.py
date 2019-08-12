@@ -148,7 +148,7 @@ def load_cloudasset_data(engine, config):
     storage_client = storage.StorageClient()
     imported_assets = 0
 
-    if '' in cai_gcs_dump_paths:
+    if not cai_gcs_dump_paths:
         # Dump file paths not specified, download the dump files instead.
         cai_gcs_dump_paths = _download_cloudasset_data(config)
 
