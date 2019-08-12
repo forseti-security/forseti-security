@@ -35,6 +35,7 @@ DEFAULT_ASSET_TYPES = [
     'appengine.googleapis.com/Service',
     'appengine.googleapis.com/Version',
     'bigquery.googleapis.com/Dataset',
+    'bigquery.googleapis.com/Table',
     'cloudbilling.googleapis.com/BillingAccount',
     'cloudkms.googleapis.com/CryptoKey',
     'cloudkms.googleapis.com/CryptoKeyVersion',
@@ -96,30 +97,20 @@ DEFAULT_ASSET_TYPES = [
 ]
 
 
-def load_cloudasset_data(session, config):
-    """Export asset data from Cloud Asset API and load into storage.
-
+def _download_cloudasset_data(config):
+    """Download cloud asset data.
     Args:
-        session (object): Database session.
-        config (object): Inventory configuration on server.
-
-    Returns:
-        int: The count of assets imported into the database, or None if there
-            is an error.
+        config (InventoryConfig): Inventory config.
+    Yields:
+        str: GCS path of the cloud asset file.
     """
-    # Start by ensuring that there is no existing CAI data in storage.
-    _clear_cai_data(session)
-
-    cloudasset_client = cloudasset.CloudAssetClient(
-        config.get_api_quota_configs())
-    imported_assets = 0
-
     root_resources = []
     if config.use_composite_root():
         root_resources.extend(config.get_composite_root_resources())
     else:
         root_resources.append(config.get_root_resource_id())
-
+    cloudasset_client = cloudasset.CloudAssetClient(
+        config.get_api_quota_configs())
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         for root_id in root_resources:
@@ -131,21 +122,45 @@ def load_cloudasset_data(session, config):
                                                content_type))
 
         for future in concurrent.futures.as_completed(futures):
-            temporary_file = ''
-            try:
-                temporary_file = future.result()
-                if not temporary_file:
-                    return _clear_cai_data(session)
+            yield future.result()
 
-                LOGGER.debug('Importing Cloud Asset data from %s to database.',
-                             temporary_file)
-                with open(temporary_file, 'r') as cai_data:
-                    rows = CaiDataAccess.populate_cai_data(cai_data, session)
-                    imported_assets += rows
-                    LOGGER.info('%s assets imported to database.', rows)
-            finally:
-                if temporary_file:
-                    os.unlink(temporary_file)
+
+def load_cloudasset_data(session, config):
+    """Export asset data from Cloud Asset API and load into storage.
+
+    Args:
+        session (object): Database session.
+        config (object): Inventory configuration on server.
+
+    Returns:
+        int: The count of assets imported into the database, or None if there
+            is an error.
+    """
+    cai_gcs_dump_paths = config.get_cai_dump_file_paths()
+    imported_assets = 0
+    # Start by ensuring that there is no existing CAI data in storage.
+    _clear_cai_data(session)
+
+    if not cai_gcs_dump_paths:
+        # Dump file paths not specified, download the dump files instead.
+        cai_gcs_dump_paths = _download_cloudasset_data(config)
+
+    for file_path in cai_gcs_dump_paths:
+        temporary_file = ''
+        try:
+            temporary_file = file_path
+            if not temporary_file:
+                return _clear_cai_data(session)
+
+            LOGGER.debug('Importing Cloud Asset data from %s to database.',
+                         temporary_file)
+            with open(temporary_file, 'r') as cai_data:
+                rows = CaiDataAccess.populate_cai_data(cai_data, session)
+                imported_assets += rows
+                LOGGER.info('%s assets imported to database.', rows)
+        finally:
+            if temporary_file:
+                os.unlink(temporary_file)
 
     return imported_assets
 

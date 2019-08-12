@@ -110,6 +110,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from Cloud Asset data.
+          Args:
+            dataset_reference (dict): dataset to reference.
+          Yields:
+            dict: Generator of tables.
+        """
+
+        bigquery_name_fmt = '//bigquery.googleapis.com/projects/{}/datasets/{}'
+
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'bigquery.googleapis.com/Table',
+            bigquery_name_fmt.format(
+                dataset_reference['projectId'], dataset_reference['datasetId']),
+            self.engine)
+
+        for table in resources:
+            yield table
+
     def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from Cloud Asset data.
 

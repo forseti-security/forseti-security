@@ -246,6 +246,13 @@ class InventoryConfig(AbstractInventoryConfig):
         """
         return not self.root_resource_id
 
+    def get_cai_dump_file_paths(self):
+        """Returns the GCS file paths of the cai dump files.
+         Returns:
+            list: The GCS file paths of the cai dump files.
+        """
+        return self.cai_configs.get('cai_dump_file_gcs_paths', [])
+
     def get_excluded_resources(self):
         """Return the list of excluded resources.
 

@@ -23,6 +23,8 @@ import time
 from concurrent import futures
 import grpc
 
+import google.protobuf
+
 from google.cloud.forseti.common.util import logger
 
 from google.cloud.forseti.services.base.config import ServiceConfig
