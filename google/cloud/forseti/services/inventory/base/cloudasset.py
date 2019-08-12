@@ -61,6 +61,7 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/Network',
     'compute.googleapis.com/Project',
     'compute.googleapis.com/RegionBackendService',
+    'compute.googleapis.com/RegionDisk',
     'compute.googleapis.com/Router',
     'compute.googleapis.com/Snapshot',
     'compute.googleapis.com/SslCertificate',
