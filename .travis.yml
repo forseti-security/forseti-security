@@ -31,6 +31,6 @@ deploy:
   on:
     repo: forseti-security/forseti-security
     branch: forsetisecurity.org
-    condition: "($TRAVIS_SECURE_ENV_VARS = true) && ($TRAVIS_EVENT_TYPE != cron)" && "$TRAVIS_PULL_REQUEST" = "false"
+    condition: "($TRAVIS_SECURE_ENV_VARS = true) && ($TRAVIS_EVENT_TYPE != cron) && ($TRAVIS_PULL_REQUEST = false)"
   skip_cleanup: true
   no_promote: true
