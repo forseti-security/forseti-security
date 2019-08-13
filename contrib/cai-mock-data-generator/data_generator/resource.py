@@ -204,7 +204,7 @@ def generate_project(parent_resource=None, resource_id=''):
     resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.PROJECT_ROLES)
     return Resource(cai_name=cai_resource_name,
                     cai_type=cai_resource_type,
-                    resource_id=resource_id,
+                    resource_id=project_id,
                     resource_number=resource_id,
                     resource_type=resource_type,
                     resource_data=resource_data,
