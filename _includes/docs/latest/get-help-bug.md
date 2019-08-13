@@ -2,7 +2,7 @@
 
 If you're experiencing an issue, find out if there's already a solution:
 
-1. Read the [FAQs]({% link _docs/latest/faq/index.md %})
+1. Read our [FAQs]({% link _docs/latest/faq/index.md %})
 1. Search [existing issues in GitHub](https://github.com/GoogleCloudPlatform/forseti-security/issues)
 1. Search
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)
