@@ -291,10 +291,10 @@ SERVICE_ACCOUNT = '''
 }}
 '''
 
-# APPENGINE Application params: APPENGINE_APPLICATION_ID and PARENT_CAI_NAME
+# APPENGINE Application params: PROJECT_ID and PARENT_CAI_NAME
 APPENGINE_APPLICATION = '''
 {{
-    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}",
+    "name":"//appengine.googleapis.com/apps/{PROJECT_ID}",
     "asset_type":"appengine.googleapis.com/Application",
     "resource":{{
         "version":"v1",
@@ -319,7 +319,7 @@ APPENGINE_APPLICATION = '''
 # APPENGINE Service params: APPENGINE_APPLICATION_ID, APPENGINE_SERVICE_ID and PARENT_CAI_NAME
 APPENGINE_SERVICE = '''
 {{
-    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}",
+    "name":"//appengine.googleapis.com/apps/{PROJECT_ID}/services/{APPENGINE_SERVICE_ID}",
     "asset_type":"appengine.googleapis.com/Service",
     "resource":{{
         "version":"v1",
@@ -328,7 +328,7 @@ APPENGINE_SERVICE = '''
         "parent":"{PARENT_CAI_NAME}",
         "data":{{
             "id":"default",
-            "name":"apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}",
+            "name":"apps/{PROJECT_ID}/services/{APPENGINE_SERVICE_ID}",
             "split":{{
                 "allocations":{{
                     "1":1
@@ -342,7 +342,7 @@ APPENGINE_SERVICE = '''
 # APPENGINE Version params: APPENGINE_APPLICATION_ID, APPENGINE_SERVICE_ID, VERSION_NUMBER and PARENT_CAI_NAME
 APPENGINE_VERSION = '''
 {{
-    "name":"//appengine.googleapis.com/apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
+    "name":"//appengine.googleapis.com/apps/{PROJECT_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
     "asset_type":"appengine.googleapis.com/Version",
     "resource":{{
         "version":"v1",
@@ -367,7 +367,7 @@ APPENGINE_VERSION = '''
             "healthCheck":{{}},
             "id":"1",
             "inboundServices":["INBOUND_SERVICE_WARMUP"],
-            "name":"apps/{APPENGINE_APPLICATION_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
+            "name":"apps/{PROJECT_ID}/services/{APPENGINE_SERVICE_ID}/versions/{VERSION_NUMBER}",
             "runtime":"java7",
             "runtimeApiVersion":"1.0",
             "servingStatus":"STOPPED",

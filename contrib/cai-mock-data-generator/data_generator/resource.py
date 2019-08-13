@@ -352,6 +352,7 @@ def generate_appengine_application(parent_resource, resource_id=''):
         resource_id)
     cai_resource_type = 'appengine.googleapis.com/Application'
     resource_data = tmpl.APPENGINE_APPLICATION.format(
+        PROJECT_ID=parent_resource.resource_id,
         APPENGINE_APPLICATION_ID=resource_id,
         PARENT_CAI_NAME=parent_resource.cai_resource_name)
 
@@ -382,7 +383,7 @@ def generate_appengine_service(parent_resource, resource_id=''):
         resource_id)
     cai_resource_type = 'appengine.googleapis.com/Service'
     resource_data = tmpl.APPENGINE_SERVICE.format(
-        APPENGINE_APPLICATION_ID=parent_resource.resource_id,
+        PROJECT_ID=parent_resource.parent_resource.resource_id,
         APPENGINE_SERVICE_ID=resource_id,
         PARENT_CAI_NAME=parent_resource.cai_resource_name)
 
@@ -414,7 +415,7 @@ def generate_appengine_version(parent_resource, resource_id=''):
         resource_id)
     cai_resource_type = 'appengine.googleapis.com/Version'
     resource_data = tmpl.APPENGINE_VERSION.format(
-        APPENGINE_APPLICATION_ID=parent_resource.parent_resource.resource_id,
+        PROJECT_ID=parent_resource.parent_resource.parent_resource.resource_id,
         APPENGINE_SERVICE_ID=parent_resource.resource_id,
         VERSION_NUMBER=resource_id,
         PARENT_CAI_NAME=parent_resource.cai_resource_name)
