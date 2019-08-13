@@ -189,7 +189,8 @@ class InventorySummary(object):
         template_data = []
         for key, value in data.items():
             template_data.append(dict(resource_type=key, count=value))
-        return sorted(template_data, key=lambda k: k['resource_type'])
+        return sorted(template_data, key=lambda k: (k['resource_type'] is None,
+                                                    k['resource_type']))
 
     @staticmethod
     def _get_gsuite_dwd_status(summary_data):
