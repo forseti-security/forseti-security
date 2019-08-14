@@ -967,7 +967,8 @@ class Storage(BaseStorage):
                 row['parent_id'] = resource_id
             self.engine.execute(Inventory.__table__.insert(), policy_rows)
 
-        self.inventory_index.counter += 1 + len(policy_rows)
+        with self._storage_lock:
+            self.inventory_index.counter += 1 + len(policy_rows)
 
     def error(self, message):
         """Store a fatal error in storage. This will help debug problems.
