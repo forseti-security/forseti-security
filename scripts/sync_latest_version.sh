@@ -37,7 +37,9 @@ function uniq_major_minor_filter() {
 function main() {
     local all_release_tags releases doc_versions
     all_release_tags="$(git tag -l v*.*)"
-    releases="$(uniq_major_minor_filter "${all_release_tags}")"
+    # sed trims this list to 10.
+    all_supported_release_tags="$(echo "${all_release_tags}" | sort -Vr | sed '1,10!d')"
+    releases="$(uniq_major_minor_filter "${all_supported_release_tags}")"
     doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
     if [ -z "${doc_versions}" ]; then
