@@ -245,7 +245,7 @@ ln -s <path to your git source code>/google/cloud/forseti forseti
 ## Setting up instrumentation
 * To collect performance stats, tracing libraries needs to be installed.
 ```
-pip3 install opencensus==0.6.0    
+pip3 install opencensus==0.7.2    
 pip3 install google-cloud-trace==0.19.0   
 pip3 install opencensus-ext-grpc==0.3.0   
 pip3 install opencensus-ext-stackdriver==0.4.0   
