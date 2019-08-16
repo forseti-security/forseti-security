@@ -35,7 +35,7 @@ def upload_json(data, gcs_upload_path):
     """
     try:
         with tempfile.NamedTemporaryFile() as tmp_data:
-            tmp_data.write(parser.json_stringify(data).encode('utf-8'))
+            tmp_data.write(parser.json_stringify(data).encode())
             tmp_data.flush()
             storage_client = StorageClient()
             storage_client.put_text_file(tmp_data.name, gcs_upload_path)
