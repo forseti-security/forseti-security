@@ -19,12 +19,7 @@ trap 'return_code=$?' ERR
 # TODO(drmorris): change branch from "stable" to "master" when after release
 ./scripts/generate_sphinx_docs.sh "master"
 
-while sleep 1m; do echo "=====[  $SECONDS seconds, website still building...  ]====="; done &
-
-JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build >> build.log 2 >&1
-
-#Killing background sleep loop
-kill %1
+JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 
 bundle exec htmlproofer --check-img-http --check-html \
 --internal-domains 'forsetisecurity.org' \
