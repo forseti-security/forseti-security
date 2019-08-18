@@ -19,10 +19,21 @@ For more information, see the [scanner descriptions]({% link _docs/latest/config
 | Bucket ACL Scanner |
 | Cloud SQL ACL Scanner |
 | Enabled APIs Scanner |
+| External Project Access Scanner |
 | Firewall Rules Scanner |
 | Forwarding Rules Scanner |
 | Google Groups Scanner |
+| Groups Settings Scanner |
 | Cloud IAM Rules Scanner |
 | Cloud IAP Scanner |
 | Instance Network Interface Scanner |
+| Kubernetes Engine Scanner |
 | Kubernetes Engine Version Scanner |
+| KMS Scanner |
+| Lien Scanner |
+| Location Scanner |
+| Log Sink Scanner |
+| Resource Scanner |
+| Retention Scanner |
+| Role Scanner |
+| Service Account Key Scanner |
