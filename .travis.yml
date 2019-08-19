@@ -18,7 +18,7 @@ env:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   - secure: V/fso4UUFIQuDFR5P16BjjvzlmTatZH4lAJfbOoG+bphdYgUljrakaGHY7dmFKP8AbTaK9iU897m/gRS2e8wowVZETaac6KBulkbZNoFpaYAju4MAZ/5GAkznOnlC7OuFBWRqnFr49BD9cWd7oTIOGjyX6DcmQTcAZbW63sJElA0tTX0l+o//f9IyCSROclo8WJT0Pa7jqbQINpfNLjdsoeyhcfMtERCFnhL+4vxEdptwAd/lZaoEisYKVMFzZz8VQoredNColkGzqFFqs63FVYWWiAIDxVK5quBPt0ASBO5VwC7X3xq/+yMRKcnTk53j7XTaMPT2kLUZyJDa1I3xElkJmlngezBfO2gwHo7nQQJa6qVyP6x2mjmLeQieWHUrM88wEbmRJGXXKmrp80MBq1G+lkmpMHjUts/kxLwzEcJmCBMcLslbcXUYaHx+XDM0nf8jBlQ8sd/rxp1pKVm+xaBWJQ43/qJ6TKvNp4ewhJWx8sDen1INDgjAIGLB3A4R4+wFA4KX1nvZT1/PGuihc4qNFMx5HtdbE2IAtEvKfhrOp6ug9OBTWicwH6PX73hs23tMIIXD2WRLB1e8X8uSrA9ea1OsOeW9/FxHqtNSHmy3j51wG3YyAR5O/Gvse2fkuz+/VSBLlnm76NykrkmAf7Tu/pyuIHPbDnFmzb5m+g=
 script:
-- 'if [[ "$TRAVIS_SECURE_ENV_VARS" = "true" ]]; then travis_wait bash ./travis/jekyll_build.sh; fi'
+- 'if [[ "$TRAVIS_SECURE_ENV_VARS" = "true" ]]; then bash ./travis/jekyll_build.sh; fi'
 - 'if [[ "$TRAVIS_SECURE_ENV_VARS" != "true" ]]; then bundle exec jekyll build; fi'
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv -in client-secrets.json.enc -out client-secrets.json -d

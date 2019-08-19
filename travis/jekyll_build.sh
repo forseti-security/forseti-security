@@ -16,9 +16,15 @@ set -e
 trap 'return_code=$?' ERR
 
 # Write out the Python API documentation via Sphinx
-./scripts/generate_sphinx_docs.sh "master" > /dev/null 2>&1
+# TODO(drmorris): change branch from "stable" to "master" when after release
+./scripts/generate_sphinx_docs.sh "master"
 
-JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
+while sleep 1m; do echo "=====[  $SECONDS seconds, website still building...  ]====="; done &
+
+JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build >> build.log 2 >&1
+
+#Killing background sleep loop
+kill %1
 
 bundle exec htmlproofer --check-img-http --check-html \
 --internal-domains 'forsetisecurity.org' \
