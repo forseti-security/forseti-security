@@ -16,7 +16,7 @@ set -e
 trap 'return_code=$?' ERR
 
 # Write out the Python API documentation via Sphinx
-./scripts/generate_sphinx_docs.sh "master"
+./scripts/generate_sphinx_docs.sh "master" > /dev/null 2>&1
 
 JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build -V
 
