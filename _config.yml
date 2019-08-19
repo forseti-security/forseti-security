@@ -32,7 +32,7 @@ exclude: ["Gemfile",
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
-                     ".sass-cache"]
+                     ".sass-cache/"]
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
@@ -44,8 +44,9 @@ google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
 destination: _www/www/
+
 # Needed for local builds and using {{ site.github }}.
-repository: forseti-security/forseti-security
+repository: GoogleCloudPlatform/forseti-security
 title: "Forseti Security"
 
 # Jekyll related directives.
