@@ -21,7 +21,7 @@ Here are the list of allowed sub resource type you can define per resource type:
   - folder
   - project
 - project
-  - appengine_application
+  - appengine_application (Only one is allowed per project.)
   - bigquery_dataset
   - bucket
   - compute_firewall_rule

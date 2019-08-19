@@ -69,6 +69,11 @@ class CAIDataGenerator(object):
                 resource_type = key
                 break
 
+        if (resource_type == 'appengine_application' and
+                resource_structure.get('resource_count') != 1):
+            raise Exception('You can only have one appengine app '
+                            'under a project.')
+
         if not resource_type:
             raise KeyError('Resource type not found under resource {} or is not supported.'.format(
                 parent_resource_type))

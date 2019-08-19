@@ -17,13 +17,13 @@ resource_structure:
                 compute_firewall_rule: []
               - resource_count: 5
                 compute_disk: []
-              - resource_count: 5
+              - resource_count: 15
                 compute_snapshot: []
-              - resource_count: 5
+              - resource_count: 1
                 appengine_application:
-                  - resource_count: 3
+                  - resource_count: 5
                     appengine_service:
-                      - resource_count: 3
+                      - resource_count: 5
                         appengine_version: []
               - resource_count: 15
                 service_account: []
@@ -31,5 +31,5 @@ resource_structure:
                 bucket: []
               - resource_count: 5
                 bigquery_dataset:
-                  - resource_count: 200
+                  - resource_count: 100
                     bigquery_table: []

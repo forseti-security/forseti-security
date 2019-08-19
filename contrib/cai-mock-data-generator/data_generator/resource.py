@@ -64,7 +64,7 @@ class Resource(object):
         return dirty_str.replace('\r', '').replace('\n', '').replace('\\\'', '\'').replace(' ', '').replace('\'{', '{').replace('}\'', '}').replace('\'', '"')
 
 
-def _generate_random_id(length=12, number_only=True):
+def _generate_random_id(length=40, number_only=True):
     """Generate random id.
 
     Args:
