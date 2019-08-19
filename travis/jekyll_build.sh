@@ -18,7 +18,7 @@ trap 'return_code=$?' ERR
 # Write out the Python API documentation via Sphinx
 ./scripts/generate_sphinx_docs.sh "master" > /dev/null 2>&1
 
-JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build -V
+JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 
 bundle exec htmlproofer --check-img-http --check-html \
 --internal-domains 'forsetisecurity.org' \
