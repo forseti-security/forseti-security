@@ -36,7 +36,7 @@ gcloud services enable <API URI>
 
 ## Deploy a server VM
 
-### Create a Forseti server service sccount
+### Create a Forseti server service account
 
 Create a server service account by running the following command:
 
