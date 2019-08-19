@@ -21,6 +21,7 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -237,6 +238,7 @@ class BigQueryClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
+    @tracing.traced()
     def get_tables(self, project_id, dataset_id):
         """Return BigQuery tables stored in the requested project_id.
 

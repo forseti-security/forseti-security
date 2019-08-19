@@ -26,6 +26,8 @@ from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 
+from google.cloud.forseti.common.opencensus import tracing
+
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
@@ -96,6 +98,7 @@ DEFAULT_ASSET_TYPES = [
 ]
 
 
+@tracing.trace()
 def load_cloudasset_data(session, config):
     """Export asset data from Cloud Asset API and load into storage.
 
@@ -150,6 +153,7 @@ def load_cloudasset_data(session, config):
     return imported_assets
 
 
+@tracing.trace()
 def _export_assets(cloudasset_client, config, root_id, content_type):
     """Worker function for exporting assets and downloading dump from GCS.
 
@@ -212,7 +216,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
         return None
 
-
+@tracing.trace()
 def _clear_cai_data(session):
     """Clear CAI data from storage.
 

@@ -314,7 +314,8 @@ class ParallelCrawler(Crawler):
             raise
 
 
-def _api_client_factory(storage, config, parallel):
+@tracing.trace()
+def _api_client_factory(storage, config, parallel, tracer=None):
     """Creates the proper initialized API client based on the configuration.
 
     Args:

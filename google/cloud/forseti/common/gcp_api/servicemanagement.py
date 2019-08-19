@@ -21,6 +21,7 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -121,6 +122,7 @@ class _ServiceManagementServicesRepository(
         return service_name
 
 
+@tracing.traced()
 class ServiceManagementClient(object):
     """Service Management Client."""
 
