@@ -18,6 +18,7 @@ For more information, see the [scanner descriptions]({% link _docs/latest/config
 | Blacklist Scanner |
 | Bucket ACL Scanner |
 | Cloud SQL ACL Scanner |
+| Config Validator Scanner |
 | Enabled APIs Scanner |
 | External Project Access Scanner |
 | Firewall Rules Scanner |
