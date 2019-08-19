@@ -215,6 +215,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         LOGGER.warning('Download of CAI dump from GCS failed: %s', e)
         return None
 
+
 @tracing.trace()
 def _clear_cai_data(session):
     """Clear CAI data from storage.
