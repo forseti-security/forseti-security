@@ -121,6 +121,21 @@ For examples of how to define scanner rules for your G Suite groups, see the
 [`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
 rule file.
 
+## Groups Settings scanner
+
+Groups Settings scanner detects if the actual groups settings do not match
+with the configured G Suite group settings in order to prevent anomalies.
+For example, a user from outside of the organization can never get into the 
+group as  long as `allowExternalMembers: False` is in the group’s settings.
+Supported group settings are whoCanAdd, whoCanJoin, whoCanViewMembership, 
+whoCanViewGroup, whoCanInvite, allowExternalMembers, and whoCanLeaveGroup.
+The Groups Settings scanner supports a whitelist and blacklist mode, to prevent such 
+events from ever happening.
+
+For examples of how to define scanner rules for your G Suite Settings scanner, 
+see the [`groups_settings_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/groups_settings_rules.yaml)
+rule file.
+
 ## IAM policy scanner (organization resources)
 
 Cloud IAM policies directly grant access on GCP. To ensure only authorized
@@ -161,9 +176,12 @@ rule file.
 
 ## KMS scanner
 
-Alert or notify if the crypto keys in the organization are not rotated within the 
-time specified. This scanner can ensure that all the cryptographic keys are 
-properly configured. 
+Regularly rotating keys is a security best practice as it ensures your system is 
+prepared if a key is leaked and to prevent use of key version that is 
+compromised. You can configure the KMS scanner to alert if the enabled
+cryptographic keys in the organization are not rotated within the 
+time specified. You can also check if the algorithm, protection level 
+and purpose of the cryptographic key is correctly configured.
 
 For examples of how to define scanner rules for your crypto keys, see the
 [`kms_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/kms_rules.yaml)
