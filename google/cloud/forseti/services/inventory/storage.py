@@ -844,6 +844,7 @@ class Storage(BaseStorage):
             index = InventoryIndex.create()
             self.session.add(index)
             self.session.commit()
+            self.session.expunge(index)
         except Exception as e:
             LOGGER.exception(e)
             self.session.rollback()
@@ -915,12 +916,11 @@ class Storage(BaseStorage):
         else:
             status = IndexState.SUCCESS
         try:
-            self.inventory_index.complete(status=status)
             self.engine.execute(InventoryIndex.__table__.update().where(
                 InventoryIndex.id == self.inventory_index.id).values(
                     completed_at_datetime=(
                         self.inventory_index.completed_at_datetime),
-                    inventory_status=self.inventory_index.inventory_status,
+                    inventory_status=status,
                     counter=self.inventory_index.counter,
                     inventory_index_errors=(
                         self.inventory_index.inventory_index_errors),
