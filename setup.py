@@ -51,6 +51,8 @@ REQUIRED_PACKAGES = [
     'sendgrid==5.6.0',
     'simple-crypt==4.1.7',
     'unicodecsv==0.14.1',
+    # Profiler related.
+    'google-cloud-profiler',
     # Setup related.
     'grpcio==1.22.0',
     'grpcio-tools==1.22.0',
