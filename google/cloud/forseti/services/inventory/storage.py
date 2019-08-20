@@ -918,14 +918,14 @@ class Storage(BaseStorage):
             self.inventory_index.complete(status=status)
             self.engine.execute(InventoryIndex.__table__.update().where(
                 InventoryIndex.id == self.inventory_index.id).values(
-                    completed_at_datetime=
-                    self.inventory_index.completed_at_datetime,
+                    completed_at_datetime=(
+                        self.inventory_index.completed_at_datetime),
                     inventory_status=self.inventory_index.inventory_status,
                     counter=self.inventory_index.counter,
-                    inventory_index_errors=
-                    self.inventory_index.inventory_index_errors,
-                    inventory_index_warnings=
-                    self.inventory_index.inventory_index_warnings,
+                    inventory_index_errors=(
+                        self.inventory_index.inventory_index_errors),
+                    inventory_index_warnings=(
+                        self.inventory_index.inventory_index_warnings),
                     message=self.inventory_index.message
                 ))
         finally:
