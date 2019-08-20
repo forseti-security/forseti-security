@@ -19,10 +19,10 @@ import argparse
 import os
 import sys
 import time
-import googlecloudprofiler
 
 from concurrent import futures
 import grpc
+import googlecloudprofiler
 
 from google.cloud.forseti.common.util import logger
 
@@ -44,6 +44,8 @@ SERVICE_MAP = {
     'model': GrpcModellerFactory,
     'server': GrpcServerConfigFactory
 }
+
+# pylint: disable=too-many-locals
 
 
 def serve(endpoint,
@@ -82,10 +84,10 @@ def serve(endpoint,
         try:
             googlecloudprofiler.start(
                 service='forseti-server',
-                verbose=3
+                verbose=2,
             )
         except (ValueError, NotImplementedError) as exc:
-            LOGGER.warning('Unable to enable Cloud Profiler.', exc)
+            LOGGER.warning('Unable to enable Cloud Profiler: %s', exc)
 
     factories = []
     for service in services:

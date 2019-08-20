@@ -16,4 +16,4 @@ flake8==3.6.0
 future==0.17.1
 
 # Needed for Cloud Profiler.
-google-cloud-profiler
+google-cloud-profiler==1.0.8

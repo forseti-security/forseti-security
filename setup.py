@@ -52,7 +52,7 @@ REQUIRED_PACKAGES = [
     'simple-crypt==4.1.7',
     'unicodecsv==0.14.1',
     # Profiler related.
-    'google-cloud-profiler',
+    'google-cloud-profiler==1.0.8',
     # Setup related.
     'grpcio==1.22.0',
     'grpcio-tools==1.22.0',
