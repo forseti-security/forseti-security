@@ -315,13 +315,14 @@ class ParallelCrawler(Crawler):
 
 
 @tracing.trace()
-def _api_client_factory(storage, config, parallel):
+def _api_client_factory(storage, config, parallel, tracer=None):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         storage (object): Storage implementation to use.
         config (object): Inventory configuration on server.
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (object): OpenCensus tracer.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -334,7 +335,7 @@ def _api_client_factory(storage, config, parallel):
     if config.get_cai_enabled():
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
-        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
+        asset_count = cloudasset.load_cloudasset_data(storage.session, config, tracer)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
@@ -421,7 +422,7 @@ def run_crawler(storage,
         LOGGER.info('SQLite used, disabling parallel threads.')
         parallel = False
 
-    client = _api_client_factory(storage, config, parallel)
+    client = _api_client_factory(storage, config, parallel, tracer)
     crawler_impl = _crawler_factory(storage, progresser, client, parallel)
     resource = _root_resource_factory(config, client)
     progresser = crawler_impl.run(resource)

@@ -98,12 +98,13 @@ DEFAULT_ASSET_TYPES = [
 
 
 @tracing.trace()
-def load_cloudasset_data(session, config):
+def load_cloudasset_data(session, config, tracer=None):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
         session (object): Database session.
         config (object): Inventory configuration on server.
+        tracer (object): OpenCensus tracer.
 
     Returns:
         int: The count of assets imported into the database, or None if there
@@ -130,7 +131,8 @@ def load_cloudasset_data(session, config):
                                                cloudasset_client,
                                                config,
                                                root_id,
-                                               content_type))
+                                               content_type,
+                                               tracer))
 
         for future in concurrent.futures.as_completed(futures):
             temporary_file = ''
@@ -153,7 +155,8 @@ def load_cloudasset_data(session, config):
 
 
 @tracing.trace()
-def _export_assets(cloudasset_client, config, root_id, content_type):
+def _export_assets(cloudasset_client, config, root_id, content_type,
+                   tracer=None):
     """Worker function for exporting assets and downloading dump from GCS.
 
     Args:
@@ -161,6 +164,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         config (object): Inventory configuration on server.
         root_id (str): The name of the parent resource to export assests under.
         content_type (ContentTypes): The content type to export.
+        tracer (object): OpenCensus tracer.
 
     Returns:
         str: The path to the temporary file downloaded from GCS or None on
