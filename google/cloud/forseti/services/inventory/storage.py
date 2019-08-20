@@ -900,8 +900,8 @@ class Storage(BaseStorage):
         try:
             # Delete any rows that had been added to the inventory for this
             # instance of the inventory.
-            self.engine.execute(InventoryIndex.__table__.delete().where(
-                InventoryIndex.id == self.inventory_index.id))
+            self.engine.execute(Inventory.__table__.delete().where(
+                Inventory.inventory_index_id == self.inventory_index.id))
             self.inventory_index.complete(status=IndexState.FAILURE)
             self.commit()
         finally:
