@@ -927,7 +927,8 @@ class Storage(BaseStorage):
                     inventory_index_warnings=(
                         self.inventory_index.inventory_index_warnings),
                     message=self.inventory_index.message
-                ))
+                )
+            )
         finally:
             self.session_completed = True
 
