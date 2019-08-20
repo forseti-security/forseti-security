@@ -902,7 +902,6 @@ class Storage(BaseStorage):
             # instance of the inventory.
             self.engine.execute(Inventory.__table__.delete().where(
                 Inventory.inventory_index_id == self.inventory_index.id))
-            self.inventory_index.complete(status=IndexState.FAILURE)
             self.commit()
         finally:
             self.session_completed = True
@@ -911,19 +910,24 @@ class Storage(BaseStorage):
         """Commit the stored inventory."""
         if self.inventory_index.inventory_index_warnings:
             status = IndexState.PARTIAL_SUCCESS
+        elif self.inventory_index.inventory_index_errors:
+            status = IndexState.FAILURE
         else:
             status = IndexState.SUCCESS
         try:
             self.inventory_index.complete(status=status)
             self.engine.execute(InventoryIndex.__table__.update().where(
                 InventoryIndex.id == self.inventory_index.id).values(
-                completed_at_datetime=self.inventory_index.completed_at_datetime,
-                inventory_status=self.inventory_index.inventory_status,
-                counter=self.inventory_index.counter,
-                inventory_index_errors=self.inventory_index.inventory_index_errors,
-                inventory_index_warnings=self.inventory_index.inventory_index_warnings,
-                message=self.inventory_index.message
-            ))
+                    completed_at_datetime=
+                    self.inventory_index.completed_at_datetime,
+                    inventory_status=self.inventory_index.inventory_status,
+                    counter=self.inventory_index.counter,
+                    inventory_index_errors=
+                    self.inventory_index.inventory_index_errors,
+                    inventory_index_warnings=
+                    self.inventory_index.inventory_index_warnings,
+                    message=self.inventory_index.message
+                ))
         finally:
             self.session_completed = True
 
