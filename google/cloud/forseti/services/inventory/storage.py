@@ -128,7 +128,7 @@ class InventoryIndex(BASE):
         """Create a new inventory index row.
 
         Returns:
-            object: InventoryIndex row object.
+            InventoryIndex: InventoryIndex row object.
         """
         utc_now = date_time.get_utc_now_datetime()
         micro_timestamp = date_time.get_utc_now_microtimestamp(utc_now)
@@ -844,6 +844,7 @@ class Storage(BaseStorage):
             index = InventoryIndex.create()
             self.session.add(index)
             self.session.commit()
+            LOGGER.info('Created Inventory Index %s', index.id)
             self.session.expunge(index)
         except Exception as e:
             LOGGER.exception(e)
@@ -926,8 +927,7 @@ class Storage(BaseStorage):
                         self.inventory_index.inventory_index_errors),
                     inventory_index_warnings=(
                         self.inventory_index.inventory_index_warnings),
-                    message=self.inventory_index.message)
-                               )
+                    message=self.inventory_index.message))
         finally:
             self.session_completed = True
 
