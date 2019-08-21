@@ -64,6 +64,12 @@ REQUIRED_PACKAGES = [
     'sqlalchemy-migrate==0.11.0'
 ]
 
+OPTIONAL_PACKAGES = {
+    'profiler': [
+        'google-cloud-profiler==1.0.8'
+    ]
+}
+
 if sys.version_info.major < 3:
     sys.exit('Sorry, Python 2 is not supported.')
 
@@ -122,6 +128,7 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     setup_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
+    extras_require=OPTIONAL_PACKAGES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
