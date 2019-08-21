@@ -21,8 +21,8 @@ import sys
 import time
 
 from concurrent import futures
-import grpc
 import googlecloudprofiler
+import grpc
 
 from google.cloud.forseti.common.util import logger
 
@@ -45,8 +45,6 @@ SERVICE_MAP = {
     'server': GrpcServerConfigFactory
 }
 
-# pylint: disable=too-many-locals
-
 
 def serve(endpoint,
           services,
@@ -54,7 +52,6 @@ def serve(endpoint,
           config_file_path,
           log_level,
           enable_console_log,
-          enable_profiler,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -66,7 +63,6 @@ def serve(endpoint,
         config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
-        enable_profiler (bool): Enable Cloud Profiler.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -79,15 +75,6 @@ def serve(endpoint,
 
     if enable_console_log:
         logger.enable_console_log()
-
-    if enable_profiler:
-        try:
-            googlecloudprofiler.start(
-                service='forseti-server',
-                verbose=2,
-            )
-        except (ValueError, NotImplementedError) as exc:
-            LOGGER.warning('Unable to enable Cloud Profiler: %s', exc)
 
     factories = []
     for service in services:
@@ -155,9 +142,6 @@ def check_args(args):
     return (0, 'All good!')
 
 
-# pylint: enable=too-many-locals
-
-
 def main():
     """Run."""
     parser = argparse.ArgumentParser()
@@ -204,13 +188,24 @@ def main():
         parser.print_usage()
         sys.exit(exit_code)
 
+    if args['enable_profiler']:
+        try:
+            googlecloudprofiler.start(
+                service='forseti-server',
+                verbose=2,
+                # project_id must be set if not running on GCP, such as in your
+                # local dev environment.
+                # project_id='my_project_id',
+            )
+        except (ValueError, NotImplementedError) as exc:
+            LOGGER.warning('Unable to enable Cloud Profiler: %s', exc)
+
     serve(args['endpoint'],
           args['services'],
           args['forseti_db'],
           args['config_file_path'],
           args['log_level'],
-          args['enable_console_log'],
-          args['enable_profiler'])
+          args['enable_console_log'])
 
 
 if __name__ == '__main__':
