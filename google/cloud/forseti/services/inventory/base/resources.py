@@ -248,7 +248,7 @@ class Resource(object):
         """Get data on this resource.
 
         Returns:
-            str: raw data.
+            dict: raw data.
         """
         return self._data
 
@@ -318,13 +318,29 @@ class Resource(object):
                        'scheduled for deletion']
         stack = [] if not stack else stack
         self._stack = stack
+
+        # Skip the current resource if it's in the excluded_resources list.
+        excluded_resources = visitor.config.variables.get(
+            'excluded_resources', {})
+        cur_resource_repr = set()
+        resource_name = '{}/{}'.format(self.type(), self.key())
+        cur_resource_repr.add(resource_name)
+        if self.type() == 'project':
+            # Supports matching on projectNumber.
+            project_number = '{}/{}'.format(self.type(), self['projectNumber'])
+            cur_resource_repr.add(project_number)
+        if cur_resource_repr.intersection(excluded_resources):
+            return
+
         self._visitor = visitor
         visitor.visit(self)
+
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
             try:
                 for resource in yielder.iter():
                     res = resource
+
                     new_stack = stack + [self]
 
                     # Parallelization for resource subtrees.
@@ -2505,8 +2521,7 @@ class SpannerInstanceIterator(resource_iter_class_factory(
 class StorageBucketIterator(resource_iter_class_factory(
         api_method_name='iter_storage_buckets',
         resource_name='storage_bucket',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='storage_api_enabled')):
+        api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Storage Bucket."""
 
 

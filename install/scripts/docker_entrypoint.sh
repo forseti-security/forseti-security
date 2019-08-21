@@ -40,10 +40,14 @@ LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=false
 RUN_CLIENT=false
+RUN_TEST=false
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
 SQL_HOST=127.0.0.1
 SQL_PORT=3306
+
+SERVER_HOST=127.0.0.1
+SERVER_PORT=50051
 
 # Check if the k8s cloud sql proxy environment variables have been set, if so
 # overwrite our cloud sql variables with their contents
@@ -72,6 +76,9 @@ while [[ "$1" != "" ]]; do
         --run_client )
             RUN_CLIENT=true
             ;;
+        --run_test )
+            RUN_TEST=true
+            ;;
         --services )
             shift
             SERVICES=$1
@@ -84,15 +91,22 @@ while [[ "$1" != "" ]]; do
             shift
             SQL_PORT=$1
             ;;
+        --server_host )
+            shift
+            SERVER_HOST=$1
+            ;;
+        --server_port )
+            shift
+            SERVER_PORT=$1
+            ;;
     esac
     shift # Move remaining args down 1 position
 done
 
-
 start_server(){
 
     forseti_server \
-    --endpoint "0.0.0.0:50051" \
+    --endpoint ${SERVER_HOST}:${SERVER_PORT} \
     --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/forseti_conf_server.yaml" \
@@ -113,7 +127,7 @@ run_forseti_job(){
     
     # Set the output format to json
     forseti config format json
-    forseti config endpoint $FORSETI_SERVER_SERVICE_HOST:$FORSETI_SERVER_SERVICE_PORT
+    forseti config endpoint ${SERVER_HOST}:${SERVER_PORT}
 
     # Purge inventory.
     # Use retention_days from configuration yaml file.
@@ -123,11 +137,16 @@ run_forseti_job(){
     MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
     echo "Running Forseti inventory."
     forseti inventory create --import_as ${MODEL_NAME}
+
     echo "Finished running Forseti inventory."
     sleep 5s
 
+    echo "Obtaining model ${MODEL_NAME}"
     forseti model get ${MODEL_NAME}
 
+    echo "Finished Obtaining model ${MODEL_NAME}"
+
+    echo "Checking model status"
     GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python3 -c \"import sys, json; print(json.load(sys.stdin)['status'])\""
     MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
@@ -137,9 +156,12 @@ run_forseti_job(){
             exit
     fi
 
+    echo "Finished checking model status"
+
     # Run model command
     echo "Using model ${MODEL_NAME} to run scanner"
     forseti model use ${MODEL_NAME}
+
     # Sometimes there's a lag between when the model
     # successfully saves to the database.
     sleep 10s
@@ -148,6 +170,7 @@ run_forseti_job(){
     # Run scanner command
     echo "Running Forseti scanner."
     forseti scanner run
+
     echo "Finished running Forseti scanner."
     sleep 10s
 
@@ -164,6 +187,28 @@ run_forseti_job(){
     # End cut and paste from run_forseti.sh
 }
 
+run_test(){
+    
+    # Set the output format to json
+    forseti config format json
+
+    # Set the endpoint
+    forseti config endpoint $FORSETI_SERVER_SERVICE_HOST:$FORSETI_SERVER_SERVICE_PORT
+    
+    result=$(forseti inventory list)
+    
+    if [[ -z "$result" ]]; then
+        exit 0
+    fi
+    
+    echo $result | grep "Error communicating to the Forseti server."
+    if [[ $? == 0 ]]; then
+        exit 1 
+    fi
+
+    exit 0
+}
+
 main(){
 
     if [[ ${LOG_LEVEL}='debug' ]]; then
@@ -176,6 +221,9 @@ main(){
 
     elif ${RUN_CLIENT}; then
         run_forseti_job
+    
+    elif ${RUN_TEST}; then
+        run_test
     
     fi
         
