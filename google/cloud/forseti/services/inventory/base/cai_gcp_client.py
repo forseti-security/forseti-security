@@ -147,6 +147,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return (iam_helpers.convert_iam_to_bigquery_policy(resource),
                     metadata)
 
+        return {}, None
+
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from Cloud Asset data.
 
@@ -205,6 +207,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
+
+        return {}, None
 
     def iter_billing_accounts(self):
         """Iterate Billing Accounts in an organization from Cloud Asset data.
@@ -879,6 +883,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+        return {}, None
+
     def fetch_crm_folder_iam_policy(self, folder_id):
         """Folder IAM policy in a folder from Cloud Asset data.
 
@@ -895,6 +901,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
+
+        return {}, None
 
     def fetch_crm_organization(self, org_id):
         """Fetch Organization data from Cloud Asset data.
@@ -913,6 +921,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+        return {}, None
+
     def fetch_crm_organization_iam_policy(self, org_id):
         """Organization IAM policy from Cloud Asset data.
 
@@ -929,6 +939,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
+
+        return {}, None
 
     def fetch_crm_project(self, project_number):
         """Fetch Project data from Cloud Asset data.
@@ -948,6 +960,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+        return {}, None
+
     def fetch_crm_project_iam_policy(self, project_number):
         """Project IAM policy from Cloud Asset data.
 
@@ -965,6 +979,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
+
+        return {}, None
 
     def iter_crm_folders(self, parent_id):
         """Iterate Folders from Cloud Asset data.
@@ -1617,6 +1633,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
+
+        return {}, None
 
     def iter_storage_buckets(self, project_number):
         """Iterate Buckets from GCP API.
