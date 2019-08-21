@@ -96,7 +96,6 @@ GCP_READ_IAM_ROLES = [
     'roles/orgpolicy.policyViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/serviceusage.serviceUsageConsumer',
-    'roles/storage.legacyBucketReader'
 ]
 
 GCP_WRITE_IAM_ROLES = [
