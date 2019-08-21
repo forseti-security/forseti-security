@@ -128,7 +128,7 @@ class InventoryIndex(BASE):
         """Create a new inventory index row.
 
         Returns:
-            object: InventoryIndex row object.
+            InventoryIndex: InventoryIndex row object.
         """
         utc_now = date_time.get_utc_now_datetime()
         micro_timestamp = date_time.get_utc_now_microtimestamp(utc_now)
@@ -844,6 +844,8 @@ class Storage(BaseStorage):
             index = InventoryIndex.create()
             self.session.add(index)
             self.session.commit()
+            LOGGER.info('Created Inventory Index %s', index.id)
+            self.session.expunge(index)
         except Exception as e:
             LOGGER.exception(e)
             self.session.rollback()
@@ -900,11 +902,9 @@ class Storage(BaseStorage):
         try:
             # Delete any rows that had been added to the inventory for this
             # instance of the inventory.
-            inventory_id = self.inventory_index.id
-            self.session.query(Inventory).filter(
-                Inventory.inventory_index_id == inventory_id).delete()
-            self.inventory_index.complete(status=IndexState.FAILURE)
-            self.session.commit()
+            self.engine.execute(Inventory.__table__.delete().where(
+                Inventory.inventory_index_id == self.inventory_index.id))
+            self.commit()
         finally:
             self.session_completed = True
 
@@ -912,11 +912,22 @@ class Storage(BaseStorage):
         """Commit the stored inventory."""
         if self.inventory_index.inventory_index_warnings:
             status = IndexState.PARTIAL_SUCCESS
+        elif self.inventory_index.inventory_index_errors:
+            status = IndexState.FAILURE
         else:
             status = IndexState.SUCCESS
         try:
-            self.inventory_index.complete(status=status)
-            self.session.commit()
+            self.engine.execute(InventoryIndex.__table__.update().where(
+                InventoryIndex.id == self.inventory_index.id).values(
+                    completed_at_datetime=(
+                        self.inventory_index.completed_at_datetime),
+                    inventory_status=status,
+                    counter=self.inventory_index.counter,
+                    inventory_index_errors=(
+                        self.inventory_index.inventory_index_errors),
+                    inventory_index_warnings=(
+                        self.inventory_index.inventory_index_warnings),
+                    message=self.inventory_index.message))
         finally:
             self.session_completed = True
 
