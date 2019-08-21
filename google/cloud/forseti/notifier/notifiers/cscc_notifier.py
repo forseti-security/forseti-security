@@ -163,7 +163,7 @@ class CsccNotifier(object):
     def find_inactive_findings(new_findings, findings_in_cscc):
         """Finds the currently ACTIVE findings
            that do not correspond to the latest scanner run
-           and updates their statesto inactive.
+           and updates their states to inactive.
 
         Args:
             new_findings (list): Latest violations that are transformed to
@@ -188,8 +188,10 @@ class CsccNotifier(object):
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
 
-            if (finding_id not in new_findings_map and
-                    to_be_updated_finding['state'] == 'ACTIVE'):
+            if to_be_updated_finding['state'] == 'INACTIVE':
+                continue
+
+            if finding_id not in new_findings_map:
                 to_be_updated_finding['state'] = 'INACTIVE'
                 current_time = date_time.get_utc_now_datetime()
                 actual_time = current_time.strftime(
