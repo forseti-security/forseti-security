@@ -238,7 +238,7 @@ class BigQueryClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
-    @tracing.traced()
+    @tracing.trace()
     def get_tables(self, project_id, dataset_id):
         """Return BigQuery tables stored in the requested project_id.
 
