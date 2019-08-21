@@ -325,7 +325,7 @@ def generate_service_account(parent_resource, resource_id=''):
         DISPLAY_NAME=resource_id,
         PROJECT_ID=parent_resource.resource_id)
 
-    resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.BIGQUERY_ROLES)
+    resource_iam_policy = _generate_iam_policy(cai_resource_name, cai_resource_type, tmpl.SERVICE_ACCOUNT_ROLES)
     return Resource(cai_name=cai_resource_name,
                     cai_type=cai_resource_type,
                     resource_id=resource_id,
