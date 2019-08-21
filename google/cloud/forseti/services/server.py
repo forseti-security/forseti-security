@@ -21,7 +21,6 @@ import sys
 import time
 
 from concurrent import futures
-import googlecloudprofiler
 import grpc
 
 from google.cloud.forseti.common.util import logger
@@ -35,6 +34,17 @@ from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
 
 LOGGER = logger.get_logger(__name__)
+
+try:
+    import googlecloudprofiler
+    LOGGER.info('Cloud Profiler library successfully imported.')
+    CLOUD_PROFILER_IMPORTED = True
+except ImportError:
+    LOGGER.warning('Cannot enable Cloud Profiler because the '
+                   '`googlecloudprofiler` library was not found. Run '
+                   '`sudo pip3 install .[profiler]` to install '
+                   'Cloud Profiler.')
+    CLOUD_PROFILER_IMPORTED = False
 
 SERVICE_MAP = {
     'explain': GrpcExplainerFactory,
@@ -188,7 +198,7 @@ def main():
         parser.print_usage()
         sys.exit(exit_code)
 
-    if args['enable_profiler']:
+    if args['enable_profiler'] and CLOUD_PROFILER_IMPORTED:
         try:
             googlecloudprofiler.start(
                 service='forseti-server',
