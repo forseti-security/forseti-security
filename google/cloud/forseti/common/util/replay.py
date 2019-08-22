@@ -177,7 +177,7 @@ def replay(requests):
 
             print('11111111111bbbb - requests', requests)
 
-
+            request.uri = 'https://www.googleapis.com/compute/v1/projects/project1?alt=json'
             request_key = _key_from_request(request)
             print('11111111111cccc - request_key', request_key)
 
