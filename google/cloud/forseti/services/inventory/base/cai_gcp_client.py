@@ -265,6 +265,28 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session)
 
+    def iter_compute_address(self, project_number):
+        """Iterate Addresses from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of address resources.
+        """
+        cai_to_gcp_key_map = {
+            'user': 'users',
+        }
+
+        address_resources = self._iter_compute_resources('Address', project_number)
+        global_address_resources = self._iter_compute_resources('GlobalAddress', project_number)
+        resources = itertools.chain(address_resources, global_address_resources)
+
+        for address, metadata in resources:
+            yield (
+                _fixup_resource_keys(address, cai_to_gcp_key_map),
+                metadata)
+
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from Cloud Asset data.
 
