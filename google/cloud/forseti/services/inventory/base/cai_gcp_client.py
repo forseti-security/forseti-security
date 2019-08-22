@@ -278,8 +278,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'user': 'users',
         }
 
-        address_resources = self._iter_compute_resources('Address', project_number)
-        global_address_resources = self._iter_compute_resources('GlobalAddress', project_number)
+        address_resources = self._iter_compute_resources('Address',
+                                                         project_number)
+
+        global_address_resources = self._iter_compute_resources('GlobalAddress',
+                                                                project_number)
+
         resources = itertools.chain(address_resources, global_address_resources)
 
         for address, metadata in resources:
