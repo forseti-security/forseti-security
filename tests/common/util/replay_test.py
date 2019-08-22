@@ -69,6 +69,7 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
                                return_value=(mock_creds, 'test-project')):
             gce_api_client = compute.ComputeClient(
                 global_configs=self.fake_global_configs)
+            # Hardcode _baseUrl to prevent flakiness from external call.
             gce_api_client.repository.projects.gcp_service._baseUrl = (
                 'https://www.googleapis.com/compute/v1/projects/')
 
