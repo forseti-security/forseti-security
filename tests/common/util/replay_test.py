@@ -69,6 +69,8 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
                                return_value=(mock_creds, 'test-project')):
             gce_api_client = compute.ComputeClient(
                 global_configs=self.fake_global_configs)
+            gce_api_client.repository.projects.gcp_service._baseUrl = (
+                'https://www.googleapis.com/compute/v1/projects/')
 
         responses = []
         responses.append(gce_api_client.get_project(self.project_id))
