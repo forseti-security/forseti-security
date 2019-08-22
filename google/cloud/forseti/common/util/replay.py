@@ -175,7 +175,14 @@ def replay(requests):
                     unpickler = pickle.Unpickler(infile)
                     requests.update(unpickler.load())
 
+            print('11111111111bbbb - requests', requests)
+
+
             request_key = _key_from_request(request)
+            print('11111111111cccc - request_key', request_key)
+
+
+
             if request_key in requests:
                 results = requests[request_key]
                 # Pull the first result from the queue.
