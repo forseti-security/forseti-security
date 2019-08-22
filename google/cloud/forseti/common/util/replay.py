@@ -169,7 +169,8 @@ def replay(requests):
                 return f(self, request, *args, **kwargs)
 
             if not requests:
-                LOGGER.info('Loading replay file %s.', replay_file)
+                print('11111111111')
+                print('Loading replay file ', replay_file)
                 with open(replay_file, 'rb') as infile:
                     unpickler = pickle.Unpickler(infile)
                     requests.update(unpickler.load())
@@ -183,7 +184,8 @@ def replay(requests):
                     raise obj['result'](*obj['exception_args'])
                 return obj['result']
             else:
-                LOGGER.warning(
+                print('2222222222222')
+                print(
                     'Request URI %s with body %s not found in recorded '
                     'requests, executing live http request instead.',
                     request.uri, request.body)
