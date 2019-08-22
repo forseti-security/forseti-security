@@ -83,8 +83,6 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
     def test_record_and_replay(self):
         """Verify record and replay functionality."""
         expected_results = self.run_api_tests(record=True)
-        print("222222222222222222")
-        print(expected_results)
         results = self.run_api_tests(record=False)
         self.assertEqual(expected_results, results)
 
