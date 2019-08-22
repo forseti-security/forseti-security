@@ -79,6 +79,7 @@ class NullProgresser(Progresser):
     def get_summary(self):
         pass
 
+
 def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
     resource = {
         'name': name,
@@ -97,7 +98,7 @@ def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
                                      sort_keys=True)
     else:
         iam_policy_data = None
-    return (resource_data, iam_policy_data)
+    return resource_data, iam_policy_data
 
 
 def organization(item):
@@ -115,6 +116,7 @@ def folder(item):
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
+
 def project(item):
     name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         item['projectNumber'])
@@ -123,6 +125,7 @@ def project(item):
         item['parent']['type'], item['parent']['id'])
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
+
 
 def appengine_app(item):
     parent = item.parent()
