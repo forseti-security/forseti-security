@@ -920,7 +920,7 @@ class Storage(BaseStorage):
             self.engine.execute(InventoryIndex.__table__.update().where(
                 InventoryIndex.id == self.inventory_index.id).values(
                     completed_at_datetime=(
-                        self.inventory_index.completed_at_datetime),
+                        date_time.get_utc_now_datetime()),
                     inventory_status=status,
                     counter=self.inventory_index.counter,
                     inventory_index_errors=(
