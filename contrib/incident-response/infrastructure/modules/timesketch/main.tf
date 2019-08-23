@@ -25,7 +25,7 @@ resource "random_id" "infrastructure-random-id" {
 data "template_file" "elasticsearch-startup-script" {
   template = "${file("${path.module}/templates/scripts/install-elasticsearch.sh.tpl")}"
 
-  vars {
+  vars = {
     cluster_name  = "${var.elasticsearch_cluster_name}"
     project       = "${var.gcp_project}"
     zone          = "${var.gcp_zone}"
@@ -52,7 +52,7 @@ resource "google_compute_instance" "elasticsearch" {
   # Assign a generated public IP address. Needed for SSH access.
   network_interface {
     network       = "default"
-    access_config = {}
+    access_config {}
   }
 
   # Tag for service enumeration.
@@ -105,7 +105,7 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
     ip_configuration {
       ipv4_enabled = true
       require_ssl  = false
-      authorized_networks = {
+      authorized_networks {
         name  = "timesketch-server"
         value = "${google_compute_address.timesketch-server-address.address}"
       }
@@ -146,7 +146,7 @@ resource "google_redis_instance" "redis" {
 #-------------------#
 data "template_file" "timesketch-server-startup-script" {
   template = "${file("${path.module}/templates/scripts/install-timesketch.sh.tpl")}"
-  vars {
+  vars = {
     timesketch_admin_username = "${var.timesketch_admin_username}"
     timesketch_admin_password = "${random_string.timesketch-admin-password.result}"
     elasticsearch_node        = "${google_compute_instance.elasticsearch.*.name[0]}"
@@ -202,6 +202,10 @@ resource "google_compute_instance" "timesketch-server" {
     access_config {
       nat_ip = "${google_compute_address.timesketch-server-address.address}"
     }
+  }
+
+  service_account {
+    scopes = ["storage-ro", "pubsub"]
   }
 
   # Allow HTTPS traffic
