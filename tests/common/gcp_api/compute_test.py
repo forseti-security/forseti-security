@@ -154,6 +154,9 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test create/patch/update/delete firewall rule."""
         with mock.patch.object(self.gce_api_client.repository.firewalls,
                                'read_only', return_value=True):
+            # Hardcode _baseUrl to prevent flakiness from external call.
+            self.gce_api_client.repository.firewalls.gcp_service._baseUrl = (
+                'https://www.googleapis.com/compute/v1/projects/')
             method = getattr(self.gce_api_client,
                              '{}_firewall_rule'.format(verb))
             results = method(self.project_id,
