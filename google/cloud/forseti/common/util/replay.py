@@ -169,21 +169,12 @@ def replay(requests):
                 return f(self, request, *args, **kwargs)
 
             if not requests:
-                print('11111111111')
-                print('Loading replay file ', replay_file)
+                LOGGER.info('Loading replay file %s.', replay_file)
                 with open(replay_file, 'rb') as infile:
                     unpickler = pickle.Unpickler(infile)
                     requests.update(unpickler.load())
 
-            print('11111111111bbbb - requests', requests)
-
-#            request.uri = ('https://www.googleapis.com'
-#                           '/compute/v1/projects/project1?alt=json')
             request_key = _key_from_request(request)
-            print('11111111111cccc - request_key', request_key)
-
-
-
             if request_key in requests:
                 results = requests[request_key]
                 # Pull the first result from the queue.
@@ -192,8 +183,7 @@ def replay(requests):
                     raise obj['result'](*obj['exception_args'])
                 return obj['result']
             else:
-                print('2222222222222')
-                print(
+                LOGGER.warning(
                     'Request URI %s with body %s not found in recorded '
                     'requests, executing live http request instead.',
                     request.uri, request.body)
