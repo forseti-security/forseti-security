@@ -230,6 +230,15 @@ class InventoryImporter(object):
                 'Unexpected SQLAlchemyError occurred during model creation.')
             self.session.rollback()
 
+    def _commit_session(self):
+        """Commit the session with rollback on errors."""
+        try:
+            self.session.commit()
+        except SQLAlchemyError:
+            LOGGER.exception(
+                'Unexpected SQLAlchemyError occurred during model creation.')
+            self.session.rollback()
+
     # pylint: disable=too-many-statements
     def run(self):
         """Runs the import.
@@ -280,6 +289,12 @@ class InventoryImporter(object):
                     LOGGER.debug('Flushing model write session: %s',
                                  item_counter)
                     self._flush_session()
+                if not item_counter % 500000:
+                    # Commit every 500k resources while iterating
+                    # through all the resources.
+                    LOGGER.debug('Commiting model write session: %s',
+                                 item_counter)
+                    self._commit_session()
 
             if item_counter % 1000:
                 # Additional rows added since last flush.
