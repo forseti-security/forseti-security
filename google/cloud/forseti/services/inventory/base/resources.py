@@ -1080,6 +1080,10 @@ class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
 
 
 # Compute Engine resource classes
+class ComputeAddress(resource_class_factory('compute_address', 'id')):
+    """The Resource implementation for Compute Address."""
+
+
 class ComputeAutoscaler(resource_class_factory('compute_autoscaler', 'id')):
     """The Resource implementation for Compute Autoscaler."""
 
@@ -1907,6 +1911,12 @@ def compute_iter_class_factory(api_method_name, resource_name):
         resource_validation_method_name='compute_api_enabled')
 
 
+class ComputeAddressIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_address',
+        resource_name='compute_address')):
+    """The Resource iterator implementation for Compute Address."""
+
+
 class ComputeAutoscalerIterator(compute_iter_class_factory(
         api_method_name='iter_compute_autoscalers',
         resource_name='compute_autoscaler')):
@@ -2572,6 +2582,7 @@ FACTORIES = {
             AppEngineAppIterator,
             BigqueryDataSetIterator,
             CloudSqlInstanceIterator,
+            ComputeAddressIterator,
             ComputeAutoscalerIterator,
             ComputeBackendBucketIterator,
             ComputeBackendServiceIterator,
@@ -2666,6 +2677,11 @@ FACTORIES = {
     'cloudsql_instance': ResourceFactory({
         'dependsOn': ['project'],
         'cls': CloudSqlInstance,
+        'contains': []}),
+
+    'compute_address': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeAddress,
         'contains': []}),
 
     'compute_autoscaler': ResourceFactory({
