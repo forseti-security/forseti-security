@@ -221,6 +221,15 @@ class InventoryImporter(object):
 
         self.found_root = False
 
+    def _flush_session(self):
+        """Flush the session with rollback on errors."""
+        try:
+            self.session.flush()
+        except SQLAlchemyError:
+            LOGGER.exception(
+                'Unexpected SQLAlchemyError occurred during model creation.')
+            self.session.rollback()
+
     def _commit_session(self):
         """Commit the session with rollback on errors."""
         try:
@@ -279,11 +288,17 @@ class InventoryImporter(object):
                     # Flush database every 1000 resources
                     LOGGER.debug('Flushing model write session: %s',
                                  item_counter)
+                    self._flush_session()
+                if not item_counter % 500000:
+                    # Commit every 500k resources while iterating
+                    # through all the resources.
+                    LOGGER.debug('Commiting model write session: %s',
+                                 item_counter)
                     self._commit_session()
 
             if item_counter % 1000:
                 # Additional rows added since last flush.
-                self._commit_session()
+                self._flush_session()
             LOGGER.debug('Finished storing resources into models.')
 
             item_counter += self.model_action_wrapper(
@@ -413,11 +428,11 @@ class InventoryImporter(object):
             if not idx % flush_count:
                 # Flush database every flush_count resources
                 LOGGER.debug('Flushing write session: %s.', idx)
-                self._commit_session()
+                self._flush_session()
 
         if idx % flush_count:
             # Additional rows added since last flush.
-            self._commit_session()
+            self._flush_session()
 
         if post_action:
             post_action()
