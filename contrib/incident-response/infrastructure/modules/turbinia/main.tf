@@ -158,7 +158,7 @@ data "template_file" "turbinia-config-template" {
   template = "${file("${path.module}/templates/turbinia.conf.tpl")}"
   vars = {
     project           = "${var.gcp_project}"
-    region            = "${var.gcp_region}}"
+    region            = "${var.gcp_region}"
     zone              = "${var.gcp_zone}"
     turbinia_id       = "${random_id.infrastructure-random-id.hex}"
     pubsub_topic      = "${google_pubsub_topic.pubsub-topic.name}"
@@ -200,7 +200,7 @@ resource "google_compute_instance" "turbinia-server" {
   }
 
   service_account {
-    scopes = ["compute-ro", "storage-rw", "pubsub"]
+    scopes = ["compute-ro", "storage-rw", "pubsub", "datastore"]
   }
 
   lifecycle {
@@ -244,7 +244,7 @@ resource "google_compute_instance" "turbinia-worker" {
   }
 
   service_account {
-    scopes = ["compute-ro", "storage-rw", "pubsub"]
+    scopes = ["compute-rw", "storage-rw", "pubsub", "datastore"]
   }
 
   lifecycle {

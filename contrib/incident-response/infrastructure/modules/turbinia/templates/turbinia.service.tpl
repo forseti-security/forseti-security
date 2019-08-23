@@ -40,9 +40,9 @@ Restart=always
 RestartSec=10
 # Run ExecStartPre as root
 PermissionsStartOnly=true
-ExecStartPre=-/bin/mkdir /mnt/turbinia/
-ExecStartPre=-/bin/mkdir /var/lib/turbinia/
-ExecStartPre=-/bin/mkdir /var/log/turbinia/
+ExecStartPre=-/bin/mkdir -p /mnt/turbinia/
+ExecStartPre=-/bin/mkdir -p /var/lib/turbinia/
+ExecStartPre=-/bin/mkdir -p /var/log/turbinia/
 ExecStartPre=/bin/chown -R turbinia:turbinia /mnt/turbinia/
 ExecStartPre=/bin/chown -R turbinia:turbinia /var/lib/turbinia/
 ExecStartPre=/bin/chown -R turbinia:turbinia /var/log/turbinia/

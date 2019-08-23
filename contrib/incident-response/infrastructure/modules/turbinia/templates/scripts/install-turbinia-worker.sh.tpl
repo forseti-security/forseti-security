@@ -39,7 +39,8 @@ apt-get update
 apt-get -y install python-pip
 
 # Install Turbinia
-pip install https://github.com/google/turbinia/archive/master.zip
+#pip install https://github.com/google/turbinia/archive/master.zip
+pip install https://github.com/google/turbinia/archive/retry-cloud.zip
 
 # Turbinia needs a recent version of urllib3
 pip install urllib3 --upgrade
@@ -53,7 +54,10 @@ apt-get -y install python-plaso plaso-tools
 pip install pyhindsight
 
 # Create system user
-useradd -r -s /bin/nologin turbinia
+useradd -r -s /bin/nologin -G disk turbinia
+
+# Enable the turbinia user to mount devices
+echo "turbinia ALL = (root) NOPASSWD: /bin/mount,/bin/umount,/sbin/losetup" > /etc/sudoers.d/turbinia
 
 # Configure
 mkdir /etc/turbinia
