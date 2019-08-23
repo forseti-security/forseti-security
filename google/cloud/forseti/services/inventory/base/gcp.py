@@ -174,6 +174,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_compute_address(self, project_number):
+        """Iterate Addresses from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.
 
@@ -1379,6 +1387,18 @@ class ApiClientImpl(ApiClient):
                 asset metadata that defaults to None for all GCP clients.
         """
         return self.compute.get_project(project_number), None
+
+    def iter_compute_address(self, project_number):
+        """Iterate Addresses from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Addresses are not supported by '
+                                   'this API client')
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.

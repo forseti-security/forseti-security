@@ -542,6 +542,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
         expected_counts.update({
             'backendservice': {'resource': 2},
             'cloudsqlinstance': {'resource': 2},
+            'compute_address': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
             'compute_healthcheck': {'resource': 1},
@@ -612,6 +613,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
+            'compute_address': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
             'compute_healthcheck': {'resource': 1},
