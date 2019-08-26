@@ -202,6 +202,37 @@ class FirewallRulesTest(ForsetiTestCase):
         self.assertSameStructure(constants.EXPECTED_FIREWALL_RULES,
                                  self.firewall_rules.rules)
 
+    def test_add_rules_for_network_short_form(self):
+        """Validate adding rules for network using the short network name.
+
+        Setup:
+          * Create a sample rule with a network short name
+          * Import the rule into a FirewallRules object
+
+        Expected Results:
+          * Imported rules have the correct names and the correct network
+            assigned.
+        """
+        # The rule name should not be changed since the rule includes a
+        # network already.
+        test_rule_name = 'test-rule'
+        test_rule = _GenerateTestRule(test_rule_name)
+
+        # Short network name, value under test
+        test_rule['network'] = 'global/networks/default'
+
+
+        self.firewall_rules.add_rules(
+            [test_rule], network_name='default')
+
+        # Full network name used by API, given project name of test-project
+        expected_network = (
+            'https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/default')
+
+        self.assertEqual(expected_network,
+                         self.firewall_rules.rules[test_rule_name]['network'])
+
     def test_add_rules_for_network_long_name(self):
         """Validate adding rules for a specific network with a long name.
 
@@ -1473,6 +1504,18 @@ class FirewallRulesAreEqualTest(ForsetiTestCase):
         self.firewall_rules_1.add_rule(self.rule_one)
         self.firewall_rules_2.add_rule(self.rule_two)
         self.assertNotEqual(self.firewall_rules_1, self.firewall_rules_2)
+
+
+def _GenerateTestRule(name):
+    return {
+        'name': name,
+        'network': ('https://www.googleapis.com/compute/v1/projects/'
+                    'test-project/global/networks/fake-network'),
+        'description': 'fake rule description',
+        'direction': 'INGRESS',
+        'allowed': [{'IPProtocol': 'TCP'}],
+        'sourceRanges': ['10.0.0.0/8']
+    }
 
 
 if __name__ == '__main__':

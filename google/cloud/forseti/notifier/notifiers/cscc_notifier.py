@@ -161,8 +161,9 @@ class CsccNotifier(object):
 
     @staticmethod
     def find_inactive_findings(new_findings, findings_in_cscc):
-        """Finds the findings that does not correspond to the latest scanner run
-           and updates it's state to inactive.
+        """Finds the currently ACTIVE findings
+           that do not correspond to the latest scanner run
+           and updates their states to inactive.
 
         Args:
             new_findings (list): Latest violations that are transformed to
@@ -171,7 +172,7 @@ class CsccNotifier(object):
                 corresponds to the previous scanner run.
 
         Returns:
-            list: Findings whose state has been marked as 'INACTIVE'.
+            list: Findings to be marked as 'INACTIVE'.
         """
 
         inactive_findings = []
@@ -186,6 +187,9 @@ class CsccNotifier(object):
         for finding_list in findings_in_cscc:
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
+
+            if to_be_updated_finding['state'] == 'INACTIVE':
+                continue
 
             if finding_id not in new_findings_map:
                 to_be_updated_finding['state'] = 'INACTIVE'
@@ -243,8 +247,6 @@ class CsccNotifier(object):
                 try:
                     client.create_finding(finding, source_id=source_id,
                                           finding_id=finding_id)
-                    LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                                 finding)
                 except api_errors.ApiExecutionError:
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
@@ -257,8 +259,6 @@ class CsccNotifier(object):
                     client.update_finding(finding,
                                           finding_id,
                                           source_id=source_id)
-                    LOGGER.debug('Successfully updated finding in CSCC:\n%s',
-                                 finding)
                 except api_errors.ApiExecutionError:
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
