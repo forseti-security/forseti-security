@@ -34,6 +34,10 @@ To complete this guide, you will need:
 Install the necessary python dev tools and packages from
 [apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/install/dependencies/apt_packages.txt).
 
+```bash
+  sudo apt-get install $packagename
+  ```
+
 ### Mac setup
 
 This guide is written for use with [Homebrew](https://brew.sh).
