@@ -3,7 +3,7 @@
 First, install and configure the gcloud command-line tool to run
 the setup commands:
 
-  1. Download and install the [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).
+  1. Download and install the [gcloud command-line tool](https://cloud.google.com/sdk/docs/).
   1. Make sure gcloud is configured by running `gcloud info` and check that the
   Account and Project displayed match your Forseti Security project. If it
   doesn't match, run the following commands to configure gcloud for your
