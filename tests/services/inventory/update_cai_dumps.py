@@ -276,11 +276,15 @@ def instancegroupmanager(item):
     return _create_compute_asset(item,
                                  'compute.googleapis.com/InstanceGroupManager')
 
-
 def instancetemplate(item):
     return _create_compute_asset(item,
                                  'compute.googleapis.com/InstanceTemplate')
 
+def interconnect(item):
+    return _create_compute_asset(item, 'compute.googleapis.com/Interconnect')
+
+def interconnect_attachment(item):
+    return _create_compute_asset(item, 'compute.googleapis.com/InterconnectAttachment')
 
 def network(item):
     return _create_compute_asset(item, 'compute.googleapis.com/Network')
@@ -315,6 +319,8 @@ CAI_TYPE_MAP = {
     'instancegroup': instancegroup,
     'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
+    'interconnect': interconnect,
+    'interconnect_attachment': interconnect_attachment,
     'kubernetes_cluster': kubernetes_cluster,
     'network': network,
     'role': role,
