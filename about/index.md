@@ -14,6 +14,8 @@ provide a foundation that others can build upon.
 Get started with
 [Forseti Security]({% link _docs/latest/configure/general/index.md %}).
 
+View the [Forseti Roadmap]({% link about/roadmap.md %}) to learn about upcoming features.
+
 ---
 
 ## When to use Forseti Security
