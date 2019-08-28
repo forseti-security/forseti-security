@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ##### BEGIN BASE IMAGE #####
-FROM python:3.6-slim as base
+FROM python:3.6.9-slim-buster as base
 
 ENV HOME=/home/forseti \
     WORK_DIR=/home/forseti/forseti-security \
@@ -26,7 +26,7 @@ RUN groupadd -g 1000 forseti && \
 
 # Install host dependencies.
 RUN apt-get update  && \
-    apt-get install --no-install-recommends -y libmariadbclient18 && \
+    apt-get install --no-install-recommends -y libmariadb3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
