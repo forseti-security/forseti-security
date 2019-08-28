@@ -40,8 +40,7 @@ apt update
 apt-get -y install python-pip
 
 # Install Turbinia
-#pip install https://github.com/google/turbinia/archive/master.zip
-pip install https://github.com/google/turbinia/archive/retry-cloud.zip
+pip install https://github.com/google/turbinia/archive/master.zip
 
 # Turbinia needs a recent version of urllib3
 pip install urllib3 --upgrade

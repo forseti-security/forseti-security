@@ -55,5 +55,5 @@ variable "turbinia_worker_disk_size_gb" {
 
 variable "turbinia_worker_count" {
   description = "Number of Turbinia worker machines to run."
-  default     = 10
+  default     = 1
 }
