@@ -1144,6 +1144,15 @@ class ComputeInstanceTemplate(resource_class_factory('instancetemplate', 'id')):
     """The Resource implementation for Compute InstanceTemplate."""
 
 
+class ComputeInterconnect(resource_class_factory('compute_interconnect', 'id')):
+    """The Resource implementation for Compute Interconnect."""
+
+
+class ComputeInterconnectAttachment(resource_class_factory(
+        'compute_interconnect_attachment', 'id')):
+    """The Resource implementation for Compute Interconnect Attachment."""
+
+
 class ComputeLicense(resource_class_factory('compute_license', 'id')):
     """The Resource implementation for Compute License."""
 
@@ -2032,6 +2041,18 @@ class ComputeInstanceTemplateIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute InstanceTemplate."""
 
 
+class ComputeInterconnectIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_interconnects',
+        resource_name='compute_interconnect')):
+    """The Resource iterator implementation for Interconnect."""
+
+
+class ComputeInterconnectAttachmentIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_interconnect_attachments',
+        resource_name='compute_interconnect_attachment')):
+    """The Resource iterator implementation for InterconnectAttachment."""
+
+
 class ComputeLicenseIterator(compute_iter_class_factory(
         api_method_name='iter_compute_licenses',
         resource_name='compute_license')):
@@ -2597,6 +2618,8 @@ FACTORIES = {
             ComputeInstanceGroupManagerIterator,
             ComputeInstanceIterator,
             ComputeInstanceTemplateIterator,
+            ComputeInterconnectIterator,
+            ComputeInterconnectAttachmentIterator,
             ComputeLicenseIterator,
             ComputeNetworkIterator,
             ComputeProjectIterator,
@@ -2752,6 +2775,16 @@ FACTORIES = {
     'compute_instancetemplate': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeInstanceTemplate,
+        'contains': []}),
+
+    'compute_interconnect': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeInterconnect,
+        'contains': []}),
+
+    'compute_interconnect_attachment': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeInterconnectAttachment,
         'contains': []}),
 
     'compute_license': ResourceFactory({

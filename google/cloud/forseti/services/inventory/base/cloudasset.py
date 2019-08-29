@@ -59,6 +59,8 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/InstanceGroup',
     'compute.googleapis.com/InstanceGroupManager',
     'compute.googleapis.com/InstanceTemplate',
+    'compute.googleapis.com/Interconnect',
+    'compute.googleapis.com/InterconnectAttachment',
     'compute.googleapis.com/License',
     'compute.googleapis.com/Network',
     'compute.googleapis.com/Project',

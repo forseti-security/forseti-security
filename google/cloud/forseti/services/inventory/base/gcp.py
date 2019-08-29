@@ -294,6 +294,22 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_compute_interconnects(self, project_number):
+        """Iterate Interconnects from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_interconnect_attachments(self, project_number):
+        """Iterate Interconnect Attachments from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_licenses(self, project_number):
         """Iterate Licenses from GCP API.
 
@@ -1590,6 +1606,30 @@ class ApiClientImpl(ApiClient):
         for instancetemplate in self.compute.get_instance_templates(
                 project_number):
             yield instancetemplate, None
+
+    def iter_compute_interconnects(self, project_number):
+        """Iterate Interconnects from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Interconnects are not supported '
+                                   'by this API client')
+
+    def iter_compute_interconnect_attachments(self, project_number):
+        """Iterate Interconnect Attachments from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Interconnect Attachments '
+                                   'are not supported by this API client')
 
     def iter_compute_licenses(self, project_number):
         """Iterate Licenses from GCP API.
