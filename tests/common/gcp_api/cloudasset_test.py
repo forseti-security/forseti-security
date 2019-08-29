@@ -142,6 +142,19 @@ class CloudAssetTest(unittest_utils.ForsetiTestCase):
                 fake_cloudasset.EXPORT_ASSETS_ORGANIZATION_RESOURCES_OPERATION),
             result)
 
+    def test_export_assets_folder_read_time(self):
+        """Test export_assets for a folder in blocking mode."""
+        http_mocks.mock_http_response(
+          fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_OPERATION)
+
+        result = self.asset_api_client.export_assets(
+            fake_cloudasset.FOLDER, fake_cloudasset.DESTINATION,
+            content_type='RESOURCE',
+            asset_types=fake_cloudasset.ASSET_TYPES,
+            read_time='2019-01-02T03:04:05.06789Z')
+        self.assertEqual(json.loads(
+            fake_cloudasset.EXPORT_ASSETS_FOLDER_RESOURCES_OPERATION), result)
+
     def test_export_assets_folder_blocking(self):
         """Test export_assets for a folder in blocking mode."""
         mock_responses = [

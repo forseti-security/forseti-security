@@ -263,8 +263,8 @@ class ExportAssetsQueryMixin(object):
     """Mixin that implements the exportAssets query."""
 
     def export_assets(self, parent, output_config, content_type=None,
-                      asset_types=None, fields=None, verb='exportAssets',
-                      **kwargs):
+                      asset_types=None, read_time=None,
+                      fields=None, verb='exportAssets', **kwargs):
         """Export assets under a parent resource to a file on GCS.
 
         Args:
@@ -278,6 +278,9 @@ class ExportAssetsQueryMixin(object):
                 CAI metadata for assets are included.
             asset_types (list): The list of asset types to filter the results
                 to, if not specified, exports all assets known to CAI.
+            read_time (str): A timestamp to take an asset snapshot in RFC3339
+                UTC "Zulu" format, accurate to nanoseconds.
+                Example: "2014-10-02T15:01:23.045123456Z"
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
             **kwargs (dict): Additional parameters to pass to the API method.
@@ -294,6 +297,9 @@ class ExportAssetsQueryMixin(object):
 
         if asset_types:
             body['assetTypes'] = asset_types
+
+        if read_time:
+            body['readTime'] = read_time
 
         arguments = {
             'parent': parent,

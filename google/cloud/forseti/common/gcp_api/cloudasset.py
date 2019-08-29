@@ -182,8 +182,8 @@ class CloudAssetClient(object):
                                   'release.')
 
     def export_assets(self, parent, destination_object=None, output_config=None,
-                      content_type=None, asset_types=None, blocking=False,
-                      timeout=0):
+                      content_type=None, asset_types=None, read_time=None,
+                      blocking=False, timeout=0):
         """Export assets under a parent resource to the destination GCS object.
 
         Args:
@@ -200,6 +200,9 @@ class CloudAssetClient(object):
                 CAI metadata for assets are included.
             asset_types (list): The list of asset types to filter the results
                 to, if not specified, exports all assets known to CAI.
+            read_time (str): A timestamp to take an asset snapshot in RFC3339
+                UTC "Zulu" format, accurate to nanoseconds.
+                Example: "2014-10-02T15:01:23.045123456Z"
             blocking (bool): If true, don't return until the async operation
                 completes on the backend or timeout seconds pass.
             timeout (float): If greater than 0 and blocking is True, then raise
@@ -239,7 +242,7 @@ class CloudAssetClient(object):
         try:
             results = repository.export_assets(
                 parent, output_config, content_type=content_type,
-                asset_types=asset_types)
+                asset_types=asset_types, read_time=read_time)
             if blocking:
                 results = self.wait_for_completion(parent, results,
                                                    timeout=timeout)
