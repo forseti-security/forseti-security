@@ -289,8 +289,8 @@ class InventoryImporter(object):
                     LOGGER.debug('Flushing model write session: %s',
                                  item_counter)
                     self._flush_session()
-                if not item_counter % 500000:
-                    # Commit every 500k resources while iterating
+                if not item_counter % 100000:
+                    # Commit every 100k resources while iterating
                     # through all the resources.
                     LOGGER.debug('Commiting model write session: %s',
                                  item_counter)
