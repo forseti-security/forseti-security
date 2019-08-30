@@ -68,35 +68,36 @@ Install mysql_config:
 
 ## Creating a virtualenv
 
-Ensure [virtualenv](https://packaging.python.org/guides/installing-
-using-pip-and-virtual-environments/#creating-a-virtual-environment) 
-is installed in your system. Virtualenv allows you to create 
+Ensure [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) 
+is installed in your system. Virtualenvwrapper allows you to create 
 multiple environments to contain different modules and dependencies
 in different projects:
 
 Use the following command to install the python3-venv package:
 
   ```bash
-  sudo apt-get install python3-venv 
+  sudo pip3 install virtualenvwrapper
   ```
+Recommeded: Run the following commands in the current shell and
+consider adding these commands to your shell startup script. e.g.~/.bashrc
+
+  ```bash
+    export WORKON_HOME=~/.virtualenvs
+    export VIRTUALENVWRAPPER_PYTHON=`which python3`
+    source /usr/local/bin/virtualenvwrapper.sh > /dev/null
+   ```
   
 Use the following command to create a virtualenv:
 
 ```bash
-  # create a virtualenv
-  python3 -m venv forseti-security
+  # create a new virtualenv
+  mkvirtualenv forseti-security
   ```
 
 Use the following command to activate the virtual enviroment:
   
   ```
-  source forseti-security/bin/activate
-  ```
-
-Use the follpwing command if you need to leave virtual enviroment :
-
-  ```
-  deactivate
+  workon forseti-security
   ```
   
 ## Getting the source code
