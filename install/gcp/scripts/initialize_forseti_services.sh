@@ -55,7 +55,7 @@ POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYN
 POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
 POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
 POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
-POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_HOME_REPOSITORY_URL}"
+POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"
 POLICY_LIBRARY_SYNC_COMMAND+=" --wait=30"
 
 # If the SSH file is present, tell git-sync to use SSH to connect to the repo
@@ -154,8 +154,8 @@ echo "immediately by running the following:"
 echo ""
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
-echo "    systemctl start config-validator"
 echo "    systemctl start policy-library-sync"
+echo "    systemctl start config-validator"
 echo ""
 echo "Additionally, the Forseti server can be run in the foreground by using"
 echo "the foreground runner script: /usr/bin/forseti-foreground.sh"
