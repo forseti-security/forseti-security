@@ -126,7 +126,6 @@ POLICY_LIBRARY_SYNC_SERVICE="$(cat << EOF
 [Unit]
 Description=Policy Library Sync
 [Service]
-User=ubuntu
 ExecStart=$POLICY_LIBRARY_SYNC_COMMAND
 [Install]
 WantedBy=multi-user.target
