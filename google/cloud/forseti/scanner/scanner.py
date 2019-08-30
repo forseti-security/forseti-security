@@ -127,7 +127,7 @@ def run(model_name=None,
                 failed.append(scanner.__class__.__name__)
             else:
                 succeeded.append(scanner.__class__.__name__)
-            session.flush()
+            session.commit()
         # pylint: enable=bare-except
         log_message = 'Scan completed!'
         mark_scanner_index_complete(
