@@ -295,18 +295,14 @@ class InventoryImporter(object):
                     LOGGER.debug('Commiting model write session: %s',
                                  item_counter)
                     self._commit_session()
-
-            if item_counter % 1000:
-                # Additional rows added since last flush.
-                self._flush_session()
+            self._commit_session()
             LOGGER.debug('Finished storing resources into models.')
 
             item_counter += self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
                                 ['role']),
-                self._convert_role,
-                post_action=self._convert_role_post
+                self._convert_role
             )
 
             item_counter += self.model_action_wrapper(
@@ -437,6 +433,7 @@ class InventoryImporter(object):
         if post_action:
             post_action()
 
+        self._commit_session()
         return idx
 
     def _store_gsuite_principal(self, principal):
@@ -1123,6 +1120,8 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
         data = role.get_resource_data()
+        if not self._is_role_unique(data['name']):
+            return
         is_custom = not data['name'].startswith('roles/')
         db_permissions = []
         if 'includedPermissions' not in data:
@@ -1135,10 +1134,9 @@ class InventoryImporter(object):
                     permission = self.dao.TBL_PERMISSION(
                         name=perm_name)
                     self.permission_cache[perm_name] = permission
+                    self.session.add(permission)
                 db_permissions.append(self.permission_cache[perm_name])
 
-        if not self._is_role_unique(data['name']):
-            return
         dbrole = self.dao.TBL_ROLE(
             name=data['name'],
             title=data.get('title', ''),
@@ -1147,6 +1145,7 @@ class InventoryImporter(object):
             custom=is_custom,
             permissions=db_permissions)
         self.role_cache[data['name']] = dbrole
+        self.session.add(dbrole)
 
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
@@ -1252,11 +1251,7 @@ class InventoryImporter(object):
             bool: Whether or not session contains Role with
                 primary key = role_name.
         """
-
-        # one_or_none returns None if the query selects no rows.
-        exists = role_name in self.role_cache
-
-        if exists:
+        if role_name in self.role_cache:
             LOGGER.warning('Duplicate role_name: %s', role_name)
             return False
         return True
