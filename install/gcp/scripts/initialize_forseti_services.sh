@@ -45,8 +45,7 @@ CONFIG_VALIDATOR_COMMAND+=" --policyPath='${POLICY_LIBRARY_HOME}/policy-library/
 CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${POLICY_LIBRARY_HOME}/policy-library/lib'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 
-POLICY_LIBRARY_SYNC_COMMAND="sudo docker"
-POLICY_LIBRARY_SYNC_COMMAND+=" run -d"
+POLICY_LIBRARY_SYNC_COMMAND="$(which docker) run -d"
 POLICY_LIBRARY_SYNC_COMMAND+=" --log-driver=gcplogs"
 POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt gcp-log-cmd=true"
 POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt labels=git-sync"
@@ -134,8 +133,8 @@ WantedBy=multi-user.target
 EOF
 )"
 if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
-  echo "$POLICY_LIBRARY_SYNC_SERVICE" > /tmp/policy_library_sync.service
-  sudo mv /tmp/policy_library_sync.service /lib/systemd/system/policy_library_sync.service
+  echo "$POLICY_LIBRARY_SYNC_SERVICE" > /tmp/policy-library-sync.service
+  sudo mv /tmp/policy-library-sync.service /lib/systemd/system/policy-library-sync.service
 fi
 
 # Define a foreground runner. This runner will start the CloudSQL
@@ -157,6 +156,7 @@ echo ""
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
 echo "    systemctl start config-validator"
+echo "    systemctl start policy-library-sync"
 echo ""
 echo "Additionally, the Forseti server can be run in the foreground by using"
 echo "the foreground runner script: /usr/bin/forseti-foreground.sh"
