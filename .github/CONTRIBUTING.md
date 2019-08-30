@@ -14,7 +14,6 @@ access [Contributor License Agreements](https://opensource.google.com/docs/cla/)
 In most cases, you only need to submit a CLA once. If you've already submitted
 a CLA for any project, you probably won't need to submit a new CLA.
 
-##OUT OF ORDER ##
 ## Following style guidelines and conventions
 
 To maintain consistency, we ask that you follow the style guidelines suggested
@@ -25,7 +24,7 @@ To confirm your pull request (PR) passes the Travis pylint test, the following
 test must run without any output:
 
 ```bash
-$   source YOUR_VIRTUALENV/bin/activate
+$   workon YOUR_VIRTUALENV
 
 # Optional
 $ pip install pylint 
