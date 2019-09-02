@@ -57,3 +57,8 @@ variable "turbinia_worker_count" {
   description = "Number of Turbinia worker machines to run."
   default     = 1
 }
+
+variable "turbinia_pip_source" {
+  description = "Source package to use for Pip."
+  default     = "turbinia"
+}

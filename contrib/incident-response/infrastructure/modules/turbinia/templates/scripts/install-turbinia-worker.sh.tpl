@@ -39,7 +39,7 @@ apt-get update
 apt-get -y install python-pip
 
 # Install Turbinia
-pip install https://github.com/google/turbinia/archive/master.zip
+pip install ${pip_source}
 
 # Turbinia needs a recent version of urllib3
 pip install urllib3 --upgrade
@@ -50,6 +50,7 @@ add-apt-repository -y ppa:gift/stable
 apt-get -y install python-plaso plaso-tools
 
 # Install Hindsight
+# TODO: Merge with turbinia worker dependencies.
 pip install pyhindsight
 
 # Create system user

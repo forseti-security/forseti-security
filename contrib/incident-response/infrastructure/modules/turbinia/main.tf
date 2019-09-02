@@ -15,6 +15,7 @@
  */
 
 # Random ID for creating unique resource names.
+# TODO: Allow overide by config
 resource "random_id" "infrastructure-random-id" {
   byte_length = 8
 }
@@ -174,11 +175,12 @@ data "template_file" "turbinia-server-startup-script" {
   vars = {
     config = "${data.template_file.turbinia-config-template.rendered}"
     systemd = "${data.template_file.turbinia-systemd.rendered}"
+    pip_source = "${var.turbinia_pip_source}"
   }
 }
 
 resource "google_compute_instance" "turbinia-server" {
-  name         = "turbinia-server"
+  name         = "turbinia-server-${random_id.infrastructure-random-id.hex}"
   machine_type = "${var.turbinia_server_machine_type}"
   zone         = "${var.gcp_zone}"
 
@@ -217,12 +219,13 @@ data "template_file" "turbinia-worker-startup-script" {
   vars = {
     config = "${data.template_file.turbinia-config-template.rendered}"
     systemd = "${data.template_file.turbinia-systemd.rendered}"
+    pip_source = "${var.turbinia_pip_source}"
   }
 }
 
 resource "google_compute_instance" "turbinia-worker" {
   count        = "${var.turbinia_worker_count}"
-  name         = "turbinia-worker-${count.index}"
+  name         = "turbinia-worker-${random_id.infrastructure-random-id.hex}-${count.index}"
   machine_type = "${var.turbinia_worker_machine_type}"
   zone         = "${var.gcp_zone}"
 

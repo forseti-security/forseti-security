@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+// TODO: figure out how to keep in sync with main repo
+
 'use strict';
 
 // Global
