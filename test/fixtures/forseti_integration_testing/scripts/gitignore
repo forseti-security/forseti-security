@@ -1,0 +1,4 @@
+terraform.tfvars
+sshkey
+secret-key.tar
+release-silver.json
