@@ -1129,7 +1129,7 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
         data = role.get_resource_data()
-        role_name = data['name']
+        role_name = data.get('name')
 
         LOGGER.debug('Converting role: %s', role_name)
         LOGGER.debug('role data: %s', data)
