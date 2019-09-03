@@ -398,7 +398,8 @@ class InventoryImporter(object):
                              inventory_iterable,
                              action,
                              post_action=None,
-                             flush_count=1000):
+                             flush_count=1000,
+                             commit_count=50000):
         """Model action wrapper. This is used to reduce code duplication.
 
         Args:
@@ -408,6 +409,7 @@ class InventoryImporter(object):
             post_action (func): Action taken after iterating the
                 inventory list.
             flush_count (int): Flush every flush_count times.
+            commit_count (int): Commit every commit_count times.
 
         Returns:
             int: Number of item iterated.
@@ -416,6 +418,7 @@ class InventoryImporter(object):
 
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
+            LOGGER.debug('Processing inventory data: %s', inventory_data)
             if isinstance(inventory_data, tuple):
                 action(*inventory_data)
             else:
@@ -425,14 +428,20 @@ class InventoryImporter(object):
                 # Flush database every flush_count resources
                 LOGGER.debug('Flushing write session: %s.', idx)
                 self._flush_session()
+            if not idx % commit_count:
+                LOGGER.debug('Committing write session: %s', idx)
+                self._commit_session()
 
         if idx % flush_count:
             # Additional rows added since last flush.
             self._flush_session()
 
         if post_action:
+            LOGGER.debug('Running post action: %s', post_action)
             post_action()
 
+        LOGGER.debug('Committing model action: %s, with resource count: %s',
+                     action, flush_count)
         self._commit_session()
         return idx
 
@@ -1122,6 +1131,9 @@ class InventoryImporter(object):
         data = role.get_resource_data()
         role_name = data['name']
 
+        LOGGER.debug('Converting role: %s', role_name)
+        LOGGER.debug('role data: %s', data)
+
         if role_name in self.role_cache:
             LOGGER.warning('Duplicate role_name: %s', role_name)
             return
@@ -1150,6 +1162,7 @@ class InventoryImporter(object):
             permissions=db_permissions)
         self.role_cache[data['name']] = dbrole
         self.session.add(dbrole)
+        LOGGER.debug('Adding role %s to session', role_name)
 
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
@@ -1166,6 +1179,8 @@ class InventoryImporter(object):
 
             self._add_to_cache(role_resource, role.id)
             self.session.add(role_resource)
+            LOGGER.debug('Adding role resource :%s to session', role_name)
+            LOGGER.debug('Role resource :%s', role_resource)
 
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
