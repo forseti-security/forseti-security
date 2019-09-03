@@ -18,6 +18,11 @@ Install Forseti Security to help protect your GCP environments by monitoring you
 ensure that role-based access controls are set as you intended. The setup wizard automatically
 determines setup information, generates a deployment template, and creates a Forseti deployment.
 
+**[Migrating Forseti Security]({% link _docs/latest/setup/migrate.md %})**
+
+Migrate to Terraform an existing Forseti Security deployment created
+with the deprecated Python Installer.
+
 **[Upgrading Forseti Security]({% link _docs/latest/setup/upgrade.md %})**
 
 Get new features and update your GCP deployment by upgrading your Forseti Security installation
