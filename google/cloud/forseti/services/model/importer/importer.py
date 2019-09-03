@@ -441,7 +441,7 @@ class InventoryImporter(object):
             post_action()
 
         LOGGER.debug('Committing model action: %s, with resource count: %s',
-                     action, flush_count)
+                     action, idx)
         self._commit_session()
         return idx
 
