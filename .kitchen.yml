@@ -1,0 +1,46 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+platforms:
+  - name: local
+
+provisioner:
+  name: terraform
+
+verifier:
+  name: terraform
+  color: false
+  fail_fast: false
+
+suites:
+  - name: forseti_integration_testing
+    driver:
+      name: terraform
+      root_module_directory: test/fixtures/forseti_integration_testing
+      command_timeout: 1800
+    lifecycle:
+      pre_verify:
+        - chmod go-rwx test/fixtures/bastion/tls_private_key
+    verifier:
+      systems:
+        - name: inventory-module
+          backend: ssh
+          controls:
+            - inventory
+          hosts_output: forseti-server-vm-ip
+          user: ubuntu
+          key_files:
+            - test/fixtures/forseti_integration_testing/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i test/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state test/fixtures/forseti_integration_testing/terraform.tfstate.d/kitchen-terraform-forseti-integration-testing-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          show_progress: true
