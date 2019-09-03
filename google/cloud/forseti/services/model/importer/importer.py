@@ -1120,9 +1120,13 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
         data = role.get_resource_data()
-        if not self._is_role_unique(data['name']):
+        role_name = data['name']
+
+        if role_name in self.role_cache:
+            LOGGER.warning('Duplicate role_name: %s', role_name)
             return
-        is_custom = not data['name'].startswith('roles/')
+
+        is_custom = not role_name.startswith('roles/')
         db_permissions = []
         if 'includedPermissions' not in data:
             self.model.add_warning(
@@ -1138,7 +1142,7 @@ class InventoryImporter(object):
                 db_permissions.append(self.permission_cache[perm_name])
 
         dbrole = self.dao.TBL_ROLE(
-            name=data['name'],
+            name=role_name,
             title=data.get('title', ''),
             stage=data.get('stage', ''),
             description=data.get('description', ''),
@@ -1239,22 +1243,6 @@ class InventoryImporter(object):
         """
         parent_id = resource.get_parent_id()
         return self.resource_cache[parent_id]
-
-    def _is_role_unique(self, role_name):
-        """Check to see if the session contains Role with
-        primary key = role_name.
-
-        Args:
-            role_name (str): The role name (Primary key of the role table).
-
-        Returns:
-            bool: Whether or not session contains Role with
-                primary key = role_name.
-        """
-        if role_name in self.role_cache:
-            LOGGER.warning('Duplicate role_name: %s', role_name)
-            return False
-        return True
 
     def _is_root(self, resource):
         """Checks if the resource is an inventory root. Result is cached.
