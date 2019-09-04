@@ -433,7 +433,8 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM role."""
 
         __tablename__ = roles_tablename
-        name = Column(String(128), primary_key=True)
+        name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
+                      primary_key=True)
         title = Column(String(128), default='')
         stage = Column(String(128), default='')
         description = Column(String(1024), default='')
