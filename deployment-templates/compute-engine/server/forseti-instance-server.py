@@ -44,6 +44,7 @@ def GenerateConfig(context):
 
     FORSETI_HOME = '$USER_HOME/forseti-security'
     POLICY_LIBRARY_HOME = '$USER_HOME/policy-library'
+    POLICY_LIBRARY_SYNC_ENABLED = 'false'
 
     DOWNLOAD_FORSETI = (
         "git clone {src_path}.git".format(
@@ -96,9 +97,11 @@ git checkout ${{latest_version[0]}}"""
         'export FORSETI_HOME={forseti_home}\n'
         'export FORSETI_SERVER_CONF={forseti_server_conf}\n'
         'export POLICY_LIBRARY_HOME={policy_library_home}\n'
+        'export POLICY_LIBRARY_SYNC_ENABLED={policy_library_sync_enabled}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_server_conf=FORSETI_SERVER_CONF,
-                 policy_library_home=POLICY_LIBRARY_HOME)
+                 policy_library_home=POLICY_LIBRARY_HOME,
+                 policy_library_sync_enabled=POLICY_LIBRARY_SYNC_ENABLED)
 
     RUN_FREQUENCY = context.properties['run-frequency']
 
