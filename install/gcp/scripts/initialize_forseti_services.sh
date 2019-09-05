@@ -45,27 +45,29 @@ CONFIG_VALIDATOR_COMMAND+=" --policyPath='${POLICY_LIBRARY_HOME}/policy-library/
 CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${POLICY_LIBRARY_HOME}/policy-library/lib'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
 
-POLICY_LIBRARY_SYNC_COMMAND="$(which docker) run -d"
-POLICY_LIBRARY_SYNC_COMMAND+=" --log-driver=gcplogs"
-POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt gcp-log-cmd=true"
-POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt labels=git-sync"
-POLICY_LIBRARY_SYNC_COMMAND+=" -v ${POLICY_LIBRARY_HOME}:/tmp/git"
-POLICY_LIBRARY_SYNC_COMMAND+=" -v /etc/git-secret:/etc/git-secret"
-POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYNC_TAG}"
-POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
-POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
-POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
-POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"
-POLICY_LIBRARY_SYNC_COMMAND+=" --wait=30"
+if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
+  POLICY_LIBRARY_SYNC_COMMAND="$(which docker) run -d"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-driver=gcplogs"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt gcp-log-cmd=true"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt labels=git-sync"
+  POLICY_LIBRARY_SYNC_COMMAND+=" -v ${POLICY_LIBRARY_HOME}:/tmp/git"
+  POLICY_LIBRARY_SYNC_COMMAND+=" -v /etc/git-secret:/etc/git-secret"
+  POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYNC_TAG}"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --wait=30"
 
-# If the SSH file is present, tell git-sync to use SSH to connect to the repo
-if [ -e "/etc/git-secret/ssh" ]; then
-  POLICY_LIBRARY_SYNC_COMMAND+=" --ssh"
-fi
+  # If the SSH file is present, tell git-sync to use SSH to connect to the repo
+  if [ -e "/etc/git-secret/ssh" ]; then
+    POLICY_LIBRARY_SYNC_COMMAND+=" --ssh"
+  fi
 
-# If the known_hosts file is NOT present, tell git-sync to not check known hosts
-if ! [ -e "/etc/git-secret/known_hosts" ]; then
-  POLICY_LIBRARY_SYNC_COMMAND+=" --ssh-known-hosts=false"
+  # If the known_hosts file is NOT present, tell git-sync to not check known hosts
+  if ! [ -e "/etc/git-secret/known_hosts" ]; then
+    POLICY_LIBRARY_SYNC_COMMAND+=" --ssh-known-hosts=false"
+  fi
 fi
 
 # Update the permission of the config validator.
@@ -122,7 +124,8 @@ echo "$SQL_PROXY_SERVICE" > /tmp/cloudsqlproxy.service
 sudo mv /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
 
 # Policy Library Sync Service
-POLICY_LIBRARY_SYNC_SERVICE="$(cat << EOF
+if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
+  POLICY_LIBRARY_SYNC_SERVICE="$(cat << EOF
 [Unit]
 Description=Policy Library Sync
 [Service]
@@ -130,8 +133,7 @@ ExecStart=$POLICY_LIBRARY_SYNC_COMMAND
 [Install]
 WantedBy=multi-user.target
 EOF
-)"
-if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
+  )"
   echo "$POLICY_LIBRARY_SYNC_SERVICE" > /tmp/policy-library-sync.service
   sudo mv /tmp/policy-library-sync.service /lib/systemd/system/policy-library-sync.service
 fi
