@@ -20,65 +20,53 @@ resource "random_id" "infrastructure-random-id" {
   byte_length = 8
 }
 
-# Enable GCP services individually.
-resource "google_project_service" "cloudfunctions" {
-  project = "${var.gcp_project}"
-  service = "cloudfunctions.googleapis.com"
-  disable_on_destroy = false
+locals {
+  # API services to enable for the project
+  services_list = [
+    "cloudfunctions.googleapis.com",
+    "compute.googleapis.com",
+    "datastore.googleapis.com",
+    "iam.googleapis.com",
+    "pubsub.googleapis.com",
+    "storage-component.googleapis.com"
+  ]
+  # Name of cloud funstions to deploy
+  cloudfunctions_list = [
+    "gettasks",
+    "closetasks",
+    "closetask"
+  ]
 }
 
-resource "google_project_service" "compute" {
-  project = "${var.gcp_project}"
-  service = "compute.googleapis.com"
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "datastore" {
-  project = "${var.gcp_project}"
-  service = "datastore.googleapis.com"
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "iam" {
-  project = "${var.gcp_project}"
-  service = "iam.googleapis.com"
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "pubsub" {
-  project = "${var.gcp_project}"
-  service = "pubsub.googleapis.com"
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "storage-component" {
-  project = "${var.gcp_project}"
-  service = "storage-component.googleapis.com"
+resource "google_project_service" "services" {
+  count              = "${length(local.services_list)}"
+  project            = "${var.gcp_project}"
+  service            = "${local.services_list[count.index]}"
   disable_on_destroy = false
 }
 
 # Enable PubSub and create topic
 resource "google_pubsub_topic" "pubsub-topic" {
   name = "turbinia-${random_id.infrastructure-random-id.hex}"
-  depends_on  = ["google_project_service.pubsub"]
+  depends_on  = ["google_project_service.services"]
 }
 
 resource "google_pubsub_topic" "pubsub-topic-psq" {
   name        = "turbinia-${random_id.infrastructure-random-id.hex}-psq"
-  depends_on  = ["google_project_service.pubsub"]
+  depends_on  = ["google_project_service.services"]
 }
 
 # Cloud Storage Bucket
 resource "google_storage_bucket" "output-bucket" {
   name          = "turbinia-${random_id.infrastructure-random-id.hex}"
-  depends_on    = ["google_project_service.storage-component"]
+  depends_on    = ["google_project_service.services"]
   force_destroy = true
 }
 
 # Create datastore index
 data "local_file" "datastore-index-file" {
   filename = "${path.module}/data/index.yaml"
-  depends_on  = ["google_project_service.datastore"]
+  depends_on  = ["google_project_service.services"]
 }
 
 resource "null_resource" "cloud-datastore-create-index" {
@@ -110,43 +98,18 @@ resource "google_storage_bucket_object" "cloudfunction-archive" {
   depends_on = ["data.archive_file.cloudfunction-archive"]
 }
 
-resource "google_cloudfunctions_function" "gettasks" {
-    name                      = "gettasks"
-    entry_point               = "gettasks"
-    available_memory_mb       = 256
-    timeout                   = 60
-    runtime                   = "nodejs8"
-    project                   = "${var.gcp_project}"
-    region                    = "${var.gcp_region}"
-    trigger_http              = true
-    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
-    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
-}
-
-resource "google_cloudfunctions_function" "closetasks" {
-    name                      = "closetasks"
-    entry_point               = "closetasks"
-    available_memory_mb       = 256
-    timeout                   = 60
-    runtime                   = "nodejs8"
-    project                   = "${var.gcp_project}"
-    region                    = "${var.gcp_region}"
-    trigger_http              = true
-    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
-    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
-}
-
-resource "google_cloudfunctions_function" "closetask" {
-    name                      = "closetask"
-    entry_point               = "closetask"
-    available_memory_mb       = 256
-    timeout                   = 60
-    runtime                   = "nodejs8"
-    project                   = "${var.gcp_project}"
-    region                    = "${var.gcp_region}"
-    trigger_http              = true
-    source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
-    source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
+resource "google_cloudfunctions_function" "cloudfunctions" {
+  count                     = "${length(local.cloudfunctions_list)}"
+  name                      = "${local.cloudfunctions_list[count.index]}"
+  entry_point               = "${local.cloudfunctions_list[count.index]}"
+  available_memory_mb       = 256
+  timeout                   = 60
+  runtime                   = "nodejs8"
+  project                   = "${var.gcp_project}"
+  region                    = "${var.gcp_region}"
+  trigger_http              = true
+  source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
+  source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
 }
 
 # Template for systemd service file
@@ -166,7 +129,7 @@ data "template_file" "turbinia-config-template" {
     pubsub_topic_psq  = "${google_pubsub_topic.pubsub-topic-psq.name}"
     bucket            = "${google_storage_bucket.output-bucket.name}"
   }
-  depends_on  = ["google_project_service.datastore"]
+  depends_on  = ["google_project_service.services"]
 }
 
 # Turbinia server
