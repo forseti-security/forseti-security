@@ -37,6 +37,7 @@ from google.cloud.forseti.common.util.index_state import IndexState
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
+PER_YIELD = 1024
 SUCCESS_STATES = [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]
 
 
@@ -292,21 +293,17 @@ class ViolationAccess(object):
                 .filter(and_(
                     ScannerIndex.scanner_status.in_(SUCCESS_STATES),
                     ScannerIndex.inventory_index_id == inv_index_id))
-                .filter(Violation.scanner_index_id == ScannerIndex.id)
-                .all())
+                .filter(Violation.scanner_index_id == ScannerIndex.id))
         if scanner_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
                 .filter(and_(
                     ScannerIndex.scanner_status.in_(SUCCESS_STATES),
                     ScannerIndex.id == scanner_index_id))
-                .filter(Violation.scanner_index_id == ScannerIndex.id)
-                .all())
+                .filter(Violation.scanner_index_id == ScannerIndex.id))
 
-        violations = []
-        for violation, _ in results:
-            violations.append(violation)
-        return violations
+        for violation, _ in results.yield_per(PER_YIELD):
+            yield violation
 
 
 # pylint: disable=invalid-name
