@@ -140,35 +140,6 @@ defaults:
     values:
       category: Google Cloud Platform Resource Coverage
   - scope:
-      path: _docs/v2.9
-    values:
-      category: Overview (v2.9)
-      layout: docs
-  - scope:
-      path: _docs/v2.9/concepts
-    values:
-      category: Concepts (v2.9)
-  - scope:
-      path: _docs/v2.9/setup
-    values:
-      category: Setup (v2.9)
-  - scope:
-      path: _docs/v2.9/use
-    values:
-      category: Use (v2.9)
-  - scope:
-      path: _docs/v2.9/configure
-    values:
-      category: Configure (v2.9)
-  - scope:
-      path: _docs/v2.9/develop
-    values:
-      category: Develop (v2.9)
-  - scope:
-      path: _docs/v2.9/faq
-    values:
-      category: FAQ (v2.9)
-  - scope:
       path: _docs/v2.10
     values:
       category: Overview (v2.10)
