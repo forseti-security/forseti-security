@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-# Random ID for creating unique resource names.
-resource "random_id" "infrastructure-random-id" {
-  byte_length = 8
-}
-
 #-----------------------#
 # Elasticsearch cluster #
 #-----------------------#
@@ -34,7 +29,7 @@ data "template_file" "elasticsearch-startup-script" {
 
 resource "google_compute_instance" "elasticsearch" {
   count        = "${var.elasticsearch_node_count}"
-  name         = "elasticsearch-node-${count.index}"
+  name         = "elasticsearch-node-${var.infrastructure_id}-${count.index}"
   machine_type = "${var.elasticsearch_machine_type}"
   zone         = "${var.gcp_zone}"
 
@@ -94,7 +89,7 @@ resource "random_string" "timesketch-db-password" {
 }
 
 resource "google_sql_database_instance" "timesketch-db-instance" {
-  name              = "timesketch-db-instance-${random_id.infrastructure-random-id.hex}"
+  name              = "timesketch-db-instance-${var.infrastructure_id}"
   region            = "${var.gcp_region}"
   database_version  = "POSTGRES_9_6"
   depends_on        = ["google_project_service.sql-admin-service-api"]
@@ -136,7 +131,7 @@ resource "google_project_service" "redis-service-api" {
 
 # Redis is used as the task queue backend for importing data into Timesketch.
 resource "google_redis_instance" "redis" {
-  name           = "redis"
+  name           = "redis-${var.infrastructure_id}"
   memory_size_gb = 1
   depends_on     = ["google_project_service.redis-service-api"]
 }
@@ -180,7 +175,7 @@ resource "google_compute_firewall" "allow-external-timesketch-server" {
 }
 
 resource "google_compute_instance" "timesketch-server" {
-  name          = "timesketch-server"
+  name          = "timesketch-server-${var.infrastructure_id}"
   machine_type  = "${var.timesketch_machine_type}"
   zone          = "${var.gcp_zone}"
 

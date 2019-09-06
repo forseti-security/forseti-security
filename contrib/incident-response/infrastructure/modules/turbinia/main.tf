@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-# Random ID for creating unique resource names.
-resource "random_id" "infrastructure-random-id" {
-  byte_length = 8
-}
-
 locals {
   # API services to enable for the project
   services_list = [
@@ -46,18 +41,18 @@ resource "google_project_service" "services" {
 
 # Enable PubSub and create topic
 resource "google_pubsub_topic" "pubsub-topic" {
-  name = "turbinia-${random_id.infrastructure-random-id.hex}"
+  name = "turbinia-${var.infrastructure_id}"
   depends_on  = ["google_project_service.services"]
 }
 
 resource "google_pubsub_topic" "pubsub-topic-psq" {
-  name        = "turbinia-${random_id.infrastructure-random-id.hex}-psq"
+  name        = "turbinia-${var.infrastructure_id}-psq"
   depends_on  = ["google_project_service.services"]
 }
 
 # Cloud Storage Bucket
 resource "google_storage_bucket" "output-bucket" {
-  name          = "turbinia-${random_id.infrastructure-random-id.hex}"
+  name          = "turbinia-${var.infrastructure_id}"
   depends_on    = ["google_project_service.services"]
   force_destroy = true
 }
@@ -123,7 +118,7 @@ data "template_file" "turbinia-config-template" {
     project           = "${var.gcp_project}"
     region            = "${var.gcp_region}"
     zone              = "${var.gcp_zone}"
-    turbinia_id       = "${random_id.infrastructure-random-id.hex}"
+    turbinia_id       = "${var.infrastructure_id}"
     pubsub_topic      = "${google_pubsub_topic.pubsub-topic.name}"
     pubsub_topic_psq  = "${google_pubsub_topic.pubsub-topic-psq.name}"
     bucket            = "${google_storage_bucket.output-bucket.name}"
@@ -142,7 +137,7 @@ data "template_file" "turbinia-server-startup-script" {
 }
 
 resource "google_compute_instance" "turbinia-server" {
-  name         = "turbinia-server-${random_id.infrastructure-random-id.hex}"
+  name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = "${var.turbinia_server_machine_type}"
   zone         = "${var.gcp_zone}"
 
@@ -187,7 +182,7 @@ data "template_file" "turbinia-worker-startup-script" {
 
 resource "google_compute_instance" "turbinia-worker" {
   count        = "${var.turbinia_worker_count}"
-  name         = "turbinia-worker-${random_id.infrastructure-random-id.hex}-${count.index}"
+  name         = "turbinia-worker-${var.infrastructure_id}-${count.index}"
   machine_type = "${var.turbinia_worker_machine_type}"
   zone         = "${var.gcp_zone}"
 
