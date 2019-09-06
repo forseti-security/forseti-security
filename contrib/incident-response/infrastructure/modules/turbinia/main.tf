@@ -15,7 +15,6 @@
  */
 
 # Random ID for creating unique resource names.
-# TODO: Allow overide by config
 resource "random_id" "infrastructure-random-id" {
   byte_length = 8
 }
@@ -30,7 +29,7 @@ locals {
     "pubsub.googleapis.com",
     "storage-component.googleapis.com"
   ]
-  # Name of cloud funstions to deploy
+  # Cloud functions to deploy
   cloudfunctions_list = [
     "gettasks",
     "closetasks",

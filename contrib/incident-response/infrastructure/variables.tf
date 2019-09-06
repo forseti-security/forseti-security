@@ -32,3 +32,5 @@ variable "gcp_ubuntu_1804_image" {
   description = "Ubuntu version 18.04 image"
   default     = "ubuntu-os-cloud/ubuntu-1804-lts"
 }
+
+variable "" {}
