@@ -585,6 +585,39 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 _fixup_resource_keys(instancetemplate, cai_to_gcp_key_map),
                 metadata)
 
+    def iter_compute_interconnects(self, project_number):
+        """Iterate Interconnects from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of instance interconnect resources.
+        """
+
+        interconnect_resources = self._iter_compute_resources('Interconnect',
+                                                              project_number)
+
+        for interconnect in interconnect_resources:
+            yield interconnect
+
+    def iter_compute_interconnect_attachments(self, project_number):
+        """Iterate Interconnect Attachments from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of instance interconnect attachment resources.
+        """
+
+        attachment_resources = self._iter_compute_resources(
+            'InterconnectAttachment',
+            project_number)
+
+        for attachment in attachment_resources:
+            yield attachment
+
     def iter_compute_licenses(self, project_number):
         """Iterate Licenses from Cloud Asset data.
 

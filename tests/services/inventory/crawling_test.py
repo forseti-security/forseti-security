@@ -166,6 +166,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
         Returns:
             dict: the resource counts returned by the crawler.
         """
+
         with MemoryStorage(session=session) as storage:
             progresser = NullProgresser()
             with gcp_api_mocks.mock_gcp(has_org_access=has_org_access):
@@ -548,6 +549,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_healthcheck': {'resource': 1},
             'compute_httphealthcheck': {'resource': 1},
             'compute_httpshealthcheck': {'resource': 1},
+            'compute_interconnect': {'resource': 1},
+            'compute_interconnect_attachment': {'resource': 1},
             'compute_license': {'resource': 1},
             'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
@@ -619,6 +622,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_healthcheck': {'resource': 1},
             'compute_httphealthcheck': {'resource': 1},
             'compute_httpshealthcheck': {'resource': 1},
+            'compute_interconnect': {'resource': 1},
+            'compute_interconnect_attachment': {'resource': 1},
             'compute_license': {'resource': 1},
             'compute_project': {'resource': 2},
             'compute_router': {'resource': 1},
