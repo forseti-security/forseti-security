@@ -1,0 +1,35 @@
+output_path: '.'
+output_file_name_prefix: testing
+
+# Can be organization / folder / project w/ organization_number,
+# folder_number and project number as the corresponding resource id.
+root_resource_type: organization
+root_resource_id: 5456546415
+
+resource_structure:
+  - resource_count: 1
+    folder:
+      - resource_count: 2
+        folder:
+          - resource_count: 2
+            project:
+              - resource_count: 2
+                compute_firewall_rule: []
+              - resource_count: 2
+                compute_disk: []
+              - resource_count: 2
+                compute_snapshot: []
+              - resource_count: 1
+                appengine_application:
+                  - resource_count: 2
+                    appengine_service:
+                      - resource_count: 2
+                        appengine_version: []
+              - resource_count: 2
+                service_account: []
+              - resource_count: 2
+                bucket: []
+              - resource_count: 2
+                bigquery_dataset:
+                  - resource_count: 2
+                    bigquery_table: []

@@ -1,0 +1,11 @@
+output_path: '.'
+output_file_name_prefix: testing
+
+# Can be organization / folder / project w/ organization_number,
+# folder_number and project number as the corresponding resource id.
+root_resource_type: organization
+root_resource_id: 5456546415
+
+resource_structure:
+  - resource_count: 100
+    folder: []
