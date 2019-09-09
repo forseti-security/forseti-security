@@ -114,4 +114,4 @@ the `master` and `dev` branch.
 
 ## What's next
 
-* Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+* Learn how to [submit a Pull Request](https://github.com/forseti-security/forseti-security/blob/master/.github/CONTRIBUTING.md).

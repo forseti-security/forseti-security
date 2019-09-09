@@ -30,7 +30,7 @@ module-specific sections.
 ## Configuring settings
 
 To set up your configuration, you'll edit
-[forseti_server_conf.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/server/forseti_conf_server.yaml.sample)
+[forseti_server_conf.yaml.sample](https://github.com/forseti-security/forseti-security/blob/master/configs/server/forseti_conf_server.yaml.sample)
 and save it as `forseti_server_conf.yaml`. For convenience, you can maintain different
 versions of this file to support multiple configurations of Forseti.
 

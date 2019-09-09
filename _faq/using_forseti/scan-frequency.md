@@ -6,4 +6,4 @@ order: 2
 
 By default, Forseti runs Inventory and Scanner every 2 hours at random minutes,
 using a simple cronjob. To change the cron value, edit the server's
-[deployment template](https://github.com/GoogleCloudPlatform/forseti-security/tree/dev/deployment-templates/compute-engine).
+[deployment template](https://github.com/forseti-security/forseti-security/tree/dev/deployment-templates/compute-engine).

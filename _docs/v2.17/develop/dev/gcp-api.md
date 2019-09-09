@@ -47,7 +47,7 @@ The example below provides a code walkthrough of this file.
 
 ### Step 1: Define the API name & versions
 
-Edit [google/cloud/forseti/common/gcp_api/_supported_apis.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/_supported_apis.py) to
+Edit [google/cloud/forseti/common/gcp_api/_supported_apis.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/_supported_apis.py) to
 add a new entry for the API and the versions that can be used in the
 `SUPPORTED_APIS` map. For more information, see the available
 [APIs provided by GCP](https://cloud.google.com/apis/docs/overview).
