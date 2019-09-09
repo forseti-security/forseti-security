@@ -37,6 +37,7 @@ DEFAULT_ASSET_TYPES = [
     'appengine.googleapis.com/Service',
     'appengine.googleapis.com/Version',
     'bigquery.googleapis.com/Dataset',
+    'bigquery.googleapis.com/Table',
     'cloudbilling.googleapis.com/BillingAccount',
     'cloudkms.googleapis.com/CryptoKey',
     'cloudkms.googleapis.com/CryptoKeyVersion',
@@ -63,6 +64,7 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/Network',
     'compute.googleapis.com/Project',
     'compute.googleapis.com/RegionBackendService',
+    'compute.googleapis.com/RegionDisk',
     'compute.googleapis.com/Router',
     'compute.googleapis.com/Snapshot',
     'compute.googleapis.com/SslCertificate',
@@ -102,28 +104,22 @@ class StreamError(Exception):
     """Raised for errors streaming results from GCS to local DB."""
 
 
-def load_cloudasset_data(engine, config):
-    """Export asset data from Cloud Asset API and load into storage.
+def _download_cloudasset_data(config):
+    """Download cloud asset data.
 
     Args:
-        engine (object): Database engine.
-        config (object): Inventory configuration on server.
+        config (InventoryConfig): Inventory config.
 
-    Returns:
-        int: The count of assets imported into the database, or None if there
-            is an error.
+    Yields:
+        str: GCS path of the cloud asset file.
     """
-    cloudasset_client = cloudasset.CloudAssetClient(
-        config.get_api_quota_configs())
-    storage_client = storage.StorageClient()
-
     root_resources = []
     if config.use_composite_root():
         root_resources.extend(config.get_composite_root_resources())
     else:
         root_resources.append(config.get_root_resource_id())
-
-    imported_assets = 0
+    cloudasset_client = cloudasset.CloudAssetClient(
+        config.get_api_quota_configs())
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         for root_id in root_resources:
@@ -135,15 +131,38 @@ def load_cloudasset_data(engine, config):
                                                content_type))
 
         for future in concurrent.futures.as_completed(futures):
-            gcs_object = future.result()
-            try:
-                assets = _stream_gcs_to_database(gcs_object,
-                                                 engine,
-                                                 storage_client)
-                imported_assets += assets
-            except StreamError as e:
-                LOGGER.error('Error streaming data from GCS to Database: %s', e)
-                return _clear_cai_data(engine)
+            yield future.result()
+
+
+def load_cloudasset_data(engine, config):
+    """Export asset data from Cloud Asset API and load into storage.
+
+    Args:
+        engine (object): Database engine.
+        config (InventoryConfig): Inventory configuration on server.
+
+    Returns:
+        int: The count of assets imported into the database, or None if there
+            is an error.
+    """
+    cai_gcs_dump_paths = config.get_cai_dump_file_paths()
+
+    storage_client = storage.StorageClient()
+    imported_assets = 0
+
+    if not cai_gcs_dump_paths:
+        # Dump file paths not specified, download the dump files instead.
+        cai_gcs_dump_paths = _download_cloudasset_data(config)
+
+    for gcs_path in cai_gcs_dump_paths:
+        try:
+            assets = _stream_gcs_to_database(gcs_path,
+                                             engine,
+                                             storage_client)
+            imported_assets += assets
+        except StreamError as e:
+            LOGGER.error('Error streaming data from GCS to Database: %s', e)
+            return _clear_cai_data(engine)
 
     # Each worker's imported asset count is appended to the deque, sum them all
     # to get total imported assets.
@@ -265,14 +284,31 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         if asset_types:
             LOGGER.info('Limiting export to the following asset types: %s',
                         asset_types)
-
         output_config = cloudasset_client.build_gcs_object_output(export_path)
-        results = cloudasset_client.export_assets(root_id,
-                                                  output_config=output_config,
-                                                  content_type=content_type,
-                                                  asset_types=asset_types,
-                                                  blocking=True,
-                                                  timeout=timeout)
+        try:
+            results = cloudasset_client.export_assets(
+                root_id,
+                output_config=output_config,
+                content_type=content_type,
+                asset_types=asset_types,
+                blocking=True,
+                timeout=timeout)
+        except api_errors.ApiExecutionError as e:
+            if e.http_error.resp.status == 400:
+                LOGGER.warning('Bad request with unsupported resource types '
+                               'sent to CAI for %s under %s. Exporting all '
+                               'resources for Cloud Asset export.',
+                               content_type, root_id)
+                results = cloudasset_client.export_assets(
+                    root_id,
+                    output_config=output_config,
+                    content_type=content_type,
+                    asset_types=[],
+                    blocking=True,
+                    timeout=timeout)
+            else:
+                LOGGER.warning('API Error getting cloud asset data: %s', e)
+                return None
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)

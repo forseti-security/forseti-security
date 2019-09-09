@@ -147,9 +147,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return (iam_helpers.convert_iam_to_bigquery_policy(resource),
                     metadata)
 
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
-            project_id, project_number, dataset_id)
+        return {}, None
 
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from Cloud Asset data.
@@ -171,6 +169,28 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for dataset in resources:
             yield dataset
 
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from Cloud Asset data.
+
+         Args:
+            dataset_reference (dict): dataset to reference.
+
+         Yields:
+            dict: Generator of tables.
+        """
+
+        bigquery_name_fmt = '//bigquery.googleapis.com/projects/{}/datasets/{}'
+
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'bigquery.googleapis.com/Table',
+            bigquery_name_fmt.format(
+                dataset_reference['projectId'], dataset_reference['datasetId']),
+            self.engine)
+
+        for table in resources:
+            yield table
+
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from Cloud Asset data.
 
@@ -187,9 +207,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_billing_account_iam_policy(
-            account_id)
+
+        return {}, None
 
     def iter_billing_accounts(self):
         """Iterate Billing Accounts in an organization from Cloud Asset data.
@@ -320,7 +339,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'replicaZone': 'replicaZones',
             'licenseCode': 'licenseCodes',
         }
-        resources = self._iter_compute_resources('Disk', project_number)
+        disks = self._iter_compute_resources('Disk', project_number)
+
+        region_disks = self._iter_compute_resources('RegionDisk',
+                                                    project_number)
+
+        resources = itertools.chain(disks, region_disks)
+
         for disk, metadata in resources:
             yield (
                 _fixup_resource_keys(disk, cai_to_gcp_key_map),
@@ -857,8 +882,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_folder(folder_id)
+
+        return {}, None
 
     def fetch_crm_folder_iam_policy(self, folder_id):
         """Folder IAM policy in a folder from Cloud Asset data.
@@ -876,9 +901,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_folder_iam_policy(
-            folder_id)
+
+        return {}, None
 
     def fetch_crm_organization(self, org_id):
         """Fetch Organization data from Cloud Asset data.
@@ -896,8 +920,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_organization(org_id)
+
+        return {}, None
 
     def fetch_crm_organization_iam_policy(self, org_id):
         """Organization IAM policy from Cloud Asset data.
@@ -915,9 +939,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_organization_iam_policy(
-            org_id)
+
+        return {}, None
 
     def fetch_crm_project(self, project_number):
         """Fetch Project data from Cloud Asset data.
@@ -936,8 +959,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_project(project_number)
+
+        return {}, None
 
     def fetch_crm_project_iam_policy(self, project_number):
         """Project IAM policy from Cloud Asset data.
@@ -956,9 +979,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_crm_project_iam_policy(
-            project_number)
+
+        return {}, None
 
     def iter_crm_folders(self, parent_id):
         """Iterate Folders from Cloud Asset data.
@@ -1611,9 +1633,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_storage_bucket_iam_policy(
-            bucket_id)
+
+        return {}, None
 
     def iter_storage_buckets(self, project_number):
         """Iterate Buckets from GCP API.

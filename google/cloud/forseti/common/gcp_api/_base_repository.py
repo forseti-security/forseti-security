@@ -25,10 +25,10 @@ from future import standard_library
 
 import google_auth_httplib2
 import googleapiclient
+import uritemplate
 from googleapiclient import discovery
 from ratelimiter import RateLimiter
 from retrying import retry
-import uritemplate
 
 import google.auth
 from google.auth.credentials import with_scopes_if_required
