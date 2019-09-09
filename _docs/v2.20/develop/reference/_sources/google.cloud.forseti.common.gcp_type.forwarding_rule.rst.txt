@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.forwarding\_rule module
+=============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.forwarding_rule
+    :members:
+    :undoc-members:
+    :show-inheritance:
