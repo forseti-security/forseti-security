@@ -43,6 +43,7 @@ if [ -x "$(command -v docker)" ]; then
     else
         docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --target build -t forseti/build .
     fi
+    docker build --target build -t forseti/build .
 else
     echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi

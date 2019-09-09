@@ -252,6 +252,8 @@ gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 rm -rf {policy_library_home}
 sudo mkdir -m 777 {policy_library_home}
 gsutil cp -r gs://{scanner_bucket}/policy-library {policy_library_home}/
+rm -rf {forseti_home}/policy-library
+gsutil cp -r gs://{scanner_bucket}/policy-library {forseti_home}/
 
 # Start Forseti service depends on vars defined above.
 bash ./install/gcp/scripts/initialize_forseti_services.sh

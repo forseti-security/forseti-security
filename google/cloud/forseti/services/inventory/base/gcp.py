@@ -1415,6 +1415,8 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute Addresses are not supported by '
                                    'this API client')
+        """
+        return self.compute.get_project(project_number), None
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.

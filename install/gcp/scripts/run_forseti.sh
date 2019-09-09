@@ -29,6 +29,8 @@ sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 if [ "$POLICY_LIBRARY_SYNC_ENABLED" != "true" ]; then
   sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${POLICY_LIBRARY_HOME}/
 fi
+sudo rm -rf ${FORSETI_HOME}/policy-library
+sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${FORSETI_HOME}/
 
 # Restart the config validator service to pick up the latest policy.
 sudo systemctl restart config-validator

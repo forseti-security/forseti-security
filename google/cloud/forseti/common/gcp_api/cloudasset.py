@@ -184,6 +184,8 @@ class CloudAssetClient(object):
     def export_assets(self, parent, destination_object=None, output_config=None,
                       content_type=None, asset_types=None, read_time=None,
                       blocking=False, timeout=0):
+                      content_type=None, asset_types=None, blocking=False,
+                      timeout=0):
         """Export assets under a parent resource to the destination GCS object.
 
         Args:
@@ -243,6 +245,7 @@ class CloudAssetClient(object):
             results = repository.export_assets(
                 parent, output_config, content_type=content_type,
                 asset_types=asset_types, read_time=read_time)
+                asset_types=asset_types)
             if blocking:
                 results = self.wait_for_completion(parent, results,
                                                    timeout=timeout)

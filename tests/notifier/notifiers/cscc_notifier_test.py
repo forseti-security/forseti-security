@@ -177,6 +177,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]
                              ]
+                                                   'resource_type': 'bucket'}}]]
 
         EXPECTED_INACTIVE_FINDINGS = [['ffe',
                             {'category': 'BUCKET_VIOLATION',

@@ -37,6 +37,7 @@ class ValidatorClient(object):
     """Validator client."""
 
     DEFAULT_ENDPOINT = os.getenv('CONFIG_VALIDATOR_ENDPOINT', 'localhost:50052')
+    DEFAULT_ENDPOINT = 'localhost:50052'
 
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         """Initialize

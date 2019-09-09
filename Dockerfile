@@ -24,6 +24,8 @@ ENV HOME=/home/forseti \
 
 RUN groupadd -g $GID forseti && \
     useradd -d ${HOME} -u $UID -g forseti forseti && \
+RUN groupadd -g 1000 forseti && \
+    useradd -d ${HOME} -u 1000 -g forseti forseti && \
     mkdir -p ${HOME}/forseti-security && \
     chown -R forseti:forseti ${HOME}
 

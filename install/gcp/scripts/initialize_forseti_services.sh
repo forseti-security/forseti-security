@@ -70,6 +70,10 @@ if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
   fi
 fi
 
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='${FORSETI_HOME}/policy-library/policies'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${FORSETI_HOME}/policy-library/lib'"
+CONFIG_VALIDATOR_COMMAND+=" -port=50052"
+
 # Update the permission of the config validator.
 sudo chmod ugo+x ${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer
 

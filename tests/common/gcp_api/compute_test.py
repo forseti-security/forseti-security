@@ -174,6 +174,24 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                     'progress': 100,
                 }
                 self.assertDictEqual(expected_result, results)
+                               'read_only', return_value=True):
+            # Hardcode _baseUrl to prevent flakiness from external call.
+            self.gce_api_client.repository.firewalls.gcp_service._baseUrl = (
+                'https://www.googleapis.com/compute/v1/projects/')
+            method = getattr(self.gce_api_client,
+                             '{}_firewall_rule'.format(verb))
+            results = method(self.project_id,
+                             rule=fake_compute.FAKE_FIREWALL_RULE)
+            expected_result = {
+                'targetLink': (
+                    'https://www.googleapis.com/compute/v1/projects/'
+                    'project1/global/firewalls/fake-firewall'),
+                'operationType': verb,
+                'name': 'fake-firewall',
+                'status': 'DONE',
+                'progress': 100,
+            }
+            self.assertDictEqual(expected_result, results)
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_blocking(self, name, verb):

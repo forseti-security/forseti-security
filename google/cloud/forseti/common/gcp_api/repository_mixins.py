@@ -265,6 +265,8 @@ class ExportAssetsQueryMixin(object):
     def export_assets(self, parent, output_config, content_type=None,
                       asset_types=None, read_time=None,
                       fields=None, verb='exportAssets', **kwargs):
+                      asset_types=None, fields=None, verb='exportAssets',
+                      **kwargs):
         """Export assets under a parent resource to a file on GCS.
 
         Args:
