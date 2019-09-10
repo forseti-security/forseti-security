@@ -43,8 +43,7 @@ def size_t_hash(key):
     Returns:
         str: The hashed key.
     """
-    # pylint: disable=no-member
-    hash_digest = hashlib.blake2b(key.encode()).hexdigest()
+    hash_digest = hashlib.blake2b(key.encode()).hexdigest()  # pylint: disable=no-member
     return '%u' % ctypes.c_size_t(int(hash_digest, 16)).value
 
 
