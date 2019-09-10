@@ -13,16 +13,28 @@ For more information, see the [scanner descriptions]({% link _docs/latest/config
 {: .table .table-striped}
 | Scanner                                |
 | --------------------------------------- |
-| Audit Logging Configuration Scanner|
-| BigQuery Scanner |
-| Blacklist Scanner |
-| Bucket ACL Scanner |
-| Cloud SQL ACL Scanner |
-| Enabled APIs Scanner |
-| Firewall Rules Scanner |
-| Forwarding Rules Scanner |
-| Google Groups Scanner |
-| Cloud IAM Rules Scanner |
-| Cloud IAP Scanner |
-| Instance Network Interface Scanner |
-| Kubernetes Engine Version Scanner |
+| Audit Logging Configuration Scanner| 
+| BigQuery Scanner | 
+| Blacklist Scanner | 
+| Bucket ACL Scanner | 
+| Cloud SQL ACL Scanner | 
+| Config Validator Scanner | 
+| Enabled APIs Scanner | 
+| External Project Access Scanner | 
+| Firewall Rules Scanner | 
+| Forwarding Rules Scanner | 
+| Google Groups Scanner | 
+| Groups Settings Scanner | 
+| Cloud IAM Rules Scanner | 
+| Cloud IAP Scanner | 
+| Instance Network Interface Scanner | 
+| Kubernetes Engine Scanner | 
+| Kubernetes Engine Version Scanner | 
+| KMS Scanner | 
+| Lien Scanner | 
+| Location Scanner | 
+| Log Sink Scanner | 
+| Resource Scanner | 
+| Retention Scanner | 
+| Role Scanner | 
+| Service Account Key Scanner |
