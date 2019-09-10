@@ -25,9 +25,9 @@ Following are the CLI commands you can use with Notifier:
   forseti notifier run
 
   # Send the violations by inventory index id.
-  forseti notifier run --inventory_index_id <inventory index id>
+  forseti notifier run --inventory_index_id <INVENTORY_INDEX_ID>
   
   # Send the violations by scanner index id.
-  forseti notifier run --scanner_index_id <scanner index id>
+  forseti notifier run --scanner_index_id <SCANNER_INDEX_ID>
   ```
 
