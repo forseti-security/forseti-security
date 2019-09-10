@@ -21,6 +21,7 @@ import ctypes
 from functools import partial
 import json
 import os
+import xxhash
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import date_time
@@ -42,7 +43,7 @@ def size_t_hash(key):
     Returns:
         str: The hashed key.
     """
-    return '%u' % ctypes.c_size_t(hash(key)).value
+    return '%u' % ctypes.c_size_t(xxhash.xxh64_intdigest(key)).value
 
 
 def from_root_id(client, root_id, root=True):

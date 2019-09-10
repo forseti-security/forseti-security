@@ -141,7 +141,6 @@ class StorageTest(ForsetiTestCase):
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
 
-
     def test_storage_with_timestamps(self):
         """Crawl from project, verify every resource has a timestamp."""
 

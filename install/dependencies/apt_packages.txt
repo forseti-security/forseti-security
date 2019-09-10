@@ -10,3 +10,4 @@ python3-dev
 unzip
 wget
 cron
+gcc
