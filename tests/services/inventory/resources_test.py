@@ -21,4 +21,4 @@ class ResourcesTest(unittest_utils.ForsetiTestCase):
 
     def test_size_t_hash(self):
         key = 'https://container.googleapis.com/v1/projects/test-project-1/zones/us-west1-a/clusters/test-cluster-1'
-        self.assertEqual('15972641028825237194', size_t_hash(key))
+        self.assertEqual('18346789146641068219', size_t_hash(key))

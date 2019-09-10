@@ -19,9 +19,9 @@ from builtins import str
 from builtins import object
 import ctypes
 from functools import partial
+import hashlib
 import json
 import os
-import xxhash
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import date_time
@@ -43,7 +43,9 @@ def size_t_hash(key):
     Returns:
         str: The hashed key.
     """
-    return '%u' % ctypes.c_size_t(xxhash.xxh64_intdigest(key)).value
+    # pylint: disable=no-member
+    hash_digest = hashlib.blake2b(key.encode()).hexdigest()
+    return '%u' % ctypes.c_size_t(int(hash_digest, 16)).value
 
 
 def from_root_id(client, root_id, root=True):
