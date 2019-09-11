@@ -28,10 +28,10 @@ RUN groupadd -g $GID forseti && \
     chown -R forseti:forseti ${HOME}
 
 # Install host dependencies.
-RUN apt-get update  && \
-    apt-get install --no-install-recommends -y libmariadb3 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update  && \
+#     apt-get install --no-install-recommends -y libmariadb3 && \
+#     apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${WORK_DIR}
 
