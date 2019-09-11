@@ -109,6 +109,8 @@ class ValidatorClient(object):
             asset_size += sys.getsizeof(str(asset.resource))
             asset_size += sys.getsizeof(str(asset.iam_policy))
             if current_page_size + asset_size >= self.max_page_size:
+                LOGGER.debug('Auditing paged data, size: %s, content: %s',
+                             current_page_size, paged_assets)
                 self.add_data(paged_assets)
                 violations = self.audit()
                 self.reset()
@@ -120,6 +122,8 @@ class ValidatorClient(object):
             current_page_size += asset_size
 
         if paged_assets:
+            LOGGER.debug('Auditing paged data, size: %s, content: %s',
+                         current_page_size, paged_assets)
             self.add_data(paged_assets)
             violations = self.audit()
             self.reset()
