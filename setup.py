@@ -41,7 +41,7 @@ REQUIRED_PACKAGES = [
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
     # 'mysqlclient==1.4.2.post1',
-    'mysql-connector-python==8.0.17',
+    # 'mysql-connector-python==8.0.17',
     'netaddr==0.7.19',
     'pyyaml==4.2b4',
     'python-graph-core==1.8.2',
@@ -61,6 +61,7 @@ REQUIRED_PACKAGES = [
     'ruamel.yaml==0.15.37',
     'pylint==1.9.4',
     'pylint-quotes==0.2.1',
+    'PyMySQL==0.9.3'
     'SQLAlchemy==1.2.18',
     'sqlalchemy-migrate==0.11.0'
 ]
