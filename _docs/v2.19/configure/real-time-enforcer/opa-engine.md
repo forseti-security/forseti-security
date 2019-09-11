@@ -41,4 +41,4 @@ violations [policy_name] {
 ```
 
 For more information on how to write OPA policies, refer to the official 
-OPA guide [here](https://www.openpolicyagent.org/docs/v0.10.7/how-do-i-write-policies/).
+OPA guide [here](https://www.openpolicyagent.org/docs/how-do-i-write-policies.html).
