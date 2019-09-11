@@ -45,7 +45,9 @@ class ValidatorClient(object):
         """
         self.buffer_sender = BufferedCVDataSender(self)
         self.max_length = 1024 ** 3
-        self.max_page_size = 1024 ** 2 * 10 # 10 MBs.
+        # Default grpc message size limit is 4MB, set the
+        # max page size to 3.5 MB.
+        self.max_page_size = 1024 ** 2 * 3.5
         self.channel = grpc.insecure_channel(endpoint, options=[
             ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
