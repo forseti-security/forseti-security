@@ -14,7 +14,7 @@ our contributors for their commitment to making it better.
 **Contribute**
 
 If you'd like to contribute to Forseti, please follow our
-[contribution guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+[contribution guidelines](https://github.com/forseti-security/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 **Learn about announcements**
 

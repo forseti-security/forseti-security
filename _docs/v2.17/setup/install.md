@@ -52,7 +52,7 @@ steps below:
   included in the `install/` directory:
 
       ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone https://github.com/forseti-security/forseti-security.git
       ```
 
   1. Check out the specific version of Forseti you want to install by using a tag like `v2.17.0.`:

@@ -151,7 +151,7 @@ Create a folder for the Forseti website and pull down the code.
 mkdir forseti-web
 cd forseti-web/
 user@host:~/forseti-web$ git init
-user@host:~/forseti-web$ git remote add origin https://github.com/GoogleCloudPlatform/forseti-security.git
+user@host:~/forseti-web$ git remote add origin https://github.com/forseti-security/forseti-security.git
 user@host:~/forseti-web$ git pull origin forsetisecurity.org-dev
 ```
 
