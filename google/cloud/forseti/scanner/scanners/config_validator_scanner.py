@@ -151,7 +151,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         Args:
             iam_policy (bool): Retrieve flattened IAM policy violations.
 
-        Returns:
+        Yields:
             list: A list of flattened violations.
         """
         # Clean up the validator environment by doing a reset pre audit.
@@ -160,16 +160,11 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         # Get all the data in Config Validator Asset format.
         cv_assets = self._retrieve(iam_policy=iam_policy)
 
-        # Add asset data in bulk to Config Validator.
-        self.validator_client.add_data_in_bulk(cv_assets)
-
-        # Find all violations.
-        violations = self.validator_client.audit()
-
-        # Clean up the validator environment by doing a reset post audit.
-        self.validator_client.reset()
-
-        return list(self._flatten_violations(violations))
+        for violations in self.validator_client.paged_audit(cv_assets):
+            flattened_violations = self._flatten_violations(violations)
+            # Clean up the lookup table to free up the memory.
+            self.resource_lookup_table = {}
+            yield flattened_violations
 
     def run(self):
         """Runs the Config Validator Scanner.
@@ -183,11 +178,12 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         """
         # TODO: break up the _retrieve_flattened_violations method.
         # Retrieving resource violations.
-        all_violations = self._retrieve_flattened_violations()
 
-        # Retrieving iam violations.
-        all_violations.extend(
-            self._retrieve_flattened_violations(iam_policy=True))
+        for flattened_violations in self._retrieve_flattened_violations():
+            # Write resource violations to the db.
+            self._output_results(flattened_violations)
 
-        # Output all violations to db.
-        self._output_results(all_violations)
+        for flattened_violations in self._retrieve_flattened_violations(
+                iam_policy=True):
+            # Write iam violations to the db.
+            self._output_results(flattened_violations)
