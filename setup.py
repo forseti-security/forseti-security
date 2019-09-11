@@ -40,8 +40,6 @@ REQUIRED_PACKAGES = [
     'google-auth-httplib2==0.0.3',
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
-    # 'mysqlclient==1.4.2.post1',
-    # 'mysql-connector-python==8.0.17',
     'netaddr==0.7.19',
     'pyyaml==4.2b4',
     'python-graph-core==1.8.2',
