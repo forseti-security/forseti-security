@@ -103,9 +103,12 @@ class ValidatorClient(object):
         paged_assets = []
         current_page_size = 0
         for asset in assets:
-            paged_assets.append(asset)
-            current_page_size += sys.getsizeof(asset)
-            if current_page_size >= self.max_page_size:
+            asset_size = sys.getsizeof(asset)
+            # Dictionary size is not properly reflected, cast the dictionary to
+            # string instead to estimate the actual dictionary size.
+            asset_size += sys.getsizeof(str(asset.resource))
+            asset_size += sys.getsizeof(str(asset.iam_policy))
+            if current_page_size + asset_size >= self.max_page_size:
                 self.add_data(paged_assets)
                 violations = self.audit()
                 self.reset()
@@ -113,6 +116,9 @@ class ValidatorClient(object):
                 current_page_size = 0
                 if violations:
                     yield violations
+            paged_assets.append(asset)
+            current_page_size += asset_size
+
         if paged_assets:
             self.add_data(paged_assets)
             violations = self.audit()
