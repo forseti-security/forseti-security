@@ -1044,6 +1044,26 @@ class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
     """The Resource implementation for bigquery table."""
 
 
+# Bigtable resource classes
+class BigtableCluster(resource_class_factory('bigtable_cluster', 'name',
+                                             hash_key=True)):
+    """The Resource implementation for Bigtable Cluster."""
+
+
+class BigtableInstance(resource_class_factory('bigtable_instance', 'name',
+                                              hash_key=True)):
+    """The Resource implementation for Bigtable Instance."""
+
+    @property
+    def instance_id(self):
+        return self['name'].split('/')[-1]
+
+
+class BigtableTable(resource_class_factory('bigtable_table', 'name',
+                                           hash_key=True)):
+    """The Resource implementation for Bigtable Table."""
+
+
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
     """The Resource implementation for BillingAccount."""
@@ -1890,6 +1910,61 @@ class BigqueryTableIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Table."""
 
 
+class BigtableClusterIterator(ResourceIterator):
+    """The Resource iterator implementation for Bigtable Cluster"""
+
+    def iter(self):
+        """Resource iterator. Expects self.resource to have an instance_id attribute
+
+        Yields:
+            Resource: BigtableCluster created
+        """
+        gcp = self.client
+        if not getattr(self.resource, 'instance_id', ''):
+            return
+
+        try:
+            for data, metadata in gcp.iter_bigtable_clusters(
+                    project_id=self.resource.parent()['projectId'],
+                    instance_id=self.resource.instance_id):
+                yield FACTORIES['bigtable_cluster'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class BigtableInstanceIterator(resource_iter_class_factory(
+        api_method_name='iter_bigtable_instances',
+        resource_name='bigtable_instance',
+        api_method_arg_key='projectNumber')):
+    """The Resource iterator implementation for Bigtable Instance."""
+
+
+class BigtableTableIterator(ResourceIterator):
+    """The Resource iterator implementation for Bigtable Table"""
+
+    def iter(self):
+        """Resource iterator. Expects self.resource to have an instance_id attribute
+
+        Yields:
+            Resource: BigtableTable created
+        """
+        gcp = self.client
+        if not getattr(self.resource, 'instance_id', ''):
+            return
+
+        try:
+            for data, metadata in gcp.iter_bigtable_tables(
+                    project_id=self.resource.parent()['projectId'],
+                    instance_id=self.resource.instance_id):
+                yield FACTORIES['bigtable_table'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -2604,6 +2679,7 @@ FACTORIES = {
         'contains': [
             AppEngineAppIterator,
             BigqueryDataSetIterator,
+            BigtableInstanceIterator,
             CloudSqlInstanceIterator,
             ComputeAddressIterator,
             ComputeAutoscalerIterator,
@@ -2697,6 +2773,24 @@ FACTORIES = {
     'bigquery_table': ResourceFactory({
         'dependsOn': ['bigquery_dataset'],
         'cls': BigqueryTable,
+        'contains': []}),
+
+    'bigtable_cluster': ResourceFactory({
+        'dependsOn': ['bigtable_instance'],
+        'cls': BigtableCluster,
+        'contains': []}),
+
+    'bigtable_instance': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': BigtableInstance,
+        'contains': [
+            BigtableClusterIterator,
+            BigtableTableIterator
+        ]}),
+
+    'bigtable_table': ResourceFactory({
+        'dependsOn': ['bigtable_instance'],
+        'cls': BigtableTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
