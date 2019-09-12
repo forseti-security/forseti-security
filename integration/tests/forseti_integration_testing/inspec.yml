@@ -1,0 +1,60 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: forseti_integration_testing
+attributes:
+- name: project_id
+  required: true
+  type: string
+- name: network_project
+  required: false
+  type: string
+  default: ''
+- name: org_id
+  required: true
+  type: string
+- name: suffix
+  required: true
+  type: string
+- name: forseti-client-vm-name
+  required: true
+  type: string
+- name: forseti-client-vm-ip
+  required: true
+  type: string
+- name: forseti-server-vm-name
+  required: true
+  type: string
+- name: forseti-server-vm-ip
+  required: true
+  type: string
+- name: forseti-client-storage-bucket
+  required: true
+  type: string
+- name: forseti-server-storage-bucket
+  required: true
+  type: string
+- name: forseti-client-service-account
+  required: true
+  type: string
+- name: forseti-server-service-account
+  required: true
+  type: string
+- name: forseti-cai-storage-bucket
+  required: true
+  type: string
+depends:
+  - name: inspec-gcp
+    git: https://github.com/inspec/inspec-gcp.git
+    tag: v0.10.0
