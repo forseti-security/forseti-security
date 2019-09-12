@@ -28,13 +28,13 @@ def _split_member(member):
         tuple: The member type and optionally member value.
     """
     # 'allUsers' and 'allAuthenticatedUsers' member do not contain ':' so they
-    # need to be handled seperately.
+    # need to be handled separately.
     if ':' in member:
         return member.split(':', 1)
-    return (member, None)
+    return member, None
 
 
-def convert_bigquery_policy_to_iam(access_policy, project_id):
+def convert_bigquery_policy_to_iam(access_policy, project_id):  # pylint: disable=too-many-branches
     """Convert a bigquery Access Policy to IAM policy.
 
     This is used to enable IAM explain for legacy bigquery policies.
@@ -67,12 +67,15 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
     iam_policy = {'bindings': []}
     roles = {}
     for policy in access_policy:
-        if policy['role'] not in access_policy_to_iam_role_map:
+        if 'role' not in policy:
+            # Ignore authorized views from BigQuery API
+            continue
+        elif policy['role'] not in access_policy_to_iam_role_map:
             LOGGER.warning('unknown role in access policy %s under project %s',
                            policy, project_id)
             continue
-        iam_role = access_policy_to_iam_role_map[policy['role']]
 
+        member = None
         if 'userByEmail' in policy:
             member = policy['userByEmail']
             if member.endswith('gserviceaccount.com'):
@@ -94,7 +97,9 @@ def convert_bigquery_policy_to_iam(access_policy, project_id):
             if member.startswith('project'):
                 member = '{}:{}'.format(member, project_id)
 
-        roles.setdefault(iam_role, set()).add(member)
+        if member:
+            iam_role = access_policy_to_iam_role_map[policy['role']]
+            roles.setdefault(iam_role, set()).add(member)
 
     for role, members in list(roles.items()):
         iam_policy['bindings'].append({'role': role, 'members': list(members)})
