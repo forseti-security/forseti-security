@@ -48,6 +48,8 @@ class ValidatorClient(object):
         # Default grpc message size limit is 4MB, set the
         # max page size to 3.5 MB.
         self.max_page_size = 1024 ** 2 * 3.5
+        # Audit once every 50 MB of data sent to Config Validator.
+        self.max_audit_size = 1024 ** 2 * 50
         self.channel = grpc.insecure_channel(endpoint, options=[
             ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
@@ -102,6 +104,7 @@ class ValidatorClient(object):
         """
         paged_assets = []
         current_page_size = 0
+        data_loaded = 0
         for asset in assets:
             asset_size = sys.getsizeof(asset)
             # Dictionary size is not properly reflected, cast the dictionary to
@@ -109,22 +112,27 @@ class ValidatorClient(object):
             asset_size += sys.getsizeof(str(asset.resource))
             asset_size += sys.getsizeof(str(asset.iam_policy))
             if current_page_size + asset_size >= self.max_page_size:
-                LOGGER.debug('Auditing paged data, size: %s, content: %s',
+                LOGGER.debug('Adding paged data to Config Validator, size: '
+                             '%s, content: %s',
                              current_page_size, paged_assets)
+                data_loaded += current_page_size
                 self.add_data(paged_assets)
-                violations = self.audit()
-                self.reset()
                 paged_assets = []
                 current_page_size = 0
+            if data_loaded >= self.max_audit_size:
+                LOGGER.debug('Auditing data, size: %s', data_loaded)
+                violations = self.audit()
+                self.reset()
+                data_loaded = 0
                 if violations:
                     yield violations
             paged_assets.append(asset)
             current_page_size += asset_size
 
         if paged_assets:
-            LOGGER.debug('Auditing paged data, size: %s, content: %s',
-                         current_page_size, paged_assets)
             self.add_data(paged_assets)
+            data_loaded += current_page_size
+            LOGGER.debug('Auditing data, size: %s', data_loaded)
             violations = self.audit()
             self.reset()
             if violations:
