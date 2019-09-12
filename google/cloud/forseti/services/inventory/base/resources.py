@@ -1056,6 +1056,11 @@ class BigtableInstance(resource_class_factory('bigtable_instance', 'name',
 
     @property
     def instance_id(self):
+        """Get instance id of the Bigtable Instance
+
+        Returns:
+            str: id of this resource.
+        """
         return self['name'].split('/')[-1]
 
 
@@ -1914,7 +1919,7 @@ class BigtableClusterIterator(ResourceIterator):
     """The Resource iterator implementation for Bigtable Cluster"""
 
     def iter(self):
-        """Resource iterator. Expects self.resource to have an instance_id attribute
+        """Resource iterator.
 
         Yields:
             Resource: BigtableCluster created
@@ -1945,7 +1950,7 @@ class BigtableTableIterator(ResourceIterator):
     """The Resource iterator implementation for Bigtable Table"""
 
     def iter(self):
-        """Resource iterator. Expects self.resource to have an instance_id attribute
+        """Resource iterator.
 
         Yields:
             Resource: BigtableTable created
