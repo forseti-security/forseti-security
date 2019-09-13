@@ -53,3 +53,7 @@ htmlcov/
 
 # VSCode Metadata
 .vscode/
+
+# Kitchen and Terraform files
+.terraform/
+.kitchen/
