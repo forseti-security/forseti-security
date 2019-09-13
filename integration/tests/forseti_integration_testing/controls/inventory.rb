@@ -118,13 +118,10 @@ control 'inventory' do
             command("forseti model get model_new")
         end
 
-        before do
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
-
-        let :inventory_id do
+        before(:context) do
             command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
         end
 
         its("stderr") { should eq ""}
@@ -140,13 +137,10 @@ control 'inventory' do
             command("forseti model list")
         end
 
-        before do
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
-
-        let :inventory_id do
+        before(:context) do
             command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
         end
 
         its("stdout") { should match /SUCCESS/ }
@@ -162,13 +156,10 @@ control 'inventory' do
             command("forseti model delete model_new")
         end
 
-        before do
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
-
-        let :inventory_id do
+        before(:context) do
             command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
         end
 
         its("stdout") { should match /SUCCESS/ }
@@ -183,14 +174,11 @@ control 'inventory' do
             command("forseti explainer list_members --prefix rdevani")
         end
 
-        before do
+        before(:context) do
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
             command("forseti model create --inventory_index_id #{inventory_id} model_new").result
             command("forseti model use model_new").result
-        end
-
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
         end
 
         its("stderr") { should eq ""}
@@ -206,14 +194,11 @@ control 'inventory' do
             command("forseti explainer list_roles --prefix roles/iam")
         end
 
-        before do
+        before(:context) do
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
             command("forseti model create --inventory_index_id #{inventory_id} model_new").result
             command("forseti model use model_new").result
-        end
-
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
         end
 
         its("stdout") { should match /roles\/iam.organizationRoleAdmin/ }
@@ -231,25 +216,23 @@ control 'inventory' do
         its("stdout") { should match /roles\/iam.workloadIdentityUser/ }
         its("stderr") { should eq ""}
 
-        after do
+        after(:context) do
             command("forseti inventory purge 0").result
             command("forseti model delete model_new")
         end
     end
+
 
     describe "List Storage roles Explainer" do
         subject do
             command("forseti explainer list_roles --prefix roles/storage")
         end
 
-        before do
+        before(:context) do
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
             command("forseti model create --inventory_index_id #{inventory_id} model_new").result
             command("forseti model use model_new").result
-        end
-
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
         end
 
         its("stdout") { should match /roles\/storage.admin/ }
