@@ -1,5 +1,5 @@
 To run Forseti, you'll need to set up your configuration file. Edit
-the [forseti_conf_server.yaml sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/server/forseti_conf_server.yaml.sample)
+the [forseti_conf_server.yaml sample](https://github.com/forseti-security/forseti-security/blob/master/configs/server/forseti_conf_server.yaml.sample)
 file and save it as `forseti_conf_server.yaml`.
 
 You will also need to edit, at a minimum, the following variables in the config

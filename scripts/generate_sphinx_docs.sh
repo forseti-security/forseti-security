@@ -32,7 +32,7 @@ trap 'rm -rf "${TEMP_SOURCE_DIRECTORY}"' EXIT
 #   TEMP_SOURCE_DIRECTORY
 #######################################
 function checkout_python_source_to_temp_directory() {
-    git clone https://github.com/GoogleCloudPlatform/forseti-security.git \
+    git clone https://github.com/forseti-security/forseti-security.git \
       --branch ${BUILD_FROM_PYTHON_SOURCE_BRANCH} \
       --single-branch ${TEMP_SOURCE_DIRECTORY}
 
