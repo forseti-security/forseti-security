@@ -542,6 +542,9 @@ class CloudAssetCrawlerTest(CrawlerBase):
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
             'backendservice': {'resource': 2},
+            'bigtable_cluster': {'resource': 1},
+            'bigtable_instance': {'resource': 1},
+            'bigtable_table': {'resource': 1},
             'cloudsqlinstance': {'resource': 2},
             'compute_address': {'resource': 2},
             'compute_autoscaler': {'resource': 1},
@@ -613,6 +616,9 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
             'backendservice': {'resource': 2},
+            'bigtable_cluster': {'resource': 1},
+            'bigtable_instance': {'resource': 1},
+            'bigtable_table': {'resource': 1},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
