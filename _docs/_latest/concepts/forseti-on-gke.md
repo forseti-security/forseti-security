@@ -1,5 +1,5 @@
 ---
-title: Forseti on GKE
+title: Forseti on-GKE
 order: 006
 ---
 
@@ -15,7 +15,7 @@ This page describes the architecture of Forseti when deployed on the Google Kube
 
 In a traditional Forseti installation, the compute resources are deployed as GCE virtual machines (VM).  The Forseti server VM executes the forseti_server process, listening for requests to take action.  On the Forseti server is also a Linux cronjob that periodically invokes the server to build inventory and a model, scan, and notify on any violations.  The Forseti client VM provides a CLI where a user can invoke these same functions as well as execute the IAM explain function.
 
-In Forseti on GKE, the core compute resources are deployed in containers: the server and orchestrator.  These containers are each wrapped in [Kubernetes Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/); the forseti-server and forseti-orchestrator pods respectively.  
+In Forseti on-GKE, the core compute resources are deployed in containers: the server and orchestrator.  These containers are each wrapped in [Kubernetes Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/); the forseti-server and forseti-orchestrator pods respectively.  
 
 The forseti-server pod is deployed in a [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) controller.  Like the forseti_server process on the VM, this is a long running process that listens for requests made to it by a client.
 
@@ -27,7 +27,7 @@ The client CLI is still provided through the GCE VM.  The endpoint configuration
 
 This is illustrated in the following diagram.
 
-{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture-2-21.png alt: "forseti on GKE architecture" %}
+{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture-2-21.png alt: "forseti on-GKE architecture" %}
 
 ## Container Strategy
 
@@ -38,7 +38,7 @@ The container images can be found in the following repositories
 * [gcr.io/forseti-containers](https://console.cloud.google.com/gcr/images/forseti-containers/GLOBAL)
 * [hub.docker.com/u/forsetisecurity](https://hub.docker.com/u/forsetisecurity)
 
-The following describes the container image tags used in a Forseti on GKE installation.
+The following describes the container image tags used in a Forseti on-GKE installation.
 
 {: .table}
 |  Tag(s)  |  Description |
