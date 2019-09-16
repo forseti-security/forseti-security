@@ -17,6 +17,7 @@
 from __future__ import print_function
 
 from builtins import object
+import os
 import sys
 
 # Importing migrate.changeset adds some new methods to existing SQLAlchemy
@@ -30,8 +31,8 @@ import google.cloud.forseti.services.dao as general_dao
 
 from google.cloud.forseti.common.util import logger
 
-
-DEFAULT_DB_CONN_STR = 'mysql+pymysql://root@127.0.0.1:3306/forseti_security'
+DB_NAME = os.environ.get('FORSETI_DB_NAME', 'forseti_security')
+DEFAULT_DB_CONN_STR = f'mysql+pymysql://root@127.0.0.1:3306/{DB_NAME}'
 LOGGER = logger.get_logger(__name__)
 
 
