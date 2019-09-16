@@ -35,15 +35,16 @@ function uniq_major_minor_filter() {
 }
 
 function main() {
-    local all_release_tags releases doc_versions
+    local all_release_tags all_major_release_tags releases doc_versions
     all_release_tags="$(git tag -l v*.*)"
+    all_major_minor_release_tags="$(uniq_major_minor_filter "${all_release_tags}")"
+
     # sed trims this list to 10.
-    all_supported_release_tags="$(echo "${all_release_tags}" | sort -Vr | cut -d "." -f1-2 | sed '1,10!d')"
-    releases="$(uniq_major_minor_filter "${all_supported_release_tags}")"
+    releases="$(echo "${all_major_minor_release_tags}" | sort -Vr | cut -d "." -f1-2 | sed '1,10!d')"
     doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
     if [ -z "${doc_versions}" ]; then
-        err "The _docs/ directory is not versioned properly. Please initialize 
+        err "The _docs/ directory is not versioned properly. Please initialize
             with at least one version."
         exit -1
     fi
