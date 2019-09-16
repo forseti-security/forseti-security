@@ -220,6 +220,53 @@ helm upgrade -i forseti forseti-security/forseti-security \
     --set-string serverConfigContents="$(gsutil cat gs://<BUCKET_NAME>/configs/forseti_conf_server.yaml | base64 -)" \
     --values=forseti-values.yaml
 ```
+
+### Deploying with config-validator on GKE
+
+The config-validator in Forseti on-GKE obtains policies from a policy-library in a Git repository via SSH.  The pre-requisites for this are as follows.
+
+1. A [policy-library](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#get-started-with-the-policy-library-repository) in a Git repository.
+2. A generated SSH key with the private key local to the host running Terraform or Helm, and the public key uploaded to the service hosting the policy-library Git repository.
+
+#### With Terraform
+
+In any of the Terraform examples above, the following additional variables are required:
+
+```bash
+module "forseti-on-gke-with-config-validator" {
+    # Other parameters/variables removed for brevity
+
+    # Enable config-validator
+    config_validator_enabled = true
+    
+    # Path to the private SSH key file
+    git_sync_private_ssh_key_file = ""
+
+    # SSH Git repository location, usually in the following
+    # format: git@repo-host:repo-owner/repo-name.git
+    policy_library_repository_url = ""
+}
+```
+
+#### With Helm
+
+In the Helm example above, the following variables are required in the user defined *values.yaml* file.
+
+```yaml
+# configValidator sets whether or not to deploy config-validator
+configValidator: true
+
+# gitSyncPrivateSSHKey is the private OpenSSH key generated to allow the git-sync to clone the policy library repository.
+gitSyncPrivateSSHKey: ""
+
+# gitSyncSSH use SSH for git-sync operations
+gitSyncSSH: true
+
+# policyLibraryRepositoryURL is a git repository policy-library.
+policyLibraryRepositoryURL: ""
+
+```
+
 ### Troubleshooting
 
 #### Terraform Apply - Error creating Network: googleapi: Error 409

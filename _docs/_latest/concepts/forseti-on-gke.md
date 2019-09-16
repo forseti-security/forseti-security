@@ -21,11 +21,13 @@ The forseti-server pod is deployed in a [Kubernetes Deployment](https://kubernet
 
 The forseti-orchestrator pod is deployed in a [Kubernetes CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/).  This reflects the behavior of the Linux cronjob on the server VM, periodically invoking the inventory build, scan, and notification actions on the forseti-server deployment.
 
+The config-validator pod is also deployed in a [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) controller.  The service provided by the config-validator pod is exposed internally to Forseti on-GKE.  The [Config Validator Scanner]({% link _docs/latest/configure/scanner/descriptions.md %}) uses this service when auditing resources against a [policy-library](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).  The config-validator uses [git-sync](https://github.com/kubernetes/git-sync) in a container to periodically pull a policy-library in from a Git repository.  If a change in the policies is detected, git-sync will make a call to the kube-proxy container to restart the pod with the updated policies.
+
 The client CLI is still provided through the GCE VM.  The endpoint configuration for the the VM is set to send requests to the GCP load balancer for the Forseti server deployment.
 
 This is illustrated in the following diagram.
 
-{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture.png alt: "forseti on GKE architecture" %}
+{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture-2-21.png alt: "forseti on GKE architecture" %}
 
 ## Container Strategy
 
