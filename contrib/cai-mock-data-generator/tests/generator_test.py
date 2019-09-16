@@ -1,7 +1,6 @@
 import collections
 import hashlib
 import json
-import os
 import pathlib
 import unittest
 
@@ -30,8 +29,8 @@ class TestGenerator(unittest.TestCase):
         expected_resource_node = ResourceNode(root_cai_name, 'cloudresourcemanager.googleapis.com/Organization')
         expected_resource_node.children = [ResourceNode(i, 'cloudresourcemanager.googleapis.com/Folder') for i in range(100)]
 
-        resource_count, root_resource_node = self.count_resource_per_type(paths[0])
-        iam_count, _ = self.count_resource_per_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
+        iam_count, _ = self.count_resource_by_type(paths[1])
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
         self.assertEqual(1, iam_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
@@ -52,8 +51,8 @@ class TestGenerator(unittest.TestCase):
         for folder in expected_resource_node.children:
             folder.children = [ResourceNode(i, 'cloudresourcemanager.googleapis.com/Project') for i in range(5)]
 
-        resource_count, root_resource_node = self.count_resource_per_type(paths[0])
-        iam_count, _ = self.count_resource_per_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
+        iam_count, _ = self.count_resource_by_type(paths[1])
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
         self.assertEqual(1, iam_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
@@ -95,8 +94,8 @@ class TestGenerator(unittest.TestCase):
                         appengine_application.children = services
                     project.children.extend(appengine_applications)
 
-        resource_count, root_resource_node = self.count_resource_per_type(paths[0])
-        iam_count, _ = self.count_resource_per_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
+        iam_count, _ = self.count_resource_by_type(paths[1])
         print ([root_resource_node] == [expected_resource_node])
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
@@ -120,14 +119,14 @@ class TestGenerator(unittest.TestCase):
         self.assertEqual(16, resource_count.get('bigquery.googleapis.com/Table', 0))
 
     @staticmethod
-    def count_resource_per_type(file_path):
+    def count_resource_by_type(file_path):
         """Count resource by type.
 
         Args:
             file_path (str): Path to the dump file.
 
         Returns:
-            :rtype(dict, Resource)
+            :rtype(dict, Resource): resource count and a root resource node.
         """
         results = collections.defaultdict(int)
         resource_map = {}
@@ -153,24 +152,6 @@ class TestGenerator(unittest.TestCase):
                     if resource not in resource_map:
                         resource_map[resource.resource_name] = resource
         return results, root_resource
-
-    @staticmethod
-    def count_resource(file_path):
-        """Count resource by type.
-
-        Args:
-            file_path (str): Path to the dump file.
-
-        Returns:
-            dict: Resource_type to count dictionary.
-        """
-        results = collections.defaultdict(int)
-        with open(file_path, 'r') as f:
-            for line in f:
-                data = json.loads(line)
-                asset_type = data.get('asset_type')
-                results[asset_type] += 1
-        return results
 
 
 class ResourceNode(object):
