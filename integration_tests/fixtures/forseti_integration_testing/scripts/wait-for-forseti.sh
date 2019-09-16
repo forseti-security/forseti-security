@@ -16,9 +16,10 @@
 
 # Block until the Forseti startup script has finished running.
 
-echo "Waiting for up to 360 seconds for Forseti to be ready."
+MAX_WAIT_TIME=360
+echo "Waiting for up to $MAX_WAIT_TIME seconds for Forseti to be ready."
 
-for _ in {1..360}; do
+for _ in {1..$MAX_WAIT_TIME}; do
   if [[ -f /etc/profile.d/forseti_environment.sh ]]; then
     echo "Forseti is ready."
     echo "Waiting for startup script to complete"
@@ -29,5 +30,5 @@ for _ in {1..360}; do
   fi
 done
 
-echo "Forseti was not ready after 360 seconds!"
+echo "Forseti was not ready after $MAX_WAIT_TIME seconds!"
 exit 1
