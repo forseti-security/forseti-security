@@ -1,3 +1,4 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +26,7 @@ jobs:
     install:
     - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
     script:
-    - docker container run -it -e KITCHEN_TEST_BASE_PATH="integration/tests" -e SERVICE_ACCOUNT_JSON="$(< release-silver.json)"
+    - docker container run -it -e KITCHEN_TEST_BASE_PATH="integration_tests/tests" -e SERVICE_ACCOUNT_JSON="$(< release-silver.json)"
       --env-file travis-integration.env -v $(pwd):/workspace gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
       /usr/local/bin/test_integration.sh
   - stage: Unit test
