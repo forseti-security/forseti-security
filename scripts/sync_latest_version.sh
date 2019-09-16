@@ -44,7 +44,7 @@ function main() {
     doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
     if [ -z "${doc_versions}" ]; then
-        err "The _docs/ directory is not versioned properly. Please initialize 
+        err "The _docs/ directory is not versioned properly. Please initialize
             with at least one version."
         exit -1
     fi
