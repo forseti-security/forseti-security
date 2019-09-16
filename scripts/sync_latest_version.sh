@@ -35,7 +35,7 @@ function uniq_major_minor_filter() {
 }
 
 function main() {
-    local all_release_tags all_major_release_tags releases doc_versions
+    local all_release_tags all_major_minor_release_tags releases doc_versions
     all_release_tags="$(git tag -l v*.*)"
     all_major_minor_release_tags="$(uniq_major_minor_filter "${all_release_tags}")"
 
