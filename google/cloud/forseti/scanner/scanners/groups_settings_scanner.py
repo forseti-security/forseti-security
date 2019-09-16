@@ -152,7 +152,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
                 all_groups_settings.append(groups_settings.GroupsSettings
                                            .from_json(email, settings[1]))
 
-        return (all_groups_settings, iam_groups_settings)
+        return all_groups_settings, iam_groups_settings
 
     def run(self):
         """Run, the entry point for this scanner."""
