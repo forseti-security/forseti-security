@@ -41,7 +41,7 @@
 - bigquery_table
   - N/A
 
-Update `config.yaml` file with organization structure and run `python main.py` 
+Update `config.yaml` file with organization structure and run `python data_generator.py` 
 to generate the cai dump files for IAM and resource.
 
 root_resource_type can either be `organization`, `folder` or `project`.

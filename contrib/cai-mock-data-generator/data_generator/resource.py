@@ -346,7 +346,7 @@ def generate_appengine_application(parent_resource, resource_id=''):
     Returns:
         Resource: A resource object.
     """
-    resource_id = resource_id if resource_id != '' else _generate_random_id(number_only=False)
+    resource_id = parent_resource.resource_id
     resource_type = 'appengine_application'
     cai_resource_name = '//appengine.googleapis.com/apps/{}'.format(
         resource_id)

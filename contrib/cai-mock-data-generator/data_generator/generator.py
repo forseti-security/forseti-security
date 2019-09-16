@@ -50,11 +50,11 @@ class CAIDataGenerator(object):
         self.thread_pool.submit(
             create_file_and_writer_listener, resource_output_file, self.resource_queue)
 
-    def _validate_config_helper(self,
-                                resource_structure,
-                                parent_resource_type,
-                                allowed_resources):
-        """Validate config helper.
+    def _validate_config_structure(self,
+                                   resource_structure,
+                                   parent_resource_type,
+                                   allowed_resources):
+        """Validate config structure.
 
         Args:
             resource_structure (dict): The child resource structure.
@@ -89,18 +89,18 @@ class CAIDataGenerator(object):
 
         cur_resource_structure = resource_structure.get(resource_type, [])
         for cur_sub_structure in cur_resource_structure:
-            self._validate_config_helper(cur_sub_structure,
-                                         resource_type,
-                                         RESOURCE_DEPENDENCY_MAP.get(resource_type))
+            self._validate_config_structure(cur_sub_structure,
+                                            resource_type,
+                                            RESOURCE_DEPENDENCY_MAP.get(resource_type))
 
     def _validate_config(self):
         """Validate the config object to make sure the structure is correct."""
         root_resource_type = self.config.get('root_resource_type')
         resource_structure_list = self.config.get('resource_structure', [])
         for resource_structure in resource_structure_list:
-            self._validate_config_helper(resource_structure,
-                                         root_resource_type,
-                                         RESOURCE_DEPENDENCY_MAP.get(root_resource_type))
+            self._validate_config_structure(resource_structure,
+                                            root_resource_type,
+                                            RESOURCE_DEPENDENCY_MAP.get(root_resource_type))
 
     def generate(self):
         """Generate the mock data and output to files."""
@@ -123,7 +123,6 @@ class CAIDataGenerator(object):
             futures = []
 
             for resource_sub_structure in resource_structure:
-                #self._generate_sub_resource(root_resource, resource_sub_structure)
                 futures.append(self.thread_pool.submit(self._generate_sub_resource,
                                                        root_resource,
                                                        resource_sub_structure))
