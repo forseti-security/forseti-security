@@ -122,7 +122,6 @@ class _ServiceManagementServicesRepository(
         return service_name
 
 
-@tracing.traced()
 class ServiceManagementClient(object):
     """Service Management Client."""
 

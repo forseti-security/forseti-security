@@ -335,7 +335,7 @@ def _api_client_factory(storage, config, parallel, tracer=None):
     if config.get_cai_enabled():
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
-        asset_count = cloudasset.load_cloudasset_data(storage.session, config, tracer)
+        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
