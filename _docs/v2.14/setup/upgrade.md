@@ -121,8 +121,8 @@ for example, `deploy-forseti-server-79c4374.yaml`.
 
 ### Change deployment properties
 
-1. Review [`deploy-forseti-server.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-server.yaml.in) 
-and [`deploy-forseti-client.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-client.yaml.in) 
+1. Review [`deploy-forseti-server.yaml.in`](https://github.com/forseti-security/forseti-security/blob/dev/deployment-templates/deploy-forseti-server.yaml.in) 
+and [`deploy-forseti-client.yaml.in`](https://github.com/forseti-security/forseti-security/blob/dev/deployment-templates/deploy-forseti-client.yaml.in) 
 for any new properties that you need to copy to your previous deployment template. To compare what's changed, use
 the `git diff` command. For example, to see the diff between v2.1.0 and v2.2.0, run:
 
@@ -164,7 +164,7 @@ Learn more about [Updating a Deployment](https://cloud.google.com/deployment-man
 1. Checkout forseti with tag v2.1.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.1.0` to checkout version `v2.1.0` of Forseti Security.
@@ -228,7 +228,7 @@ update the configuration file.
 1. Checkout forseti with tag v2.2.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.2.0` to checkout version `tags/v2.2.0` of Forseti Security.
@@ -294,7 +294,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.3.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.3.0` to checkout version `v2.3.0` of Forseti Security.
@@ -359,7 +359,7 @@ update the configuration file.
         ...
     ```
 1. Rule files updates:  
-    1. Add [Log Sink rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.3.0/rules/log_sink_rules.yaml)
+    1. Add [Log Sink rule file](https://github.com/forseti-security/forseti-security/blob/v2.3.0/rules/log_sink_rules.yaml)
     to `rules/` under your Forseti server GCS bucket to use the LogSink scanner.
     1. BigQuery rule syntax has been [updated (backward compatible)]({% link _docs/v2.14/configure/scanner/rules.md %}#bigquery-rules).
 
@@ -372,7 +372,7 @@ update the configuration file.
 1. Checkout forseti with tag v2.4.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.4.0` to checkout version `v2.4.0` of Forseti Security.
@@ -413,7 +413,7 @@ Below are the steps to upgrade from v2.4.0 to v2.5.0
 1. Checkout forseti with tag v2.5.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.5.0` to checkout version `v2.5.0` of Forseti Security.
@@ -556,7 +556,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Forseti project API updates:
    1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running the following command on cloud shell:  
     `gcloud beta services enable cloudasset.googleapis.com`
-1. Create a copy and upload [lien_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml) to `rules` directory under your Forseti server GCS bucket.
+1. Create a copy and upload [lien_rules.yaml](https://github.com/forseti-security/forseti-security/blob/dev/rules/lien_rules.yaml) to `rules` directory under your Forseti server GCS bucket.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=6 %}
@@ -567,7 +567,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.6.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.6.0` to checkout version `v2.6.0` of Forseti Security.
@@ -648,7 +648,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.7.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.7.0` to checkout version `v2.7.0` of Forseti Security.
@@ -719,7 +719,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.8.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.8.0` to checkout version `v2.8.0` of Forseti Security.
@@ -752,7 +752,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.9.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.9.0` to checkout version `v2.9.0` of Forseti Security.
@@ -805,7 +805,7 @@ to the Client ID of your service account.
             ...
         ```
     - Update the `cai` section to include any asset types to exclude from the inventory. Refer 
-    [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
+    [here](https://github.com/forseti-security/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
     for the full list of assets to exclude. 
     
     - The example below is excluding `google.appengine.Application` and `google.compute.InstanceGroup` from the inventory.
@@ -872,7 +872,7 @@ to the Client ID of your service account.
 1. Checkout forseti with tag v2.10.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory, 
     run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.10.0` to checkout version `v2.10.0` of Forseti Security.
@@ -992,7 +992,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Checkout forseti with tag v2.11.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory,
    run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to
    clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.11.0` to checkout version `v2.11.0` of Forseti Security.
@@ -1067,9 +1067,9 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
               
        ```
 1. Rule files updates:
-  - Add [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.11.0/rules/kms_rules.yaml)
+  - Add [KMS rule file](https://github.com/forseti-security/forseti-security/blob/v2.11.0/rules/kms_rules.yaml)
    to `rules/` under your Forseti server GCS bucket to use the KMS scanner.
-  - Add [Resource rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.11.0/rules/resource_rules.yaml)
+  - Add [Resource rule file](https://github.com/forseti-security/forseti-security/blob/v2.11.0/rules/resource_rules.yaml)
    to `rules/` under your Forseti server GCS bucket to use the Resource scanner.
   - External Project Access rule syntax has been [updated to include whitelisting users]({% link _docs/v2.14/configure/scanner/rules.md %}#external-project-access-rules).
   
@@ -1086,7 +1086,7 @@ You can upgrade from 2.11.0 to 2.12.0 using Deployment Manager or Terraform.
 1. Checkout forseti with tag v2.12.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory,
    run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to
    clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.12.0` to checkout version `v2.12.0` of Forseti Security.
@@ -1145,7 +1145,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
        ```
 
 1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
+  - Update [KMS rule file](https://github.com/forseti-security/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to be able to use the four
     new use cases that have been added.
   
@@ -1155,7 +1155,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 1. Rule files updates:
-  - Update [KMS rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
+  - Update [KMS rule file](https://github.com/forseti-security/forseti-security/blob/v2.12.0/rules/kms_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to be able to use the four
     new use cases that have been added.
 
@@ -1172,7 +1172,7 @@ You can upgrade from 2.12.0 to 2.13.0 using Deployment Manager or Terraform.
 1. Checkout forseti with tag v2.13.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory,
    run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to
    clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.13.0` to checkout version `v2.13.0` of Forseti Security.
@@ -1218,7 +1218,7 @@ You can upgrade from 2.13.0 to 2.14.0 using Deployment Manager or Terraform.
 1. Checkout forseti with tag v2.14.0 by running the following commands:
     1. If you already have the forseti-security folder under your cloud shell directory,
    run command `rm -rf forseti-security` to delete the folder.
-    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to
    clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.14.0` to checkout version `v2.14.0` of Forseti Security.
@@ -1308,9 +1308,9 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
        ```
 
 1. Rule files updates:
-   - Update [KE scanner rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
+   - Update [KE scanner rule file](https://github.com/forseti-security/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
      under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
-   - Add [Groups settings rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
+   - Add [Groups settings rule file](https://github.com/forseti-security/forseti-security/blob/v2.14.0/rules/groups_settings_rules.yaml)
      under `rules/` in your Forseti server GCS bucket to include Groups Settings rules.
 1. API updates:
    - Enable Groups Settings API
@@ -1326,7 +1326,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 1. Rule files updates:
-  - Update [KE scanner rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
+  - Update [KE scanner rule file](https://github.com/forseti-security/forseti-security/blob/v2.14.0/rules/ke_scanner_rules.yaml)
     under `rules/` in your Forseti server GCS bucket to include sample rules according to CIS benchmark.
 
 {% endcapture %}
