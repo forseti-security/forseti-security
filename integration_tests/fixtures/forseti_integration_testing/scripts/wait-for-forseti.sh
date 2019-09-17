@@ -16,7 +16,7 @@
 
 # Block until the Forseti startup script has finished running.
 
-MAX=360
+MAX=900
 
 echo "Waiting for up to $MAX seconds for Forseti to be ready."
 
