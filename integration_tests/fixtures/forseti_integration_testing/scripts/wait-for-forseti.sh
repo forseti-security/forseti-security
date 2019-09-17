@@ -16,7 +16,8 @@
 
 # Block until the Forseti startup script has finished running.
 
-MAX_WAIT_TIME=600
+MAX_WAIT_TIME=900
+
 echo "Waiting for up to $MAX_WAIT_TIME seconds for Forseti to be ready."
 
 for _ in {1..$MAX_WAIT_TIME}; do
