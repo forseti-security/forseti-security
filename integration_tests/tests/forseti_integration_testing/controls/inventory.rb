@@ -48,6 +48,21 @@ control 'inventory' do
 
     end
 
+     describe "Purge inventory database check" do
+        subject do
+            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
+        end
+
+        before(:context) do
+            command("forseti inventory create").result
+            command("forseti inventory purge 0").result
+            command("sudo apt-get -y install mysql-client").result
+        end
+
+        its("stdout") { should match "" }
+
+    end
+
     describe "List inventory" do
         subject do
             command("forseti inventory list")
@@ -58,6 +73,23 @@ control 'inventory' do
         end
 
         its("stderr") { should eq ""}
+
+        after do
+            command("forseti inventory purge 0").result
+        end
+    end
+
+    describe "List inventory database check" do
+        subject do
+            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
+        end
+
+        before(:context) do
+            command("forseti inventory create").result
+            command("sudo apt-get -y install mysql-client").result
+        end
+
+        its("stdout") { should match "1" }
 
         after do
             command("forseti inventory purge 0").result
@@ -81,6 +113,23 @@ control 'inventory' do
         end
     end
 
+    describe "Get inventory database check" do
+        subject do
+            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{inventory_id};\"")
+        end
+
+        let :inventory_id do
+            command("forseti inventory create").result
+            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+        end
+
+        its("stdout") { should match "1" }
+
+        after do
+            command("forseti inventory purge 0").result
+        end
+    end
+
     describe "Delete inventory" do
         subject do
             command("forseti inventory delete #{inventory_id}")
@@ -93,6 +142,24 @@ control 'inventory' do
 
         its("stderr") { should eq ""}
 
+    end
+
+    describe "Delete inventory database check" do
+        subject do
+            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
+        end
+
+        let :inventory_id do
+            command("forseti inventory create").result
+            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti inventory delete #{inventory_id}").result
+        end
+
+        its("stdout") { should match "" }
+
+        after do
+            command("forseti inventory purge 0").result
+        end
     end
 
     describe "Create inventory and model" do
