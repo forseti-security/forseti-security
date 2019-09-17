@@ -128,6 +128,9 @@ inventory:
         #    - appengine.googleapis.com/Version
         #    - bigquery.googleapis.com/Dataset
         #    - bigquery.googleapis.com/Table
+        #    - bigtableadmin.googleapis.com/Cluster
+        #    - bigtableadmin.googleapis.com/Instance
+        #    - bigtableadmin.googleapis.com/Table
         #    - cloudbilling.googleapis.com/BillingAccount
         #    - cloudkms.googleapis.com/CryptoKey
         #    - cloudkms.googleapis.com/CryptoKeyVersion
@@ -135,12 +138,14 @@ inventory:
         #    - cloudresourcemanager.googleapis.com/Folder
         #    - cloudresourcemanager.googleapis.com/Organization
         #    - cloudresourcemanager.googleapis.com/Project
+        #    - compute.googleapis.com/Address
         #    - compute.googleapis.com/Autoscaler
         #    - compute.googleapis.com/BackendBucket
         #    - compute.googleapis.com/BackendService
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalAddress
         #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck
@@ -150,6 +155,8 @@ inventory:
         #    - compute.googleapis.com/InstanceGroup
         #    - compute.googleapis.com/InstanceGroupManager
         #    - compute.googleapis.com/InstanceTemplate
+        #    - compute.googleapis.com/Interconnect
+        #    - compute.googleapis.com/InterconnectAttachment
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project

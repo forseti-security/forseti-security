@@ -49,9 +49,9 @@ def find_notifiers(notifier_name):
         for filename in dir(module):
             obj = getattr(module, filename)
 
-            if inspect.isclass(obj) \
-                    and issubclass(obj, BaseNotification) \
-                    and obj is not BaseNotification:
+            if (inspect.isclass(obj) and
+                    issubclass(obj, BaseNotification) and
+                    obj is not BaseNotification):
                 return obj
     except ImportError:
         LOGGER.exception('Can\'t import notifier %s', notifier_name)

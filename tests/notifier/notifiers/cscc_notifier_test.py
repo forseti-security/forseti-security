@@ -158,7 +158,25 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'violation_data': '{"bucket": "isthispublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/isthispublic/", "project_id": "inventoryscanner", "role": "READER"}',
                                                    'resource_id': 'isthispublic',
                                                    'scanner_index_id': 1551913369403591,
-                                                   'resource_type': 'bucket'}}]]
+                                                   'resource_type': 'bucket'}}],
+                            ['hij',
+                            {'category': 'BUCKET_VIOLATION',
+                             'resource_name': 'organization/123/project/inventoryscanner/bucket/nolongerpublic/',
+                             'name': 'organizations/123/sources/560/findings/hij',
+                             'parent': 'organizations/123/sources/560',
+                             'event_time': '2019-03-12T16:06:19Z',
+                             'state': 'INACTIVE',
+                             'source_properties': {'source': 'FORSETI',
+                                                   'rule_name': 'Bucket acls rule to search for public buckets',
+                                                   'inventory_index_id': 789,
+                                                   'resource_data': '{"bucket": "nolongerpublic", "entity": "allUsers", "id": "nolongerpublic/allUsers", "role": "READER"}',
+                                                   'db_source': 'table:violations/id:94953',
+                                                   'rule_index': 0,
+                                                   'violation_data': '{"bucket": "nolongerpublic", "domain": "", "email": "", "entity": "allUsers", "full_name": "organization/123/project/inventoryscanner/bucket/nolongerpublic/", "project_id": "inventoryscanner", "role": "READER"}',
+                                                   'resource_id': 'nolongerpublic',
+                                                   'scanner_index_id': 1551913369403591,
+                                                   'resource_type': 'bucket'}}]
+                             ]
 
         EXPECTED_INACTIVE_FINDINGS = [['ffe',
                             {'category': 'BUCKET_VIOLATION',

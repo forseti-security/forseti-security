@@ -11,8 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Unit Tests: Inventory resources for Forseti Server."""
 
-"""Google Cloud Forseti."""
+from tests import unittest_utils
+from google.cloud.forseti.services.inventory.base.resources import size_t_hash
 
-__version__ = '2.20.0'
-__package_name__ = 'forseti-security'
+
+class ResourcesTest(unittest_utils.ForsetiTestCase):
+
+    def test_size_t_hash(self):
+        key = 'https://container.googleapis.com/v1/projects/test-project-1/zones/us-west1-a/clusters/test-cluster-1'
+        self.assertEqual('18346789146641068219', size_t_hash(key))

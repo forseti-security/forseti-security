@@ -89,7 +89,13 @@ def serve(endpoint,
         forseti_config_file_path=config_file_path,
         forseti_db_connect_string=forseti_db_connect_string,
         endpoint=endpoint)
-    config.update_configuration()
+
+    is_config_updated, error_msg = config.update_configuration()
+    if not is_config_updated:
+        update_config_msg = (
+            'Please update the forseti_conf_server.yaml file on GCS '
+            'and reset the server VM.')
+        raise Exception(error_msg + ' ' + update_config_msg)
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
@@ -148,7 +154,7 @@ def main():
     parser.add_argument(
         '--forseti_db',
         help=('Forseti database string, formatted as '
-              '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
+              '"mysql+pymysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
         '--config_file_path',
         help='Path to Forseti configuration file.')

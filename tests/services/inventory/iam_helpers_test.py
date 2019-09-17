@@ -19,7 +19,7 @@ from google.cloud.forseti.services.inventory.base import iam_helpers
 
 def make_iam_policy(role, members):
     """Create sample IAM policy."""
-    return {'bindings':[{'role': role, 'members': members}]}
+    return {'bindings': [{'role': role, 'members': members}]}
 
 
 BIGQUERY_TESTS = [
@@ -67,10 +67,12 @@ BIGQUERY_TESTS = [
     ('dataEditor-projectEditor',
      make_iam_policy('roles/bigquery.dataEditor', ['projectEditor:project']),
      [{'role': 'WRITER', 'specialGroup': 'projectWriters'}]),
+]
 
-    ('dataOwner-projectOwner',
-     make_iam_policy('roles/bigquery.dataOwner', ['projectOwner:project']),
-     [{'role': 'OWNER', 'specialGroup': 'projectOwners'}]),
+BIGQUERY_VIEW_TESTS = [
+    ('authorizedView-projectOwner',
+     {'bindings': []},
+     [{'view': {'projectId': 'myProject', 'datasetId': 'myDataset', 'tableId': 'myTable'}}]),
 ]
 
 TEST_BUCKET = 'my-bucket'
@@ -255,6 +257,14 @@ class IamHelpersTest(unittest_utils.ForsetiTestCase):
     @parameterized.parameterized.expand(BIGQUERY_TESTS)
     def test_convert_bigquery_policy_to_iam(self, name, expected_result,
                                             access_policy):
+        """Validate Bigquery policy to IAM conversion."""
+        result = iam_helpers.convert_bigquery_policy_to_iam(access_policy,
+                                                            TEST_PROJECT_ID)
+        self.assertEqual(result, expected_result)
+
+    @parameterized.parameterized.expand(BIGQUERY_VIEW_TESTS)
+    def test_convert_bigquery_policy_to_iam_for_view(self, name, expected_result,
+                                                     access_policy):
         """Validate Bigquery policy to IAM conversion."""
         result = iam_helpers.convert_bigquery_policy_to_iam(access_policy,
                                                             TEST_PROJECT_ID)
