@@ -6,7 +6,7 @@ author: Hannah Shin
 Forseti Community,
 
 We’ve heard from many of our customers that Forseti’s Deployment Manager-based 
-upgrade path was slow and inefficient, and we are focusing on delivering a 
+upgrade path was slow and inefficient, so we're focusing on delivering a 
 faster, simpler, and more consistent experience with Terraform. 
 
 Starting with Forseti Security v2.22.0, Forseti will support Terraform as the 
