@@ -17,12 +17,12 @@ installation option for future releases.
 We have created a migration script and documentation to help you seamlessly 
 migrate from Deployment Manager to Terraform:
 
-For v2.18.0+ users, refer to the instructions to migrate 
+* For v2.18.0+ users, refer to the instructions to migrate 
 [here]({% link _docs/latest/setup/migrate.md %}).
 
-For versions earlier than v2.18.0, please upgrade to v2.18.0 through 
-Deployment Manager following the steps 
-[here]({% link _docs/latest/setup/upgrade.md %}) first before migrating.
+* For versions earlier than v2.18.0, please upgrade to v2.18.0 through 
+Deployment Manager following the steps [here]({% link _docs/latest/setup/upgrade.md %}) 
+first before migrating.
 
 You can learn more about the Forseti Terraform module source code 
 [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/).
