@@ -37,37 +37,32 @@ variable "infrastructure_id" {
   description = "Unique indentifier for the deployment"
 }
 
-variable "timesketch_machine_type" {
-  description = "Machine type for Timesketch server"
+variable "turbinia_server_machine_type" {
+  description = "Machine type for Turbinia server"
   default     = "n1-standard-2"
 }
 
-variable "timesketch_disk_size_gb" {
-  description = "Disk size for Timesketch server root disk"
+variable "turbinia_worker_machine_type" {
+  description = "Machine type for Turbinia worker."
+  default     = "n1-standard-2"
+}
+
+variable "turbinia_server_disk_size_gb" {
+  description = "Disk size for Turbinia server machine."
   default     = 200
 }
 
-variable "timesketch_admin_username" {
-  description = "Timesketch admin user"
-  default     = "admin"
+variable "turbinia_worker_disk_size_gb" {
+  description = "Disk size for Turbinia worker machine."
+  default     = 200
 }
 
-variable "elasticsearch_cluster_name" {
-  description = "Name of the Elasticsearch cluster"
-  default     = "timesketch"
+variable "turbinia_worker_count" {
+  description = "Number of Turbinia worker machines to run."
+  default     = 1
 }
 
-variable "elasticsearch_machine_type" {
-  description = "Machine type for Elastichsearch cluster machines"
-  default     = "n1-highmem-4"
-}
-
-variable "elasticsearch_disk_size_gb" {
-  description = "Disk size for Elasticsearch cluster machines."
-  default     = 1024
-}
-
-variable "elasticsearch_node_count" {
-  description = "Number of Elasticsearch cluster machines"
-  default     = 2
+variable "turbinia_pip_source" {
+  description = "Source package to use for Pip."
+  default     = "turbinia"
 }
