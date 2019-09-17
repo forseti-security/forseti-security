@@ -26,7 +26,8 @@ from tests.resource_node import ResourceNode
 
 class TestGenerator(unittest.TestCase):
 
-    file_paths = ['{}/{}-resource.dump', '{}/{}-iam-policy.dump']
+    RESOURCE_FILE_PATH = '{}/{}-resource.dump'
+    IAM_FILE_PATH = '{}/{}-iam-policy.dump'
 
     def tearDown(self) -> None:
         """Remove all the dump files."""
@@ -37,16 +38,17 @@ class TestGenerator(unittest.TestCase):
         config_file_path = './config/config_100_folders.yaml'
         config = read_yaml_file(config_file_path)
         generator.CAIDataGenerator(config).generate()
-        paths = list(map(lambda p: p.format(config.get('output_path'),
-                                            config.get('output_file_name_prefix')),
-                     self.file_paths))
+        resource_file_path = self.RESOURCE_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
+        iam_file_path = self.IAM_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
         root_cai_name = '//cloudresourcemanager.googleapis.com/organizations/{}'.format(
             config.get('root_resource_id'))
         expected_resource_node = ResourceNode(root_cai_name, 'cloudresourcemanager.googleapis.com/Organization')
         expected_resource_node.children = [ResourceNode(i, 'cloudresourcemanager.googleapis.com/Folder') for i in range(100)]
 
-        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
-        iam_count, _ = self.count_resource_by_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(resource_file_path)
+        iam_count, _ = self.count_resource_by_type(iam_file_path)
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
         self.assertEqual(1, iam_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
@@ -57,9 +59,10 @@ class TestGenerator(unittest.TestCase):
         config_file_path = './config/config_folders_projects.yaml'
         config = read_yaml_file(config_file_path)
         generator.CAIDataGenerator(config).generate()
-        paths = list(map(lambda p: p.format(config.get('output_path'),
-                                            config.get('output_file_name_prefix')),
-                         self.file_paths))
+        resource_file_path = self.RESOURCE_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
+        iam_file_path = self.IAM_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
         root_cai_name = '//cloudresourcemanager.googleapis.com/organizations/{}'.format(
             config.get('root_resource_id'))
         expected_resource_node = ResourceNode(root_cai_name, 'cloudresourcemanager.googleapis.com/Organization')
@@ -67,8 +70,8 @@ class TestGenerator(unittest.TestCase):
         for folder in expected_resource_node.children:
             folder.children = [ResourceNode(i, 'cloudresourcemanager.googleapis.com/Project') for i in range(5)]
 
-        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
-        iam_count, _ = self.count_resource_by_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(resource_file_path)
+        iam_count, _ = self.count_resource_by_type(iam_file_path)
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
         self.assertEqual(1, iam_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
@@ -81,9 +84,10 @@ class TestGenerator(unittest.TestCase):
         config_file_path = './config/config_mixed.yaml'
         config = read_yaml_file(config_file_path)
         generator.CAIDataGenerator(config).generate()
-        paths = list(map(lambda p: p.format(config.get('output_path'),
-                                            config.get('output_file_name_prefix')),
-                         self.file_paths))
+        resource_file_path = self.RESOURCE_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
+        iam_file_path = self.IAM_FILE_PATH.format(
+            config.get('output_path'), config.get('output_file_name_prefix'))
         root_cai_name = '//cloudresourcemanager.googleapis.com/organizations/{}'.format(
             config.get('root_resource_id'))
         expected_resource_node = ResourceNode(root_cai_name, 'cloudresourcemanager.googleapis.com/Organization')
@@ -110,8 +114,8 @@ class TestGenerator(unittest.TestCase):
                         appengine_application.children = services
                     project.children.extend(appengine_applications)
 
-        resource_count, root_resource_node = self.count_resource_by_type(paths[0])
-        iam_count, _ = self.count_resource_by_type(paths[1])
+        resource_count, root_resource_node = self.count_resource_by_type(resource_file_path)
+        iam_count, _ = self.count_resource_by_type(iam_file_path)
         print ([root_resource_node] == [expected_resource_node])
         self.assertEqual(expected_resource_node, root_resource_node)
         self.assertEqual(1, resource_count.get('cloudresourcemanager.googleapis.com/Organization', 0))
