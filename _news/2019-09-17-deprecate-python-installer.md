@@ -5,7 +5,7 @@ author: Hannah Shin
 
 Forseti Community,
 
-We’ve heard from many of our customers that Forseti’s Deployment Manager-based 
+We’ve heard from many of our users that Forseti’s Deployment Manager-based 
 upgrade path was slow and inefficient, so we're focusing on delivering a 
 faster, simpler, and more consistent experience with Terraform. 
 
