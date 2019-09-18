@@ -10,7 +10,7 @@ deprecated Python Installer to the new Terraform module.
 
 ---
 
-## Before You Begin
+## Prerequisites
 
 Before you begin the migration process, you will need:
 
