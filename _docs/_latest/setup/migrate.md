@@ -25,7 +25,7 @@ Before you begin the migration process, you will need:
 - A
   [key file](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
   for a service account in the organization with the
-  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.1.0#iam-roles).
+  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0#iam-roles).
 
 ## Configuring Terraform
 
@@ -40,7 +40,7 @@ terraform {
 
 module "forseti" {
   source = "terraform-google-modules/forseti/google"
-  version = "~> 4.1"
+  version = "~> 4.2"
 
   domain               = "DOMAIN"
   project_id           = "PROJECT_ID"
@@ -57,7 +57,7 @@ module "forseti" {
 
 Note that this configuration assumes that the default path of the
 Python Installer instructions was followed. You should review the
-[Terraform module inputs](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.1.0?tab=inputs)
+[Terraform module inputs](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0?tab=inputs)
 to determine if any additional configuration is required.
 
 Also note that while this minimal Terraform configuration will create
