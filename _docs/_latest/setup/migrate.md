@@ -24,7 +24,7 @@ Before you begin the migration process, you will need:
   which Forseti is deployed.
 - The ID of the GCP project in which Forseti is deployed.
 - The suffix appended to the names of the Forseti resources; this is
-  likely a 7 digit number.
+  likely a string of seven characters like a1b2c3d.
 - A service account in the organization with the
   [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0#iam-roles)
 - A
