@@ -20,8 +20,8 @@ determines setup information, generates a deployment template, and creates a For
 
 **[Migrating Forseti Security]({% link _docs/latest/setup/migrate.md %})**
 
-Migrate to Terraform an existing Forseti Security deployment created
-with the deprecated Python Installer.
+Migrate a Forseti Security deployment created with the deprecated Python
+Installer to Terraform.
 
 **[Upgrading Forseti Security]({% link _docs/latest/setup/upgrade.md %})**
 
