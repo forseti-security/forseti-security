@@ -14,6 +14,9 @@ deprecated Python Installer to the new Terraform module.
 
 Before you begin the migration process, you will need:
 
+- A Forseti deployment of at least v2.18.0; follow the
+  [upgrade guide]({% link _docs/latest/setup/upgrade.md %}) as
+  necessary.
 - A version of the
   [Terraform command-line interface](https://www.terraform.io/downloads.html)
   in the 0.12 series
