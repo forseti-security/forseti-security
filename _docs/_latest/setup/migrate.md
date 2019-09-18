@@ -22,12 +22,24 @@ Before you begin the migration process, you will need:
 - The ID of the GCP project in which Forseti is deployed.
 - The suffix appended to the names of the Forseti resources; this is
   likely a 7 digit number.
+- A service account in the organization with the
+  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0#iam-roles)
 - A
-  [key file](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
-  for a service account in the organization with the
-  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0#iam-roles).
+  [JSON key file](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
+  for the service account.
 
 ## Configuring Terraform
+
+Terraform can assume the identity of a service account through a
+strategy called
+[Application Default Credentials](https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application)
+when provisioning resources. To enable this approach, set the
+appropriate environment variable to the path of the service account JSON
+key file:
+
+```sh
+export GOOGLE_APPLICATION_CREDENTIALS="PATH_TO_JSON_KEY_FILE"
+```
 
 In the working directory, create a file named `main.tf` with content
 like the following, replacing the first four uppercased values with the
