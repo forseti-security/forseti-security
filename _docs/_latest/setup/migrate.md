@@ -8,6 +8,11 @@ order: 007
 This guide explains how to migrate a Forseti deployment from the
 deprecated Python Installer to the new Terraform module.
 
+If you have any
+questions about this process, please contact us by
+[email](mailto:discuss@forsetisecurity.org) or on
+[Slack](https://forsetisecurity.slack.com/).
+
 ---
 
 ## Prerequisites
