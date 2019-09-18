@@ -31,6 +31,12 @@ Before you begin the migration process, you will need:
   [JSON key file](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
   for the service account.
 
+If you deployed Forseti in a shared VPC then you will also need:
+
+- The ID of the GCP project in which the shared VPC is hosted.
+- The ID of the shared VPC network in which Forseti is deployed.
+- The ID of the subnetwork from the shared VPC network in which Forseti is deployed.
+
 ## Configuring Terraform
 
 Terraform can assume the identity of a service account through a
@@ -45,8 +51,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="PATH_TO_JSON_KEY_FILE"
 ```
 
 In the working directory, create a file named `main.tf` with content
-like the following, replacing the first four uppercased values with the
-aforementioned values:
+like the following, replacing values based on the comments:
 
 ```hcl
 terraform {
@@ -77,10 +82,17 @@ module "forseti" {
   source = "terraform-google-modules/forseti/google"
   version = "~> 4.2"
 
+  # Replace these argument values with those obtained in the Prerequisites section
   domain               = "DOMAIN"
   project_id           = "PROJECT_ID"
   resource_name_suffix = "RESOURCE_NAME_SUFFIX"
   org_id               = "ORG_ID"
+
+  # Replace these argument values with those obtained in the Prerequisites section if a shared VPC is used
+  # Remove these arguments if a shared VPC is not used
+  network         = "SHARED_VPC_NETWORK_ID"
+  network_project = "SHARED_VPC_PROJECT_ID"
+  subnetwork      = "SHARED_VPC_SUBNETWORK_ID"
 
   client_instance_metadata = {
     enable-oslogin = "TRUE"
