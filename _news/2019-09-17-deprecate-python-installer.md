@@ -27,4 +27,4 @@ first before migrating.
 You can learn more about the Forseti Terraform module source code 
 [here](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/).
 
-Please reach out to us on Slack or discuss@forsetisecurity.org with any questions.
+Please reach out to us on [Slack](https://forsetisecurity.slack.com/) or discuss@forsetisecurity.org with any questions.
