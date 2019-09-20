@@ -1,0 +1,93 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter">
+<span id="google-cloud-forseti-scanner-scanners-config-validator-util-cv-data-converter-module"></span><h1>google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter module<a class="headerlink" href="#module-google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter" title="Permalink to this headline">¶</a></h1>
+<p>Config Validator Data Converter.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.cleanup_dict">
+<code class="descname">cleanup_dict</code><span class="sig-paren">(</span><em>raw_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/cv_data_converter.html#cleanup_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.cleanup_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace empty value to None in dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>raw_dict</strong> (<em>dict</em>) – Dict to clean up.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.convert_data_to_cv_asset">
+<code class="descname">convert_data_to_cv_asset</code><span class="sig-paren">(</span><em>resource</em>, <em>data_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/cv_data_converter.html#convert_data_to_cv_asset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.convert_data_to_cv_asset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert data to CAI format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – Resource from querying the resources table.</li>
+<li><strong>data_type</strong> (<em>str</em>) – Type of the data, can either be ‘resource’
+or ‘iam_policy’.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Config Validator Asset.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Asset</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if data_type is have an unexpected type.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.generate_ancestry_path">
+<code class="descname">generate_ancestry_path</code><span class="sig-paren">(</span><em>full_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/cv_data_converter.html#generate_ancestry_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.generate_ancestry_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate ancestry path from full_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>full_name</strong> (<em>str</em>) – Full name of the resource.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Ancestry path.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.resource_wrapper">
+<code class="descname">resource_wrapper</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/cv_data_converter.html#resource_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.cv_data_converter.resource_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap the data with the resource wrapper used by CAI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>dict</em>) – The resource data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Resource data wrapped by a resource wrapper.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

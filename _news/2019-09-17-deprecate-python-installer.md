@@ -1,5 +1,5 @@
 ---
-title: Terraform: Official Installation Path of Forseti Security
+title: Terraform - Official Installation Path of Forseti Security
 author: Hannah Shin
 ---
 
@@ -18,10 +18,10 @@ We have created a migration script and documentation to help you seamlessly
 migrate from Deployment Manager to Terraform:
 
 * For v2.18.0+ users, refer to the instructions to migrate 
-[here]({% link _docs/latest/setup/migrate.md %}).
+[here](/docs/latest/setup/migrate.html).
 
 * For versions earlier than v2.18.0, please upgrade incrementally to v2.18.0 through 
-Deployment Manager following the steps [here]({% link _docs/latest/setup/upgrade.md %}) 
+Deployment Manager following the steps [here](/docs/latest/setup/upgrade.html) 
 first before migrating.
 
 You can learn more about the Forseti Terraform module source code 
