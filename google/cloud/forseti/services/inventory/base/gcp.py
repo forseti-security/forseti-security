@@ -1016,6 +1016,7 @@ class ApiClientImpl(ApiClient):
         self.container = None
         self.iam = None
         self.servicemanagement = None
+        self.serviceusage = None
         self.stackdriver_logging = None
         self.storage = None
 

@@ -26,6 +26,7 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 API_NAME = 'serviceusage'
 
+
 class ServiceUsageRepositoryClient(_base_repository.BaseRepositoryClient):
     """Service Usage API Repository."""
 
@@ -55,7 +56,8 @@ class ServiceUsageRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter=use_rate_limiter
         )
 
-
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def services(self):
         """Returns a _ServiceUsageRepository instance."""
@@ -66,10 +68,11 @@ class ServiceUsageRepositoryClient(_base_repository.BaseRepositoryClient):
 
         return self._services
 
+
 class _ServiceUsageServicesRepository(
-    repository_mixins.GetIamPolicyQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """"Implementation of Service Usage Services repository."""
 
     def __init__(self, **kwargs):
@@ -96,22 +99,6 @@ class _ServiceUsageServicesRepository(
         if not project_id.startswith('projects/'):
             project_id = 'projects/{}'.format(project_id)
         return project_id
-
-    @staticmethod
-    def get_formatted_service_name(service_name):
-        """Returns a formatted service_name string, required for some
-        API args.
-
-        Args:
-            service_name (str): The name of the service to query.
-
-        Returns:
-            str: The formatted service name.
-        """
-
-        if not service_name.startswith('services/'):
-            service_name = 'services/{}'.format(service_name)
-        return service_name
 
 
 class ServiceUsageClient(object):
@@ -183,4 +170,3 @@ class ServiceUsageClient(object):
                      'flattened_results = %s', project_id, flattened_results)
 
         return flattened_results
-
