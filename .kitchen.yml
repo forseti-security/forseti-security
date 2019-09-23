@@ -24,10 +24,10 @@ verifier:
   fail_fast: false
 
 suites:
-  - name: forseti_integration_testing
+  - name: forseti
     driver:
       name: terraform
-      root_module_directory: integration_tests/fixtures/forseti_integration_testing
+      root_module_directory: integration_tests/fixtures/forseti
       command_timeout: 1800
     lifecycle:
       pre_verify:
@@ -41,6 +41,6 @@ suites:
           hosts_output: forseti-server-vm-ip
           user: ubuntu
           key_files:
-            - integration_tests/fixtures/forseti_integration_testing/sshkey
-          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti_integration_testing/terraform.tfstate.d/kitchen-terraform-forseti-integration-testing-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+            - integration_tests/fixtures/forseti/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
           show_progress: true

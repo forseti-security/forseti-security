@@ -24,13 +24,16 @@ control 'inventory' do
         end
 
         describe "List an inventory" do
+            let :inventory_id do
+                JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            end
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory list").stderr).to eq ""
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index on inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{inventory_id};\"").stdout).to match /1/
             end
         end
 

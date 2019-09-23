@@ -17,7 +17,6 @@ jobs:
   include:
   - stage: Integration test
     name: Integration test - docker
-    if: env(TRAVIS_EVENT_TYPE) = cron
     services:
     - docker
     before_install:
