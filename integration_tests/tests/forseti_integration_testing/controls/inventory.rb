@@ -1,493 +1,487 @@
 require 'json'
 control 'inventory' do
 
-     describe "Create an inventory" do
-        subject do
-            command("forseti inventory list")
-        end
-
-        before do
-            command("forseti inventory create").result
-        end
-
-        its("stdout") { should match /SUCCESS/}
-
-        after do
+    describe "Inventory" do
+        before :context do
             command("forseti inventory purge 0").result
-        end
-    end
-
-    describe "Create an inventory and check database" do
-        subject do
-            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT resource_id) from gcp_inventory where category='resource' and resource_type = 'project';\"")
-        end
-
-        before(:context) do
             command("forseti inventory create").result
             command("sudo apt-get -y install mysql-client").result
         end
 
-        # its("stdout") { should match "2" }
-        its("stderr") { should eq ""}
+        describe "Create an inventory" do
 
-        after do
-            command("forseti inventory purge 0").result
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stdout).to match /SUCCESS/
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
+            end
+
+             # it "should be visible in the database" do
+             #    expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT resource_id) from gcp_inventory where category='resource' and resource_type = 'project';\"").stdout).to match /1/
+             # end
+        end
+
+        describe "List an inventory" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stderr).to eq ""
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
+            end
+        end
+
+        describe "Get an inventory" do
+            let :inventory_id do
+                JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory get #{inventory_id}").stderr).to eq ""
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{inventory_id};\"").stdout).to match /1/
+            end
+        end
+
+        describe "Delete an inventory" do
+
+            # before context do
+            #    command("forseti inventory create").result
+            # end
+
+            let :inventory_id do
+                JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory delete #{inventory_id}").stderr).to match ""
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /0/
+            end
+        end
+
+        describe "Purge an inventory" do
+            let :inventory_id do
+                JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory purge 0").stdout).to match /purged/
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /0/
+            end
         end
     end
 
-    describe "Purge inventory" do
-        subject do
-            command("forseti inventory purge 0")
-        end
-
-        before do
+    describe "Model" do
+        before :context do
             command("forseti inventory create").result
-        end
-
-        its("stdout") { should match /purged/ }
-
-    end
-
-     describe "Purge inventory database check" do
-        subject do
-            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
-            command("forseti inventory purge 0").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
             command("sudo apt-get -y install mysql-client").result
         end
 
-        its("stdout") { should match "" }
+        describe "Create and get a model" do
 
+            it "should be visible from the command-line" do
+                expect(command("forseti model get model_new").stderr).to eq ""
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(*) from model where name = 'model_new';\"").stdout).to match /1/
+            end
+        end
+
+        describe "Use a model" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti model use model_new").stderr).to eq ""
+            end
+        end
+
+        describe "List a model" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti model list model_new").stderr).to eq ""
+            end
+        end
+
+        describe "Delete a model" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti model delete model_new").stderr).to eq ""
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(*) from model where name = 'model_new';\"").stdout).to match /0/
+            end
+
+            after(:context) do
+                command("forseti inventory purge 0").result
+            end
+        end
     end
 
-    describe "List inventory" do
-        subject do
-            command("forseti inventory list")
-        end
-
-        before do
+    describe "Explain" do
+        before :context do
             command("forseti inventory create").result
-        end
-
-        its("stderr") { should eq ""}
-
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
-
-    describe "List inventory database check" do
-        subject do
-            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+            command("forseti model use model_new").result
             command("sudo apt-get -y install mysql-client").result
         end
 
-        its("stdout") { should match "1" }
+        describe "List members" do
 
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
-
-    describe "Get inventory" do
-        subject do
-            command("forseti inventory get #{inventory_id}")
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members --prefix rdevani").stderr).to eq ""
+            end
         end
 
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+        describe "List IAM roles" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.organizationRoleAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.organizationRoleViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.roleAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.roleViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.securityAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.securityReviewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountCreator/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountDeleter/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountKeyAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountTokenCreator/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.serviceAccountUser/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stdout).to match /roles\/iam.workloadIdentityUser/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/iam").stderr).to eq ""
+            end
         end
 
-        its("stderr") { should eq ""}
+        describe "List Storage roles" do
 
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.admin/
+            end
 
-    describe "Get inventory database check" do
-        subject do
-            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{inventory_id};\"")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.hmacKeyAdmin/
+            end
 
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.legacyBucketOwner/
+            end
 
-        its("stdout") { should match "1" }
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.legacyBucketReader/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.legacyBucketWriter/
+            end
 
-    describe "Delete inventory" do
-        subject do
-            command("forseti inventory delete #{inventory_id}")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.legacyObjectOwner/
+            end
 
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.legacyObjectReader/
+            end
 
-        its("stderr") { should eq ""}
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.objectAdmin/
+            end
 
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.objectCreator/
+            end
 
-    describe "Delete inventory database check" do
-        subject do
-            command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storage.objectViewer/
+            end
 
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti inventory delete #{inventory_id}").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storagetransfer.admin/
+            end
 
-        its("stdout") { should match "" }
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storagetransfer.user/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stdout).to match /roles\/storagetransfer.viewer/
+            end
 
-    describe "Create inventory and model" do
-        subject do
-            command("forseti model create --inventory_index_id #{inventory_id} test_model")
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles --prefix roles/storage").stderr).to eq ""
+            end
         end
 
-        let :inventory_id do
-            command("forseti inventory create").result
-            JSON.parse(command("forseti inventory list").stdout).fetch("id")
+        describe "List IAM roleAdmin permissions" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.create/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.delete/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.get/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.list/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.undelete/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /roles.update/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /resourcemanager.projects.get/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stdout).to match /resourcemanager.projects.getIamPolicy/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/iam.roleAdmin").stderr).to eq ""
+            end
         end
 
-        its("stdout") { should match /SUCCESS/ }
+        describe "List IAM storage.Admin permissions" do
 
-        after do
-            command("forseti inventory purge 0").result
-            command("forseti model delete test_model").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /firebase.projects.get/
+            end
 
-    describe "Get model" do
-        subject do
-            command("forseti model get model_new")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /resourcemanager.projects.get/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /resourcemanager.projects.list/
+            end
 
-        its("stderr") { should eq ""}
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.create/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.delete/
+            end
 
-    describe "List model" do
-        subject do
-            command("forseti model list")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.get/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.getIamPolicy/
+            end
 
-        its("stdout") { should match /SUCCESS/ }
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.list/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.setIamPolicy/
+            end
 
-    describe "Delete model" do
-        subject do
-            command("forseti model delete model_new")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.update/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.create/
+            end
 
-        its("stdout") { should match /SUCCESS/ }
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.delete/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.get/
+            end
 
-    describe "List members Explainer" do
-        subject do
-            command("forseti explainer list_members --prefix rdevani")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.getIamPolicy/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.list/
+            end
 
-        its("stderr") { should eq ""}
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.setIamPolicy/
+            end
 
-        after do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.update/
+            end
 
-    describe "List IAM roles Explainer" do
-        subject do
-            command("forseti explainer list_roles --prefix roles/iam")
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stderr).to eq ""
+            end
         end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
+        describe "List members who has access to IAM storage.Admin role expand groups" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups").stdout).to match /project\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups").stderr).to eq ""
+            end
         end
 
-        its("stdout") { should match /roles\/iam.organizationRoleAdmin/ }
-        its("stdout") { should match /roles\/iam.organizationRoleViewer/ }
-        its("stdout") { should match /roles\/iam.roleAdmin/ }
-        its("stdout") { should match /roles\/iam.roleViewer/ }
-        its("stdout") { should match /roles\/iam.securityAdmin/ }
-        its("stdout") { should match /roles\/iam.securityReviewer/ }
-        its("stdout") { should match /roles\/iam.serviceAccountAdmin/ }
-        its("stdout") { should match /roles\/iam.serviceAccountCreator/ }
-        its("stdout") { should match /roles\/iam.serviceAccountDeleter/ }
-        its("stdout") { should match /roles\/iam.serviceAccountKeyAdmin/ }
-        its("stdout") { should match /roles\/iam.serviceAccountTokenCreator/ }
-        its("stdout") { should match /roles\/iam.serviceAccountUser/ }
-        its("stdout") { should match /roles\/iam.workloadIdentityUser/ }
-        its("stderr") { should eq ""}
+        describe "List members who has access to IAM storage.Admin role" do
 
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin").stdout).to match /project\/release-automate-silver/
+            end
 
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
 
-    describe "List Storage roles Explainer" do
-        subject do
-            command("forseti explainer list_roles --prefix roles/storage")
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --role roles/storage.admin").stderr).to eq ""
+            end
         end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
+        describe "List members who have relation to storage.bucket.delete permission" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/integration-1-a26b/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stderr).to eq ""
+            end
         end
 
-        its("stdout") { should match /roles\/storage.admin/ }
-        its("stdout") { should match /roles\/storage.hmacKeyAdmin/ }
-        its("stdout") { should match /roles\/storage.legacyBucketOwner/ }
-        its("stdout") { should match /roles\/storage.legacyBucketReader/ }
-        its("stdout") { should match /roles\/storage.legacyBucketWriter/ }
-        its("stdout") { should match /roles\/storage.legacyObjectOwner/ }
-        its("stdout") { should match /roles\/storage.legacyObjectReader/ }
-        its("stdout") { should match /roles\/storage.objectAdmin/ }
-        its("stdout") { should match /roles\/storage.objectCreator/ }
-        its("stdout") { should match /roles\/storage.objectViewer/ }
-        its("stdout") { should match /roles\/storagetransfer.admin/ }
-        its("stdout") { should match /roles\/storagetransfer.user/ }
-        its("stdout") { should match /roles\/storagetransfer.viewer/ }
-        its("stderr") { should eq ""}
+        describe "List members who have relation to storage.bucket.delete permission expand groups" do
 
-        after do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/integration-1-a26b/
+            end
 
-    describe "List IAM roleAdmin permissions Explainer" do
-        subject do
-            command("forseti explainer list_permissions --roles roles/iam.roleAdmin")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/release-automate-silver/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
+            end
 
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /roles.create/ }
-        its("stdout") { should match /roles.delete/ }
-        its("stdout") { should match /roles.get/ }
-        its("stdout") { should match /roles.list/ }
-        its("stdout") { should match /roles.undelete/ }
-        its("stdout") { should match /roles.update/ }
-        its("stdout") { should match /resourcemanager.projects.get/ }
-        its("stdout") { should match /resourcemanager.projects.getIamPolicy/ }
-        its("stderr") { should eq ""}
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/
+            end
 
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/
+            end
 
-    describe "List IAM storage.Admin permissions Explainer" do
-        subject do
-            command("forseti explainer list_permissions --roles roles/storage.Admin")
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/
+            end
 
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
 
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /firebase.projects.get/ }
-        its("stdout") { should match /resourcemanager.projects.get/ }
-        its("stdout") { should match /resourcemanager.projects.list/ }
-        its("stdout") { should match /storage.buckets.create/}
-        its("stdout") { should match /storage.buckets.delete/}
-        its("stdout") { should match /storage.buckets.get/}
-        its("stdout") { should match /storage.buckets.getIamPolicy/ }
-        its("stdout") { should match /storage.buckets.list/}
-        its("stdout") { should match /storage.buckets.setIamPolicy/}
-        its("stdout") { should match /storage.buckets.update/ }
-        its("stdout") { should match /storage.objects.create/ }
-        its("stdout") { should match /storage.objects.delete/ }
-        its("stdout") { should match /storage.objects.get/ }
-        its("stdout") { should match /storage.objects.getIamPolicy/ }
-        its("stdout") { should match /storage.objects.list/ }
-        its("stdout") { should match /storage.objects.setIamPolicy/ }
-        its("stdout") { should match /storage.objects.update/ }
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stderr).to eq ""
+            end
 
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
-
-    describe "List members who has access to IAM storage.Admin role expand groups Explainer" do
-        subject do
-            command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups ")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
-
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /project\/release-automate-silver/ }
-        its("stdout") { should match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/ }
-
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
-
-    describe "List members who has access to IAM storage.Admin role Explainer" do
-        subject do
-            command("forseti explainer access_by_authz --role roles/storage.admin")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
-
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /project\/release-automate-silver/ }
-        its("stdout") { should match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/ }
-
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
-
-    describe "List members who have relation to storage.bucket.delete permission Explainer" do
-        subject do
-            command("forseti explainer access_by_authz --permission storage.buckets.delete")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
-
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /project\/integration-1-a26b/ }
-        its("stdout") { should match /project\/release-automate-silver/ }
-        its("stdout") { should match /serviceaccount\/158866727632-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/74120606973-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/ }
-
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
-        end
-    end
-
-    describe "List members who have relation to storage.bucket.delete permission expand groups Explainer" do
-        subject do
-            command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups")
-        end
-
-        before(:context) do
-            command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
-        end
-
-        its("exit_status") { should eq 0 }
-        its("stdout") { should match /project\/integration-1-a26b/ }
-        its("stdout") { should match /project\/release-automate-silver/ }
-        its("stdout") { should match /serviceaccount\/158866727632-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/74120606973-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/ }
-        its("stdout") { should match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/ }
-
-        after(:context) do
-            command("forseti inventory purge 0").result
-            command("forseti model delete model_new")
+            after(:context) do
+                command("forseti inventory purge 0").result
+                command("forseti model delete model_new").result
+            end
         end
     end
 end
