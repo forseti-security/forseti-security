@@ -1057,17 +1057,16 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-9` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
    **Inventory**
-   - Add Address, GlobalAddress and Interconnect as Cloud Asset Inventory assets.
+   - Add Bigtable Cluster, Instance and Table as Cloud Asset Inventory assets.
       ```
         inventory:
             ...
             cai:
                  ...
                  #asset_types:
-                    #    - compute.googleapis.com/Address
-                    #    - compute.googleapis.com/GlobalAddress
-                    #    - compute.googleapis.com/ComputeInterconnect
-                    #    - compute.googleapis.com/ComputeInterconnectAttachment
+                    #    - bigtableadmin.googleapis.com/Cluster
+                    #    - bigtableadmin.googleapis.com/Instance
+                    #    - bigtableadmin.googleapis.com/Table
             ...
       ```
 
