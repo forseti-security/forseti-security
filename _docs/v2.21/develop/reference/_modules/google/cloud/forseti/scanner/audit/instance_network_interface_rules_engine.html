@@ -1,0 +1,279 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Rules engine for NetworkInterface.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_mod</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util.regular_exp</span> <span class="k">import</span> <span class="n">escape_and_globify</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">InstanceNetworkInterfaceRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for InstanceNetworkInterfaceRules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): timestamp for database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InstanceNetworkInterfaceRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build InstanceNetworkInterfaceRuleBook from rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global Configs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">InstanceNetworkInterfaceRuleBook</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_network_interface</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the networks violates rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance_network_interface (list): list of</span>
+<span class="sd">                instance_network_interface</span>
+<span class="sd">            force_rebuild (bool): set to false to not force a rebuiid</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list: iterator of all violations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+        <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">resource_rules</span><span class="p">:</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">violations</span><span class="p">,</span>
+                                         <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
+                                             <span class="n">instance_network_interface</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRulesEngine.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (dicts): rule definitions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRuleBook">[docs]</a><span class="k">class</span> <span class="nc">InstanceNetworkInterfaceRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for enforced networks resources.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): The parsed dictionary of rules from the YAML</span>
+<span class="sd">                definition file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InstanceNetworkInterfaceRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rules definitions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Add a rule to the rule book.</span>
+
+<span class="sd">        The rule supplied to this method is the dictionary parsed from</span>
+<span class="sd">        the rules definition file.</span>
+
+<span class="sd">        For example, this rule...</span>
+
+<span class="sd">        # rules yaml:</span>
+<span class="sd">            rules:</span>
+<span class="sd">          - name: all networks covered in whitelist</span>
+<span class="sd">            project: &#39;*&#39;</span>
+<span class="sd">            network: &#39;*&#39;</span>
+<span class="sd">            is_external_network: True</span>
+<span class="sd">            whitelist:</span>
+<span class="sd">              master:</span>
+<span class="sd">                - master-1</span>
+<span class="sd">              network:</span>
+<span class="sd">                - network-1</span>
+<span class="sd">                - network-2</span>
+<span class="sd">              default:</span>
+<span class="sd">                - default-1</span>
+
+<span class="sd">        ... gets parsed into:</span>
+<span class="sd">        {</span>
+<span class="sd">            &quot;rules&quot;: [</span>
+<span class="sd">                {</span>
+<span class="sd">                    &quot;name&quot;: &quot;all networks covered in whitelist&quot;,</span>
+<span class="sd">                    &quot;project&quot;: &quot;*&quot;,</span>
+<span class="sd">                    &quot;network&quot;: &quot;*&quot;,</span>
+<span class="sd">                    &quot;is_external_network&quot;: true,</span>
+<span class="sd">                    &quot;whitelist&quot;: {</span>
+<span class="sd">                        &quot;master&quot;: [</span>
+<span class="sd">                            &quot;master-1&quot;</span>
+<span class="sd">                        ],</span>
+<span class="sd">                        &quot;network&quot;: [</span>
+<span class="sd">                            &quot;network-1&quot;,</span>
+<span class="sd">                            &quot;network-2&quot;</span>
+<span class="sd">                        ],</span>
+<span class="sd">                        &quot;default&quot;: [</span>
+<span class="sd">                            &quot;default-1&quot;</span>
+<span class="sd">                        ]</span>
+<span class="sd">                    }</span>
+<span class="sd">                }</span>
+<span class="sd">            ]</span>
+<span class="sd">        }</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">project</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">)</span>
+        <span class="n">whitelist</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;whitelist&#39;</span><span class="p">)</span>
+        <span class="n">is_external_network</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_external_network&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">whitelist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">project</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">network</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">is_external_network</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Faulty rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)))</span>
+
+        <span class="n">rule_def_resource</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;whitelist&#39;</span><span class="p">:</span> <span class="n">whitelist</span><span class="p">,</span>
+                             <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">escape_and_globify</span><span class="p">(</span><span class="n">project</span><span class="p">),</span>
+                             <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">escape_and_globify</span><span class="p">(</span><span class="n">network</span><span class="p">),</span>
+                             <span class="s1">&#39;is_external_network&#39;</span><span class="p">:</span> <span class="n">is_external_network</span><span class="p">}</span>
+
+        <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">rule_name</span><span class="o">=</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                    <span class="n">rule_index</span><span class="o">=</span><span class="n">rule_index</span><span class="p">,</span>
+                    <span class="n">rules</span><span class="o">=</span><span class="n">rule_def_resource</span><span class="p">)</span>
+
+        <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rule_index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resource_rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="p">[</span><span class="n">rule_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">rule</span></div>
+
+<div class="viewcode-block" id="InstanceNetworkInterfaceRuleBook.get_resource_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.InstanceNetworkInterfaceRuleBook.get_resource_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the resource rules.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list: resource_rules_map values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The rules class for instance_network_interface.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule</span>
+<span class="sd">            rule_index (int): The index of the rule from the  definitions</span>
+<span class="sd">            rules (dict): The resources associated with the rules like</span>
+<span class="sd">                the whitelist</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.html#google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_network_interface_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Raise violation is the ip is not in the whitelist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance_network_interface_list (list): list</span>
+<span class="sd">                of InstanceNetworkInterface objects</span>
+
+<span class="sd">         Yields:</span>
+<span class="sd">            namedtuple: Returns RuleViolation named tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">instance_network_interface</span> <span class="ow">in</span> <span class="n">instance_network_interface_list</span><span class="p">:</span>
+            <span class="n">network_and_project</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s1">&#39;compute/.*/projects/([^/]*).*networks/([^/]*)&#39;</span><span class="p">,</span>
+                <span class="n">instance_network_interface</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+            <span class="n">project</span> <span class="o">=</span> <span class="n">network_and_project</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">network</span> <span class="o">=</span> <span class="n">network_and_project</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">is_external_network</span> <span class="o">=</span> <span class="p">(</span><span class="n">instance_network_interface</span><span class="o">.</span><span class="n">access_configs</span> <span class="ow">is</span>
+                                   <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">ips</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">network</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="s1">&#39;whitelist&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="p">[])</span> <span class="ow">and</span>
+                    <span class="n">is_external_network</span><span class="p">):</span>
+                <span class="n">ips</span> <span class="o">=</span> <span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;natIP&#39;</span><span class="p">]</span>
+                       <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">instance_network_interface</span><span class="o">.</span><span class="n">access_configs</span>
+                       <span class="k">if</span> <span class="s1">&#39;natIP&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">]</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">RuleViolation</span><span class="p">(</span>
+                    <span class="n">resource_name</span><span class="o">=</span><span class="n">instance_network_interface</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_mod</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">INSTANCE</span><span class="p">,</span>
+                    <span class="n">resource_id</span><span class="o">=</span><span class="n">instance_network_interface</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">full_name</span><span class="o">=</span><span class="n">instance_network_interface</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                    <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                    <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                    <span class="n">violation_type</span><span class="o">=</span><span class="s1">&#39;INSTANCE_NETWORK_INTERFACE_VIOLATION&#39;</span><span class="p">,</span>
+                    <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                    <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span>
+                    <span class="n">ip</span><span class="o">=</span><span class="n">ips</span><span class="p">,</span>
+                    <span class="n">resource_data</span><span class="o">=</span><span class="n">instance_network_interface</span><span class="o">.</span><span class="n">as_json</span><span class="p">())</span></div>
+
+    <span class="c1"># Rule violation.</span>
+    <span class="c1"># resource_type: string</span>
+    <span class="c1"># rule_name: string</span>
+    <span class="c1"># rule_index: int</span>
+    <span class="c1"># violation_type: UNENFORCED_NETWORK_VIOLATION</span>
+    <span class="c1"># project: string</span>
+    <span class="c1"># network: string</span>
+    <span class="c1"># ip: string</span>
+    <span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+                               <span class="p">[</span><span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;full_name&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="s1">&#39;ip&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_data&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;resource_name&#39;</span><span class="p">])</span></div>
+</pre></div>
