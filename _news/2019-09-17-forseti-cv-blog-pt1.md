@@ -1,5 +1,5 @@
 ---
-title: Protecting your GCP infrastructure at scale with Forseti Config Validator (pt1)
+title: Protecting your GCP infrastructure at scale with Forseti Config Validator (part 1)
 author: Adrien Walkowiak
 ---
 
