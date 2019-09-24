@@ -36,8 +36,6 @@ suites:
       systems:
         - name: inventory-module
           backend: ssh
-          controls:
-            - inventory
           hosts_output: forseti-server-vm-ip
           user: ubuntu
           key_files:
