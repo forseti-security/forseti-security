@@ -17,7 +17,7 @@ control 'model' do
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(*) from model where name = 'model_new';\"").stdout).to match /1/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select state from model where name = 'model_new';\"").stdout).to match /PARTIAL_SUCCESS/
             end
         end
 
@@ -42,7 +42,7 @@ control 'model' do
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(*) from model where name = 'model_new';\"").stdout).to match /0/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_new';\"").stdout).to match /0/
             end
 
             after(:context) do

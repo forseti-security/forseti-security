@@ -18,7 +18,7 @@ control 'inventory' do
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
             end
 
              # Below assertion should be uncommented after populating test data.
@@ -57,7 +57,7 @@ control 'inventory' do
 
             # Displays number of inventories in the database before purging inventories.
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /2/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /2/
             end
 
             it "should be visible from the command-line" do
@@ -66,7 +66,7 @@ control 'inventory' do
 
             # Displays number of inventories in the database after deleting an inventory.
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
             end
         end
 
@@ -78,7 +78,7 @@ control 'inventory' do
 
             # Displays number of inventories in the database before purging.
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /2/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /2/
             end
 
             it "should be visible from the command-line" do
@@ -87,7 +87,7 @@ control 'inventory' do
 
             # Displays number of inventories in the database after purging inventories.
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(DISTINCT gcp_inventory.inventory_index_id) FROM gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /0/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /0/
             end
         end
     end
