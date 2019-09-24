@@ -30,4 +30,3 @@ variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
 
-

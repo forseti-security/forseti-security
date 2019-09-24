@@ -80,3 +80,4 @@ resource "google_compute_firewall" "main" {
   target_tags   = ["bastion"]
   project       = "${var.project_id}"
 }
+

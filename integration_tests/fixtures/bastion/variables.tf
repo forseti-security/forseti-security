@@ -33,3 +33,4 @@ variable "zone" {
   description = "The name of the zone in which the bastion host will be deployed."
   type        = "string"
 }
+

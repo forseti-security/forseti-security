@@ -92,3 +92,4 @@ control 'inventory' do
         end
     end
 end
+

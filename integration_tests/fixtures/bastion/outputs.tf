@@ -33,3 +33,4 @@ output "user" {
   description = "The user to use when connecting to the bastion host."
   value       = "${local.user}"
 }
+
