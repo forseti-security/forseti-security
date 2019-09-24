@@ -604,6 +604,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'iam': {'disable_polling': True},
             'logging': {'disable_polling': True},
             'servicemanagement': {'disable_polling': True},
+            'serviceusage': {'disable_polling': True},
             'sqladmin': {'disable_polling': True},
             'storage': {'disable_polling': True},
         }

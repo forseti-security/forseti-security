@@ -892,6 +892,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
         self._enabled_service_names = frozenset(
             (api.get('config', {}).get('name') for api in enabled_apis))
+
         return enabled_apis
 
     def should_dispatch(self):
