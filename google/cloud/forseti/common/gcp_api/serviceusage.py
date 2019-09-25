@@ -73,7 +73,7 @@ class _ServiceUsageServicesRepository(
         repository_mixins.GetIamPolicyQueryMixin,
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
-    """"Implementation of Service Usage Services repository."""
+    """Implementation of Service Usage Services repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -147,8 +147,8 @@ class ServiceUsageClient(object):
                 GCP API fails.
         """
 
-        formatted_project_name = self.repository.services.\
-            get_formatted_project_name(project_id)
+        formatted_project_name = (
+            self.repository.services.get_formatted_project_name(project_id))
 
         enabled_filter = 'state:ENABLED'
 
