@@ -5,8 +5,11 @@ control 'model' do
         before :context do
             command("forseti inventory purge 0").result
             command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+
+            # This variable cannot be used after all the inventories have been purged..
+            @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{@inventory_id} model_new").result
+            command("forseti model use model_new").result
             command("sudo apt-get -y install mysql-client").result
         end
 
@@ -37,16 +40,26 @@ control 'model' do
 
         describe "Delete a model" do
 
+            before :context do
+                command("forseti model create --inventory_index_id #{@inventory_id} model_test").result
+                command("forseti model use model_test").result
+            end
+
             it "should be visible from the command-line" do
-                expect(command("forseti model delete model_new").stderr).to eq ""
+                expect(command("forseti model delete model_test").stderr).to eq ""
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_new';\"").stdout).to match /0/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_test';\"").stdout).to match /0/
+            end
+
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_new';\"").stdout).to match /1/
             end
 
             after(:context) do
                 command("forseti inventory purge 0").result
+                command("forseti model delete model_new").result
             end
         end
     end

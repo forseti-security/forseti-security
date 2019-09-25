@@ -15,20 +15,6 @@
 sudo: required
 jobs:
   include:
-  - stage: Integration test
-    name: Integration test - docker
-    services:
-    - docker
-    before_install:
-    - openssl aes-256-cbc -K $encrypted_5c0ae2aa862c_key -iv $encrypted_5c0ae2aa862c_iv
-      -in secret-key.tar.enc -out secret-key.tar -d
-    - tar xvf secret-key.tar
-    install:
-    - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
-    script:
-    - docker container run -it -e KITCHEN_TEST_BASE_PATH="integration_tests/tests" -e SERVICE_ACCOUNT_JSON="$(< release-silver.json)"
-      --env-file travis-integration.env -v $(pwd):/workspace gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
-      /usr/local/bin/test_integration.sh
   - stage: Unit test
     name: Unit Tests with Python 3.6
     language: python
@@ -45,3 +31,18 @@ jobs:
     after_success:
     - # Collect codecov results.
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
+  - stage: Integration test
+    name: Integration test - docker
+    services:
+    - docker
+    before_install:
+    - openssl aes-256-cbc -K $encrypted_5c0ae2aa862c_key -iv $encrypted_5c0ae2aa862c_iv
+      -in secret-key.tar.enc -out secret-key.tar -d
+    - tar xvf secret-key.tar
+    install:
+    - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
+    script:
+    - docker container run -it -e KITCHEN_TEST_BASE_PATH="integration_tests/tests" -e SERVICE_ACCOUNT_JSON="$(< release-silver.json)"
+      --env-file travis-integration.env -v $(pwd):/workspace gcr.io/cloud-foundation-cicd/cft/developer-tools:0.2.0
+      /usr/local/bin/test_integration.sh
+

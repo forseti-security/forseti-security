@@ -7,7 +7,7 @@ control 'inventory' do
             command("forseti inventory create").result
             command("sudo apt-get -y install mysql-client").result
 
-             # Value of this variable cannot be used after all the inventories have been purged..
+             # This variable cannot be used after all the inventories have been purged..
             @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
         end
 
