@@ -57,7 +57,7 @@ resource "google_storage_bucket" "output-bucket" {
   force_destroy = true
 }
 
-# Enable AppEngine to activate Datastore
+# AppEngine is needed in order to activate datastore
 resource "google_app_engine_application" "app" {
   project     = "${var.gcp_project}"
   location_id = "${var.appengine_location}"

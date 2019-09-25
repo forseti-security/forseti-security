@@ -24,7 +24,7 @@ locals {
 }
 
 # Enable Google Cloud Resource Manager API for the project. This need to be
-# enabled before the redis service.
+# enabled before the Redis service.
 resource "google_project_service" "cloud-resource-service-api" {
   project   = "${var.gcp_project}"
   service   = "cloudresourcemanager.googleapis.com"
