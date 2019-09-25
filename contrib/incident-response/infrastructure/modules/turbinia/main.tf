@@ -57,6 +57,12 @@ resource "google_storage_bucket" "output-bucket" {
   force_destroy = true
 }
 
+# Enable AppEngine to activate Datastore
+resource "google_app_engine_application" "app" {
+  project     = "${var.gcp_project}"
+  location_id = "${var.appengine_location}"
+}
+
 # Create datastore index
 data "local_file" "datastore-index-file" {
   filename = "${path.module}/data/index.yaml"
@@ -67,6 +73,7 @@ resource "null_resource" "cloud-datastore-create-index" {
   provisioner "local-exec" {
     command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
   }
+  depends_on = ["google_app_engine_application.app"]
 }
 
 # Deploy cloud functions
@@ -140,6 +147,8 @@ resource "google_compute_instance" "turbinia-server" {
   name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = "${var.turbinia_server_machine_type}"
   zone         = "${var.gcp_zone}"
+  depends_on   = ["google_project_service.services"]
+
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
@@ -185,6 +194,7 @@ resource "google_compute_instance" "turbinia-worker" {
   name         = "turbinia-worker-${var.infrastructure_id}-${count.index}"
   machine_type = "${var.turbinia_worker_machine_type}"
   zone         = "${var.gcp_zone}"
+  depends_on   = ["google_project_service.services"]
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true

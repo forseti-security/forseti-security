@@ -14,6 +14,31 @@
  * limitations under the License.
  */
 
+locals {
+  # API services to enable for the project
+  services_list = [
+    "compute.googleapis.com",
+    "sqladmin.googleapis.com",
+    "redis.googleapis.com",
+  ]
+}
+
+# Enable Google Cloud Resource Manager API for the project. This need to be
+# enabled before the redis service.
+resource "google_project_service" "cloud-resource-service-api" {
+  project   = "${var.gcp_project}"
+  service   = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "services" {
+  count              = "${length(local.services_list)}"
+  project            = "${var.gcp_project}"
+  service            = "${local.services_list[count.index]}"
+  depends_on         = ["google_project_service.cloud-resource-service-api"]
+  disable_on_destroy = false
+}
+
 #-----------------------#
 # Elasticsearch cluster #
 #-----------------------#
@@ -32,6 +57,8 @@ resource "google_compute_instance" "elasticsearch" {
   name         = "elasticsearch-node-${var.infrastructure_id}-${count.index}"
   machine_type = "${var.elasticsearch_machine_type}"
   zone         = "${var.gcp_zone}"
+  depends_on   = ["google_project_service.services"]
+
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
@@ -66,12 +93,6 @@ resource "google_compute_instance" "elasticsearch" {
 # PostgreSQL #
 #------------#
 
-# Enable Google Cloud SQL admin API for the project.
-resource "google_project_service" "sql-admin-service-api" {
-  project   = "${var.gcp_project}"
-  service   = "sqladmin.googleapis.com"
-}
-
 resource "google_sql_database" "timesketch-db" {
   name     = "timesketch-db"
   instance = "${google_sql_database_instance.timesketch-db-instance.name}"
@@ -92,7 +113,7 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
   name              = "timesketch-db-instance-${var.infrastructure_id}"
   region            = "${var.gcp_region}"
   database_version  = "POSTGRES_9_6"
-  depends_on        = ["google_project_service.sql-admin-service-api"]
+  depends_on        = ["google_project_service.services"]
 
   settings {
     tier = "db-f1-micro"
@@ -116,24 +137,11 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
 # Redis #
 #-------#
 
-# Enable Google Cloud Resource Manager API for the project.
-resource "google_project_service" "cloud-resource-service-api" {
-  project   = "${var.gcp_project}"
-  service   = "cloudresourcemanager.googleapis.com"
-}
-
-# Enable Google Cloud Memorystore for Redis API for the project.
-resource "google_project_service" "redis-service-api" {
-  project     = "${var.gcp_project}"
-  service     = "redis.googleapis.com"
-  depends_on  = ["google_project_service.cloud-resource-service-api"]
-}
-
 # Redis is used as the task queue backend for importing data into Timesketch.
 resource "google_redis_instance" "redis" {
   name           = "redis-${var.infrastructure_id}"
   memory_size_gb = 1
-  depends_on     = ["google_project_service.redis-service-api"]
+  depends_on     = ["google_project_service.services"]
 }
 
 #-------------------#
@@ -160,7 +168,8 @@ resource "random_string" "timesketch-admin-password" {
 }
 
 resource "google_compute_address" "timesketch-server-address" {
-  name = "timesketch-server-address"
+  name       = "timesketch-server-address"
+  depends_on = ["google_project_service.services"]
 }
 
 resource "google_compute_firewall" "allow-external-timesketch-server" {
@@ -172,12 +181,14 @@ resource "google_compute_firewall" "allow-external-timesketch-server" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["timesketch-https-server"]
+  depends_on    = ["google_project_service.services"]
 }
 
 resource "google_compute_instance" "timesketch-server" {
-  name          = "timesketch-server-${var.infrastructure_id}"
-  machine_type  = "${var.timesketch_machine_type}"
-  zone          = "${var.gcp_zone}"
+  name         = "timesketch-server-${var.infrastructure_id}"
+  machine_type = "${var.timesketch_machine_type}"
+  zone         = "${var.gcp_zone}"
+  depends_on   = ["google_project_service.services"]
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
