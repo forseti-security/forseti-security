@@ -96,6 +96,7 @@ GCP_READ_IAM_ROLES = [
     'roles/orgpolicy.policyViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/serviceusage.serviceUsageConsumer',
+    'roles/serviceusage.serviceUsageViewer',
 ]
 
 GCP_WRITE_IAM_ROLES = [
@@ -158,6 +159,8 @@ REQUIRED_APIS = [
      'service': 'container.googleapis.com'},
     {'name': 'Service Management API',
      'service': 'servicemanagement.googleapis.com'},
+    {'name': 'Service Usage API',
+     'service': 'serviceusage.googleapis.com'},
     {'name': 'Stackdriver Logging API',
      'service': 'logging.googleapis.com'}
 ]

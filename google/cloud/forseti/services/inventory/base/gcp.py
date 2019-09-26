@@ -31,6 +31,7 @@ from google.cloud.forseti.common.gcp_api import container
 from google.cloud.forseti.common.gcp_api import groups_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
+from google.cloud.forseti.common.gcp_api import serviceusage
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
@@ -1015,6 +1016,7 @@ class ApiClientImpl(ApiClient):
         self.container = None
         self.iam = None
         self.servicemanagement = None
+        self.serviceusage = None
         self.stackdriver_logging = None
         self.storage = None
 
@@ -1184,6 +1186,22 @@ class ApiClientImpl(ApiClient):
             raise ResourceNotSupported('Service Management API disabled by '
                                        'server configuration.')
         return servicemanagement.ServiceManagementClient(self.config)
+
+    def _create_serviceusage(self):
+        """Create serviceusage API client.
+
+        Returns:
+            object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+            the GCP API client configuration.
+
+        """
+        if is_api_disabled(self.config, serviceusage.API_NAME):
+            raise ResourceNotSupported('Service Usage API disabled by server '
+                                       'configuration.')
+        return serviceusage.ServiceUsageClient(self.config)
 
     def _create_stackdriver_logging(self):
         """Create stackdriver_logging API client.
@@ -2450,7 +2468,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('PubSub Topics are not supported by this '
                                    'API client')
 
-    @create_lazy('servicemanagement', _create_servicemanagement)
+    @create_lazy('serviceusage', _create_serviceusage)
     def fetch_services_enabled_apis(self, project_number):
         """Project enabled API services from gcp API call.
 
@@ -2458,10 +2476,10 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            Tuple[list, AssetMetadata]:A list of ManagedService resource dicts
+            Tuple[list, AssetMetadata]:A list of Service resource dicts
                 and asset metadata that defaults to None for all GCP clients.
         """
-        return self.servicemanagement.get_enabled_apis(project_number), None
+        return self.serviceusage.get_enabled_apis(project_number), None
 
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.

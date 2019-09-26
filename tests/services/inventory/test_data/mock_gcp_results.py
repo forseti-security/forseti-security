@@ -5997,6 +5997,75 @@ SERVICEMANAGEMENT_ENABLED_APIS = {
     ],
 }
 
+APPENGINE_API_ENABLED = """
+{
+  "config": {
+    "name": "appengine.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+BIGQUERY_API_ENABLED = """
+{
+  "config": {
+    "name": "bigquery-json.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+CLOUDSQL_API_ENABLED = """
+{
+  "config": {
+    "name": "sql-component.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+COMPUTE_API_ENABLED = """
+{
+  "config": {
+    "name": "compute.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+CONTAINER_API_ENABLED = """
+{
+  "config": {
+    "name": "container.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+STORAGE_API_ENABLED = """
+{
+  "config": {
+    "name": "storage.googleapis.com"},
+  "state": "ENABLED"
+}
+"""
+
+SERVICEUSAGE_ENABLED_APIS = {
+    PROJECT_ID_PREFIX + "1": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+        json.loads(CONTAINER_API_ENABLED),
+    ],
+    PROJECT_ID_PREFIX + "2": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+        json.loads(CLOUDSQL_API_ENABLED),
+    ],
+    PROJECT_ID_PREFIX + "3": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(BIGQUERY_API_ENABLED),
+    ],
+    PROJECT_ID_PREFIX + "4": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(APPENGINE_API_ENABLED),
+    ],
+}
+
 # Fields: name, destination
 LOG_SINK_TEMPLATE = """
 {{

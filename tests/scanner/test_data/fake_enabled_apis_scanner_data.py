@@ -18,24 +18,30 @@ from google.cloud.forseti.scanner.audit import enabled_apis_rules_engine
 
 
 API_COMPUTE = {
-    'serviceName': 'compute.googleapis.com',
-    'producerProjectId': 'compute-producer-project'}
+    "config": {
+        "name": "compute.googleapis.com"},
+    "state": "ENABLED"}
 
 API_LOGGING = {
-    'serviceName': 'logging.googleapis.com',
-    'producerProjectId': 'logging-producer-project'}
+    "config": {
+        "name": "logging.googleapis.com"},
+    "state": "ENABLED"}
 
 API_MONITORING = {
-    'serviceName': 'monitoring.googleapis.com',
-    'producerProjectId': 'monitoring-producer-project'}
+    "config": {
+        "name": "monitoring.googleapis.com"},
+    "name": "projects/123/services/monitoring.googleapis.com",
+    "state": "ENABLED"}
 
 API_PUBSUB = {
-    'serviceName': 'pubsub.googleapis.com',
-    'producerProjectId': 'pubsub-producer-project'}
+    "config": {
+        "name": "pubsub.googleapis.com"},
+    "state": "ENABLED"}
 
 API_STORAGE = {
-    'serviceName': 'storage.googleapis.com',
-    'producerProjectId': 'storage-producer-project'}
+    "config": {
+        "name": "storage.googleapis.com"},
+    "state": "ENABLED"}
 
 ENABLED_APIS_RESOURCES = [
     {
@@ -65,7 +71,7 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_name='Test whitelist',
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
-                  apis=[API_STORAGE['serviceName']],
+                  apis=[API_STORAGE.get('config', {}).get('name')],
                   resource_data='project-1-data',
                   resource_name='proj-1'),
     RuleViolation(resource_type='project',
@@ -74,7 +80,7 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_name='Test whitelist',
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
-                  apis=[API_STORAGE['serviceName']],
+                  apis=[API_STORAGE.get('config', {}).get('name')],
                   resource_data='project-2-data',
                   resource_name='proj-2'),
     RuleViolation(resource_type='project',
@@ -83,7 +89,8 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_name='Test whitelist',
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
-                  apis=[API_PUBSUB['serviceName'], API_STORAGE['serviceName']],
+                  apis=[API_PUBSUB.get('config', {}).get('name'),
+                        API_STORAGE.get('config', {}).get('name')],
                   resource_data='project-3-data',
                   resource_name='proj-3'),
     # Rule 1 blacklists PUBSUB.
@@ -93,7 +100,7 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_name='Test blacklist',
                   rule_index=1,
                   violation_type='ENABLED_APIS_VIOLATION',
-                  apis=[API_PUBSUB['serviceName']],
+                  apis=[API_PUBSUB.get('config', {}).get('name')],
                   resource_data='project-3-data',
                   resource_name='proj-3'),
     # Rule 2 requires LOGGING and MONITORING.
@@ -103,7 +110,7 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_name='Test required list',
                   rule_index=2,
                   violation_type='ENABLED_APIS_VIOLATION',
-                  apis=[API_MONITORING['serviceName']],
+                  apis=[API_MONITORING.get('config', {}).get('name')],
                   resource_data='project-2-data',
                   resource_name='proj-2'),
 ]
