@@ -21,10 +21,10 @@ control 'inventory' do
                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
             end
 
-             # Below assertion should be uncommented after populating test data.
-             # it "should be visible in the database" do
-             #    expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT resource_id) from gcp_inventory where category='resource' and resource_type = 'project';\"").stdout).to match /1/
-             # end
+             # The count is higher as there are a lot of projects in pending delete state.
+             it "should be visible in the database" do
+                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT resource_id) from gcp_inventory where category='resource' and resource_type = 'project';\"").stdout).to match /68/
+             end
         end
 
         describe "List an inventory" do

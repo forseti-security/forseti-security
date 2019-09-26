@@ -97,14 +97,3 @@ resource "null_resource" "wait_for_client" {
   }
 }
 
-module "integration-test-project" {
-  source  = "terraform-google-modules/project-factory/google"
-  version = "~> 3.0"
-
-  billing_account = "${var.billing_account}"
-  name = "integration-test"
-  org_id = "${var.org_id}"
-  activate_apis = []
-  random_project_id = true
-}
-
