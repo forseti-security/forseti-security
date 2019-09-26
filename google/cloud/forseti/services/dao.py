@@ -2374,7 +2374,7 @@ def create_engine(*args, **kwargs):
         engine = sqlalchemy_create_engine(
             *args,
             pool_size=50,
-            connect_args={'connect_timeout': 3600},
+            connect_args={'connect_timeout': 86400},
             **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
