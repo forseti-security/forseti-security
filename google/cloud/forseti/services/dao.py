@@ -750,7 +750,7 @@ def define_model(model_name, dbengine, model_seed):
                 session (object): Database session.
                 only_iam_groups (bool): boolean indicating whether we want to
                 only fetch groups settings for which there is at least 1 iam
-                policy
+                policy.
 
             Yields:
                 Resource: resource that match the query
