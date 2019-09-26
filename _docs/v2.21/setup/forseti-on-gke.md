@@ -371,4 +371,4 @@ terraform state rm module.forseti-on-gke-new-gke-cluster.module.vpc.google_compu
 There are a few things you can do.
 1. Run `terraform apply` or `terraform destroy` again to see if the error occurs repeatedly.
 2. Open an issue against the [Terraform Google Forseti](https://github.com/forseti-security/terraform-google-forseti/issues) module
-3. Post an issue in our [Slack Channel](https://forsetisecurity.slack.com/join/shared_invite/enQtNDIyMzg4Nzg1NjcxLTJhYjI1YzY0MDg4YjRhMDhhZTMwZTg0MWExZjU1MTNiNWFmMmFlMWQ0MmI3OTE1MzczZTMwNTEzNDZiNDY3NTY).  We'll be happy to try and help!
+3. Post an issue in our [Slack Channel](https://forsetisecurity.slack.com/join/shared_invite/enQtNDIyMzg4Nzg1NjcxLTM1NTUzZmM2ODVmNzE5MWEwYzAwNjUxMjVkZjhmYWZiOGZjMjY3ZjllNDlkYjk1OGU4MTVhZGM4NzgyZjZhNTE).  We'll be happy to try and help!
