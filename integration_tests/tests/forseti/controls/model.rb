@@ -10,7 +10,6 @@ control 'model' do
             @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
             command("forseti model create --inventory_index_id #{@inventory_id} model_new").result
             command("forseti model use model_new").result
-            command("sudo apt-get -y install mysql-client").result
         end
 
         describe "Create and get a model" do

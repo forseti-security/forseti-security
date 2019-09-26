@@ -5,7 +5,6 @@ control 'inventory' do
         before :context do
             command("forseti inventory purge 0").result
             command("forseti inventory create").result
-            command("sudo apt-get -y install mysql-client").result
 
              # This variable cannot be used after all the inventories have been purged..
             @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
@@ -21,7 +20,7 @@ control 'inventory' do
                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /1/
             end
 
-             # The count is higher as there are a lot of projects in pending delete state.
+             # The count is high as there are a lot of projects in pending delete state.
              it "should be visible in the database" do
                  expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT resource_id) from gcp_inventory where category='resource' and resource_type = 'project';\"").stdout).to match /68/
              end
