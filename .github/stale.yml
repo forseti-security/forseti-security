@@ -23,7 +23,8 @@ staleLabel: wontfix
 limitPerRun: 5
 
 # Configuration settings specific to pull requests
-# Details: pull requests older than 3o days will become stale, after 37 days of no activity the issue is closed. Stale notice message will be posted to the pull request at 30 days.
+# Details: pull requests older than 3o days will become stale, after 37 days of no activity the issue is closed.
+# Stale notice message will be posted to the pull request at 30 days.
 pulls:
     daysUntilStale: 30
     daysUntilClose: 7
@@ -33,8 +34,8 @@ pulls:
     for your contributions.
 
 # Configuration settings specific to issues
-# Details: Issues older than 5 months will become stale at 152 days. After 182 days of no activity the issue is closed.  Stale notice message will be posted to the issue at 152 days.
-
+# Details: Issues older than 5 months will become stale at 152 days. After 182 days of no activity the issue is closed.
+# Stale notice message will be posted to the issue at 152 days.
 issues:
     daysUntilStale: 152
     daysUntilClose: 30
