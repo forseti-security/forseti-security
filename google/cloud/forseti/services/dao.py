@@ -729,18 +729,27 @@ def define_model(model_name, dbengine, model_seed):
             Yields:
                 Resource: resource that match the query
             """
-
-            qry = (
+            query = (
                 session.query(Resource)
                 .filter(Resource.type == resource_type)
                 .options(joinedload(Resource.parent))
                 .enable_eagerloads(True))
 
             if parent_type_name:
-                qry = qry.filter(Resource.parent_type_name == parent_type_name)
+                query = query.filter(Resource.parent_type_name == parent_type_name)
 
-            for resource in qry.yield_per(PER_YIELD):
-                yield resource
+            block_size = PER_YIELD
+            block_number = 0
+
+            resources = query.slice(block_number * block_size,
+                                    (block_number + 1) * block_size).all()
+
+            while resources:
+                for resource in resources:
+                    yield resource
+                block_number += 1
+                resources = query.slice(block_number * block_size,
+                                        (block_number + 1) * block_size).all()
 
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):
