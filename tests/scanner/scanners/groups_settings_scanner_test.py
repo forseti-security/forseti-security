@@ -18,17 +18,13 @@ from builtins import object
 import unittest
 import unittest.mock as mock
 import json
-from datetime import datetime
 
 from tests import unittest_utils
 from tests.services.util.db import create_test_engine
 from tests.scanner.test_data.fake_groups_settings_scanner_data import (
     SETTINGS_1, SETTINGS_3, SETTINGS_5, SETTINGS)
-from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import groups_settings_scanner
-from google.cloud.forseti.common.util.string_formats import TIMESTAMP_MICROS
 from google.cloud.forseti.services.dao import ModelManager
-
 
 """
 Rule 1 mainly tests that blacklist picks up violations when
@@ -40,6 +36,7 @@ Rule 2 mainly tests that scanner works with specific resource ids
 Rule 3 mainly tests that whitelist breaks when and only
 when at least one specified property is violated
 """
+
 
 class FakeServiceConfig(object):
 
@@ -67,7 +64,7 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
 
         # Add organization to model.
         with scoped_session as session:
-           for settings_row in SETTINGS:
+            for settings_row in SETTINGS:
                 add_settings_to_test_db(settings_row)
 
     def setUp(self):
@@ -82,16 +79,16 @@ class GroupsSettingsScannerTest(unittest_utils.ForsetiTestCase):
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
         all_groups_settings, iam_groups_settings = self.scanner._retrieve()
-        violations = self.scanner._find_violations(all_groups_settings, 
+        violations = self.scanner._find_violations(all_groups_settings,
                                                    iam_groups_settings)
         self.assertEqual(1, mock_output_results.call_count)
         self.assertEqual(3, len(violations))
         self.assertEqual(json.loads(SETTINGS_1['settings'])['email'],
-                          violations[0].group_email)
+                         violations[0].group_email)
         self.assertEqual(json.loads(SETTINGS_3['settings'])['email'],
-                          violations[1].group_email)
+                         violations[1].group_email)
         self.assertEqual(json.loads(SETTINGS_5['settings'])['email'],
-                          violations[2].group_email)
+                         violations[2].group_email)
 
 
 if __name__ == '__main__':
