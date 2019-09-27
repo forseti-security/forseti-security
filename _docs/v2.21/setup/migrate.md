@@ -11,7 +11,7 @@ deprecated Python Installer to the new Terraform module.
 If you have any
 questions about this process, please contact us by
 [email](mailto:discuss@forsetisecurity.org) or on
-[Slack](https://forsetisecurity.slack.com/).
+[Slack](https://forsetisecurity.slack.com/join/shared_invite/enQtNDIyMzg4Nzg1NjcxLTM1NTUzZmM2ODVmNzE5MWEwYzAwNjUxMjVkZjhmYWZiOGZjMjY3ZjllNDlkYjk1OGU4MTVhZGM4NzgyZjZhNTE).
 
 ---
 
@@ -142,7 +142,7 @@ Import the existing resources to the Terraform state, replacing the
 uppercase values with the aforementioned values:
 
 ```sh
-./import.sh -m forseti -o ORG_ID -p PROJECT_ID -r RESOURCE_NAME_SUFFIX
+./import.sh -m MODULE_LOCAL_NAME -o ORG_ID -p PROJECT_ID -s RESOURCE_NAME_SUFFIX -z GCE_ZONE [-n NETWORK_PROJECT_ID]
 ```
 
 Observe the expected Terraform changes
