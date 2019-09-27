@@ -736,7 +736,8 @@ def define_model(model_name, dbengine, model_seed):
                 .enable_eagerloads(True))
 
             if parent_type_name:
-                query = query.filter(Resource.parent_type_name == parent_type_name)
+                query = query.filter(
+                    Resource.parent_type_name == parent_type_name)
 
             block_size = PER_YIELD
             block_number = 0
