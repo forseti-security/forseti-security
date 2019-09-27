@@ -348,7 +348,8 @@ class ProjectEnforcer(object):
             for network_name in networks:
                 expected_rules.add_rules(
                     firewall_policy, network_name=network_name)
-        except fe.InvalidFirewallRuleError as e:
+        except (fe.DuplicateFirewallRuleNameError,
+                fe.InvalidFirewallRuleError) as e:
             raise EnforcementError(STATUS_ERROR, 'error adding the expected '
                                    'firewall rules from the policy: %s' % e)
         return expected_rules
@@ -390,7 +391,8 @@ class ProjectEnforcer(object):
                 STATUS_ERROR,
                 'error getting current firewall rules from API: %s'
                 % http_error)
-        except fe.InvalidFirewallRuleError as e:
+        except (fe.DuplicateFirewallRuleNameError,
+                fe.InvalidFirewallRuleError) as e:
             raise EnforcementError(STATUS_ERROR,
                                    'error getting current firewall '
                                    'rules from API: %s' % e)
