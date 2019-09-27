@@ -48,8 +48,8 @@ class ValidatorClient(object):
         # Default grpc message size limit is 4MB, set the
         # max page size to 3.5 MB.
         self.max_page_size = 1024 ** 2 * 3.5
-        # Audit once every 50 MB of data sent to Config Validator.
-        self.max_audit_size = 1024 ** 2 * 50
+        # Audit once every 100 MB of data sent to Config Validator.
+        self.max_audit_size = 1024 ** 2 * 100
         self.channel = grpc.insecure_channel(endpoint, options=[
             ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
