@@ -352,7 +352,7 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
         resource_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 512),
+            get_string_by_dialect(dbengine.dialect.name, 2048),
             ForeignKey('{}.type_name'.format(resources_tablename)))
 
         role_name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
