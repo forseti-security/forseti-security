@@ -1379,6 +1379,21 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for serviceaccount in resources:
             yield serviceaccount
 
+    def iter_iam_serviceaccount_keys(self):
+        """Iterate Service Account Keys from Cloud Asset data.
+
+        Yields:
+            dict: Generator of service account keys.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'iam.googleapis.com/ServiceAccountKey',
+            '',
+            self.engine)
+        for serviceaccount_key in resources:
+            yield serviceaccount_key
+
+
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from Cloud Asset data.
 

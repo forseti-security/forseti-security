@@ -2318,9 +2318,8 @@ class IamServiceAccountIterator(resource_iter_class_factory(
 
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_serviceaccount_exported_keys',
-        resource_name='iam_serviceaccount_key',
-        api_method_arg_key='name')):
+        api_method_name='iter_iam_serviceaccount_keys',
+        resource_name='iam_serviceaccount_key'):
     """The Resource iterator implementation for IAM ServiceAccount Key."""
 
 
@@ -2670,6 +2669,7 @@ FACTORIES = {
             DnsPolicyIterator,
             IamProjectRoleIterator,
             IamServiceAccountIterator,
+            IamServiceAccountKeyIterator,
             KmsKeyRingIterator,
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
