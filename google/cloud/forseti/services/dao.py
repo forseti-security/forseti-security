@@ -62,7 +62,7 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 POOL_RECYCLE_SECONDS = 300
-PER_YIELD = 1024
+PER_YIELD = 4096
 
 
 def generate_model_handle():
