@@ -298,13 +298,13 @@ def define_model(model_name, dbengine, model_seed):
 
         cai_resource_name = Column(String(4096))
         cai_resource_type = Column(String(512))
-        full_name = Column(String(2048), nullable=False)
-        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 512),
+        full_name = Column(String(4096), nullable=False)
+        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 2048),
                            primary_key=True)
         parent_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 512),
+            get_string_by_dialect(dbengine.dialect.name, 4096),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        name = Column(String(256), nullable=False)
+        name = Column(String(1024), nullable=False)
         type = Column(String(128), nullable=False)
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
