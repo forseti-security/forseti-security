@@ -298,11 +298,11 @@ def define_model(model_name, dbengine, model_seed):
 
         cai_resource_name = Column(String(4096))
         cai_resource_type = Column(String(512))
-        full_name = Column(String(4096), nullable=False)
-        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 2048),
+        full_name = Column(String(2048), nullable=False)
+        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 1024),
                            primary_key=True)
         parent_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 4096),
+            get_string_by_dialect(dbengine.dialect.name, 1024),
             ForeignKey('{}.type_name'.format(resources_tablename)))
         name = Column(String(1024), nullable=False)
         type = Column(String(128), nullable=False)
@@ -352,7 +352,7 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
         resource_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 2048),
+            get_string_by_dialect(dbengine.dialect.name, 1024),
             ForeignKey('{}.type_name'.format(resources_tablename)))
 
         role_name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
