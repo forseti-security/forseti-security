@@ -1196,7 +1196,8 @@ class ComputeRouter(resource_class_factory('compute_router', 'id')):
     """The Resource implementation for Compute Router."""
 
 
-class ComputeSecurityPolicy(resource_class_factory('compute_securitypolicy', 'id')):
+class ComputeSecurityPolicy(resource_class_factory('compute_securitypolicy',
+                                                   'id')):
     """The Resource implementation for Compute SecurityPolicy."""
 
 
