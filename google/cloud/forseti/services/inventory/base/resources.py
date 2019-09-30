@@ -1196,6 +1196,11 @@ class ComputeRouter(resource_class_factory('compute_router', 'id')):
     """The Resource implementation for Compute Router."""
 
 
+class ComputeSecurityPolicy(resource_class_factory('compute_securitypolicy',
+                                                   'id')):
+    """The Resource implementation for Compute SecurityPolicy."""
+
+
 class ComputeSnapshot(resource_class_factory('snapshot', 'id')):
     """The Resource implementation for Compute Snapshot."""
 
@@ -2159,6 +2164,12 @@ class ComputeRouterIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute Router."""
 
 
+class ComputeSecurityPolicyIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_securitypolicies',
+        resource_name='compute_securitypolicy')):
+    """The Resource iterator implementation for Compute SecurityPolicy."""
+
+
 class ComputeSnapshotIterator(compute_iter_class_factory(
         api_method_name='iter_compute_snapshots',
         resource_name='compute_snapshot')):
@@ -2707,6 +2718,7 @@ FACTORIES = {
             ComputeNetworkIterator,
             ComputeProjectIterator,
             ComputeRouterIterator,
+            ComputeSecurityPolicyIterator,
             ComputeSnapshotIterator,
             ComputeSslCertificateIterator,
             ComputeSubnetworkIterator,
@@ -2906,6 +2918,11 @@ FACTORIES = {
     'compute_router': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeRouter,
+        'contains': []}),
+
+    'compute_securitypolicy': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeSecurityPolicy,
         'contains': []}),
 
     'compute_snapshot': ResourceFactory({
