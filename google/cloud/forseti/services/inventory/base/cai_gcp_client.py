@@ -753,6 +753,22 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 _fixup_resource_keys(router, cai_to_gcp_key_map),
                 metadata)
 
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Security Policies from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of instance Security Policies.
+        """
+
+        securitypolicies = self._iter_compute_resources('SecurityPolicy',
+                                                        project_number)
+
+        for securitypolicy in securitypolicies:
+            yield securitypolicy
+
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from Cloud Asset data.
 
