@@ -371,6 +371,13 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Security Policies from GCP API.
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from GCP API.
 
@@ -1750,6 +1757,18 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute Routers are not supported '
                                    'by this API client')
+
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Compute Engine Security Policies from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Security Policies are not '
+                                   'supported by this API client')
 
     @create_lazy('compute', _create_compute)
     def iter_compute_snapshots(self, project_number):
