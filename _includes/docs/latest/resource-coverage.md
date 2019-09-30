@@ -48,6 +48,7 @@
 | [Compute Engine Projects](https://cloud.google.com/compute/docs/reference/rest/v1/projects) |
 | [Compute Engine Region Backend Service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)|
 | [Compute Engine Routers](https://cloud.google.com/compute/docs/reference/rest/v1/routers) |
+| [Compute Engine Security Policies](https://cloud.google.com/compute/docs/reference/rest/v1/securityPolicies) |
 | [Compute Engine Snapshots](https://cloud.google.com/compute/docs/reference/latest/snapshots) |
 | [Compute Engine SSL Certificates](https://cloud.google.com/compute/docs/reference/rest/v1/sslCertificates) |
 | [Compute Engine Target Http Proxies](https://cloud.google.com/compute/docs/reference/rest/v1/targetHttpProxies) |
