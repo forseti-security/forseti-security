@@ -2319,7 +2319,8 @@ class IamServiceAccountIterator(resource_iter_class_factory(
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
         api_method_name='iter_iam_serviceaccount_keys',
-        resource_name='iam_serviceaccount_key')):
+        resource_name='iam_serviceaccount_key',
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for IAM ServiceAccount Key."""
 
 
@@ -2947,9 +2948,7 @@ FACTORIES = {
     'iam_serviceaccount': ResourceFactory({
         'dependsOn': ['project'],
         'cls': IamServiceAccount,
-        'contains': [
-            IamServiceAccountKeyIterator
-        ]}),
+        'contains': []}),
 
     'iam_serviceaccount_key': ResourceFactory({
         'dependsOn': ['iam_serviceaccount'],
