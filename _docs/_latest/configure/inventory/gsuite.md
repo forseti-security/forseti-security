@@ -21,44 +21,20 @@ To enable collection of G Suite data using your existing Forseti
 service account, follow the steps below. Read more about
 [domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority).
 
-### Enable DwD on a service account
+### Enable DwD on the Forseti server service account
 
-1. Go to the Google Cloud Platform (GCP) Console
+Go to the Google Cloud Platform (GCP) Console 
 [Service accounts](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts){:target="_blank"}
-page.
+page for the Forseti project and follow the instructions under section `To enable G Suite domain-wide delegation, follow these steps:` 
+to enable [domain-wide delegation on the Forseti server service account](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#create_the_service_account_and_credentials).
 
-   1. On the right side of the Forseti GCP server service account row,
-   under **Options**, click **More > Edit**.
+### Delegate domain-wide authority to the Forseti server service account.
 
-      {% responsive_image path: images/docs/configuration/service_account_edit.png alt: "Service Account Edit" indent: 3 %}
-
-   1. On the **Edit service account** dialog that appears, select the **Enable
-   G Suite Domain-wide Delegation** checkbox, then click **Save**.
-   NOTE: You may see a field entitled "Product name for the consent screen". You cannot leave this field blank.
-
-   {% responsive_image path: images/docs/configuration/service_account_enable_dwd.png alt: "Service Account Enable DwD" indent: 3 %}
-
-1. On the service account row, click **View Client ID**.
-
-1. On the **Client ID for Service account client** page that appears, copy the
-**Client ID** value, which will be a large number.
-
-{% responsive_image path: images/docs/configuration/client-id.png alt: "service account panel with client ID highlighted" indent: 2 %}
-
-### Enable the service account in your G Suite admin control panel.
-
-1. Go to your Google Admin
-[Manage API client access](https://admin.google.com/ManageOauthClients) Security
-settings.
-1. In the **Client Name** box, paste the **Client ID** you copied above.
-1. In the **One or More API Scopes** box, paste the following scope:
-
-    ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/cloudplatformprojects.readonly,https://www.googleapis.com/auth/apps.groups.settings
-    ```
-
-1. Click **Authorize**.
-{% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
+Follow [the instructions here](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#delegate_domain-wide_authority_to_your_service_account) 
+to grant the Forseti service account the following scopes:
+```
+https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/cloudplatformprojects.readonly,https://www.googleapis.com/auth/apps.groups.settings
+```
 
 ## Configuring Forseti to collect G Suite data
 
