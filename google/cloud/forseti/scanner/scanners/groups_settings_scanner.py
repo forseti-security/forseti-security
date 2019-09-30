@@ -75,12 +75,17 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
                 'whoCanLeaveGroup': violation.whoCanLeaveGroup,
             }
 
+            violation_data = {
+                'group_email': violation.group_email,
+                'violation_settings': violation.violation_settings,
+            }
+
             yield {
                 'resource_id': violation.group_email,
                 'full_name': violation.group_email,
                 'resource_name': violation.group_email,
                 'resource_data': json.dumps(resource_data, sort_keys=True),
-                'violation_data': violation.violation_reason,
+                'violation_data': violation_data,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
