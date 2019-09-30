@@ -29,6 +29,11 @@ Forseti Config enables you to set the CLI configuration.
 
 For more information, see the [client-server architecture of Forseti]({% link _docs/latest/concepts/architecture.md %}).
 
+Please also note that Forseti CLI is deployed on the Forseti Server VM so the same commands
+can be run on the Forseti Server VM as well. The recommendation is to run all the commands through
+the Forseti Client VM as there is always a risk when granting users access to the Forseti 
+Server VM due to the Forseti Server Service Account's elevated privilege.
+
 ## Show the current local configuration
 
 The following command outputs the current local configuration:
