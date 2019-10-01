@@ -750,7 +750,7 @@ def define_model(model_name, dbengine, model_seed):
                 parent_type_name (str): type_name of the parent resource
 
             Returns:
-                Generator: Generator of resources returned from the query.
+                generator: Generator of resources returned from the query.
             """
             query = (
                 session.query(Resource)

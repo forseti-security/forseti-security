@@ -719,7 +719,7 @@ class DataAccess(object):
             with_parent (bool): Join parent with results, yield tuples.
 
         Returns:
-            Generator: Generator of single row object or child/parent
+            generator: Generator of single row object or child/parent
                 if 'with_parent' is set.
         """
         filters = [Inventory.inventory_index_id == inventory_index_id,
