@@ -65,6 +65,29 @@ POOL_RECYCLE_SECONDS = 300
 PER_YIELD = 4096
 
 
+def page_query(query, block_size=PER_YIELD):
+    """Page query by block.
+
+    Args:
+        query (Query): sqlalchemy query.
+        block_size (int): Block size per page.
+
+    Yields:
+        object: The query result object.
+    """
+    block_number = 0
+
+    results = query.slice(block_number * block_size,
+                          (block_number + 1) * block_size).all()
+
+    while results:
+        for obj in results:
+            yield obj
+        block_number += 1
+        results = query.slice(block_number * block_size,
+                              (block_number + 1) * block_size).all()
+
+
 def generate_model_handle():
     """Generate random model handle.
 
@@ -738,19 +761,7 @@ def define_model(model_name, dbengine, model_seed):
             if parent_type_name:
                 query = query.filter(
                     Resource.parent_type_name == parent_type_name)
-
-            block_size = PER_YIELD
-            block_number = 0
-
-            resources = query.slice(block_number * block_size,
-                                    (block_number + 1) * block_size).all()
-
-            while resources:
-                for resource in resources:
-                    yield resource
-                block_number += 1
-                resources = query.slice(block_number * block_size,
-                                        (block_number + 1) * block_size).all()
+            yield page_query(query)
 
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):

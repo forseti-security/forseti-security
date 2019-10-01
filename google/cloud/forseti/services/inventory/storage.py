@@ -43,6 +43,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
+from google.cloud.forseti.services import dao
 from google.cloud.forseti.services import utils
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
@@ -740,8 +741,7 @@ class DataAccess(object):
 
         base_query = base_query.order_by(Inventory.id.asc())
 
-        for row in base_query.yield_per(PER_YIELD):
-            yield row
+        yield dao.page_query(base_query)
 
     @classmethod
     def get_root(cls, session, inventory_index_id):
