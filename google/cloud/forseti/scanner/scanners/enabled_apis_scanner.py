@@ -124,9 +124,11 @@ class EnabledApisScanner(base_scanner.BaseScanner):
 
             for apis in data_access.scanner_iter(session, 'enabled_apis'):
                 enabled_apis = []
+
                 for enabled_api in json.loads(apis.data):
-                    if 'serviceName' in enabled_api:
-                        enabled_apis.append(enabled_api['serviceName'])
+                    if enabled_api.get('config', {}).get('name'):
+                        enabled_apis.append(
+                            enabled_api.get('config').get('name'))
 
                 if enabled_apis:
                     enabled_apis_data.append(

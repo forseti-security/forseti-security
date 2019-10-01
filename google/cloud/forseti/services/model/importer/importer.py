@@ -295,18 +295,14 @@ class InventoryImporter(object):
                     LOGGER.debug('Commiting model write session: %s',
                                  item_counter)
                     self._commit_session()
-
-            if item_counter % 1000:
-                # Additional rows added since last flush.
-                self._flush_session()
+            self._commit_session()
             LOGGER.debug('Finished storing resources into models.')
 
             item_counter += self.model_action_wrapper(
                 DataAccess.iter(self.readonly_session,
                                 self.inventory_index_id,
                                 ['role']),
-                self._convert_role,
-                post_action=self._convert_role_post
+                self._convert_role
             )
 
             item_counter += self.model_action_wrapper(
@@ -402,7 +398,8 @@ class InventoryImporter(object):
                              inventory_iterable,
                              action,
                              post_action=None,
-                             flush_count=1000):
+                             flush_count=1000,
+                             commit_count=50000):
         """Model action wrapper. This is used to reduce code duplication.
 
         Args:
@@ -412,6 +409,7 @@ class InventoryImporter(object):
             post_action (func): Action taken after iterating the
                 inventory list.
             flush_count (int): Flush every flush_count times.
+            commit_count (int): Commit every commit_count times.
 
         Returns:
             int: Number of item iterated.
@@ -420,6 +418,7 @@ class InventoryImporter(object):
 
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
+            LOGGER.debug('Processing inventory data: %s', inventory_data)
             if isinstance(inventory_data, tuple):
                 action(*inventory_data)
             else:
@@ -429,14 +428,21 @@ class InventoryImporter(object):
                 # Flush database every flush_count resources
                 LOGGER.debug('Flushing write session: %s.', idx)
                 self._flush_session()
+            if not idx % commit_count:
+                LOGGER.debug('Committing write session: %s', idx)
+                self._commit_session()
 
         if idx % flush_count:
             # Additional rows added since last flush.
             self._flush_session()
 
         if post_action:
+            LOGGER.debug('Running post action: %s', post_action)
             post_action()
 
+        LOGGER.debug('Committing model action: %s, with resource count: %s',
+                     action, idx)
+        self._commit_session()
         return idx
 
     def _store_gsuite_principal(self, principal):
@@ -1123,7 +1129,16 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
         data = role.get_resource_data()
-        is_custom = not data['name'].startswith('roles/')
+        role_name = data.get('name')
+
+        LOGGER.debug('Converting role: %s', role_name)
+        LOGGER.debug('role data: %s', data)
+
+        if role_name in self.role_cache:
+            LOGGER.warning('Duplicate role_name: %s', role_name)
+            return
+
+        is_custom = not role_name.startswith('roles/')
         db_permissions = []
         if 'includedPermissions' not in data:
             self.model.add_warning(
@@ -1135,18 +1150,19 @@ class InventoryImporter(object):
                     permission = self.dao.TBL_PERMISSION(
                         name=perm_name)
                     self.permission_cache[perm_name] = permission
+                    self.session.add(permission)
                 db_permissions.append(self.permission_cache[perm_name])
 
-        if not self._is_role_unique(data['name']):
-            return
         dbrole = self.dao.TBL_ROLE(
-            name=data['name'],
+            name=role_name,
             title=data.get('title', ''),
             stage=data.get('stage', ''),
             description=data.get('description', ''),
             custom=is_custom,
             permissions=db_permissions)
         self.role_cache[data['name']] = dbrole
+        self.session.add(dbrole)
+        LOGGER.debug('Adding role %s to session', role_name)
 
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
@@ -1163,6 +1179,8 @@ class InventoryImporter(object):
 
             self._add_to_cache(role_resource, role.id)
             self.session.add(role_resource)
+            LOGGER.debug('Adding role resource :%s to session', role_name)
+            LOGGER.debug('Role resource :%s', role_resource)
 
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
@@ -1240,26 +1258,6 @@ class InventoryImporter(object):
         """
         parent_id = resource.get_parent_id()
         return self.resource_cache[parent_id]
-
-    def _is_role_unique(self, role_name):
-        """Check to see if the session contains Role with
-        primary key = role_name.
-
-        Args:
-            role_name (str): The role name (Primary key of the role table).
-
-        Returns:
-            bool: Whether or not session contains Role with
-                primary key = role_name.
-        """
-
-        # one_or_none returns None if the query selects no rows.
-        exists = role_name in self.role_cache
-
-        if exists:
-            LOGGER.warning('Duplicate role_name: %s', role_name)
-            return False
-        return True
 
     def _is_root(self, resource):
         """Checks if the resource is an inventory root. Result is cached.

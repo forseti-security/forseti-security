@@ -355,8 +355,8 @@ def define_model(model_name, dbengine, model_seed):
             get_string_by_dialect(dbengine.dialect.name, 512),
             ForeignKey('{}.type_name'.format(resources_tablename)))
 
-        role_name = Column(String(128), ForeignKey(
-            '{}.name'.format(roles_tablename)))
+        role_name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
+                           ForeignKey('{}.name'.format(roles_tablename)))
 
         resource = relationship('Resource', remote_side=[resource_type_name])
         role = relationship('Role', remote_side=[role_name])
@@ -433,7 +433,8 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM role."""
 
         __tablename__ = roles_tablename
-        name = Column(String(128), primary_key=True)
+        name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
+                      primary_key=True)
         title = Column(String(128), default='')
         stage = Column(String(128), default='')
         description = Column(String(1024), default='')

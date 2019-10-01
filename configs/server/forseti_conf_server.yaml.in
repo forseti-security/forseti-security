@@ -107,6 +107,10 @@ inventory:
           max_calls: 2
           period: 1.1
           disable_polling: False
+        serviceusage:
+          max_calls: 4
+          period: 1.1
+          disable_polling: False
         sqladmin:
           max_calls: 1
           period: 1.1
