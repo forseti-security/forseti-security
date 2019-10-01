@@ -120,15 +120,18 @@ resource "null_resource" "install-mysql-client" {
   }
 }
 
-resource "google_kms_key_ring" "example-keyring" {
+resource "random_pet" "random_name_generator" {
+}
+
+resource "google_kms_key_ring" "test-keyring" {
   project = "${var.project_id}"
-  name = "keyring-example"
+  name = "keyring-new-example.${random_pet.random_name_generator}"
   location = "global"
 }
 
-resource "google_kms_crypto_key" "example-crypto-key" {
-  name            = "crypto-key-example"
-  key_ring        = "${google_kms_key_ring.example-keyring.self_link}"
+resource "google_kms_crypto_key" "test-crypto-key" {
+  name            = "crypto-key-new-example.${random_pet.random_name_generator}"
+  key_ring        = "${google_kms_key_ring.test-keyring.self_link}"
   rotation_period = "100000s"
 
   lifecycle {
