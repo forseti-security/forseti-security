@@ -28,7 +28,7 @@ Go to the Google Cloud Platform (GCP) Console
 page for the Forseti project and follow the instructions under section `To enable G Suite domain-wide delegation, follow these steps:` 
 to enable [domain-wide delegation on the Forseti server service account](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#create_the_service_account_and_credentials).
 
-### Delegate domain-wide authority to the Forseti server service account.
+### Delegate domain-wide authority to the Forseti server service account
 
 Follow [the instructions here](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#delegate_domain-wide_authority_to_your_service_account) 
 to grant the Forseti service account the following scopes:

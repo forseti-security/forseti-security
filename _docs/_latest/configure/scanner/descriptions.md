@@ -98,7 +98,7 @@ This scanner is not part of the regular cron job, because it might take a long t
 ```
 
 Before running this scanner, please 
-[enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
+[enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}).
 
 ## Firewall rules scanner
 
