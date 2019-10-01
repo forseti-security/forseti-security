@@ -304,7 +304,7 @@ def define_model(model_name, dbengine, model_seed):
         parent_type_name = Column(
             get_string_by_dialect(dbengine.dialect.name, 700),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        name = Column(String(256), nullable=False)
+        name = Column(String(1024), nullable=False)
         type = Column(String(128), nullable=False)
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
