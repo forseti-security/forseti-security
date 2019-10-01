@@ -321,9 +321,15 @@ class FirewallRules(object):
                     # Don't add the rule if it's network does not match
                     # network_name
                     LOGGER.info('Firewall rule does not apply to network %s, '
-                                'skipping: %s', rule_network,
+                                'skipping: %s', network_name,
                                 json.dumps(new_rule, sort_keys=True))
                     return
+
+                # Normalize network value to full network URL for rules that
+                # already include a network name, so comparison with a rule
+                # from the API will return True
+                new_rule['network'] = build_network_url(self._project,
+                                                        network_name)
             else:
                 new_rule['network'] = build_network_url(self._project,
                                                         network_name)

@@ -35,6 +35,9 @@ DEFAULT_ASSET_TYPES = [
     'appengine.googleapis.com/Service',
     'appengine.googleapis.com/Version',
     'bigquery.googleapis.com/Dataset',
+    'bigtableadmin.googleapis.com/Cluster',
+    'bigtableadmin.googleapis.com/Instance',
+    'bigtableadmin.googleapis.com/Table',
     'cloudbilling.googleapis.com/BillingAccount',
     'cloudkms.googleapis.com/CryptoKey',
     'cloudkms.googleapis.com/CryptoKeyVersion',
@@ -42,12 +45,14 @@ DEFAULT_ASSET_TYPES = [
     'cloudresourcemanager.googleapis.com/Folder',
     'cloudresourcemanager.googleapis.com/Organization',
     'cloudresourcemanager.googleapis.com/Project',
+    'compute.googleapis.com/Address',
     'compute.googleapis.com/Autoscaler',
     'compute.googleapis.com/BackendBucket',
     'compute.googleapis.com/BackendService',
     'compute.googleapis.com/Disk',
     'compute.googleapis.com/Firewall',
     'compute.googleapis.com/ForwardingRule',
+    'compute.googleapis.com/GlobalAddress',
     'compute.googleapis.com/GlobalForwardingRule',
     'compute.googleapis.com/HealthCheck',
     'compute.googleapis.com/HttpHealthCheck',
@@ -57,11 +62,14 @@ DEFAULT_ASSET_TYPES = [
     'compute.googleapis.com/InstanceGroup',
     'compute.googleapis.com/InstanceGroupManager',
     'compute.googleapis.com/InstanceTemplate',
+    'compute.googleapis.com/Interconnect',
+    'compute.googleapis.com/InterconnectAttachment',
     'compute.googleapis.com/License',
     'compute.googleapis.com/Network',
     'compute.googleapis.com/Project',
     'compute.googleapis.com/RegionBackendService',
     'compute.googleapis.com/Router',
+    'compute.googleapis.com/SecurityPolicy',
     'compute.googleapis.com/Snapshot',
     'compute.googleapis.com/SslCertificate',
     'compute.googleapis.com/Subnetwork',
@@ -180,13 +188,30 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         if asset_types:
             LOGGER.info('Limiting export to the following asset types: %s',
                         asset_types)
+        try:
+            results = cloudasset_client.export_assets(root_id,
+                                                      export_path,
+                                                      content_type=content_type,
+                                                      asset_types=asset_types,
+                                                      blocking=True,
+                                                      timeout=timeout)
+        except api_errors.ApiExecutionError as e:
+            if e.http_error.resp.status == 400:
+                LOGGER.warning('Bad request with unsupported resource types '
+                               'sent to CAI for %s under %s. Exporting all '
+                               'resources for Cloud Asset export.',
+                               content_type, root_id)
+                results = cloudasset_client.export_assets(
+                    root_id,
+                    export_path,
+                    content_type=content_type,
+                    asset_types=[],
+                    blocking=True,
+                    timeout=timeout)
+            else:
+                LOGGER.warning('API Error getting cloud asset data: %s', e)
+                return None
 
-        results = cloudasset_client.export_assets(root_id,
-                                                  export_path,
-                                                  content_type=content_type,
-                                                  asset_types=asset_types,
-                                                  blocking=True,
-                                                  timeout=timeout)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '
                      'object %s completed, result: %s.',
                      content_type, root_id, export_path, results)

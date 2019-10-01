@@ -213,7 +213,7 @@ class ProjectEnforcer(object):
         """
         rules_after_enforcement = None
         retry_enforcement_count = 0
-        while True and self.result.status not in (STATUS_ERROR, STATUS_DELETED):
+        while self.result.status not in (STATUS_ERROR, STATUS_DELETED):
             change_count = 0
             try:
                 change_count = firewall_enforcer.apply_firewall(
@@ -348,7 +348,8 @@ class ProjectEnforcer(object):
             for network_name in networks:
                 expected_rules.add_rules(
                     firewall_policy, network_name=network_name)
-        except fe.InvalidFirewallRuleError as e:
+        except (fe.DuplicateFirewallRuleNameError,
+                fe.InvalidFirewallRuleError) as e:
             raise EnforcementError(STATUS_ERROR, 'error adding the expected '
                                    'firewall rules from the policy: %s' % e)
         return expected_rules
@@ -390,7 +391,8 @@ class ProjectEnforcer(object):
                 STATUS_ERROR,
                 'error getting current firewall rules from API: %s'
                 % http_error)
-        except fe.InvalidFirewallRuleError as e:
+        except (fe.DuplicateFirewallRuleNameError,
+                fe.InvalidFirewallRuleError) as e:
             raise EnforcementError(STATUS_ERROR,
                                    'error getting current firewall '
                                    'rules from API: %s' % e)

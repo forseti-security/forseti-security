@@ -19,6 +19,7 @@ from builtins import str
 from builtins import object
 import ctypes
 from functools import partial
+import hashlib
 import json
 import os
 
@@ -42,7 +43,8 @@ def size_t_hash(key):
     Returns:
         str: The hashed key.
     """
-    return '%u' % ctypes.c_size_t(hash(key)).value
+    hash_digest = hashlib.blake2b(key.encode()).hexdigest()  # pylint: disable=no-member
+    return '%u' % ctypes.c_size_t(int(hash_digest, 16)).value
 
 
 def from_root_id(client, root_id, root=True):
@@ -248,7 +250,7 @@ class Resource(object):
         """Get data on this resource.
 
         Returns:
-            str: raw data.
+            dict: raw data.
         """
         return self._data
 
@@ -318,13 +320,29 @@ class Resource(object):
                        'scheduled for deletion']
         stack = [] if not stack else stack
         self._stack = stack
+
+        # Skip the current resource if it's in the excluded_resources list.
+        excluded_resources = visitor.config.variables.get(
+            'excluded_resources', {})
+        cur_resource_repr = set()
+        resource_name = '{}/{}'.format(self.type(), self.key())
+        cur_resource_repr.add(resource_name)
+        if self.type() == 'project':
+            # Supports matching on projectNumber.
+            project_number = '{}/{}'.format(self.type(), self['projectNumber'])
+            cur_resource_repr.add(project_number)
+        if cur_resource_repr.intersection(excluded_resources):
+            return
+
         self._visitor = visitor
         visitor.visit(self)
+
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
             try:
                 for resource in yielder.iter():
                     res = resource
+
                     new_stack = stack + [self]
 
                     # Parallelization for resource subtrees.
@@ -1026,6 +1044,31 @@ class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
     """The Resource implementation for bigquery table."""
 
 
+# Bigtable resource classes
+class BigtableCluster(resource_class_factory('bigtable_cluster', 'name',
+                                             hash_key=True)):
+    """The Resource implementation for Bigtable Cluster."""
+
+
+class BigtableInstance(resource_class_factory('bigtable_instance', 'name',
+                                              hash_key=True)):
+    """The Resource implementation for Bigtable Instance."""
+
+    @property
+    def instance_id(self):
+        """Get instance id of the Bigtable Instance
+
+        Returns:
+            str: id of this resource.
+        """
+        return self['name'].split('/')[-1]
+
+
+class BigtableTable(resource_class_factory('bigtable_table', 'name',
+                                           hash_key=True)):
+    """The Resource implementation for Bigtable Table."""
+
+
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
     """The Resource implementation for BillingAccount."""
@@ -1064,6 +1107,10 @@ class CloudSqlInstance(resource_class_factory('cloudsqlinstance', 'selfLink',
 
 
 # Compute Engine resource classes
+class ComputeAddress(resource_class_factory('compute_address', 'id')):
+    """The Resource implementation for Compute Address."""
+
+
 class ComputeAutoscaler(resource_class_factory('compute_autoscaler', 'id')):
     """The Resource implementation for Compute Autoscaler."""
 
@@ -1124,6 +1171,15 @@ class ComputeInstanceTemplate(resource_class_factory('instancetemplate', 'id')):
     """The Resource implementation for Compute InstanceTemplate."""
 
 
+class ComputeInterconnect(resource_class_factory('compute_interconnect', 'id')):
+    """The Resource implementation for Compute Interconnect."""
+
+
+class ComputeInterconnectAttachment(resource_class_factory(
+        'compute_interconnect_attachment', 'id')):
+    """The Resource implementation for Compute Interconnect Attachment."""
+
+
 class ComputeLicense(resource_class_factory('compute_license', 'id')):
     """The Resource implementation for Compute License."""
 
@@ -1138,6 +1194,11 @@ class ComputeProject(resource_class_factory('compute_project', 'id')):
 
 class ComputeRouter(resource_class_factory('compute_router', 'id')):
     """The Resource implementation for Compute Router."""
+
+
+class ComputeSecurityPolicy(resource_class_factory('compute_securitypolicy',
+                                                   'id')):
+    """The Resource implementation for Compute SecurityPolicy."""
 
 
 class ComputeSnapshot(resource_class_factory('snapshot', 'id')):
@@ -1859,6 +1920,61 @@ class BigqueryTableIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Table."""
 
 
+class BigtableClusterIterator(ResourceIterator):
+    """The Resource iterator implementation for Bigtable Cluster"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: BigtableCluster created
+        """
+        gcp = self.client
+        if not getattr(self.resource, 'instance_id', ''):
+            return
+
+        try:
+            for data, metadata in gcp.iter_bigtable_clusters(
+                    project_id=self.resource.parent()['projectId'],
+                    instance_id=self.resource.instance_id):
+                yield FACTORIES['bigtable_cluster'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
+class BigtableInstanceIterator(resource_iter_class_factory(
+        api_method_name='iter_bigtable_instances',
+        resource_name='bigtable_instance',
+        api_method_arg_key='projectNumber')):
+    """The Resource iterator implementation for Bigtable Instance."""
+
+
+class BigtableTableIterator(ResourceIterator):
+    """The Resource iterator implementation for Bigtable Table"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: BigtableTable created
+        """
+        gcp = self.client
+        if not getattr(self.resource, 'instance_id', ''):
+            return
+
+        try:
+            for data, metadata in gcp.iter_bigtable_tables(
+                    project_id=self.resource.parent()['projectId'],
+                    instance_id=self.resource.instance_id):
+                yield FACTORIES['bigtable_table'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -1889,6 +2005,12 @@ def compute_iter_class_factory(api_method_name, resource_name):
     return resource_iter_class_factory(
         api_method_name, resource_name, api_method_arg_key='projectNumber',
         resource_validation_method_name='compute_api_enabled')
+
+
+class ComputeAddressIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_address',
+        resource_name='compute_address')):
+    """The Resource iterator implementation for Compute Address."""
 
 
 class ComputeAutoscalerIterator(compute_iter_class_factory(
@@ -2006,6 +2128,18 @@ class ComputeInstanceTemplateIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute InstanceTemplate."""
 
 
+class ComputeInterconnectIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_interconnects',
+        resource_name='compute_interconnect')):
+    """The Resource iterator implementation for Interconnect."""
+
+
+class ComputeInterconnectAttachmentIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_interconnect_attachments',
+        resource_name='compute_interconnect_attachment')):
+    """The Resource iterator implementation for InterconnectAttachment."""
+
+
 class ComputeLicenseIterator(compute_iter_class_factory(
         api_method_name='iter_compute_licenses',
         resource_name='compute_license')):
@@ -2028,6 +2162,12 @@ class ComputeRouterIterator(compute_iter_class_factory(
         api_method_name='iter_compute_routers',
         resource_name='compute_router')):
     """The Resource iterator implementation for Compute Router."""
+
+
+class ComputeSecurityPolicyIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_securitypolicies',
+        resource_name='compute_securitypolicy')):
+    """The Resource iterator implementation for Compute SecurityPolicy."""
 
 
 class ComputeSnapshotIterator(compute_iter_class_factory(
@@ -2505,8 +2645,7 @@ class SpannerInstanceIterator(resource_iter_class_factory(
 class StorageBucketIterator(resource_iter_class_factory(
         api_method_name='iter_storage_buckets',
         resource_name='storage_bucket',
-        api_method_arg_key='projectNumber',
-        resource_validation_method_name='storage_api_enabled')):
+        api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Storage Bucket."""
 
 
@@ -2556,7 +2695,9 @@ FACTORIES = {
         'contains': [
             AppEngineAppIterator,
             BigqueryDataSetIterator,
+            BigtableInstanceIterator,
             CloudSqlInstanceIterator,
+            ComputeAddressIterator,
             ComputeAutoscalerIterator,
             ComputeBackendBucketIterator,
             ComputeBackendServiceIterator,
@@ -2571,10 +2712,13 @@ FACTORIES = {
             ComputeInstanceGroupManagerIterator,
             ComputeInstanceIterator,
             ComputeInstanceTemplateIterator,
+            ComputeInterconnectIterator,
+            ComputeInterconnectAttachmentIterator,
             ComputeLicenseIterator,
             ComputeNetworkIterator,
             ComputeProjectIterator,
             ComputeRouterIterator,
+            ComputeSecurityPolicyIterator,
             ComputeSnapshotIterator,
             ComputeSslCertificateIterator,
             ComputeSubnetworkIterator,
@@ -2648,9 +2792,32 @@ FACTORIES = {
         'cls': BigqueryTable,
         'contains': []}),
 
+    'bigtable_cluster': ResourceFactory({
+        'dependsOn': ['bigtable_instance'],
+        'cls': BigtableCluster,
+        'contains': []}),
+
+    'bigtable_instance': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': BigtableInstance,
+        'contains': [
+            BigtableClusterIterator,
+            BigtableTableIterator
+        ]}),
+
+    'bigtable_table': ResourceFactory({
+        'dependsOn': ['bigtable_instance'],
+        'cls': BigtableTable,
+        'contains': []}),
+
     'cloudsql_instance': ResourceFactory({
         'dependsOn': ['project'],
         'cls': CloudSqlInstance,
+        'contains': []}),
+
+    'compute_address': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeAddress,
         'contains': []}),
 
     'compute_autoscaler': ResourceFactory({
@@ -2723,6 +2890,16 @@ FACTORIES = {
         'cls': ComputeInstanceTemplate,
         'contains': []}),
 
+    'compute_interconnect': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeInterconnect,
+        'contains': []}),
+
+    'compute_interconnect_attachment': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeInterconnectAttachment,
+        'contains': []}),
+
     'compute_license': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeLicense,
@@ -2741,6 +2918,11 @@ FACTORIES = {
     'compute_router': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeRouter,
+        'contains': []}),
+
+    'compute_securitypolicy': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeSecurityPolicy,
         'contains': []}),
 
     'compute_snapshot': ResourceFactory({

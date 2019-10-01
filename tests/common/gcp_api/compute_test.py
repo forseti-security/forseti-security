@@ -152,22 +152,28 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_read_only(self, name, verb):
         """Test create/patch/update/delete firewall rule."""
+        # Mock the base URL as the API can return two different values. This
+        # ensures the test is always deterministic.
+        mock_base_url = 'https://www.googleapis.com/compute/v1/projects/'
         with mock.patch.object(self.gce_api_client.repository.firewalls,
-                               'read_only', return_value=True):
-            method = getattr(self.gce_api_client,
-                             '{}_firewall_rule'.format(verb))
-            results = method(self.project_id,
-                             rule=fake_compute.FAKE_FIREWALL_RULE)
-            expected_result = {
-                'targetLink': (
-                    'https://www.googleapis.com/compute/v1/projects/'
-                    'project1/global/firewalls/fake-firewall'),
-                'operationType': verb,
-                'name': 'fake-firewall',
-                'status': 'DONE',
-                'progress': 100,
-            }
-            self.assertDictEqual(expected_result, results)
+                               'read_only', True):
+            with mock.patch.object(
+                    self.gce_api_client.repository.firewalls.gcp_service,
+                    '_baseUrl', mock_base_url):
+                method = getattr(self.gce_api_client,
+                                 '{}_firewall_rule'.format(verb))
+                results = method(self.project_id,
+                                 rule=fake_compute.FAKE_FIREWALL_RULE)
+                expected_result = {
+                    'targetLink': (
+                        mock_base_url +
+                        'project1/global/firewalls/fake-firewall'),
+                    'operationType': verb,
+                    'name': 'fake-firewall',
+                    'status': 'DONE',
+                    'progress': 100,
+                }
+                self.assertDictEqual(expected_result, results)
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
     def test_cud_firewall_rule_blocking(self, name, verb):

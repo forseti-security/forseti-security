@@ -43,6 +43,8 @@ def GenerateConfig(context):
     """Generate configuration."""
 
     FORSETI_HOME = '$USER_HOME/forseti-security'
+    POLICY_LIBRARY_HOME = '$USER_HOME/policy-library'
+    POLICY_LIBRARY_SYNC_ENABLED = 'false'
 
     DOWNLOAD_FORSETI = (
         "git clone {src_path}.git".format(
@@ -94,8 +96,12 @@ git checkout ${{latest_version[0]}}"""
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
         'export FORSETI_SERVER_CONF={forseti_server_conf}\n'
+        'export POLICY_LIBRARY_HOME={policy_library_home}\n'
+        'export POLICY_LIBRARY_SYNC_ENABLED={policy_library_sync_enabled}\n'
         ).format(forseti_home=FORSETI_HOME,
-                 forseti_server_conf=FORSETI_SERVER_CONF)
+                 forseti_server_conf=FORSETI_SERVER_CONF,
+                 policy_library_home=POLICY_LIBRARY_HOME,
+                 policy_library_sync_enabled=POLICY_LIBRARY_SYNC_ENABLED)
 
     RUN_FREQUENCY = context.properties['run-frequency']
 
@@ -243,8 +249,9 @@ gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
 # Download the Newest Config Validator constraints from GCS
-rm -rf {forseti_home}/policy-library
-gsutil cp -r gs://{scanner_bucket}/policy-library {forseti_home}/
+rm -rf {policy_library_home}
+sudo mkdir -m 777 {policy_library_home}
+gsutil cp -r gs://{scanner_bucket}/policy-library {policy_library_home}/
 
 # Start Forseti service depends on vars defined above.
 bash ./install/gcp/scripts/initialize_forseti_services.sh
@@ -302,6 +309,7 @@ echo "Execution of startup script finished"
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,
+    policy_library_home=POLICY_LIBRARY_HOME,
 
     # Download the Forseti conf and rules.
     scanner_bucket=SCANNER_BUCKET,

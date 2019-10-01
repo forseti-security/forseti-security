@@ -299,6 +299,11 @@ class Rule(object):
         )
 
         if has_violation:
+            violation_data = {
+                'full_name': res.full_name,
+                'resource_type': res.type,
+                'locations': res.locations
+            }
             yield RuleViolation(
                 resource_id=res.id,
                 resource_name=res.display_name,
@@ -307,7 +312,7 @@ class Rule(object):
                 rule_index=self.index,
                 rule_name=self.name,
                 violation_type='LOCATION_VIOLATION',
-                violation_data=str(res.locations),
+                violation_data=violation_data,
                 resource_data=res.data,
             )
             return
