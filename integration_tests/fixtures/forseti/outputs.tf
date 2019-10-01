@@ -77,3 +77,8 @@ output "forseti-cai-storage-bucket" {
   value       = "${module.forseti-install-simple.forseti-cai-storage-bucket}"
 }
 
+output "resources_names" {
+  description = "Forseti KMS resources"
+  value       = ["${google_kms_key_ring.keyring.name}", "${google_kms_crypto_key.example-key.name}"]
+}
+

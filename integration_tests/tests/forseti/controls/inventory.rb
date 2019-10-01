@@ -1,3 +1,21 @@
+/**
+* Copyright 2018 Google LLC
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+resources_names = attribute('resources_names')
+
 require 'json'
 control 'inventory' do
 
@@ -22,6 +40,10 @@ control 'inventory' do
 
              it "should be visible in the database" do
                  expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"").stdout).to match /1/
+             end
+
+             it "should be visible in the database" do
+                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"").stdout).to match /#{resources_names.count}/
              end
         end
 
