@@ -749,8 +749,8 @@ def define_model(model_name, dbengine, model_seed):
                 resource_type (str): type of the resource to scan
                 parent_type_name (str): type_name of the parent resource
 
-            Yields:
-                Resource: resource that match the query
+            Returns:
+                Generator: Generator of resources returned from the query.
             """
             query = (
                 session.query(Resource)
@@ -761,7 +761,7 @@ def define_model(model_name, dbengine, model_seed):
             if parent_type_name:
                 query = query.filter(
                     Resource.parent_type_name == parent_type_name)
-            yield page_query(query)
+            return page_query(query)
 
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):

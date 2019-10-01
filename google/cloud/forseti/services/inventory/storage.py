@@ -718,8 +718,9 @@ class DataAccess(object):
             fetch_category (Categories): The category of data to fetch.
             with_parent (bool): Join parent with results, yield tuples.
 
-        Yields:
-            object: Single row object or child/parent if 'with_parent' is set.
+        Returns:
+            Generator: Generator of single row object or child/parent
+                if 'with_parent' is set.
         """
         filters = [Inventory.inventory_index_id == inventory_index_id,
                    Inventory.category == fetch_category]
@@ -741,7 +742,7 @@ class DataAccess(object):
 
         base_query = base_query.order_by(Inventory.id.asc())
 
-        yield dao.page_query(base_query)
+        return dao.page_query(base_query)
 
     @classmethod
     def get_root(cls, session, inventory_index_id):
