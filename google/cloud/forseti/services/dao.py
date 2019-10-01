@@ -299,10 +299,10 @@ def define_model(model_name, dbengine, model_seed):
         cai_resource_name = Column(String(4096))
         cai_resource_type = Column(String(512))
         full_name = Column(String(2048), nullable=False)
-        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 256),
+        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 800),
                            primary_key=True)
         parent_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 256),
+            get_string_by_dialect(dbengine.dialect.name, 800),
             ForeignKey('{}.type_name'.format(resources_tablename)))
         name = Column(String(256), nullable=False)
         type = Column(String(128), nullable=False)
@@ -352,10 +352,10 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
         resource_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 256),
+            get_string_by_dialect(dbengine.dialect.name, 800),
             ForeignKey('{}.type_name'.format(resources_tablename)))
 
-        role_name = Column(get_string_by_dialect(dbengine.dialect.name, 256),
+        role_name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
                            ForeignKey('{}.name'.format(roles_tablename)))
 
         resource = relationship('Resource', remote_side=[resource_type_name])
