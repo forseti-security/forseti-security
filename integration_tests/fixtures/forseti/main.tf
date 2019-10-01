@@ -120,15 +120,15 @@ resource "null_resource" "install-mysql-client" {
   }
 }
 
-resource "google_kms_key_ring" "keyring" {
+resource "google_kms_key_ring" "example-keyring" {
   project = "${var.project_id}"
   name = "keyring-example"
   location = "global"
 }
 
-resource "google_kms_crypto_key" "example-key" {
+resource "google_kms_crypto_key" "example-crypto-key" {
   name            = "crypto-key-example"
-  key_ring        = "${google_kms_key_ring.keyring.self_link}"
+  key_ring        = "${google_kms_key_ring.example-keyring.self_link}"
   rotation_period = "100000s"
 
   lifecycle {

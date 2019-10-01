@@ -79,6 +79,6 @@ output "forseti-cai-storage-bucket" {
 
 output "resources_names" {
   description = "Forseti KMS resources"
-  value       = ["${google_kms_key_ring.keyring.name}", "${google_kms_crypto_key.example-key.name}"]
+  value       = ["${google_kms_key_ring.example-keyring.name}", "${google_kms_crypto_key.example-crypto-key.name}"]
 }
 
