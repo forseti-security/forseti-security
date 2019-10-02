@@ -1,4 +1,16 @@
-
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 kms_resources_names = attribute('kms_resources_names')
 
@@ -75,11 +87,11 @@ control 'inventory' do
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti inventory delete #{@inventory_id}").stderr).to match ""
+                expect(command("forseti inventory delete #{@inventory_id}").stdout).to match /#{@inventory_id}/
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti inventory delete #{@inventory_id}").stdout).to match /#{@inventory_id}/
+                expect(command("forseti inventory delete #{@inventory_id}").stderr).to match ""
             end
 
             # Displays number of inventories in the database after deleting an inventory.
@@ -110,7 +122,7 @@ control 'inventory' do
 
             # Displays number of inventories in the database after purging inventories.
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"").stdout).to match /0/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from inventory_index;\"").stdout).to match /0/
             end
         end
     end

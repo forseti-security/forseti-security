@@ -1,3 +1,16 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 require 'json'
 control 'model' do
@@ -36,11 +49,11 @@ control 'model' do
         describe "List a model" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti model list model_new").stderr).to eq ""
+                expect(command("forseti model list").stderr).to eq ""
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti model list model_new").stderr).to match /SUCCESS/
+                expect(command("forseti model list").stdout).to match /model_new/
             end
         end
 
@@ -59,19 +72,19 @@ control 'model' do
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti model delete model_test").stderr).to eq ""
+                expect(command("forseti model list").stdout).to match /model_test/
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti model delete model_test").stdout).to match /SUCCESS/
+                expect(command("forseti model delete model_new").stdout).to match /SUCCESS/
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_test';\"").stdout).to match /0/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_test';\"").stdout).to match /1/
             end
 
             it "should be visible in the database" do
-                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_new';\"").stdout).to match /1/
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = 'model_new';\"").stdout).to match /0/
             end
 
             after(:context) do
