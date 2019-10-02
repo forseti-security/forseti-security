@@ -54,7 +54,7 @@ attributes:
 - name: forseti-cai-storage-bucket
   required: true
   type: string
-- name: resources_names
+- name: kms_resources_names
   required: true
   type: array
 depends:

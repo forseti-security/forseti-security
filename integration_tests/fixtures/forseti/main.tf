@@ -125,12 +125,12 @@ resource "random_pet" "random_name_generator" {
 
 resource "google_kms_key_ring" "test-keyring" {
   project = "${var.project_id}"
-  name = "keyring-new-example.${random_pet.random_name_generator}"
+  name = "keyring-new-example.$${random_pet.random_name_generator}"
   location = "global"
 }
 
 resource "google_kms_crypto_key" "test-crypto-key" {
-  name            = "crypto-key-new-example.${random_pet.random_name_generator}"
+  name            = "crypto-key-new-example.$${random_pet.random_name_generator}"
   key_ring        = "${google_kms_key_ring.test-keyring.self_link}"
   rotation_period = "100000s"
 

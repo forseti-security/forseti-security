@@ -1,20 +1,6 @@
-/**
-* Copyright 2018 Google LLC
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
 
-resources_names = attribute('resources_names')
+
+kms_resources_names = attribute('kms_resources_names')
 
 require 'json'
 control 'inventory' do
@@ -43,7 +29,7 @@ control 'inventory' do
              end
 
              it "should be visible in the database" do
-                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"").stdout).to match /#{resources_names.count}/
+                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"").stdout).to match /#{kms_resources_names.count}/
              end
         end
 
@@ -51,6 +37,10 @@ control 'inventory' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory list").stderr).to eq ""
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
             end
 
             it "should be visible in the database" do
@@ -62,6 +52,10 @@ control 'inventory' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory get #{@inventory_id}").stderr).to eq ""
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
             end
 
             it "should be visible in the database" do
@@ -82,6 +76,10 @@ control 'inventory' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory delete #{@inventory_id}").stderr).to match ""
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory delete #{@inventory_id}").stdout).to match /#{@inventory_id}/
             end
 
             # Displays number of inventories in the database after deleting an inventory.
@@ -108,6 +106,11 @@ control 'inventory' do
             # Displays number of inventories in the database after purging inventories.
             it "should be visible in the database" do
                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"").stdout).to match /0/
+            end
+
+            # Displays number of inventories in the database after purging inventories.
+            it "should be visible in the database" do
+                expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index;\"").stdout).to match /0/
             end
         end
     end
