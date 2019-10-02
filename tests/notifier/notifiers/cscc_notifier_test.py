@@ -32,6 +32,15 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         super(CsccNotifierTest, self).setUp()
         self.maxDiff = None
 
+        self.api_quota_configs = {
+            'api_quota': {
+                'securitycenter': {
+                    'max_calls': 14,
+                    'period': 1.0
+                }
+            }
+        }
+
     def tearDown(self):
         """Tear down method."""
         super(CsccNotifierTest, self).tearDown()
@@ -99,7 +108,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         violations_as_dict = self._populate_and_retrieve_violations()
 
         finding_results = (
-            cscc_notifier.CsccNotifier('iii')._transform_for_api(
+            cscc_notifier.CsccNotifier('iii', self.api_quota_configs)._transform_for_api(
                 violations_as_dict,
                 source_id='organizations/11111/sources/22222'))
 
@@ -109,7 +118,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
     def test_api_is_invoked_correctly(self):
 
-        notifier = cscc_notifier.CsccNotifier(None)
+        notifier = cscc_notifier.CsccNotifier(self.api_quota_configs, None)
 
         notifier._send_findings_to_cscc = mock.MagicMock()
         notifier.LOGGER = mock.MagicMock()
@@ -196,7 +205,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
-        notifier = cscc_notifier.CsccNotifier('123')
+        notifier = cscc_notifier.CsccNotifier('123', self.api_quota_configs)
 
         inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
                                                             FINDINGS_IN_CSCC)
@@ -241,7 +250,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
-        notifier = cscc_notifier.CsccNotifier('123')
+        notifier = cscc_notifier.CsccNotifier('123', self.api_quota_configs)
 
         inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
                                                             FINDINGS_IN_CSCC)
@@ -277,6 +286,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
             'resource_type': 'cloudsqlinstance'}]
 
         mock_list.list_findings.return_value = {'readTime': '111'}
-        notifier = cscc_notifier.CsccNotifier('abc')
+        notifier = cscc_notifier.CsccNotifier('abc', self.api_quota_configs)
         notifier._send_findings_to_cscc(violations, source_id)
         self.assertFalse(mock_list.update_finding.called)

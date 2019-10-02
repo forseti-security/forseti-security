@@ -19,6 +19,7 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
@@ -105,19 +106,24 @@ class SecurityCenterClient(object):
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, version=None):
+    def __init__(self, api_quota_configs, **kwargs):
         """Initialize.
 
-        TODO: Add api quota configs here.
-        max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            inventory_configs.api_quota_configs, API_NAME)
-
         Args:
-            version (str): The version of the API to use.
+            api_quota_configs (dict): API quota configs
+            **kwargs (dict): The kwargs.
         """
+
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            api_quota_configs, API_NAME)
+
+        version = kwargs.get('version', 'v1')
         LOGGER.debug('Initializing SecurityCenterClient with version: %s',
                      version)
-        self.repository = SecurityCenterRepositoryClient(version=version)
+        self.repository = SecurityCenterRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            version=version)
 
     def create_finding(self, finding, source_id=None, finding_id=None):
         """Creates a finding in CSCC.
