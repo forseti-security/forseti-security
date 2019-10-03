@@ -133,9 +133,5 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   name            = "crypto-key-${random_pet.random_name_generator.id}"
   key_ring        = "${google_kms_key_ring.test-keyring.self_link}"
   rotation_period = "100000s"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
