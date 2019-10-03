@@ -48,11 +48,11 @@ control 'inventory' do
         describe "List an inventory" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti inventory list").stderr).to eq ""
+                expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
             end
 
             it "should be visible from the command-line" do
-                expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
+                expect(command("forseti inventory list").stdout).to match /SUCCESS/
             end
 
             it "should be visible in the database" do
@@ -61,10 +61,6 @@ control 'inventory' do
         end
 
         describe "Get an inventory" do
-
-            it "should be visible from the command-line" do
-                expect(command("forseti inventory get #{@inventory_id}").stderr).to eq ""
-            end
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
@@ -88,10 +84,6 @@ control 'inventory' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti inventory delete #{@inventory_id}").stdout).to match /#{@inventory_id}/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti inventory delete #{@inventory_id}").stderr).to match ""
             end
 
             # Displays number of inventories in the database after deleting an inventory.

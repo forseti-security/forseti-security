@@ -29,10 +29,6 @@ control 'model' do
         describe "Create and get a model" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti model get model_new").stderr).to eq ""
-            end
-
-            it "should be visible from the command-line" do
                 expect(command("forseti model get model_new").stdout).to match /model_new/
             end
 
@@ -49,19 +45,11 @@ control 'model' do
         describe "List a model" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti model list").stderr).to eq ""
-            end
-
-            it "should be visible from the command-line" do
                 expect(command("forseti model list").stdout).to match /model_new/
             end
         end
 
         describe "Use a model" do
-
-            it "should be visible from the command-line" do
-                expect(command("forseti model use model_new").stderr).to eq ""
-            end
 
             it "should be visible from the command-line" do
                 expect(command("forseti model use model_new").stdout).to eq ""
