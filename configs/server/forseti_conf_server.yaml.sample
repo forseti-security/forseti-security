@@ -87,10 +87,6 @@ inventory:
           max_calls: 9
           period: 1.0
           disable_polling: False
-        securitycenter:
-          max_calls: 1
-          period: 1.1
-          disable_polling: False
         servicemanagement:
           max_calls: 2
           period: 1.1

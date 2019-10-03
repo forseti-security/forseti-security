@@ -34,8 +34,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True,
-                 version=None):
+                 use_rate_limiter=True):
         """Constructor.
         Args:
             quota_max_calls (int): Allowed requests per <quota_period> for the
@@ -55,7 +54,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            API_NAME, versions=[self.version],
+            API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
