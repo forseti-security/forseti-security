@@ -118,7 +118,7 @@ server and the command-line interface (CLI) client:
   ```bash
   forseti_server \
   --endpoint "localhost:50051" \
-  --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
+  --forseti_db "mysql+pymysql://root@127.0.0.1:3306/forseti_security" \
   --services scanner model inventory explain notifier \
   --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
   --log_level=info \
