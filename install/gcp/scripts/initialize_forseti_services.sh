@@ -32,7 +32,7 @@ fi
 # resolved in the future, we should create a forseti db user instead of using
 # root.
 # https://github.com/GoogleCloudPlatform/forseti-security/issues/921
-SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://{DB_USER}:{DB_PASSWORD}@127.0.0.1:${SQL_PORT}"
+SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://{SQL_DB_USER}:{SQL_DB_PASSWORD}@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"

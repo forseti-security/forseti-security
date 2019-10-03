@@ -32,8 +32,8 @@ import google.cloud.forseti.services.dao as general_dao
 from google.cloud.forseti.common.util import logger
 
 DB_NAME = os.environ.get('FORSETI_DB_NAME', 'forseti_security')
-DB_USER = os.environ.get('DB_USER', '')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+DB_USER = os.environ.get('SQL_DB_USER', '')
+DB_PASSWORD = os.environ.get('SQL_DB_PASSWORD', '')
 DEFAULT_DB_CONN_STR = (f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@'
                        f'127.0.0.1:3306/{DB_NAME}')
 LOGGER = logger.get_logger(__name__)
