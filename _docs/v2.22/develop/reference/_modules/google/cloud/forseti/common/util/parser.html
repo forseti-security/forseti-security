@@ -1,0 +1,117 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.parser"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.parser</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Utility functions for parsing various data.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">dateutil</span> <span class="k">import</span> <span class="n">parser</span> <span class="k">as</span> <span class="n">dateutil_parser</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_member_info"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.parser.html#google.cloud.forseti.common.util.parser.parse_member_info">[docs]</a><span class="k">def</span> <span class="nf">parse_member_info</span><span class="p">(</span><span class="n">member</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse out the components of an IAM policy binding member.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        member (str): An IAM policy member, of the format</span>
+<span class="sd">            &quot;{membertype}:{email address}&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The member type.</span>
+<span class="sd">        str: The name portion of the member.</span>
+<span class="sd">        str: The domain of the member.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">member_type</span><span class="p">,</span> <span class="n">email</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;@&#39;</span> <span class="ow">in</span> <span class="n">email</span><span class="p">:</span>
+        <span class="n">member_name</span><span class="p">,</span> <span class="n">member_domain</span> <span class="o">=</span> <span class="n">email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Member is really something like domain:google.com</span>
+        <span class="n">member_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">member_domain</span> <span class="o">=</span> <span class="n">email</span>
+
+    <span class="k">return</span> <span class="n">member_type</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">member_domain</span></div>
+
+
+<div class="viewcode-block" id="format_timestamp"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.parser.html#google.cloud.forseti.common.util.parser.format_timestamp">[docs]</a><span class="k">def</span> <span class="nf">format_timestamp</span><span class="p">(</span><span class="n">timestamp_str</span><span class="p">,</span> <span class="n">datetime_formatter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse and stringify a timestamp to a specified format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        timestamp_str (str): A timestamp.</span>
+<span class="sd">        datetime_formatter (str): A format string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The formatted, stringified timestamp.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;&quot;&#39;</span> <span class="ow">in</span> <span class="n">timestamp_str</span> <span class="ow">or</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">timestamp_str</span><span class="p">:</span>
+            <span class="c1"># Make sure the timestamp is not surrounded by any quotes</span>
+            <span class="n">timestamp_str</span> <span class="o">=</span> <span class="n">timestamp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">timestamp_str</span> <span class="o">=</span> <span class="n">timestamp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">formatted_timestamp</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">dateutil_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">timestamp_str</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime_formatter</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Unable to parse/format timestamp: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">, &#39;</span>
+                       <span class="s1">&#39;datetime_formatter: </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                       <span class="n">timestamp_str</span><span class="p">,</span> <span class="n">datetime_formatter</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">formatted_timestamp</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">formatted_timestamp</span></div>
+
+
+<div class="viewcode-block" id="json_stringify"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.parser.html#google.cloud.forseti.common.util.parser.json_stringify">[docs]</a><span class="k">def</span> <span class="nf">json_stringify</span><span class="p">(</span><span class="n">obj_to_jsonify</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a python object to json string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj_to_jsonify (dict): The object to json stringify.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The json-stringified dict.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: We should probably try and catch something here.</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj_to_jsonify</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="json_unstringify"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.parser.html#google.cloud.forseti.common.util.parser.json_unstringify">[docs]</a><span class="k">def</span> <span class="nf">json_unstringify</span><span class="p">(</span><span class="n">json_to_objify</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a json string to a python object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_to_objify (str): The json string.</span>
+<span class="sd">        default (object): The default value if no json string is passed in.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: The un-stringified object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_to_objify</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">default</span>
+
+    <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="k">return</span> <span class="n">parsed</span></div>
+</pre></div>

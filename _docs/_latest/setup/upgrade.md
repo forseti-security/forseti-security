@@ -1080,6 +1080,65 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.20.0 to 2.21.0" content=upgrading_2_20_0_to_2_21_0 uid=22 %}
 
+{% capture upgrading_2_21_0_to_2_22_0 %}
+
+You can upgrade from 2.21.0 to 2.22.0 using Deployment Manager or Terraform. 
+
+### Steps to upgrade using Deployment Manager
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.22.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory,
+   run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone https://github.com/forseti-security/forseti-security.git` to
+   clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.22.0` to checkout version `v2.22.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS
+bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command 
+`gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml
+deployment-templates/deploy-forseti-server-xxxxx-2-22-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-22-0.yaml` for edit.
+  1. Update the `forseti-version` inside the deployment template to `tags/v2.22.0`.
+  
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-22-0.yaml` back to the GCS bucket
+(`forseti-server-xxxxxx/deployment_templates`) by running command 
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-22-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+deployment_templates/deploy-forseti-server-xxxxx-2-22-0.yaml`.
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deployment-templates/deploy-forseti-server-xxxxx-2-22-0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section
+`Error while running deployment manager` for details on how to workaround the error.
+1. Reset the Forseti server VM instance for changes in startup script to take effect. 
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE` 
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-9` for Forseti client.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+   **Inventory**
+   - Add Bigtable Cluster, Instance and Table as Cloud Asset Inventory assets.
+      ```
+        inventory:
+            ...
+            cai:
+                 ...
+                 #asset_types:
+                    #    - bigtableadmin.googleapis.com/Cluster
+                    #    - bigtableadmin.googleapis.com/Instance
+                    #    - bigtableadmin.googleapis.com/Table
+            ...
+      ```
+
+### Steps to upgrade using Terraform
+
+1. Update the `version` inside `main.tf` file to `4.3.0`.
+1. Run command `terraform init` to initialize terraform.
+1. Run command `terraform plan` to see the infrastructure plan.
+1. Run command `terraform apply` to apply the infrastructure build.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.21.0 to 2.22.0" content=upgrading_2_21_0_to_2_22_0 uid=23 %}
+
 {% capture deployment_manager_error %}
 
 If you get the following error while running the deployment manager:
