@@ -42,7 +42,6 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
-            version (str): The version of the API to use.
         """
         LOGGER.debug('Initializing SecurityCenterRepositoryClient')
         if not quota_max_calls:
@@ -50,7 +49,6 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
 
         self._findings = None
 
-        self.version = version
         use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
@@ -68,7 +66,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._findings:
             self._findings = self._init_repository(
                 _SecurityCenterOrganizationsFindingsRepository,
-                version=self.version)
+                version='v1')
         return self._findings
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
@@ -116,13 +114,9 @@ class SecurityCenterClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             api_quota_configs, API_NAME)
 
-        version = kwargs.get('version', 'v1')
-        LOGGER.debug('Initializing SecurityCenterClient with version: %s',
-                     version)
         self.repository = SecurityCenterRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=quota_period,
-            version=version)
+            quota_period=quota_period)
 
     def create_finding(self, finding, source_id=None, finding_id=None):
         """Creates a finding in CSCC.
