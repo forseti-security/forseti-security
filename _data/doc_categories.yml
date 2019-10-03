@@ -13,19 +13,6 @@ latest:
   href: docs/$$VERSION$$/develop/
 - title: FAQ
   href: docs/$$VERSION$$/faq/
-v2.11:
-- title: Concepts
-  href: docs/$$VERSION$$/concepts/
-- title: Setup
-  href: docs/$$VERSION$$/setup/
-- title: Configure
-  href: docs/$$VERSION$$/configure/
-- title: Use
-  href: docs/$$VERSION$$/use/
-- title: Develop
-  href: docs/$$VERSION$$/develop/
-- title: FAQ
-  href: docs/$$VERSION$$/faq/
 v2.12:
 - title: Concepts
   href: docs/$$VERSION$$/concepts/
@@ -143,4 +130,29 @@ v2.20:
   href: docs/$$VERSION$$/develop/
 - title: FAQ
   href: docs/$$VERSION$$/faq/
-
+v2.21:
+- title: Concepts
+  href: docs/$$VERSION$$/concepts/
+- title: Setup
+  href: docs/$$VERSION$$/setup/
+- title: Configure
+  href: docs/$$VERSION$$/configure/
+- title: Use
+  href: docs/$$VERSION$$/use/
+- title: Develop
+  href: docs/$$VERSION$$/develop/
+- title: FAQ
+  href: docs/$$VERSION$$/faq/
+v2.22:
+- title: Concepts
+  href: docs/$$VERSION$$/concepts/
+- title: Setup
+  href: docs/$$VERSION$$/setup/
+- title: Configure
+  href: docs/$$VERSION$$/configure/
+- title: Use
+  href: docs/$$VERSION$$/use/
+- title: Develop
+  href: docs/$$VERSION$$/develop/
+- title: FAQ
+  href: docs/$$VERSION$$/faq/

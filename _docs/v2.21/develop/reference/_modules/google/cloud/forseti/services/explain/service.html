@@ -1,0 +1,449 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.explain.service"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.explain.service</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot; Explain gRPC service. &quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">grpc</span> <span class="k">import</span> <span class="n">StatusCode</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.explain</span> <span class="k">import</span> <span class="n">explain_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.explain</span> <span class="k">import</span> <span class="n">explain_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.explain</span> <span class="k">import</span> <span class="n">explainer</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.utils</span> <span class="k">import</span> <span class="n">autoclose_stream</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+<span class="c1"># pylint: disable=no-member</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">FAILED_PRECONDITION_MESSAGE</span> <span class="o">=</span> <span class="s1">&#39;Explainer is not supported for use.&#39;</span>
+
+
+<div class="viewcode-block" id="GrpcExplainer"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer">[docs]</a><span class="k">class</span> <span class="nc">GrpcExplainer</span><span class="p">(</span><span class="n">explain_pb2_grpc</span><span class="o">.</span><span class="n">ExplainServicer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Explain gRPC implementation.&quot;&quot;&quot;</span>
+
+    <span class="n">HANDLE_KEY</span> <span class="o">=</span> <span class="s1">&#39;handle&#39;</span>
+
+<div class="viewcode-block" id="GrpcExplainer._get_handle"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer._get_handle">[docs]</a>    <span class="k">def</span> <span class="nf">_get_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the handle associated with the gRPC call.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (object): gRPC context</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: handle of the GRPC call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">invocation_metadata</span><span class="p">()</span>
+        <span class="n">metadata_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+            <span class="n">metadata_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">metadata_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">HANDLE_KEY</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GrpcExplainer._determine_is_supported"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer._determine_is_supported">[docs]</a>    <span class="k">def</span> <span class="nf">_determine_is_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether Explainer is supported for clients to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if Explainer module can be used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inventory_config</span><span class="o">.</span><span class="n">root_resource_id</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;root_resource_id is not set in the server &#39;</span>
+                             <span class="s1">&#39;config file. Explain will not be supported.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">root_resource_id</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inventory_config</span><span class="o">.</span><span class="n">root_resource_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;organizations&#39;</span> <span class="ow">in</span> <span class="n">root_resource_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="GrpcExplainer._set_not_supported_status"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer._set_not_supported_status">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the status if service is not supported.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (object): gRPC context.</span>
+<span class="sd">            reply (object): proto message, depends on the service call</span>
+<span class="sd">                invoking this method</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message, depends on the service call invoking</span>
+<span class="sd">                this method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">set_code</span><span class="p">(</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">FAILED_PRECONDITION</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">set_details</span><span class="p">(</span><span class="n">FAILED_PRECONDITION_MESSAGE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reply</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">explainer_api</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            explainer_api (object): explainer library</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GrpcExplainer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span> <span class="o">=</span> <span class="n">explainer_api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_is_supported</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GrpcExplainer.Ping"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer.Ping">[docs]</a>    <span class="k">def</span> <span class="nf">Ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides the capability to check for service availability.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            _ (object): Not used</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message of ping</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">PingReply</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">ListResources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lists resources in the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: proto message of a generator of resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Resource</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">list_resources</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span>
+                                                  <span class="n">request</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Resource</span><span class="p">(</span>
+                <span class="n">full_resource_name</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">type_name</span><span class="p">)</span>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">ListGroupMembers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lists members in the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: proto message of a generator of members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GroupMember</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">member_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">list_group_members</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span>
+                                                         <span class="n">request</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">member_names</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GroupMember</span><span class="p">(</span><span class="n">member_name</span><span class="o">=</span><span class="n">member</span><span class="p">)</span>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">ListRoles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List roles from the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: proto message of a generator of roles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Role</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">role_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">list_roles</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">role_names</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Role</span><span class="p">(</span><span class="n">role_name</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GrpcExplainer.GetIamPolicy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer.GetIamPolicy">[docs]</a>    <span class="k">def</span> <span class="nf">GetIamPolicy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the policy for a resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message of IAM policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetIamPolicyReply</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span>
+                                               <span class="n">request</span><span class="o">.</span><span class="n">resource</span><span class="p">)</span>
+
+        <span class="n">etag</span> <span class="o">=</span> <span class="n">policy</span><span class="p">[</span><span class="s1">&#39;etag&#39;</span><span class="p">]</span>
+        <span class="n">bindings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">policy</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">binding</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">BindingOnResource</span><span class="p">()</span>
+            <span class="n">binding</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">binding</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>
+
+        <span class="n">reply</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">resource</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">bindings</span><span class="p">)</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">etag</span> <span class="o">=</span> <span class="n">etag</span>
+        <span class="k">return</span> <span class="n">reply</span></div>
+
+<div class="viewcode-block" id="GrpcExplainer.CheckIamPolicy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer.CheckIamPolicy">[docs]</a>    <span class="k">def</span> <span class="nf">CheckIamPolicy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks access according to policy to a specified resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message of whether access granted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">CheckIamPolicyReply</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">authorized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">check_iam_policy</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">permission</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">identity</span><span class="p">)</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">authorized</span>
+        <span class="k">return</span> <span class="n">reply</span></div>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">ExplainDenied</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides information on how to grant access.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Generator of proto message of explain denied result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">BindingStrategy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">binding_strategies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">explain_denied</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                           <span class="n">request</span><span class="o">.</span><span class="n">member</span><span class="p">,</span>
+                                                           <span class="n">request</span><span class="o">.</span><span class="n">resources</span><span class="p">,</span>
+                                                           <span class="n">request</span><span class="o">.</span><span class="n">permissions</span><span class="p">,</span>
+                                                           <span class="n">request</span><span class="o">.</span><span class="n">roles</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">overgranting</span><span class="p">,</span> <span class="n">bindings</span> <span class="ow">in</span> <span class="n">binding_strategies</span><span class="p">:</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">BindingStrategy</span><span class="p">(</span><span class="n">overgranting</span><span class="o">=</span><span class="n">overgranting</span><span class="p">)</span>
+            <span class="n">strategy</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">explain_pb2</span><span class="o">.</span><span class="n">Binding</span><span class="p">(</span>
+                <span class="n">member</span><span class="o">=</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resource</span><span class="o">=</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">role</span><span class="o">=</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">])</span>
+            <span class="k">yield</span> <span class="n">strategy</span>
+
+<div class="viewcode-block" id="GrpcExplainer.ExplainGranted"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer.ExplainGranted">[docs]</a>    <span class="k">def</span> <span class="nf">ExplainGranted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides information on why a member has access to a resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message of explain granted result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">ExplainGrantedReply</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">explain_granted</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="o">.</span><span class="n">member</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="o">.</span><span class="n">role</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="o">.</span><span class="n">permission</span><span class="p">)</span>
+
+        <span class="n">bindings</span><span class="p">,</span> <span class="n">member_graph</span><span class="p">,</span> <span class="n">resource_names</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="n">memberships</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">child</span><span class="p">,</span> <span class="n">parents</span> <span class="ow">in</span> <span class="n">member_graph</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">memberships</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Membership</span><span class="p">(</span>
+                    <span class="n">member</span><span class="o">=</span><span class="n">child</span><span class="p">,</span>
+                    <span class="n">parents</span><span class="o">=</span><span class="n">parents</span><span class="p">))</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">memberships</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">memberships</span><span class="p">)</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">resource_ancestors</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">resource_names</span><span class="p">)</span>
+        <span class="n">reply</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">explain_pb2</span><span class="o">.</span><span class="n">Binding</span><span class="p">(</span><span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="n">resource</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
+             <span class="k">for</span> <span class="n">resource</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">reply</span></div>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">GetAccessByPermissions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns stream of access based on permission/role.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): grpc request.</span>
+<span class="sd">            context (object): grpc context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Generator for access tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Access</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">get_access_by_permissions</span><span class="p">(</span>
+                    <span class="n">model_name</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">role_name</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">permission_name</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">expand_groups</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">expand_resources</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Access</span><span class="p">(</span><span class="n">members</span><span class="o">=</span><span class="n">members</span><span class="p">,</span>
+                                     <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span>
+                                     <span class="n">resource</span><span class="o">=</span><span class="n">resource</span><span class="p">)</span>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">GetAccessByResources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns members having access to the specified resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Generator of proto message of access tuples by resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Access</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">get_access_by_resources</span><span class="p">(</span>
+            <span class="n">model_name</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">permission_names</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">expand_groups</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">access</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Access</span><span class="p">(</span>
+                <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="n">members</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">access</span>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">GetAccessByMembers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns resources which can be accessed by the specified members.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Generator of proto message of access tuples by members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">Access</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">resources</span> <span class="ow">in</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">get_access_by_members</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">member_name</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">permission_names</span><span class="p">,</span>
+                                                     <span class="n">request</span><span class="o">.</span><span class="n">expand_resources</span><span class="p">):</span>
+            <span class="n">access</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">MemberAccess</span><span class="p">(</span>
+                <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">resources</span><span class="o">=</span><span class="n">resources</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">member_name</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">access</span>
+
+<div class="viewcode-block" id="GrpcExplainer.GetPermissionsByRoles"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainer.GetPermissionsByRoles">[docs]</a>    <span class="k">def</span> <span class="nf">GetPermissionsByRoles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns permissions for the specified roles.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request.</span>
+<span class="sd">            context (object): gRPC context.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: proto message of access tuples by permission</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetPermissionsByRolesReply</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_supported</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_not_supported_status</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">reply</span><span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_handle</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explainer</span><span class="o">.</span><span class="n">get_permissions_by_roles</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                         <span class="n">request</span><span class="o">.</span><span class="n">role_names</span><span class="p">,</span>
+                                                         <span class="n">request</span><span class="o">.</span><span class="n">role_prefixes</span><span class="p">)</span>
+
+        <span class="n">permissions_by_roles_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">permission</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">permissions_by_roles_map</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">permission</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">permissions_by_roles_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">permissions</span> <span class="ow">in</span> <span class="n">permissions_by_roles_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">permissions_by_roles_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">explain_pb2</span><span class="o">.</span><span class="n">GetPermissionsByRolesReply</span><span class="o">.</span><span class="n">PermissionsByRole</span><span class="p">(</span>
+                    <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">permissions</span><span class="o">=</span><span class="n">permissions</span><span class="p">))</span>
+
+        <span class="n">reply</span><span class="o">.</span><span class="n">permissionsbyroles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">permissions_by_roles_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reply</span></div></div>
+
+
+<div class="viewcode-block" id="GrpcExplainerFactory"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainerFactory">[docs]</a><span class="k">class</span> <span class="nc">GrpcExplainerFactory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Factory class for Explain service gRPC interface&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (object): ServiceConfig in server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+
+<div class="viewcode-block" id="GrpcExplainerFactory.create_and_register_service"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.explain.service.html#google.cloud.forseti.services.explain.service.GrpcExplainerFactory.create_and_register_service">[docs]</a>    <span class="k">def</span> <span class="nf">create_and_register_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create and register the Explain service.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            server (object): Server to register service to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: The instantiated gRPC service for Explainer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="n">GrpcExplainer</span><span class="p">(</span><span class="n">explainer_api</span><span class="o">=</span><span class="n">explainer</span><span class="o">.</span><span class="n">Explainer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">))</span>
+        <span class="n">explain_pb2_grpc</span><span class="o">.</span><span class="n">add_ExplainServicer_to_server</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Service </span><span class="si">%s</span><span class="s1"> created and registered.&#39;</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">service</span></div></div>
+</pre></div>

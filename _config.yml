@@ -140,64 +140,6 @@ defaults:
     values:
       category: Google Cloud Platform Resource Coverage
   - scope:
-      path: _docs/v2.10
-    values:
-      category: Overview (v2.10)
-      layout: docs
-  - scope:
-      path: _docs/v2.10/concepts
-    values:
-      category: Concepts (v2.10)
-  - scope:
-      path: _docs/v2.10/setup
-    values:
-      category: Setup (v2.10)
-  - scope:
-      path: _docs/v2.10/use
-    values:
-      category: Use (v2.10)
-  - scope:
-      path: _docs/v2.10/configure
-    values:
-      category: Configure (v2.10)
-  - scope:
-      path: _docs/v2.10/develop
-    values:
-      category: Develop (v2.10)
-  - scope:
-      path: _docs/v2.10/faq
-    values:
-      category: FAQ (v2.10)
-  - scope:
-      path: _docs/v2.11
-    values:
-      category: Overview (v2.11)
-      layout: docs
-  - scope:
-      path: _docs/v2.11/concepts
-    values:
-      category: Concepts (v2.11)
-  - scope:
-      path: _docs/v2.11/setup
-    values:
-      category: Setup (v2.11)
-  - scope:
-      path: _docs/v2.11/use
-    values:
-      category: Use (v2.11)
-  - scope:
-      path: _docs/v2.11/configure
-    values:
-      category: Configure (v2.11)
-  - scope:
-      path: _docs/v2.11/develop
-    values:
-      category: Develop (v2.11)
-  - scope:
-      path: _docs/v2.11/faq
-    values:
-      category: FAQ (v2.11)
-  - scope:
       path: _docs/v2.12
     values:
       category: Overview (v2.12)
@@ -488,3 +430,61 @@ defaults:
       path: _docs/v2.20/faq
     values:
       category: FAQ (v2.20)
+  - scope:
+      path: _docs/v2.21
+    values:
+      category: Overview (v2.21)
+      layout: docs
+  - scope:
+      path: _docs/v2.21/concepts
+    values:
+      category: Concepts (v2.21)
+  - scope:
+      path: _docs/v2.21/setup
+    values:
+      category: Setup (v2.21)
+  - scope:
+      path: _docs/v2.21/use
+    values:
+      category: Use (v2.21)
+  - scope:
+      path: _docs/v2.21/configure
+    values:
+      category: Configure (v2.21)
+  - scope:
+      path: _docs/v2.21/develop
+    values:
+      category: Develop (v2.21)
+  - scope:
+      path: _docs/v2.21/faq
+    values:
+      category: FAQ (v2.21)
+  - scope:
+      path: _docs/v2.22
+    values:
+      category: Overview (v2.22)
+      layout: docs
+  - scope:
+      path: _docs/v2.22/concepts
+    values:
+      category: Concepts (v2.22)
+  - scope:
+      path: _docs/v2.22/setup
+    values:
+      category: Setup (v2.22)
+  - scope:
+      path: _docs/v2.22/use
+    values:
+      category: Use (v2.22)
+  - scope:
+      path: _docs/v2.22/configure
+    values:
+      category: Configure (v2.22)
+  - scope:
+      path: _docs/v2.22/develop
+    values:
+      category: Develop (v2.22)
+  - scope:
+      path: _docs/v2.22/faq
+    values:
+      category: FAQ (v2.22)
