@@ -281,6 +281,10 @@ scanner:
 ##############################################################################
 
 notifier:
+    api_quota:
+        securitycenter:
+            max_calls: 14
+            period: 1.0
 
     # Provide connector details
     email_connector:
