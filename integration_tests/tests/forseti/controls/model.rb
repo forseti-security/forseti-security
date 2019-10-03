@@ -62,6 +62,14 @@ control 'model' do
             it "should be visible from the command-line" do
                 expect(command("forseti model use model_new").stderr).to eq ""
             end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti model use model_new").stdout).to eq ""
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti config show").stdout).to match /model/
+            end
         end
 
         describe "Delete a model" do

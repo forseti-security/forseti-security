@@ -33,6 +33,8 @@ jobs:
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
   - stage: Integration test
     name: Integration test - docker
+    # Check on cron ensures build for integration tests is triggered only when
+    # cron job runs on dev branch. This cron job is currently set to run daily.
     # if: env(TRAVIS_EVENT_TYPE) = cron
     services:
     - docker
