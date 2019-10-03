@@ -1116,16 +1116,14 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-9` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
    **Inventory**
-   - Add Bigtable Cluster, Instance and Table as Cloud Asset Inventory assets.
+   - Add Compute Security Policy to the Cloud Asset Inventory asset types.
       ```
         inventory:
             ...
             cai:
                  ...
                  #asset_types:
-                    #    - bigtableadmin.googleapis.com/Cluster
-                    #    - bigtableadmin.googleapis.com/Instance
-                    #    - bigtableadmin.googleapis.com/Table
+                    #    - compute.googleapis.com/SecurityPolicy
             ...
       ```
 
