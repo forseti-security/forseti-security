@@ -78,7 +78,7 @@ want to run the tests in Docker with your local changes, you need to do the foll
    docker ps
  
    # Copy the files from the local disk to the image
-   docker cp ./ <forseti/build_container_id>:/forseti-security/
+   docker cp ./ <forseti/build_container_id>:/home/forseti/forseti-security/
 
    # If you want to turn down the Docker container:
    docker kill <forseti/build_container_id>
