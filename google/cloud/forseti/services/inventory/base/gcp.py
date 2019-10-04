@@ -114,6 +114,32 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_bigtable_clusters(self, project_id, instance_id):
+        """Iterate Bigtable Clusters from GCP API.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+        """
+
+    @abc.abstractmethod
+    def iter_bigtable_instances(self, project_number):
+        """Iterate Bigtable Instances from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_bigtable_tables(self, project_id, instance_id):
+        """Iterate Bigtable Tables from GCP API.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+        """
+
+    @abc.abstractmethod
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from GCP API.
 
@@ -340,6 +366,13 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Security Policies from GCP API.
         Args:
             project_number (str): number of the project to query.
         """
@@ -1302,6 +1335,47 @@ class ApiClientImpl(ApiClient):
                                               dataset_reference['datasetId']):
             yield table, None
 
+    @create_lazy('bigtable', _create_bq)
+    def iter_bigtable_clusters(self, project_id, instance_id):
+        """Iterate Bigtable Clusters from GCP API.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Bigtable Clusters are not supported by '
+                                   'this API client')
+
+    @create_lazy('bigtable', _create_bq)
+    def iter_bigtable_instances(self, project_number):
+        """Iterate Bigtable Instances from GCP API.
+
+        Args:
+            project_number (str): The Project number.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Bigtable Instances are not supported by '
+                                   'this API client')
+
+    @create_lazy('bigtable', _create_bq)
+    def iter_bigtable_tables(self, project_id, instance_id):
+        """Iterate Bigtable Tables from GCP API.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Bigtable Tables are not supported by '
+                                   'this API client')
+
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from GCP API.
@@ -1683,6 +1757,18 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute Routers are not supported '
                                    'by this API client')
+
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Compute Engine Security Policies from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Security Policies are not '
+                                   'supported by this API client')
 
     @create_lazy('compute', _create_compute)
     def iter_compute_snapshots(self, project_number):

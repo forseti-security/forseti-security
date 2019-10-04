@@ -99,10 +99,6 @@ inventory:
           max_calls: 9
           period: 1.0
           disable_polling: False
-        securitycenter:
-          max_calls: 1
-          period: 1.1
-          disable_polling: False
         servicemanagement:
           max_calls: 2
           period: 1.1
@@ -140,6 +136,9 @@ inventory:
         #    - appengine.googleapis.com/Version
         #    - bigquery.googleapis.com/Dataset
         #    - bigquery.googleapis.com/Table
+        #    - bigtableadmin.googleapis.com/Cluster
+        #    - bigtableadmin.googleapis.com/Instance
+        #    - bigtableadmin.googleapis.com/Table
         #    - cloudbilling.googleapis.com/BillingAccount
         #    - cloudkms.googleapis.com/CryptoKey
         #    - cloudkms.googleapis.com/CryptoKeyVersion
@@ -172,6 +171,7 @@ inventory:
         #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
+        #    - compute.googleapis.com/SecurityPolicy
         #    - compute.googleapis.com/Snapshot
         #    - compute.googleapis.com/SslCertificate
         #    - compute.googleapis.com/Subnetwork
@@ -277,6 +277,10 @@ scanner:
 ##############################################################################
 
 notifier:
+    api_quota:
+        securitycenter:
+            max_calls: 14
+            period: 1.0
 
     # Provide connector details
     email_connector:

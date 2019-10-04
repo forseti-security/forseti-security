@@ -13,27 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-variable "gcp_project" {
-  description = "Name of the Google Cloud project to deploy to"
-}
-
-variable "gcp_region" {
-  description = "GCP region to create resources in"
-  default     = "us-central1"
-}
-
-variable "gcp_zone" {
-  description = "GCP zone to create resources in"
-  default     = "us-central1-f"
-}
-
-variable "gcp_ubuntu_1804_image" {
-  description = "Ubuntu version 18.04 image"
-  default     = "ubuntu-os-cloud/ubuntu-1804-lts"
-}
-
-variable "infrastructure_id" {
-  description = "Unique indentifier for the deployment (default: random ID)"
-  default     = ""
+output "turbinia-config" {
+  description = "Turbinia configuration"
+  value = "${data.template_file.turbinia-config-template.rendered}"
 }

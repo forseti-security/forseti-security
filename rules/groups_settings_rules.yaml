@@ -40,11 +40,10 @@ rules:
     groups_emails:
       - '*'
     settings:
-      allowExternalMembers: True
+      allowExternalMembers: False
       whoCanJoin: "INVITED_CAN_JOIN"
       whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
       whoCanAdd: "ALL_MANAGERS_CAN_ADD"
-      allowExternalMembers: False
       whoCanLeaveGroup: "ALL_MANAGERS_CAN_LEAVE"
   # - name: Recommended for groups only used for IAM and not for email
   #   mode: whitelist

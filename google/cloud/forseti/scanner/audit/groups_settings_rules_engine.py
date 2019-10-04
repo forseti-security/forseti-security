@@ -335,9 +335,6 @@ class Rule(object):
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rule = rule
-        self.blacklist_violation_reason = (
-            'rule specified ({}) together is not allowed')
-        self.whitelist_violation_reason = 'rule specified ({}) is required'
 
     def rule_requirements(self):
         """Used to create violation reason.
@@ -357,21 +354,18 @@ class Rule(object):
             settings (GroupsSettings): Groups Settings.
 
         Returns:
-            str: Statement of what the broken rule required,
-                or empty string in case that rule is not violated.
+             list: List of group settings in violation.
         """
-        has_violation = False
+        violation_settings = []
         if not self.rule['settings']:
-            return has_violation
+            return violation_settings
 
-        violates_every_setting_in_rule = True
         for setting, value in self.rule['settings'].items():
             if getattr(settings, setting) != value:
-                violates_every_setting_in_rule = False
-        if violates_every_setting_in_rule:
-            has_violation = True
+                return []
+            violation_settings.append(setting)
 
-        return has_violation
+        return violation_settings
 
     def find_whitelist_violation(self, settings):
         """Finds violations in case that rule is whitelist.
@@ -380,18 +374,14 @@ class Rule(object):
             settings (GroupsSettings): Groups settings.
 
         Returns:
-             str: Statement of what the broken rule required,
-                or empty string in case that rule is not violated.
+             list: List of group settings in violation.
         """
-        has_violation = False
-        a_setting_doesnt_match = False
+        violation_settings = []
         for setting, value in self.rule['settings'].items():
             if getattr(settings, setting) != value:
-                a_setting_doesnt_match = True
-        if a_setting_doesnt_match:
-            has_violation = True
+                violation_settings.append(setting)
 
-        return has_violation
+        return violation_settings
 
     def find_violations(self, settings):
         """Find GroupsSettings violations.
@@ -403,23 +393,20 @@ class Rule(object):
             list: Returns a list of RuleViolation named tuples.
         """
         violations = []
+        violation_settings = []
         if self.rule['mode'] == BLACKLIST:
-            has_violation = self.find_blacklist_violation(settings)
-            violation_reason = self.blacklist_violation_reason.format(
-                self.rule_requirements())
+            violation_settings = self.find_blacklist_violation(settings)
         elif self.rule['mode'] == WHITELIST:
-            has_violation = self.find_whitelist_violation(settings)
-            violation_reason = self.whitelist_violation_reason.format(
-                self.rule_requirements())
+            violation_settings = self.find_whitelist_violation(settings)
 
-        if has_violation:
+        if violation_settings:
             violations.append(RuleViolation(
                 group_email=settings.id,
                 resource_type=settings.type,
                 rule_index=self.rule_index,
                 rule_name=self.rule_name,
                 violation_type=VIOLATION_TYPE,
-                violation_reason=violation_reason,
+                violation_settings=violation_settings,
                 whoCanAdd=settings.whoCanAdd,
                 whoCanJoin=settings.whoCanJoin,
                 whoCanViewMembership=settings.whoCanViewMembership,
@@ -471,7 +458,7 @@ class Rule(object):
 # rule_index: int
 # rule_name: string
 # violation_type: string
-# violation_reason: string
+# violation_settings: list
 # whoCanAdd: string
 # whoCanJoin: string
 # whoCanViewMembership: string
@@ -481,7 +468,7 @@ class Rule(object):
 # whoCanLeaveGroup: string
 RuleViolation = namedtuple('RuleViolation',
                            ['group_email', 'resource_type', 'rule_index',
-                            'rule_name', 'violation_type', 'violation_reason',
+                            'rule_name', 'violation_type', 'violation_settings',
                             'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership',
                             'whoCanViewGroup', 'whoCanInvite',
                             'allowExternalMembers', 'whoCanLeaveGroup'])

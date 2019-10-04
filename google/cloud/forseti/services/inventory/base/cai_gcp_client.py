@@ -187,6 +187,68 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for dataset in resources:
             yield dataset
 
+    def iter_bigtable_clusters(self, project_id, instance_id):
+        """Iterate Bigtable Clusters from Cloud Asset data.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+
+        Yields:
+            dict: Generator of Bigtable Clusters.
+        """
+
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'bigtableadmin.googleapis.com/Cluster',
+            '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
+                project_id, instance_id),
+            self.session)
+
+        for cluster in resources:
+            yield cluster
+
+    def iter_bigtable_instances(self, project_number):
+        """Iterate Bigtable Instances from Cloud Asset data.
+
+        Args:
+            project_number (str): The project number.
+
+        Yields:
+            dict: Generator of Bigtable Instances.
+        """
+
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'bigtableadmin.googleapis.com/Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+
+        for instance in resources:
+            yield instance
+
+    def iter_bigtable_tables(self, project_id, instance_id):
+        """Iterate Bigtable Table from Cloud Asset data.
+
+        Args:
+            project_id (str): The Project id.
+            instance_id (str): The Bigtable Instance id.
+
+        Yields:
+            dict: Generator of Bigtable Tables.
+        """
+
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'bigtableadmin.googleapis.com/Table',
+            '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
+                project_id, instance_id),
+            self.session)
+
+        for cluster in resources:
+            yield cluster
+
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from Cloud Asset data.
 
@@ -690,6 +752,22 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield (
                 _fixup_resource_keys(router, cai_to_gcp_key_map),
                 metadata)
+
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Security Policies from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of instance Security Policies.
+        """
+
+        securitypolicies = self._iter_compute_resources('SecurityPolicy',
+                                                        project_number)
+
+        for securitypolicy in securitypolicies:
+            yield securitypolicy
 
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from Cloud Asset data.
