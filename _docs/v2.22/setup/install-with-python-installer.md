@@ -12,12 +12,11 @@ This guide explains how to use the python-based Forseti installation tool.
 ## Before you begin
 
 <span style="color:red">
-This python-based installer will be deprecated on September 30, 2019.
+This python-based installer will be deprecated on with Forseti Release v2.23.0.
+</span>
 
 It is highly recommended that you try the easier to use terraform-based
-installer, which will become the only installer available after
-September 30, 2019.
-</span>
+installer, which will become the only installer available with Forseti Release v2.23.0.
 
 ### Activate Google Cloud Shell
 
