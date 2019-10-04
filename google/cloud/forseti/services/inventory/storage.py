@@ -43,7 +43,6 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
-from google.cloud.forseti.services import dao
 from google.cloud.forseti.services import utils
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 from google.cloud.forseti.services.scanner.dao import ScannerIndex
@@ -718,9 +717,8 @@ class DataAccess(object):
             fetch_category (Categories): The category of data to fetch.
             with_parent (bool): Join parent with results, yield tuples.
 
-        Returns:
-            generator: Generator of single row object or child/parent
-                if 'with_parent' is set.
+        Yields:
+            object: Single row object or child/parent if 'with_parent' is set.
         """
         filters = [Inventory.inventory_index_id == inventory_index_id,
                    Inventory.category == fetch_category]
@@ -742,7 +740,8 @@ class DataAccess(object):
 
         base_query = base_query.order_by(Inventory.id.asc())
 
-        return dao.page_query(base_query)
+        for row in base_query.yield_per(PER_YIELD):
+            yield row
 
     @classmethod
     def get_root(cls, session, inventory_index_id):
