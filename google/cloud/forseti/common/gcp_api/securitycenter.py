@@ -103,16 +103,15 @@ class SecurityCenterClient(object):
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, api_quota_configs, **kwargs):
+    def __init__(self, api_quota):
         """Initialize.
 
         Args:
-            api_quota_configs (dict): API quota configs
-            **kwargs (dict): The kwargs.
+            api_quota (dict): API quota configs
         """
 
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            api_quota_configs, API_NAME)
+            api_quota, API_NAME)
 
         self.repository = SecurityCenterRepositoryClient(
             quota_max_calls=max_calls,

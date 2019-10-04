@@ -33,18 +33,18 @@ LOGGER = logger.get_logger(__name__)
 class CsccNotifier(object):
     """Send violations to CSCC via API or via GCS bucket."""
 
-    def __init__(self, inv_index_id, api_quota_configs):
+    def __init__(self, inv_index_id, api_quota):
         """`Findingsnotifier` initializer.
 
         # TODO: Find out why the InventoryConfig is empty.
 
         Args:
             inv_index_id (str): inventory index ID
-            api_quota_configs (dict): API quota configs
+            api_quota (dict): API quota configs
         """
         self.inv_index_id = inv_index_id
 
-        self.api_quota_configs = api_quota_configs
+        self.api_quota = api_quota
 
     def _transform_for_gcs(self, violations, gcs_upload_path):
         """Transform forseti violations to GCS findings format.
@@ -220,7 +220,7 @@ class CsccNotifier(object):
             new_findings = self._transform_for_api(violations,
                                                    source_id=source_id)
 
-            client = securitycenter.SecurityCenterClient(self.api_quota_configs)
+            client = securitycenter.SecurityCenterClient(self.api_quota)
 
             paged_findings_in_cscc = client.list_findings(source_id=source_id)
 
