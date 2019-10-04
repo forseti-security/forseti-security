@@ -51,10 +51,6 @@ control 'inventory' do
                 expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
             end
 
-            it "should be visible from the command-line" do
-                expect(command("forseti inventory list").stdout).to match /SUCCESS/
-            end
-
             it "should be visible in the database" do
                 expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index on inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"").stdout).to match /1/
             end
