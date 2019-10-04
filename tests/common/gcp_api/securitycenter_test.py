@@ -38,7 +38,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'securitycenter': {'max_calls': 1, 'period': 1.1}}
-        cls.securitycenter_client = securitycenter.SecurityCenterClient(fake_global_configs, version='v1')
+        cls.securitycenter_client = securitycenter.SecurityCenterClient(fake_global_configs)
         cls.project_id = 111111
         cls.source_id = 'organizations/111/sources/222'
 
