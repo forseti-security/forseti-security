@@ -18,6 +18,8 @@ jobs:
   - stage: Unit test
     name: Unit Tests with Python 3.6
     language: python
+    python:
+    - "3.6"
     services:
     - docker
     before_install:

@@ -63,7 +63,7 @@ control 'inventory' do
         describe "Get an inventory" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti inventory list").stdout).to match /#{@inventory_id}/
+                expect(command("forseti inventory get #{@inventory_id}").stdout).to match /#{@inventory_id}/
             end
 
             it "should be visible in the database" do
