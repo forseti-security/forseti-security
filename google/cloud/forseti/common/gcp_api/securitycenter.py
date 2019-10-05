@@ -19,6 +19,7 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
@@ -33,8 +34,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True,
-                 version=None):
+                 use_rate_limiter=True):
         """Constructor.
         Args:
             quota_max_calls (int): Allowed requests per <quota_period> for the
@@ -42,7 +42,6 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
-            version (str): The version of the API to use.
         """
         LOGGER.debug('Initializing SecurityCenterRepositoryClient')
         if not quota_max_calls:
@@ -50,11 +49,10 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
 
         self._findings = None
 
-        self.version = version
         use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            API_NAME, versions=[self.version],
+            API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
@@ -68,7 +66,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._findings:
             self._findings = self._init_repository(
                 _SecurityCenterOrganizationsFindingsRepository,
-                version=self.version)
+                version='v1')
         return self._findings
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
@@ -105,19 +103,19 @@ class SecurityCenterClient(object):
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, version=None):
+    def __init__(self, api_quota):
         """Initialize.
 
-        TODO: Add api quota configs here.
-        max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            inventory_configs.api_quota_configs, API_NAME)
-
         Args:
-            version (str): The version of the API to use.
+            api_quota (dict): API quota configs
         """
-        LOGGER.debug('Initializing SecurityCenterClient with version: %s',
-                     version)
-        self.repository = SecurityCenterRepositoryClient(version=version)
+
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            api_quota, API_NAME)
+
+        self.repository = SecurityCenterRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period)
 
     def create_finding(self, finding, source_id=None, finding_id=None):
         """Creates a finding in CSCC.
