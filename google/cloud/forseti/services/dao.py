@@ -742,16 +742,17 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def scanner_iter(cls, session, resource_type,
-                         parent_type_name=None):
+                         parent_type_name=None, stream_results=True):
             """Iterate over all resources with the specified type.
 
             Args:
                 session (object): Database session.
                 resource_type (str): type of the resource to scan
                 parent_type_name (str): type_name of the parent resource
+                stream_results (bool): Enable streaming in the query.
 
-            Returns:
-                generator: Generator of resources returned from the query.
+            Yields:
+                Resource: resource that match the query.
             """
             query = (
                 session.query(Resource)
@@ -762,7 +763,14 @@ def define_model(model_name, dbengine, model_seed):
             if parent_type_name:
                 query = query.filter(
                     Resource.parent_type_name == parent_type_name)
-            return page_query(query)
+
+            if stream_results:
+                results = query.yield_per(PER_YIELD)
+            else:
+                results = page_query(query)
+
+            for row in results:
+                yield row
 
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):
