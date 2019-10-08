@@ -15,20 +15,17 @@
 ##### BEGIN BASE IMAGE #####
 FROM python:3.6.9-slim-buster as base
 
+ARG UID=1000
+ARG GID=1000
+
 ENV HOME=/home/forseti \
     WORK_DIR=/home/forseti/forseti-security \
     PATH=/home/forseti/.local/bin:$PATH
 
-RUN groupadd -g 1000 forseti && \
-    useradd -d ${HOME} -u 1000 -g forseti forseti && \
+RUN groupadd -g $GID forseti && \
+    useradd -d ${HOME} -u $UID -g forseti forseti && \
     mkdir -p ${HOME}/forseti-security && \
     chown -R forseti:forseti ${HOME}
-
-# Install host dependencies.
-RUN apt-get update  && \
-    apt-get install --no-install-recommends -y libmariadb3 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${WORK_DIR}
 

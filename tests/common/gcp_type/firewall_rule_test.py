@@ -1166,15 +1166,6 @@ class FirewallActionTest(ForsetiTestCase):
             {
                 'firewall_rules':
                 [
-                    {'IPProtocol': 'ucp', 'ports': ['21-23']},
-                ],
-            },
-            'Only "tcp" and "udp" can have ports specified',
-        ),
-        (
-            {
-                'firewall_rules':
-                [
                     {'IPProtocol': 'udp', 'ports': ['100-50']},
                 ],
             },

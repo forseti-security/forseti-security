@@ -33,6 +33,10 @@ variable "gcp_ubuntu_1804_image" {
   default     = "ubuntu-os-cloud/ubuntu-1804-lts"
 }
 
+variable "infrastructure_id" {
+  description = "Unique indentifier for the deployment"
+}
+
 variable "timesketch_machine_type" {
   description = "Machine type for Timesketch server"
   default     = "n1-standard-2"

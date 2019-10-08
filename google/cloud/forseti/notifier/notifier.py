@@ -99,6 +99,7 @@ def run(inventory_index_id,
     # pylint: disable=too-many-locals
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
+    api_quota = notifier_configs.get('api_quota')
 
     with service_config.scoped_session() as session:
         if scanner_index_id:
@@ -181,7 +182,8 @@ def run(inventory_index_id,
                     LOGGER.debug(
                         'Running CSCC notifier with beta API. source_id: '
                         '%s', source_id)
-                    (cscc_notifier.CsccNotifier(inventory_index_id)
+                    (cscc_notifier.CsccNotifier(inventory_index_id,
+                                                api_quota)
                      .run(violations_as_dict, source_id=source_id))
 
         InventorySummary(service_config, inventory_index_id).run()

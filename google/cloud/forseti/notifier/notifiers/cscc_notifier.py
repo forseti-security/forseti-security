@@ -33,15 +33,18 @@ LOGGER = logger.get_logger(__name__)
 class CsccNotifier(object):
     """Send violations to CSCC via API or via GCS bucket."""
 
-    def __init__(self, inv_index_id):
+    def __init__(self, inv_index_id, api_quota):
         """`Findingsnotifier` initializer.
 
         # TODO: Find out why the InventoryConfig is empty.
 
         Args:
             inv_index_id (str): inventory index ID
+            api_quota (dict): API quota configs
         """
         self.inv_index_id = inv_index_id
+
+        self.api_quota = api_quota
 
     def _transform_for_gcs(self, violations, gcs_upload_path):
         """Transform forseti violations to GCS findings format.
@@ -161,8 +164,9 @@ class CsccNotifier(object):
 
     @staticmethod
     def find_inactive_findings(new_findings, findings_in_cscc):
-        """Finds the findings that does not correspond to the latest scanner run
-           and updates it's state to inactive.
+        """Finds the currently ACTIVE findings
+           that do not correspond to the latest scanner run
+           and updates their states to inactive.
 
         Args:
             new_findings (list): Latest violations that are transformed to
@@ -171,7 +175,7 @@ class CsccNotifier(object):
                 corresponds to the previous scanner run.
 
         Returns:
-            list: Findings whose state has been marked as 'INACTIVE'.
+            list: Findings to be marked as 'INACTIVE'.
         """
 
         inactive_findings = []
@@ -186,6 +190,9 @@ class CsccNotifier(object):
         for finding_list in findings_in_cscc:
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
+
+            if to_be_updated_finding['state'] == 'INACTIVE':
+                continue
 
             if finding_id not in new_findings_map:
                 to_be_updated_finding['state'] = 'INACTIVE'
@@ -213,7 +220,7 @@ class CsccNotifier(object):
             new_findings = self._transform_for_api(violations,
                                                    source_id=source_id)
 
-            client = securitycenter.SecurityCenterClient(version='v1')
+            client = securitycenter.SecurityCenterClient(self.api_quota)
 
             paged_findings_in_cscc = client.list_findings(source_id=source_id)
 

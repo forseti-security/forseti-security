@@ -30,8 +30,9 @@ sudo gsutil cp gs://${SCANNER_BUCKET}/configs/forseti_conf_server.yaml ${FORSETI
 sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
 # Download the Newest Config Validator constraints from GCS.
-sudo rm -rf ${FORSETI_HOME}/policy-library
-sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${FORSETI_HOME}/
+if [ "$POLICY_LIBRARY_SYNC_ENABLED" != "true" ]; then
+  sudo gsutil cp -r gs://${SCANNER_BUCKET}/policy-library ${POLICY_LIBRARY_HOME}/
+fi
 
 # Restart the config validator service to pick up the latest policy.
 sudo systemctl restart config-validator
@@ -47,6 +48,9 @@ forseti server configuration reload
 # Set the output format to json
 forseti config format json
 
+# Ensure we are not using stale model, and produce stale violations.
+forseti config delete model
+
 # Purge inventory.
 # Use retention_days from configuration yaml file.
 forseti inventory purge
@@ -60,9 +64,10 @@ echo "Finished running Forseti inventory."
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
-if [ "$MODEL_STATUS" == "BROKEN" ]
+if ([ "$MODEL_STATUS" != "SUCCESS" ] && [ "$MODEL_STATUS" != "PARTIAL_SUCCESS" ])
     then
-        echo "Model is broken, please contact discuss@forsetisecurity.org for support."
+        echo "Newly created Model is not in SUCCESS or PARTIAL_SUCCESS state."
+        echo "Please contact discuss@forsetisecurity.org for support."
         exit
 fi
 

@@ -162,7 +162,7 @@ def main():
     parser.add_argument(
         '--forseti_db',
         help=('Forseti database string, formatted as '
-              '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
+              '"mysql+pymysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
         '--config_file_path',
         help='Path to Forseti configuration file.')
