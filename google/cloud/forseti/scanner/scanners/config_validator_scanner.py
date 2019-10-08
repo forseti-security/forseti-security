@@ -126,7 +126,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
             LOGGER.info('Retrieving GCP %s data.', data_type)
             for resource_type in resource_types:
                 for resource in data_access.scanner_iter(session,
-                                                         resource_type):
+                                                         resource_type,
+                                                         stream_results=False):
                     if (not resource.cai_resource_name and
                             resource.type not in
                             cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
