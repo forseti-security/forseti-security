@@ -197,7 +197,7 @@ class InventoryIndex(BASE):
             return {}
 
         if len(details) == 1:
-            # If the lifecycle state is DELETE PENDING or 
+            # If the lifecycle state is DELETE PENDING or
             # LIFECYCLE STATE UNSPECIFIED the added_key_string
             # will be RESOURCE_TYPE - ACTIVE, which is then set
             # to 0.
