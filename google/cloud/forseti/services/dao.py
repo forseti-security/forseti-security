@@ -62,7 +62,30 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 POOL_RECYCLE_SECONDS = 300
-PER_YIELD = 1024
+PER_YIELD = 4096
+
+
+def page_query(query, block_size=PER_YIELD):
+    """Page query by block.
+
+    Args:
+        query (Query): sqlalchemy query.
+        block_size (int): Block size per page.
+
+    Yields:
+        object: The query result object.
+    """
+    block_number = 0
+
+    results = query.slice(block_number * block_size,
+                          (block_number + 1) * block_size).all()
+
+    while results:
+        for obj in results:
+            yield obj
+        block_number += 1
+        results = query.slice(block_number * block_size,
+                              (block_number + 1) * block_size).all()
 
 
 def generate_model_handle():
@@ -299,12 +322,12 @@ def define_model(model_name, dbengine, model_seed):
         cai_resource_name = Column(String(4096))
         cai_resource_type = Column(String(512))
         full_name = Column(String(2048), nullable=False)
-        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 512),
+        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 700),
                            primary_key=True)
         parent_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 512),
+            get_string_by_dialect(dbengine.dialect.name, 700),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        name = Column(String(256), nullable=False)
+        name = Column(String(512), nullable=False)
         type = Column(String(128), nullable=False)
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
@@ -352,10 +375,10 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
         resource_type_name = Column(
-            get_string_by_dialect(dbengine.dialect.name, 512),
+            get_string_by_dialect(dbengine.dialect.name, 700),
             ForeignKey('{}.type_name'.format(resources_tablename)))
 
-        role_name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
+        role_name = Column(get_string_by_dialect(dbengine.dialect.name, 256),
                            ForeignKey('{}.name'.format(roles_tablename)))
 
         resource = relationship('Resource', remote_side=[resource_type_name])
@@ -433,7 +456,7 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM role."""
 
         __tablename__ = roles_tablename
-        name = Column(get_string_by_dialect(dbengine.dialect.name, 128),
+        name = Column(get_string_by_dialect(dbengine.dialect.name, 256),
                       primary_key=True)
         title = Column(String(128), default='')
         stage = Column(String(128), default='')
@@ -455,7 +478,7 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM permission."""
 
         __tablename__ = permissions_tablename
-        name = Column(String(128), primary_key=True)
+        name = Column(String(256), primary_key=True)
         roles = relationship('Role',
                              secondary=role_permissions,
                              back_populates='permissions')
@@ -719,29 +742,35 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def scanner_iter(cls, session, resource_type,
-                         parent_type_name=None):
+                         parent_type_name=None, stream_results=True):
             """Iterate over all resources with the specified type.
 
             Args:
                 session (object): Database session.
                 resource_type (str): type of the resource to scan
                 parent_type_name (str): type_name of the parent resource
+                stream_results (bool): Enable streaming in the query.
 
             Yields:
-                Resource: resource that match the query
+                Resource: resource that match the query.
             """
-
-            qry = (
+            query = (
                 session.query(Resource)
                 .filter(Resource.type == resource_type)
                 .options(joinedload(Resource.parent))
                 .enable_eagerloads(True))
 
             if parent_type_name:
-                qry = qry.filter(Resource.parent_type_name == parent_type_name)
+                query = query.filter(
+                    Resource.parent_type_name == parent_type_name)
 
-            for resource in qry.yield_per(PER_YIELD):
-                yield resource
+            if stream_results:
+                results = query.yield_per(PER_YIELD)
+            else:
+                results = page_query(query)
+
+            for row in results:
+                yield row
 
         @classmethod
         def scanner_fetch_groups_settings(cls, session, only_iam_groups):

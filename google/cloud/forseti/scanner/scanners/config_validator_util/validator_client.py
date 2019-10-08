@@ -44,9 +44,14 @@ class ValidatorClient(object):
             endpoint (String): The Config Validator endpoint.
         """
         self.buffer_sender = BufferedCVDataSender(self)
-        self.gigabyte = 1024 ** 3
+        self.max_length = 1024 ** 3
+        # Default grpc message size limit is 4MB, set the
+        # max page size to 3.5 MB.
+        self.max_page_size = 1024 ** 2 * 3.5
+        # Audit once every 100 MB of data sent to Config Validator.
+        self.max_audit_size = 1024 ** 2 * 100
         self.channel = grpc.insecure_channel(endpoint, options=[
-            ('grpc.max_receive_message_length', self.gigabyte)])
+            ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
@@ -87,6 +92,51 @@ class ValidatorClient(object):
         for asset in assets:
             self.buffer_sender.add(asset)
         self.buffer_sender.flush()
+
+    def paged_audit(self, assets):
+        """Audit in a paged manner to avoid memory problem.
+
+        Args:
+            assets (Generator): A list of asset data.
+
+        Yields:
+            list: A list of violations of the paged assets.
+        """
+        paged_assets = []
+        current_page_size = 0
+        data_loaded = 0
+        for asset in assets:
+            asset_size = sys.getsizeof(asset)
+            # Dictionary size is not properly reflected, cast the dictionary to
+            # string instead to estimate the actual dictionary size.
+            asset_size += sys.getsizeof(str(asset.resource))
+            asset_size += sys.getsizeof(str(asset.iam_policy))
+            if current_page_size + asset_size >= self.max_page_size:
+                LOGGER.debug('Adding paged data to Config Validator, size: '
+                             '%s, content: %s',
+                             current_page_size, paged_assets)
+                data_loaded += current_page_size
+                self.add_data(paged_assets)
+                paged_assets = []
+                current_page_size = 0
+            if data_loaded >= self.max_audit_size:
+                LOGGER.debug('Auditing data, size: %s', data_loaded)
+                violations = self.audit()
+                self.reset()
+                data_loaded = 0
+                if violations:
+                    yield violations
+            paged_assets.append(asset)
+            current_page_size += asset_size
+
+        if paged_assets:
+            self.add_data(paged_assets)
+            data_loaded += current_page_size
+            LOGGER.debug('Auditing data, size: %s', data_loaded)
+            violations = self.audit()
+            self.reset()
+            if violations:
+                yield violations
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
