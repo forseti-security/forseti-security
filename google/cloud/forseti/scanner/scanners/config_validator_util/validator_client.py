@@ -117,6 +117,32 @@ class ValidatorClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
+    def review(self):
+        """Review existing data in Config Validator (Audit in parallel
+        per policy).
+
+        Returns:
+            list: List of violations.
+
+        Raises:
+            ConfigValidatorAuditError: Config Validator Audit Error.
+            ConfigValidatorServerUnavailableError: Config Validator Server
+                Unavailable Error.
+        """
+        try:
+            return self.stub.Review(validator_pb2.AuditRequest()).violations
+        except grpc.RpcError as e:
+            # pylint: disable=no-member
+            if e.code() == grpc.StatusCode.UNAVAILABLE:
+                raise errors.ConfigValidatorServerUnavailableError(
+                    e.message)
+            else:
+                LOGGER.exception('ConfigValidatorAuditError: %s', e.message)
+                raise errors.ConfigValidatorAuditError(e.message)
+
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
+           wait_exponential_multiplier=10, wait_exponential_max=100,
+           stop_max_attempt_number=5)
     def reset(self):
         """Clears previously added data from Config Validator.
 
