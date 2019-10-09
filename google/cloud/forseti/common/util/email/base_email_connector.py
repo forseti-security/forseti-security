@@ -69,6 +69,28 @@ class BaseEmailConnector(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @classmethod
+    @abc.abstractmethod
+    def create_attachment(cls,
+                          file_location=None,
+                          content_type=None,
+                          filename=None,
+                          disposition='attachment',
+                          content_id=None):
+        """Create an attachment.
+
+        Args:
+            file_location (str): The local path to the file.
+            content_type (str): The content type of the attachment.
+            disposition (str): Content disposition, defaults to "attachment".
+            filename (str): The filename of attachment.
+            content_id (str): The content id.
+
+        Returns:
+            Attachment: An Attachment.
+        """
+        pass
+
+    @classmethod
     def render_from_template(cls, template_file, template_vars):
         """Fill out an email template with template variables.
 
