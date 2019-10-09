@@ -65,6 +65,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         """
 
         for violation in violations:
+            LOGGER.debug('Config validator violation: %s', violation)
             resource_id = violation.resource.split('/')[-1]
             full_name, resource_type, resource_data = (
                 self.resource_lookup_table.get(violation.resource,
