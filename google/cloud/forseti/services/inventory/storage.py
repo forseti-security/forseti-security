@@ -197,10 +197,13 @@ class InventoryIndex(BASE):
             return {}
 
         if len(details) == 1:
+            # If the lifecycle state is DELETE PENDING or
+            # LIFECYCLE STATE UNSPECIFIED the added_key_string
+            # will be RESOURCE_TYPE - ACTIVE, which is then set
+            # to 0.
+            added_key_str = 'ACTIVE'
             if 'ACTIVE' in list(details.keys())[0]:
                 added_key_str = 'DELETE PENDING'
-            elif 'DELETE PENDING' in list(details.keys())[0]:
-                added_key_str = 'ACTIVE'
             added_key = ' - '.join([resource_type_input, added_key_str])
             details[added_key] = 0
 
