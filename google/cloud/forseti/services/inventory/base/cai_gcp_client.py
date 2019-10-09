@@ -208,7 +208,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Cluster',
             '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
                 project_id, instance_id),
-            self.session)
+            self.engine)
 
         for cluster in resources:
             yield cluster
@@ -228,7 +228,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
 
         for instance in resources:
             yield instance
@@ -249,7 +249,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Table',
             '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
                 project_id, instance_id),
-            self.session)
+            self.engine)
 
         for cluster in resources:
             yield cluster
