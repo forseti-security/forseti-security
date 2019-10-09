@@ -120,8 +120,8 @@ class ValidatorClient(object):
                 paged_assets = []
                 current_page_size = 0
             if data_loaded >= self.max_audit_size:
-                LOGGER.debug('Auditing data, size: %s', data_loaded)
-                violations = self.audit()
+                LOGGER.debug('Reviewing data, size: %s', data_loaded)
+                violations = self.review()
                 self.reset()
                 data_loaded = 0
                 if violations:
@@ -132,8 +132,8 @@ class ValidatorClient(object):
         if paged_assets:
             self.add_data(paged_assets)
             data_loaded += current_page_size
-            LOGGER.debug('Auditing data, size: %s', data_loaded)
-            violations = self.audit()
+            LOGGER.debug('Reviewing data, size: %s', data_loaded)
+            violations = self.review()
             self.reset()
             if violations:
                 yield violations
