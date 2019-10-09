@@ -43,7 +43,7 @@ RUN_CLIENT=false
 RUN_TEST=false
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
-SQL_DATABASE_NAME='forseti_security'
+SQL_DATABASE_NAME=forseti_security
 SQL_HOST=127.0.0.1
 SQL_PORT=3306
 
