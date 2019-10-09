@@ -169,7 +169,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for dataset in resources:
             yield dataset
 
-
     def iter_bigquery_tables(self, dataset_reference):
         """Iterate Tables from Cloud Asset data.
 
@@ -208,7 +207,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Cluster',
             '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
                 project_id, instance_id),
-            self.session)
+            self.engine)
 
         for cluster in resources:
             yield cluster
@@ -228,7 +227,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Instance',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.engine)
 
         for instance in resources:
             yield instance
@@ -249,11 +248,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'bigtableadmin.googleapis.com/Table',
             '//bigtable.googleapis.com/projects/{}/instances/{}'.format(
                 project_id, instance_id),
-            self.session)
+            self.engine)
 
         for cluster in resources:
             yield cluster
-
 
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from Cloud Asset data.
