@@ -363,7 +363,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of Compute Disk.
         """
-        resources = self._iter_compute_resources('Disk', project_number)
+        disks = self._iter_compute_resources('Disk', project_number)
+
+        region_disks = self._iter_compute_resources('RegionDisk',
+                                                    project_number)
+
+        resources = itertools.chain(disks, region_disks)
+
         for disk in resources:
             yield disk
 
