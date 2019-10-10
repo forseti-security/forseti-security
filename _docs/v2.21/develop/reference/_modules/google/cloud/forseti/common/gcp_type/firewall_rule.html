@@ -1,0 +1,1020 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.firewall_rule"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.firewall_rule</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Firewall.</span>
+
+<span class="sd">See: https://cloud.google.com/compute/docs/reference/latest/firewalls</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">netaddr</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">parser</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">string_formats</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+<span class="n">ALL_REPRESENTATIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;0-65355&#39;</span><span class="p">,</span> <span class="s1">&#39;1-65535&#39;</span><span class="p">)</span>
+<span class="n">ALLOWED_RULE_ITEMS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">((</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="s1">&#39;denied&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;direction&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;destinationRanges&#39;</span><span class="p">,</span> <span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;targetTags&#39;</span><span class="p">,</span> <span class="s1">&#39;sourceServiceAccounts&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;targetServiceAccounts&#39;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base error class for the module.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="InvalidFirewallRuleError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.InvalidFirewallRuleError">[docs]</a><span class="k">class</span> <span class="nc">InvalidFirewallRuleError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a firewall rule doesn&#39;t look like a firewall rule should.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="InvalidFirewallActionError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.InvalidFirewallActionError">[docs]</a><span class="k">class</span> <span class="nc">InvalidFirewallActionError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a firewall action doesn&#39;t look like a firewall rule should.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallRule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule">[docs]</a><span class="k">class</span> <span class="nc">FirewallRule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents Firewall resource.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Firewall resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          validate (bool): Whether to validate this rule.</span>
+<span class="sd">          kwargs (dict): Object properties</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If allowed and denied rules aren&#39;t valid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_time</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_create_time&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;firewall_rule_full_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_kind&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_network&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_priority&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_direction&#39;</span><span class="p">,</span> <span class="s1">&#39;INGRESS&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_source_ranges&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_destination_ranges&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_source_tags&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_target_tags&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_source_service_accounts&#39;</span><span class="p">),</span>
+            <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_service_accounts</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_target_service_accounts&#39;</span><span class="p">),</span>
+            <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_allowed&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denied</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_unstringify</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;firewall_rule_denied&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">denied</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot have allowed and denied rules (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">denied</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">denied</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span><span class="s1">&#39;Must have allowed or denied rules&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FirewallRule.__str__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          str: A string representation of FirewallRule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;FirewallRule(&#39;</span>
+                  <span class="s1">&#39;project_id=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;name=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;network=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;priority=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;direction=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;action=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;destinationRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;targetTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sourceServiceAccounts&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;targetServiceAccounts&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_service_accounts</span><span class="p">),</span>
+        <span class="p">]:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FirewallRule._transform"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule._transform">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="n">firewall_dict</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transforms firewall dictionary into FirewallRule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          firewall_dict (dict): A dictionary with firewall field names matching</span>
+<span class="sd">            the API field names.</span>
+<span class="sd">          project_id (str): A project id string.</span>
+<span class="sd">          validate (bool): Whether to validate this FirewallRule or not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          FirewallRule: A FirewallRule created from the input dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creationTimestamp&#39;</span><span class="p">):</span>
+            <span class="c1"># When we are creating firewall rule gcp objects from the firewall</span>
+            <span class="c1"># rules we defined in the firewall_rules.yaml file, the creation</span>
+            <span class="c1"># timestamp is not part of the rule in the yaml file and if the</span>
+            <span class="c1"># creation timestamp does not exist, we shouldn&#39;t call the parse</span>
+            <span class="c1"># function with the empty field.</span>
+            <span class="n">creation_time</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">format_timestamp</span><span class="p">(</span>
+                <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                    <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creationTimestamp&#39;</span><span class="p">)),</span>
+                <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_MYSQL_DATETIME_FORMAT</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">creation_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">in_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;firewall_rule_id&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_name&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_full_name&#39;</span><span class="p">:</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;full_name&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_description&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_kind&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_network&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_priority&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;priority&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_direction&#39;</span><span class="p">:</span> <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;firewall_rule_source_ranges&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceRanges&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceRange&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_destination_ranges&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;destinationRanges&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;destinationRange&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_source_tags&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceTags&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceTag&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_target_tags&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetTags&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetTag&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_source_service_accounts&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceServiceAccounts&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceServiceAccount&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_target_service_accounts&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetServiceAccounts&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetServiceAccount&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_allowed&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowed&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_denied&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;denied&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_self_link&#39;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">json_stringify</span><span class="p">(</span>
+                <span class="n">firewall_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;selfLink&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;firewall_rule_create_time&#39;</span><span class="p">:</span> <span class="n">creation_time</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">project_id</span><span class="p">:</span>
+            <span class="n">in_dict</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project_id</span>
+        <span class="k">return</span> <span class="n">FirewallRule</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span> <span class="o">**</span><span class="n">in_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.from_json">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_string</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a validated FirewallRule from a valid firewall JSON.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          json_string (str): A valid firewall JSON string.</span>
+<span class="sd">          project_id (str): A string project id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          FirewallRule: A validated FirewallRule from the JSON string.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If the firewall rule is invalid.</span>
+<span class="sd">          InvalidFirewallActionError: If the firewall action is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">json_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FirewallRule</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span>
+            <span class="n">json_dict</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule.from_dict"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">firewall_dict</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an unvalidated FirewallRule from a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          firewall_dict (dict): A dict with firewall keys and values.</span>
+<span class="sd">          project_id (str): A string project id.</span>
+<span class="sd">          validate (bool): Whether to validate this rule or not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          FirewallRule: A validated FirewallRule from the JSON string.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If the firewall rule is invalid.</span>
+<span class="sd">          InvalidFirewallActionError: If the firewall action is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">FirewallRule</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span>
+            <span class="n">firewall_dict</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule.as_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.as_json">[docs]</a>    <span class="k">def</span> <span class="nf">as_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a valid JSON representation of this firewall rule.</span>
+
+<span class="sd">        This rule must be valid to return the representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          str: A string JSON dump of the firewall rule.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If the firewall rule is invalid.</span>
+<span class="sd">          InvalidFirewallActionError: If the firewall action is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="n">firewall_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span>
+            <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span><span class="o">.</span><span class="n">json_dict</span><span class="p">(),</span>
+                <span class="p">(</span><span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_ranges</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_tags</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;targetTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_tags</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;destinationRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination_ranges</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sourceServiceAccounts&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_service_accounts</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;targetServiceAccounts&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_service_accounts</span><span class="p">)</span>
+        <span class="p">]:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">firewall_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">firewall_dict</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule.validate"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates that a rule is valid.</span>
+
+<span class="sd">        Validation is based on reference:</span>
+<span class="sd">        https://cloud.google.com/compute/docs/reference/beta/firewalls and</span>
+<span class="sd">        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: If rule is valid.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_keys</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_direction</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_priority</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span><span class="s1">&#39;Rule missing action &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+        <span class="c1"># TODO: Verify rule name matches regex of allowed</span>
+        <span class="c1"># names from reference</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="FirewallRule._validate_keys"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule._validate_keys">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that required keys and value restrictions.</span>
+
+<span class="sd">        Required fields: name and network</span>
+<span class="sd">        Length restrictions:</span>
+<span class="sd">          * name &lt;= 63 characters</span>
+<span class="sd">          * &lt;= 256 values:</span>
+<span class="sd">            sourceRanges, sourceTags, targetTags, destinationRanges</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If keys don&#39;t meet requirements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule missing required field &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule missing required field &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="s1">&#39;network&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule name exceeds length limit of 63 chars: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">max_256_value_keys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;targetTags&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;destinationRanges&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">max_256_value_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">256</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule entry &quot;</span><span class="si">%s</span><span class="s1">&quot; must contain 256 or fewer values: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_service_accounts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;sourceTags cannot be set when source/targetServiceAccounts&#39;</span>
+                    <span class="s1">&#39; are set&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_service_accounts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;targetTags cannot be set when source/targetServiceAccounts&#39;</span>
+                    <span class="s1">&#39; are set&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule._validate_direction"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule._validate_direction">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that the direction and associated fields are valid.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If:</span>
+<span class="sd">            * Direction is &#39;ingress&#39; and</span>
+<span class="sd">              * there are no source ranges or tags</span>
+<span class="sd">              * _destination_ranges is not set</span>
+<span class="sd">            * Direction is &#39;egress&#39; and</span>
+<span class="sd">              * there are no source ranges or tags</span>
+<span class="sd">              * _destination_ranges is set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;INGRESS&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span> <span class="ow">and</span>
+                    <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span> <span class="ow">and</span>
+                    <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_service_accounts</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Ingress rule missing required field oneof &quot;sourceRanges&quot; &#39;</span>
+                    <span class="s1">&#39;or &quot;sourceTags&quot; or &quot;sourceServiceAccounts&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Ingress rules cannot include &quot;destinationRanges&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                    <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EGRESS&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Egress rule missing required field &quot;destinationRanges&quot;:&#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span> <span class="ow">or</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span> <span class="ow">or</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Egress rules cannot include &quot;sourceRanges&quot;, &quot;sourceTags&quot;&#39;</span>
+                    <span class="s1">&#39; or &quot;sourceServiceAccounts&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule &quot;direction&quot; must be either &quot;ingress&quot; or &quot;egress&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                <span class="o">%</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRule._validate_priority"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule._validate_priority">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_priority</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that the priority of the rule is a valid value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallRuleError: If the priority can&#39;t be converted to an int</span>
+<span class="sd">            or if it is outside the allowed range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">priority</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_priority</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule &quot;priority&quot; could not be converted to an integer: &#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">priority</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">priority</span> <span class="o">&gt;</span> <span class="mi">65535</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule &quot;priority&quot; out of range 0-65535: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">priority</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted source ranges for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted source ips ranges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_source_ranges</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">destination_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted destination ranges for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted destination ips ranges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_destination_ranges</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted source tags for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted source tags.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">target_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted target tags for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted target tags.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source_service_accounts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted source tags for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted source tags.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_source_service_accounts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">target_service_accounts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The sorted target tags for this policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Sorted target tags.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_service_accounts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">priority</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The effective priority of the firewall rule.</span>
+
+<span class="sd">        Per https://cloud.google.com/compute/docs/reference/latest/firewalls</span>
+<span class="sd">        the default priority is 1000.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Rule priority (lower is more important)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1000</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priority</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">firewall_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The protocols and ports allowed or denied by this policy.</span>
+
+<span class="sd">        https://cloud.google.com/compute/docs/reference/beta/firewalls</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          FirewallAction: An object that represents what ports and protocols are</span>
+<span class="sd">            allowed or denied.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If there are both allow and deny actions for a rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span> <span class="o">=</span> <span class="n">FirewallAction</span><span class="p">(</span>
+                    <span class="n">firewall_rules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span> <span class="o">=</span> <span class="n">FirewallAction</span><span class="p">(</span>
+                    <span class="n">firewall_rules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">denied</span><span class="p">,</span>
+                    <span class="n">firewall_rule_action</span><span class="o">=</span><span class="s1">&#39;denied&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_firewall_action</span>
+
+<div class="viewcode-block" id="FirewallRule.__lt__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.__lt__">[docs]</a>    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether this policy is contained in another policy.</span>
+
+<span class="sd">        Checks if this rule is a subset of the allowed/denied ports and</span>
+<span class="sd">        protocols that are in the other rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other(FirewallRule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> &lt; </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">direction</span> <span class="ow">or</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                     <span class="n">other</span><span class="o">.</span><span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">network</span> <span class="ow">or</span>
+                   <span class="n">other</span><span class="o">.</span><span class="n">network</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">source_tags</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span>
+                       <span class="n">other</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span>
+        <span class="n">target_tags</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span>
+                       <span class="n">other</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span>
+        <span class="n">firewall_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">firewall_action</span>
+        <span class="n">source_ranges</span> <span class="o">=</span> <span class="n">ips_in_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_ranges</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">source_ranges</span><span class="p">)</span>
+        <span class="n">destination_ranges</span> <span class="o">=</span> <span class="n">ips_in_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">destination_ranges</span><span class="p">,</span>
+                                         <span class="n">other</span><span class="o">.</span><span class="n">destination_ranges</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">direction</span> <span class="ow">and</span>
+                  <span class="n">network</span> <span class="ow">and</span>
+                  <span class="n">source_tags</span> <span class="ow">and</span>
+                  <span class="n">target_tags</span> <span class="ow">and</span>
+                  <span class="n">firewall_action</span> <span class="ow">and</span>
+                  <span class="n">source_ranges</span> <span class="ow">and</span>
+                  <span class="n">destination_ranges</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="FirewallRule.__gt__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.__gt__">[docs]</a>    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether this policy contains the other policy.</span>
+
+<span class="sd">        Checks if this rule is a superset of the allowed/denied ports and</span>
+<span class="sd">        protocols that are in the other rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other(FirewallRule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> &gt; </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                     <span class="n">other</span><span class="o">.</span><span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                   <span class="n">other</span><span class="o">.</span><span class="n">network</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+        <span class="n">source_tags</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">source_tags</span><span class="p">)</span>
+        <span class="n">target_tags</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">target_tags</span><span class="p">)</span>
+        <span class="n">firewall_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">firewall_action</span>
+        <span class="n">source_ranges</span> <span class="o">=</span> <span class="n">ips_in_list</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">source_ranges</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_ranges</span><span class="p">)</span>
+        <span class="n">destination_ranges</span> <span class="o">=</span> <span class="n">ips_in_list</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">destination_ranges</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">destination_ranges</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">direction</span> <span class="ow">and</span>
+                  <span class="n">network</span> <span class="ow">and</span>
+                  <span class="n">source_tags</span> <span class="ow">and</span>
+                  <span class="n">target_tags</span> <span class="ow">and</span>
+                  <span class="n">firewall_action</span> <span class="ow">and</span>
+                  <span class="n">source_ranges</span> <span class="ow">and</span>
+                  <span class="n">destination_ranges</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="FirewallRule.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether this policy is the same as the other policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other(FirewallRule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> == </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">direction</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">network</span>
+        <span class="n">source_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_source_tags</span>
+        <span class="n">target_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_target_tags</span>
+        <span class="n">source_ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_ranges</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">source_ranges</span>
+        <span class="n">destination_ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination_ranges</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">destination_ranges</span>
+        <span class="n">firewall_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">firewall_action</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">direction</span> <span class="ow">and</span>
+                  <span class="n">network</span> <span class="ow">and</span>
+                  <span class="n">source_tags</span> <span class="ow">and</span>
+                  <span class="n">target_tags</span> <span class="ow">and</span>
+                  <span class="n">source_ranges</span> <span class="ow">and</span>
+                  <span class="n">destination_ranges</span> <span class="ow">and</span>
+                  <span class="n">firewall_action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="FirewallRule.is_equivalent"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallRule.is_equivalent">[docs]</a>    <span class="k">def</span> <span class="nf">is_equivalent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether this policy is equivalent to the other policy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other(FirewallRule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">direction</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">network</span>
+        <span class="n">source_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_tags</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_source_tags</span>
+        <span class="n">target_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_tags</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_target_tags</span>
+        <span class="n">source_ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_ranges</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">source_ranges</span>
+        <span class="n">destination_ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination_ranges</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">destination_ranges</span>
+        <span class="n">firewall_action</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firewall_action</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">firewall_action</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">direction</span> <span class="ow">and</span>
+                  <span class="n">network</span> <span class="ow">and</span>
+                  <span class="n">source_tags</span> <span class="ow">and</span>
+                  <span class="n">target_tags</span> <span class="ow">and</span>
+                  <span class="n">source_ranges</span> <span class="ow">and</span>
+                  <span class="n">destination_ranges</span> <span class="ow">and</span>
+                  <span class="n">firewall_action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div></div>
+
+
+<div class="viewcode-block" id="FirewallAction"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction">[docs]</a><span class="k">class</span> <span class="nc">FirewallAction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An association of allowed or denied ports and protocols.&quot;&quot;&quot;</span>
+
+    <span class="n">VALID_ACTIONS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="s1">&#39;denied&#39;</span><span class="p">])</span>
+    <span class="n">MATCH_ANY</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">firewall_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">firewall_rule_action</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          firewall_rules (list): A list of dictionaries of allowed ports</span>
+<span class="sd">            and protocols.</span>
+<span class="sd">          firewall_rule_action (str): The action, either allow or deny.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallActionError: If there are both allow and deny rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">firewall_rule_action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALID_ACTIONS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+                <span class="s1">&#39;Firewall rule action must be either allowed or denied&#39;</span>
+                <span class="s1">&#39; got: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">firewall_rule_action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">firewall_rule_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_any_value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">firewall_rules</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">firewall_rules</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">sort_rules</span><span class="p">(</span><span class="n">firewall_rules</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_applies_to_all</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="FirewallAction.__str__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          str: A string representation of FirewallAction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;FirewallAction(action=</span><span class="si">%s</span><span class="s1">, rules=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallAction.json_dict"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.json_dict">[docs]</a>    <span class="k">def</span> <span class="nf">json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the JSON key and values for the firewall action.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          tuple: Of key (&#39;allowed&#39; or &#39;denied&#39;) and the firewall rules.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallActionError: If a rule is not formatted for the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span></div>
+
+<div class="viewcode-block" id="FirewallAction.validate"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates that the firewall rules are valid for use in the API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          InvalidFirewallActionError: If a rule is not formatted for the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;IPProtocol&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+                    <span class="s1">&#39;Action must have field IPProtocol&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;ports&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;tcp&#39;</span><span class="p">,</span> <span class="s1">&#39;udp&#39;</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+                        <span class="s1">&#39;Only &quot;tcp&quot; and &quot;udp&quot; can have ports specified: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                        <span class="n">rule</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">port</span><span class="p">:</span>
+                        <span class="n">validate_port_range</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">validate_port</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+            <span class="n">invalid_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="p">{</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">,</span> <span class="s1">&#39;ports&#39;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">invalid_keys</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+                    <span class="s1">&#39;Action can only have &quot;IPProtocol&quot; and &quot;ports&quot;: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                    <span class="n">invalid_keys</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">applies_to_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether this applies to all ports and protocols or not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether this applies to all ports and protocols or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_applies_to_all</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_applies_to_all</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                <span class="n">protocol</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_applies_to_all</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_applies_to_all</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">any_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether this rule matches any value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether this rule matches any value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_any_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_any_value</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">rule</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">MATCH_ANY</span> <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_any_value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">expanded_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns an expanded set of ports.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: A dict of protocol to all port numbers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">any_value</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                    <span class="n">protocol</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">)</span>
+                    <span class="n">ports</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ports&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">])</span>
+                    <span class="n">expanded_ports</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">expand_ports</span><span class="p">(</span><span class="n">ports</span><span class="p">))</span>
+                    <span class="n">current_ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="nb">set</span><span class="p">([]))</span>
+                    <span class="n">current_ports</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">expanded_ports</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span><span class="p">[</span><span class="n">protocol</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_ports</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_rules</span>
+
+<div class="viewcode-block" id="FirewallAction.ports_are_subset"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.ports_are_subset">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ports_are_subset</span><span class="p">(</span><span class="n">ports_1</span><span class="p">,</span> <span class="n">ports_2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether one port list is a subset of another.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ports_1 (list): A list of string port numbers.</span>
+<span class="sd">          ports_2 (list): A list of string port numbers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether ports_1 are a subset of ports_2 or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">a</span> <span class="ow">in</span> <span class="n">ports_2</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ALL_REPRESENTATIONS</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">ports_1</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">ports_2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallAction.ports_are_equal"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.ports_are_equal">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ports_are_equal</span><span class="p">(</span><span class="n">ports_1</span><span class="p">,</span> <span class="n">ports_2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether two port lists are the same.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ports_1 (list): A list of string port numbers.</span>
+<span class="sd">          ports_2 (list): A list of string port numbers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether ports_1 have the same ports as ports_2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">any</span><span class="p">([</span><span class="n">a</span> <span class="ow">in</span> <span class="n">ports_1</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ALL_REPRESENTATIONS</span><span class="p">])</span> <span class="ow">and</span>
+                <span class="nb">any</span><span class="p">([</span><span class="n">a</span> <span class="ow">in</span> <span class="n">ports_2</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ALL_REPRESENTATIONS</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">ports_1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">ports_2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallAction.is_equivalent"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.is_equivalent">[docs]</a>    <span class="k">def</span> <span class="nf">is_equivalent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether this action and another are functionally equivalent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other (FirewallAction): Another FirewallAction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether these two FirewallActions are functionally equivalent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">action</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span>
+                 <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span>
+                 <span class="nb">list</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">ports_are_equal</span><span class="p">(</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]),</span>
+                         <span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]))</span>
+                     <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span>
+                 <span class="p">])))</span></div>
+
+<div class="viewcode-block" id="FirewallAction.__lt__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.__lt__">[docs]</a>    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Less than.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other (FirewallAction): The FirewallAction to compare to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether this action is a subset of the other action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">action</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">applies_to_all</span> <span class="ow">or</span> <span class="ow">not</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span> <span class="ow">or</span>
+                 <span class="nb">all</span><span class="p">([</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">ports_are_subset</span><span class="p">(</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]),</span>
+                         <span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]))</span>
+                     <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span><span class="p">])))</span></div>
+
+<div class="viewcode-block" id="FirewallAction.__gt__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.__gt__">[docs]</a>    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Greater than.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other (FirewallAction): The FirewallAction to compare to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Whether this action is a superset of the other action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">action</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span>
+                 <span class="n">other</span><span class="o">.</span><span class="n">any_value</span> <span class="ow">or</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">applies_to_all</span> <span class="ow">or</span> <span class="ow">not</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span> <span class="ow">or</span>
+                 <span class="nb">all</span><span class="p">([</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">ports_are_subset</span><span class="p">(</span>
+                         <span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]),</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">expanded_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]))</span>
+                     <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">expanded_rules</span><span class="p">])))</span></div>
+
+<div class="viewcode-block" id="FirewallAction.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.FirewallAction.__eq__">[docs]</a>    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Equals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          other (FirewallAction): The FirewallAction to compare to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: If this action is the exact same as the other FirewallAction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">action</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rules</span></div></div>
+
+
+<div class="viewcode-block" id="sort_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.sort_rules">[docs]</a><span class="k">def</span> <span class="nf">sort_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts firewall rules by protocol and sorts ports.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      rules (list): A list of firewall rule dictionaries.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      list: A list of sorted firewall rules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sorted_rules</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">FirewallAction</span><span class="o">.</span><span class="n">MATCH_ANY</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rules</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="s1">&#39;ports&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="c1"># If the ports contains &#39;all&#39;, don&#39;t care about the other ports</span>
+            <span class="c1"># or sorting. Otherwise, sort ports numerically, and handle ranges</span>
+            <span class="c1"># through sorting by start port.</span>
+            <span class="k">if</span> <span class="s1">&#39;all&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">]:</span>
+                <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">],</span>
+                                       <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">sorted_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sorted_rules</span></div>
+
+
+<div class="viewcode-block" id="ips_in_list"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.ips_in_list">[docs]</a><span class="k">def</span> <span class="nf">ips_in_list</span><span class="p">(</span><span class="n">ips</span><span class="p">,</span> <span class="n">ips_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks whether the ips and ranges are all in a list.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      ips_in_list([1.1.1.1], [0.0.0.0/0]) = True</span>
+<span class="sd">      ips_in_list([1.1.1.1/24], [0.0.0.0/0]) = True</span>
+<span class="sd">      ips_in_list([1.1.1.1, 1.1.1.2], [0.0.0.0/0]) = True</span>
+<span class="sd">      ips_in_list([1.1.1.1, 2.2.2.2], [1.1.1.0/24, 2.2.2.0/24]) = True</span>
+<span class="sd">      ips_in_list([0.0.0.0/0], [1.1.1.1]) = False</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ips (list): A list of string IP addresses.</span>
+<span class="sd">      ips_list (list): A list of string IP addresses.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      bool: Whether the ips are all in the given ips_list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ips</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ips_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">ip_addr</span> <span class="ow">in</span> <span class="n">ips</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ips_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">ip_in_range</span><span class="p">(</span><span class="n">ip_addr</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span> <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">ips_list</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ip_in_range"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.ip_in_range">[docs]</a><span class="k">def</span> <span class="nf">ip_in_range</span><span class="p">(</span><span class="n">ip_addr</span><span class="p">,</span> <span class="n">ip_range</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks whether the ip/ip range is in another ip range.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      ip_in_range(1.1.1.1, 0.0.0.0/0) = True</span>
+<span class="sd">      ip_in_range(1.1.1.1/24, 0.0.0.0/0) = True</span>
+<span class="sd">      ip_in_range(0.0.0.0/0, 1.1.1.1) = False</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ip_addr (string): A list of string IP addresses.</span>
+<span class="sd">      ip_range (string): A list of string IP addresses.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      bool: Whether the ip / ip range is in another ip range.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ip_network</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">ip_addr</span><span class="p">)</span>
+    <span class="n">ip_range_network</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">ip_range</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ip_network</span> <span class="ow">in</span> <span class="n">ip_range_network</span></div>
+
+
+<div class="viewcode-block" id="expand_port_range"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.expand_port_range">[docs]</a><span class="k">def</span> <span class="nf">expand_port_range</span><span class="p">(</span><span class="n">port_range</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expands a port range.</span>
+
+<span class="sd">    From https://cloud.google.com/compute/docs/reference/beta/firewalls, ports</span>
+<span class="sd">    can be of the form &quot;&lt;number&gt;-&lt;number&gt;&quot;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      port_range (string): A string of format &quot;&lt;number_1&gt;-&lt;number_2&gt;&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      list: A list of string integers from number_1 to number_2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">port_range</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="expand_ports"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.expand_ports">[docs]</a><span class="k">def</span> <span class="nf">expand_ports</span><span class="p">(</span><span class="n">ports</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expands all ports in a list.</span>
+
+<span class="sd">    From https://cloud.google.com/compute/docs/reference/beta/firewalls, ports</span>
+<span class="sd">    can be of the form &quot;&lt;number&quot; or &quot;&lt;number&gt;-&lt;number&gt;&quot;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ports (list): A list of strings of format &quot;&lt;number&gt;&quot; or</span>
+<span class="sd">        &quot;&lt;number_1&gt;-&lt;number_2&gt;&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      list: A list of all port number strings with the ranges expanded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">expanded_ports</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ports</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">port_str</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">port_str</span><span class="p">:</span>
+            <span class="n">expanded_ports</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">expand_port_range</span><span class="p">(</span><span class="n">port_str</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expanded_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port_str</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">expanded_ports</span></div>
+
+
+<div class="viewcode-block" id="validate_port"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.validate_port">[docs]</a><span class="k">def</span> <span class="nf">validate_port</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validates that a string is a valid port number.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      port (str): A port number string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      int: The integer port number.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      InvalidFirewallActionError: If the port string isn&#39;t a valid port.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">iport</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+            <span class="s1">&#39;Port not a valid int: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">iport</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+            <span class="s1">&#39;Port must be &gt;= 0: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">iport</span> <span class="o">&gt;</span> <span class="mi">65535</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+            <span class="s1">&#39;Port must be &lt;= 65535: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">iport</span></div>
+
+
+<div class="viewcode-block" id="validate_port_range"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.firewall_rule.html#google.cloud.forseti.common.gcp_type.firewall_rule.validate_port_range">[docs]</a><span class="k">def</span> <span class="nf">validate_port_range</span><span class="p">(</span><span class="n">port_range</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validates that a string is a valid port number.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      port_range (str): A port range string.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      InvalidFirewallActionError: If the port range isn&#39;t a valid range.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split_ports</span> <span class="o">=</span> <span class="n">port_range</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_ports</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+            <span class="s1">&#39;Invalid port range: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">port_range</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">validate_port</span><span class="p">(</span><span class="n">split_ports</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">validate_port</span><span class="p">(</span><span class="n">split_ports</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidFirewallActionError</span><span class="p">(</span>
+            <span class="s1">&#39;Start port range &gt; end port range: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">port_range</span><span class="p">)</span></div>
+</pre></div>

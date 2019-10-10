@@ -18,13 +18,13 @@ To add a new type of Inventory data, you'll complete the following tasks:
 1. Add the Inventory data to a data model
 
 The following guide demonstrates these steps as a walkthrough of 
-[PR #883](https://github.com/GoogleCloudPlatform/forseti-security/pull/883),
+[PR #883](https://github.com/forseti-security/forseti-security/pull/883),
 which adds Compute Engine Image data to Inventory and a data model.
 
 ## Step 1: Check the API client
 
 To check if the API client to retrieve the data already exists, look at the
-`SUPPORTED_APIS` map in [_supported_apis.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/_supported_apis.py).
+`SUPPORTED_APIS` map in [_supported_apis.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/_supported_apis.py).
 If the API client isn't there, you will have to add it. For a self-contained example,
 see [cloud_sql.py]({% link _docs/v2.18/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}).
 

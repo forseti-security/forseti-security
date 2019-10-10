@@ -12,12 +12,11 @@ This guide explains how to use the python-based Forseti installation tool.
 ## Before you begin
 
 <span style="color:red">
-This python-based installer will be deprecated on September 30, 2019.
+This python-based installer will be deprecated on with Forseti Release v2.23.0.
+</span>
 
 It is highly recommended that you try the easier to use terraform-based
-installer, which will become the only installer available after
-September 30, 2019.
-</span>
+installer, which will become the only installer available with Forseti Release v2.23.0.
 
 ### Activate Google Cloud Shell
 
@@ -39,10 +38,10 @@ steps below:
   included in the `install/` directory:
 
       ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone https://github.com/forseti-security/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.19.0.`:
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.22.0.`:
       ```bash
       # Make sure you are in the forseti-security folder.
       cd forseti-security
@@ -50,7 +49,7 @@ steps below:
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v2.19.0
+      git checkout tags/v2.22.0
       
       # Install `future` package if it doesn't already exist.
       pip3 install future

@@ -40,19 +40,19 @@ module "forseti" {
 }
 
 module "real_time_enforcer_roles" {
-   source = "terraform-google-modules/forseti/google/modules/real_time_enforcer_roles"
+   source = "terraform-google-modules/forseti/google//modules/real_time_enforcer_roles"
    org_id = "${var.org_id}"
    suffix = "${module.forseti.suffix}"
 }
 
 module "real_time_enforcer_organization_sink" {
-  source            = "terraform-google-modules/forseti/google/modules/real_time_enforcer_organization_sink"
+  source            = "terraform-google-modules/forseti/google//modules/real_time_enforcer_organization_sink"
   pubsub_project_id = "${var.project_id}"
   org_id            = "${var.org_id}"
 }
 
  module "real_time_enforcer" {
-   source                     = "terraform-google-modules/forseti/google/modules/real_time_enforcer"
+   source                     = "terraform-google-modules/forseti/google//modules/real_time_enforcer"
    project_id                 = "${var.project_id}"
    org_id                     = "${var.org_id}"
    enforcer_instance_metadata = "${var.instance_metadata}"

@@ -34,7 +34,6 @@ dist/
 !third_party/**/dist/
 out/
 
-
 # Coverage
 .coverage
 htmlcov/
@@ -53,3 +52,4 @@ images/resized/
 
 # Generated docs.
 _docs/_latest/develop/reference/
+_docs/latest/
