@@ -135,3 +135,27 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   rotation_period = "100000s"
 }
 
+resource "google_storage_bucket" "bucket-europe-region" {
+  name               = "bucket-eu-${random_pet.random_name_generator.id}"
+  project            = "${var.project_id}"
+  location           = "EU"
+}
+
+resource "google_storage_default_object_access_control" "public_all_users_rule" {
+  bucket             = "${google_storage_bucket.bucket-europe-region.name}"
+  role               = "READER"
+  entity             = "allUsers"
+}
+
+resource "google_storage_bucket" "bucket-us-region" {
+  name               = "bucket-us-${random_pet.random_name_generator.id}"
+  project            = "${var.project_id}"
+  location           = "US"
+}
+
+resource "google_storage_default_object_access_control" "public_all_authenticated_users_rule" {
+  bucket             = "${google_storage_bucket.bucket-us-region.name}"
+  role               = "READER"
+  entity             = "allAuthenticatedUsers"
+}
+
