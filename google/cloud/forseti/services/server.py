@@ -35,6 +35,17 @@ from google.cloud.forseti.services.server_config.service import GrpcServerConfig
 
 LOGGER = logger.get_logger(__name__)
 
+try:
+    import googlecloudprofiler
+    LOGGER.info('Cloud Profiler library successfully imported.')
+    CLOUD_PROFILER_IMPORTED = True
+except ImportError:
+    LOGGER.warning('Cannot enable Cloud Profiler because the '
+                   '`googlecloudprofiler` library was not found. Run '
+                   '`sudo pip3 install .[profiler]` to install '
+                   'Cloud Profiler.')
+    CLOUD_PROFILER_IMPORTED = False
+
 SERVICE_MAP = {
     'explain': GrpcExplainerFactory,
     'inventory': GrpcInventoryFactory,
@@ -141,9 +152,6 @@ def check_args(args):
     return (0, 'All good!')
 
 
-# pylint: enable=too-many-locals
-
-
 def main():
     """Run."""
     parser = argparse.ArgumentParser()
@@ -176,6 +184,10 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
+    parser.add_argument(
+        '--enable_profiler',
+        action='store_true',
+        help='Enable Cloud Profiler.')
 
     args = vars(parser.parse_args())
 
@@ -185,6 +197,18 @@ def main():
         sys.stderr.write('%s\n\n' % error_msg)
         parser.print_usage()
         sys.exit(exit_code)
+
+    if args['enable_profiler'] and CLOUD_PROFILER_IMPORTED:
+        try:
+            googlecloudprofiler.start(
+                service='forseti-server',
+                verbose=2,
+                # project_id must be set if not running on GCP, such as in your
+                # local dev environment.
+                # project_id='my_project_id',
+            )
+        except (ValueError, NotImplementedError) as exc:
+            LOGGER.warning('Unable to enable Cloud Profiler: %s', exc)
 
     serve(args['endpoint'],
           args['services'],

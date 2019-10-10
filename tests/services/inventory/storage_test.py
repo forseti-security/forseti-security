@@ -17,6 +17,7 @@
 from future import standard_library
 standard_library.install_aliases()
 from datetime import datetime
+import time
 import unittest.mock as mock
 import os
 from io import StringIO
@@ -25,40 +26,15 @@ from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine
 from tests.services.util.db import create_test_engine_with_file
+from tests.services.util.mock import ResourceMock
 from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.base.resources import Resource
-from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
-from google.cloud.forseti.services.inventory.storage import CaiDataAccess
-from google.cloud.forseti.services.inventory.storage import ContentTypes
+from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
 
-
-class ResourceMock(Resource):
-
-    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
-        self._key = key
-        self._data = data
-        self._res_type = res_type
-        self._catetory = category
-        self._parent = parent if parent else self
-        self._warning = warning
-        self._contains = []
-        self._timestamp = self._utcnow()
-        self._inventory_key = None
-        self._metadata = None
-
-    def type(self):
-        return self._res_type
-
-    def key(self):
-        return self._key
-
-    def parent(self):
-        return self._parent
 
 
 class StorageTest(ForsetiTestCase):
@@ -66,31 +42,34 @@ class StorageTest(ForsetiTestCase):
 
     def setUp(self):
         """Setup method."""
+        self.engine, self.dbfile = create_test_engine_with_file()
+
         ForsetiTestCase.setUp(self)
 
     def tearDown(self):
         """Tear down method."""
+        os.unlink(self.dbfile)
+        mock.patch.stopall()
         ForsetiTestCase.tearDown(self)
 
-    def reduced_inventory(self, storage, types):
+    def reduced_inventory(self, session, inventory_index_id, types):
         result = (
-            [x for x in storage.iter(types)])
+            [x for x in DataAccess.iter(session,
+                                        inventory_index_id,
+                                        types)])
         return result
 
     def test_basic(self):
         """Test storing a few resources, then iterate."""
-        engine = create_test_engine()
 
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'billing_info',
-                                 res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', 'resource',
                                 res_proj1)
         res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', 'resource',
@@ -110,53 +89,63 @@ class StorageTest(ForsetiTestCase):
         ]
 
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
-
+                inventory_index_id = storage.inventory_index.id
                 self.assertEqual(3,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['organization', 'bucket'])),
                                  'Only 1 organization and 2 buckets')
 
                 self.assertEqual(6,
-                                 len(self.reduced_inventory(storage, [])),
+                                 len(self.reduced_inventory(session,
+                                                            inventory_index_id,
+                                                            [])),
                                  'No types should yield empty list')
 
         with scoped_sessionmaker() as session:
-            storage = Storage(session)
+            storage = Storage(session, self.engine)
             _ = storage.open()
             for resource in resources:
                 storage.write(resource)
-            storage.buffer.flush()
+            storage.commit()
+            inventory_index_id = storage.inventory_index.id
             self.assertEqual(3,
                              len(self.reduced_inventory(
-                                 storage,
+                                 session,
+                                 inventory_index_id,
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
 
             self.assertEqual(6,
-                             len(self.reduced_inventory(storage, [])),
+                             len(self.reduced_inventory(session,
+                                                        inventory_index_id,
+                                                        [])),
                              'No types should yield empty list')
 
     def test_storage_with_timestamps(self):
         """Crawl from project, verify every resource has a timestamp."""
 
         def verify_resource_timestamps_from_storage(storage):
-            for i, item in enumerate(storage.iter(list()), start=1):
+            session = storage.session
+            inventory_index_id = storage.inventory_index.id
+            for i, item in enumerate(DataAccess.iter(session,
+                                                     inventory_index_id,
+                                                     list()),
+                                     start=1):
                 self.assertTrue('timestamp' in item.get_other())
             return i
 
-        engine = create_test_engine()
-
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 storage.write(res_org)
                 storage.commit()
 
@@ -165,25 +154,21 @@ class StorageTest(ForsetiTestCase):
                 self.assertEqual(1, resource_count,
                                  'Unexpected number of resources in inventory')
 
-    def test_whether_resource_should_be_inserted_or_updated(self):
-        """Whether the resource should be inserted or updated.
+    def test_whether_resource_should_be_inserted_or_skipped(self):
+        """Whether the resource should be inserted or skipped.
 
         All resources should not be written if they have been previously
         written. Except group members, where members can be in multiple groups.
         """
 
-        engine = create_test_engine()
-
-        initialize(engine)
-        scoped_sessionmaker = db.create_scoped_sessionmaker(engine)
+        initialize(self.engine)
+        scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_iam1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_billing1 = ResourceMock('4', {'id': 'test'}, 'project',
-                                    'billing_info', res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
                                 res_org)
         res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
@@ -214,8 +199,6 @@ class StorageTest(ForsetiTestCase):
         resources = [
             res_org,
             res_proj1,
-            res_iam1,
-            res_billing1,
             res_buc1,
             res_proj2,
             res_buc2,
@@ -229,25 +212,31 @@ class StorageTest(ForsetiTestCase):
         ]
 
         with scoped_sessionmaker() as session:
-            with Storage(session) as storage:
+            with Storage(session, self.engine) as storage:
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
 
-                self.assertEqual(5,
+                inventory_index_id = storage.inventory_index.id
+                self.assertEqual(3,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['organization', 'project'])),
                                  'Only 1 organization and 2 unique projects')
 
                 self.assertEqual(3,
                                  len(self.reduced_inventory(
-                                     storage,
+                                     session,
+                                     inventory_index_id,
                                      ['gsuite_group_member'])),
                                  'All group members should be stored.')
 
-                self.assertEqual(13,
-                                 len(self.reduced_inventory(storage, [])),
+                self.assertEqual(11,
+                                 len(self.reduced_inventory(
+                                     session,
+                                     inventory_index_id,
+                                     [])),
                                  'No types should yield empty list')
 
 
@@ -272,10 +261,8 @@ class InventoryIndexTest(ForsetiTestCase):
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
-        res_proj1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
-                                 res_proj1)
-        res_proj1 = ResourceMock('4', {'id': 'test'}, 'project', 'billing_info',
-                                 res_proj1)
+        res_proj1.set_iam_policy({'id': 'test'})
+        res_proj1.set_billing_info({'id': 'test'})
         res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
                                 res_proj1)
         res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
@@ -287,13 +274,13 @@ class InventoryIndexTest(ForsetiTestCase):
         resources = [
             res_org, res_proj1, res_buc1, res_proj2, res_buc2, res_obj2]
 
-        storage = Storage(self.session)
+        storage = Storage(self.session, self.engine)
         inv_index_id = storage.open()
         for resource in resources:
             storage.write(resource)
         storage.commit()
         # add more resource data that belongs to a different inventory index
-        storage = Storage(self.session)
+        storage = Storage(self.session, self.engine)
         storage.open()
         for resource in resources:
             storage.write(resource)
@@ -319,131 +306,6 @@ class InventoryIndexTest(ForsetiTestCase):
 
         self.assertEqual({}, details)
 
-
-class CaiTemporaryStoreTest(ForsetiTestCase):
-    """Test the CaiTemporaryStore table and DAO."""
-
-    def setUp(self):
-        """Setup method."""
-        ForsetiTestCase.setUp(self)
-        self.engine, self.dbfile = create_test_engine_with_file()
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
-        initialize(self.engine)
-
-    def _add_resources(self):
-        """Add CAI resources to temporary table."""
-        resource_data = StringIO(CAI_RESOURCE_DATA)
-        rows = CaiDataAccess.populate_cai_data(resource_data, self.session)
-        expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
-        self.assertEqual(expected_rows, rows)
-
-    def _add_iam_policies(self):
-        """Add CAI IAM Policies to temporary table."""
-        iam_policy_data = StringIO(CAI_IAM_POLICY_DATA)
-        rows = CaiDataAccess.populate_cai_data(iam_policy_data, self.session)
-        expected_rows = len(CAI_IAM_POLICY_DATA.split('\n'))
-        self.assertEqual(expected_rows, rows)
-
-    def test_populate_cai_data(self):
-        """Validate CAI data insert."""
-        self._add_resources()
-        self._add_iam_policies()
-
-    def test_clear_cai_data(self):
-        """Validate CAI data delete."""
-        self._add_resources()
-
-        rows = CaiDataAccess.clear_cai_data(self.session)
-        expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
-        self.assertEqual(expected_rows, rows)
-
-        results = CaiDataAccess.iter_cai_assets(
-            ContentTypes.resource,
-            'cloudresourcemanager.googleapis.com/Folder',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
-            self.session)
-        self.assertEqual(0, len(list(results)))
-
-    def test_iter_cai_assets(self):
-        """Validate querying CAI asset data."""
-        self._add_resources()
-
-        cai_type = 'cloudresourcemanager.googleapis.com/Folder'
-
-        results = CaiDataAccess.iter_cai_assets(
-            ContentTypes.resource,
-            cai_type,
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
-            self.session)
-
-        expected_results = [('folders/11111',
-                             AssetMetadata(
-                                 cai_type=cai_type,
-                                 cai_name='//cloudresourcemanager.googleapis.com/folders/11111'))]
-        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
-
-        cai_type = 'appengine.googleapis.com/Service'
-
-        results = CaiDataAccess.iter_cai_assets(
-            ContentTypes.resource,
-            cai_type,
-            '//appengine.googleapis.com/apps/forseti-test-project',
-            self.session)
-
-        expected_results = [('apps/forseti-test-project/services/default',
-                             AssetMetadata(
-                                 cai_name='//appengine.googleapis.com/apps/forseti-test-project/services/default',
-                                 cai_type=cai_type))]
-        self.assertEqual(expected_results, [(asset['name'], metadata) for asset, metadata in results])
-
-    def test_fetch_cai_asset(self):
-        """Validate querying single CAI asset."""
-        self._add_iam_policies()
-
-        cai_type = 'cloudresourcemanager.googleapis.com/Organization'
-        cai_name = '//cloudresourcemanager.googleapis.com/organizations/1234567890'
-
-        results = CaiDataAccess.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            cai_type,
-            cai_name,
-            self.session)
-        expected_iam_policy = {
-            'etag': 'BwVvLqcT+M4=',
-            'bindings': [
-                {'role': 'roles/Owner',
-                 'members': ['user:user1@test.forseti']
-                },
-                {'role': 'roles/Viewer',
-                 'members': [('serviceAccount:forseti-server-gcp-d9fffac'
-                              '@forseti-test-project.iam.gserviceaccount.com'),
-                             'user:user1@test.forseti']
-                }
-            ]
-        }
-        self.assertEqual((expected_iam_policy,
-                          AssetMetadata(cai_type=cai_type, cai_name=cai_name)),
-                         results)
-
-
-
-CAI_RESOURCE_DATA = """{"name":"//cloudresourcemanager.googleapis.com/organizations/1234567890","asset_type":"cloudresourcemanager.googleapis.com/Organization","resource":{"version":"v1beta1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Organization","data":{"creationTime":"2016-09-02T18:55:58.783Z","displayName":"test.forseti","lastModifiedTime":"2017-02-14T05:43:45.012Z","lifecycleState":"ACTIVE","name":"organizations/1234567890","organizationId":"1234567890","owner":{"directoryCustomerId":"C00h00n00"}}}}
-{"name":"//cloudresourcemanager.googleapis.com/folders/11111","asset_type":"cloudresourcemanager.googleapis.com/Folder","resource":{"version":"v2alpha1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Folder","parent":"//cloudresourcemanager.googleapis.com/organizations/1234567890","data":{"createTime":"2017-05-15T17:48:13.407Z","displayName":"test-folder-11111","lifecycleState":"ACTIVE","name":"folders/11111","parent":"organizations/1234567890"}}}
-{"name":"//cloudresourcemanager.googleapis.com/folders/22222","asset_type":"cloudresourcemanager.googleapis.com/Folder","resource":{"version":"v2alpha1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Folder","parent":"//cloudresourcemanager.googleapis.com/folders/11111","data":{"createTime":"2017-05-15T17:48:13.407Z","displayName":"test-folder-22222","lifecycleState":"ACTIVE","name":"folders/22222","parent":"folders/11111"}}}
-{"name":"//cloudresourcemanager.googleapis.com/projects/33333","asset_type":"cloudresourcemanager.googleapis.com/Project","resource":{"version":"v1beta1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Project","parent":"//cloudresourcemanager.googleapis.com/organizations/1234567890","data":{"createTime":"2018-03-30T17:22:52.497Z","labels":{"cost-center":"123456"},"lifecycleState":"ACTIVE","name":"forseti test project","parent":{"id":"1234567890","type":"organization"},"projectId":"forseti-test-project","projectNumber":"33333"}}}
-{"name":"//cloudresourcemanager.googleapis.com/projects/44444","asset_type":"cloudresourcemanager.googleapis.com/Project","resource":{"version":"v1beta1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Project","parent":"//cloudresourcemanager.googleapis.com/folders/22222","data":{"createTime":"2017-08-17T00:50:56.09Z","lifecycleState":"ACTIVE","name":"forseti-test-2","parent":{"id":"22222","type":"folder"},"projectId":"forseti-test-44444","projectNumber":"44444"}}}
-{"name":"//storage.googleapis.com/bucket-test-55555","asset_type":"storage.googleapis.com/Bucket","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/storage/v1/rest","discovery_name":"Bucket","parent":"//cloudresourcemanager.googleapis.com/projects/44444","data":{"acl":[],"billing":{},"cors":[],"defaultObjectAcl":[],"encryption":{},"etag":"CAE=","id":"bucket-test-55555","kind":"storage#bucket","labels":{},"lifecycle":{"rule":[]},"location":"US","logging":{},"metageneration":1,"name":"bucket-test-55555","owner":{},"projectNumber":44444,"retentionPolicy":{},"selfLink":"https://www.googleapis.com/storage/v1/b/bucket-test-55555","storageClass":"STANDARD","timeCreated":"2018-08-29T01:37:30.689Z","updated":"2018-08-29T01:37:30.689Z","versioning":{},"website":{}}}}
-{"name":"//storage.googleapis.com/Bucket-Test-55555","asset_type":"storage.googleapis.com/Bucket","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/storage/v1/rest","discovery_name":"Bucket","parent":"//cloudresourcemanager.googleapis.com/projects/44444","data":{"acl":[],"billing":{},"cors":[],"defaultObjectAcl":[],"encryption":{},"etag":"CAE=","id":"Bucket-Test-55555","kind":"storage#bucket","labels":{},"lifecycle":{"rule":[]},"location":"US","logging":{},"metageneration":1,"name":"Bucket-Test-55555","owner":{},"projectNumber":44444,"retentionPolicy":{},"selfLink":"https://www.googleapis.com/storage/v1/b/Bucket-Test-55555","storageClass":"STANDARD","timeCreated":"2018-08-29T01:37:30.689Z","updated":"2018-08-29T02:37:30.689Z","versioning":{},"website":{}}}}
-{"name":"//appengine.googleapis.com/apps/forseti-test-project","asset_type":"appengine.googleapis.com/Application","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Application","parent":"//cloudresourcemanager.googleapis.com/projects/33333","data":{"authDomain":"gmail.com","codeBucket":"staging.forseti-test-project.testing","defaultBucket":"forseti-test-project.testing","defaultHostname":"forseti-test-project.testing","gcrDomain":"us.gcr.io","id":"forseti-test-project","locationId":"us-central","name":"apps/forseti-test-project","servingStatus":"SERVING"}}}
-{"name":"//appengine.googleapis.com/apps/forseti-test-project/services/default","asset_type":"appengine.googleapis.com/Service","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Service","data":{"id":"default","name":"apps/forseti-test-project/services/default","split":{"allocations":{"20161228t180613":1}}}}}
-{"name":"//appengine.googleapis.com/apps/forseti-test-project/services/default/versions/20161228t180613","asset_type":"appengine.googleapis.com/Version","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Version","data":{"automaticScaling":{"coolDownPeriod":"120s","cpuUtilization":{"targetUtilization":0.5},"maxTotalInstances":20,"minTotalInstances":2},"betaSettings":{"has_docker_image":"true","module_yaml_path":"app.yaml"},"createTime":"2016-12-29T02:07:12Z","deployment":{"container":{"image":"us.gcr.io/forseti-test-project/appengine/default.20161228t180613@sha256:b48abad1caa549dd03070e53d1124f9474ac20472c7f61ee14d653d0a2ae2a5e"}},"envVariables":{"POLICY_SCANNER_DATAFLOW_TMP_BUCKET":"forseti-test-project.testing","POLICY_SCANNER_INPUT_REPOSITORY_URL":"forseti-test-project.testing","POLICY_SCANNER_ORG_ID":"1234567890","POLICY_SCANNER_ORG_NAME":"Forseti Test","POLICY_SCANNER_SINK_URL":"gs://forseti-test-project.testing/OUTPUT","PROJECT_ID":"forseti-test-project"},"id":"20161228t180613","name":"apps/forseti-test-project/services/default/versions/20161228t180613","runtime":"java","runtimeApiVersion":"1.0","servingStatus":"SERVING","threadsafe":true,"versionUrl":"https://20161228t180613-dot-forseti-test-project.testing","vm":true}}}"""
-
-CAI_IAM_POLICY_DATA = """{"name":"//cloudresourcemanager.googleapis.com/folders/11111","asset_type":"cloudresourcemanager.googleapis.com/Folder","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/resourcemanager.folderAdmin","members":["user:user1@test.forseti"]},{"role":"roles/resourcemanager.folderEditor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]}}
-{"name":"//cloudresourcemanager.googleapis.com/folders/22222","asset_type":"cloudresourcemanager.googleapis.com/Folder","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/resourcemanager.folderAdmin","members":["user:user1@test.forseti"]},{"role":"roles/resourcemanager.folderEditor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]}}
-{"name":"//cloudresourcemanager.googleapis.com/projects/33333","asset_type":"cloudresourcemanager.googleapis.com/Project","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Editor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]}}
-{"name":"//cloudresourcemanager.googleapis.com/projects/44444","asset_type":"cloudresourcemanager.googleapis.com/Project","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Editor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]}}
-{"name":"//cloudresourcemanager.googleapis.com/organizations/1234567890","asset_type":"cloudresourcemanager.googleapis.com/Organization","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Viewer","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]}}"""
 
 if __name__ == '__main__':
     unittest.main()
