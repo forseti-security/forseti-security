@@ -44,6 +44,7 @@ class GcpMocks(object):
         self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
+        self.mock_serviceusage = None
         self.mock_logging = None
         self.mock_storage = None
         self.patchers = []
@@ -66,6 +67,7 @@ class GcpMocks(object):
         groups_settings_patcher, self.mock_groups_settings = _mock_groups_settings()
         iam_patcher, self.mock_iam = _mock_iam()
         sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
+        su_patcher, self.mock_serviceusage = _mock_serviceusage()
         logging_patcher, self.mock_logging = _mock_stackdriver_logging()
         self.patchers = [
             ad_patcher,
@@ -81,6 +83,7 @@ class GcpMocks(object):
             groups_settings_patcher,
             iam_patcher,
             sm_patcher,
+            su_patcher,
             logging_patcher
         ]
 
@@ -100,6 +103,7 @@ class GcpMocks(object):
         self.mock_groups_settings = None
         self.mock_iam = None
         self.mock_servicemanagement = None
+        self.mock_serviceusage = None
         self.mock_logging = None
         self.mock_storage = None
         self.patchers = []
@@ -554,6 +558,21 @@ def _mock_servicemanagement():
     mock_sm.get_enabled_apis.side_effect = _mock_sm_get_enabled_apis
 
     return sm_patcher, mock_sm
+
+
+def _mock_serviceusage():
+    """Mock Service Usage client."""
+    def _mock_su_get_enabled_apis(projectid):
+        if projectid in results.SERVICEUSAGE_ENABLED_APIS:
+            return results.SERVICEUSAGE_ENABLED_APIS[projectid]
+        return []
+
+    su_patcher = mock.patch(
+        MODULE_PATH + 'serviceusage.ServiceUsageClient', spec=True)
+    mock_su = su_patcher.start().return_value
+    mock_su.get_enabled_apis.side_effect = _mock_su_get_enabled_apis
+
+    return su_patcher, mock_su
 
 
 def _mock_stackdriver_logging():

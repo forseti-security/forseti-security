@@ -21,10 +21,10 @@ echo "Running unittests... "
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
     # Run our tests with codecov
-    docker exec -i build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover --verbose -s . -p '*_test.py'"
+    docker exec -i build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover --verbose -s tests/ -p '*_test.py'"
 else
     # We are NOT on Travis.
-    docker exec -i build /bin/bash -c "python3 -m unittest discover --verbose -s . -p '*_test.py'"
+    docker exec -i build /bin/bash -c "python3 -m unittest discover --verbose -s tests/ -p '*_test.py'"
 fi
 
 exit ${return_code}

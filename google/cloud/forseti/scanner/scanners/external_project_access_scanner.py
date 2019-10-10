@@ -25,27 +25,12 @@ from google.cloud.forseti.common.gcp_api import api_helpers # noqa=E501
 from google.cloud.forseti.common.gcp_type import resource_util # noqa=E501
 from google.cloud.forseti.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient # noqa=E501
 from google.cloud.forseti.services.inventory.storage import DataAccess
-from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.scanner.audit import external_project_access_rules_engine as epa_rules_engine # noqa=E501
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
 SCOPES = ['https://www.googleapis.com/auth/cloudplatformprojects.readonly']
-
-
-def _get_inventory_storage(session, inventory_index_id):
-    """Creates an open inventory.
-
-    Args:
-        session (object): db session.
-        inventory_index_id (int): The inventory index
-    Returns:
-        Storage: storage object
-    """
-    inventory_storage = Storage(session, inventory_index_id, True)
-    inventory_storage.open()
-    return inventory_storage
 
 
 def get_user_emails(service_config, member_types=None):
@@ -66,9 +51,9 @@ def get_user_emails(service_config, member_types=None):
     with service_config.scoped_session() as session:
         inventory_index_id = (
             DataAccess.get_latest_inventory_index_id(session))
-        inventory_storage = _get_inventory_storage(session,
-                                                   inventory_index_id)
-        for inventory_row in inventory_storage.iter(type_list=member_types):
+        for inventory_row in DataAccess.iter(session,
+                                             inventory_index_id,
+                                             type_list=member_types):
             emails.append(inventory_row.get_resource_data()['primaryEmail'])
 
     return emails
