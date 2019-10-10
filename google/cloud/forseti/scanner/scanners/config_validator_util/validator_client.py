@@ -47,7 +47,7 @@ class ValidatorClient(object):
         self.max_length = 1024 ** 3
         # Default grpc message size limit is 4MB, set the
         # max page size to 3.5 MB.
-        self.max_page_size = 1024 ** 2 * 3.5
+        self.max_page_size = 1024 ** 2 * 100
         # Audit once every 100 MB of data sent to Config Validator.
         self.max_audit_size = 1024 ** 2 * 100
         self.channel = grpc.insecure_channel(endpoint, options=[
@@ -138,6 +138,41 @@ class ValidatorClient(object):
             if violations:
                 yield violations
 
+    def paged_review(self, assets):
+        """Review in a paged manner to avoid memory problem.
+
+        Args:
+            assets (Generator): A list of asset data.
+
+        Yields:
+            list: A list of violations of the paged assets.
+        """
+        paged_assets = []
+        current_page_size = 0
+        for asset in assets:
+            asset_size = sys.getsizeof(asset)
+            # Dictionary size is not properly reflected, cast the dictionary to
+            # string instead to estimate the actual dictionary size.
+            asset_size += sys.getsizeof(str(asset.resource))
+            asset_size += sys.getsizeof(str(asset.iam_policy))
+            if current_page_size + asset_size >= self.max_audit_size:
+                LOGGER.debug('Reviewing data, size: '
+                             '%s, content: %s',
+                             current_page_size, paged_assets)
+                violations = self.review(paged_assets)
+                if violations:
+                    yield violations
+                paged_assets = []
+                current_page_size = 0
+            paged_assets.append(asset)
+            current_page_size += asset_size
+
+        if paged_assets:
+            LOGGER.debug('Reviewing data, size: %s', current_page_size)
+            violations = self.review(paged_assets)
+            if violations:
+                yield violations
+
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
@@ -166,9 +201,12 @@ class ValidatorClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
-    def review(self):
+    def review(self, assets):
         """Review existing data in Config Validator (Audit in parallel
         per policy).
+
+        Args:
+            assets (list): A list of assets to review.
 
         Returns:
             list: List of violations.
@@ -179,7 +217,10 @@ class ValidatorClient(object):
                 Unavailable Error.
         """
         try:
-            return self.stub.Review(validator_pb2.AuditRequest()).violations
+            review_request = validator_pb2.ReviewRequest()
+            review_request.assets.extend(assets)
+            res = self.stub.Review(review_request).violations
+            return res
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
