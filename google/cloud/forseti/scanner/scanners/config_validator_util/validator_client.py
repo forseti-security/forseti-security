@@ -219,8 +219,8 @@ class ValidatorClient(object):
         try:
             review_request = validator_pb2.ReviewRequest()
             review_request.assets.extend(assets)
-            res = self.stub.Review(review_request).violations
-            return res
+            LOGGER.debug('Reviewing %s assets.', len(assets))
+            return self.stub.Review(review_request).violations
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
