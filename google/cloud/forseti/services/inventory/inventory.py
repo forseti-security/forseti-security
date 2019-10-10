@@ -19,8 +19,10 @@
 from builtins import str
 from builtins import object
 import datetime
+from io import StringIO
 from queue import Queue
 import threading
+import traceback
 
 from future import standard_library
 from google.cloud.forseti.common.util import date_time
@@ -172,7 +174,8 @@ def run_inventory(service_config,
     """
 
     storage_cls = service_config.get_storage_class()
-    with storage_cls(session) as storage:
+    engine = service_config.get_engine()
+    with storage_cls(session, engine) as storage:
         try:
             progresser.inventory_index_id = storage.inventory_index.id
             progresser.final_message = True if background else False
@@ -182,11 +185,15 @@ def run_inventory(service_config,
                                  service_config.get_inventory_config())
         except Exception as e:
             LOGGER.exception(e)
+            buf = StringIO()
+            traceback.print_exc(file=buf)
+            buf.seek(0)
+            message = buf.read()
+            storage.error('Inventory raised an exception: %s' % message)
             storage.rollback()
-            raise
         else:
             storage.commit()
-        return result
+            return result
 
 
 def run_import(client, model_name, inventory_index_id, background):
@@ -256,6 +263,10 @@ class Inventory(object):
                             session,
                             progresser,
                             background)
+                        if not result:
+                            LOGGER.error('Error during inventory run.')
+                            queue.put(None)
+                            return None
 
                         if model_name:
                             run_import(self.config.client(),
@@ -286,12 +297,12 @@ class Inventory(object):
         """List stored inventory.
 
         Yields:
-            object: Inventory metadata
+            object: Inventory metadata.
         """
 
         with self.config.scoped_session() as session:
-            for item in DataAccess.list(session):
-                yield item
+            for result in DataAccess.list(session):
+                yield result
 
     def get(self, inventory_id):
         """Get inventory metadata by id.
@@ -300,7 +311,7 @@ class Inventory(object):
             inventory_id (str): Id of the inventory.
 
         Returns:
-            object: Inventory metadata
+            object: Inventory metadata.
         """
 
         with self.config.scoped_session() as session:
@@ -314,7 +325,7 @@ class Inventory(object):
             inventory_id (str): Id of the inventory.
 
         Returns:
-            object: Inventory object that was deleted
+            object: Inventory object that was deleted.
         """
 
         with self.config.scoped_session() as session:
