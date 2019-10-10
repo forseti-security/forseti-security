@@ -32,7 +32,7 @@ control 'explain' do
             end
         end
 
-        describe "List members" do
+        describe "List all members" do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer list_members").stdout).to match /projecteditor\/release-automate-silver/
