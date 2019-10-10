@@ -156,9 +156,6 @@ class ValidatorClient(object):
             asset_size += sys.getsizeof(str(asset.resource))
             asset_size += sys.getsizeof(str(asset.iam_policy))
             if current_page_size + asset_size >= self.max_audit_size:
-                LOGGER.debug('Reviewing data, size: '
-                             '%s, content: %s',
-                             current_page_size, paged_assets)
                 violations = self.review(paged_assets)
                 if violations:
                     yield violations
@@ -168,7 +165,6 @@ class ValidatorClient(object):
             current_page_size += asset_size
 
         if paged_assets:
-            LOGGER.debug('Reviewing data, size: %s', current_page_size)
             violations = self.review(paged_assets)
             if violations:
                 yield violations
@@ -219,7 +215,8 @@ class ValidatorClient(object):
         try:
             review_request = validator_pb2.ReviewRequest()
             review_request.assets.extend(assets)
-            LOGGER.debug('Reviewing %s assets.', len(assets))
+            LOGGER.info('Reviewing %s assets, content: %s',
+                        len(assets), assets)
             return self.stub.Review(review_request).violations
         except grpc.RpcError as e:
             # pylint: disable=no-member
