@@ -25,6 +25,7 @@ from datetime import datetime
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
@@ -140,7 +141,6 @@ class ImporterTest(ForsetiTestCase):
         db_connect = 'sqlite:///{}'.format(
             get_db_file_copy('forseti-composite-test.db'))
 
-        print(db_connect)
         service_config = ServiceConfig(db_connect)
         model_manager = service_config.model_manager
         model_name = model_manager.create(name=self.source)
