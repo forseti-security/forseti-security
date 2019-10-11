@@ -16,7 +16,7 @@
 
 import os
 import tempfile
-
+from sqlalchemy.pool import SingletonThreadPool
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import create_engine
 
@@ -38,7 +38,9 @@ def create_test_engine_with_file(enforce_fks=True):
         LOGGER.info('Creating database at %s', tmpfile)
         engine = create_engine('sqlite:///{}'.format(tmpfile),
                                sqlite_enforce_fks=enforce_fks,
-                               connect_args={'check_same_thread': True})
+                               pool_size=5,
+                               connect_args={'check_same_thread': False},
+                               poolclass=SingletonThreadPool)
         return engine, tmpfile
     finally:
         os.close(fd)

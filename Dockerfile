@@ -57,6 +57,8 @@ COPY --chown=forseti:forseti . ${WORK_DIR}
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt --user
 
+RUN pip install --no-cache-dir --upgrade google-cloud-profiler --user
+
 # Install Forseti Security.
 RUN python setup.py install --user
 
