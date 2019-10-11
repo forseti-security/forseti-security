@@ -21,7 +21,7 @@ script:
 - 'if [[ "$TRAVIS_SECURE_ENV_VARS" = "true" ]]; then bash ./travis/jekyll_build.sh; fi'
 - 'if [[ "$TRAVIS_SECURE_ENV_VARS" != "true" ]]; then travis_wait bundle exec jekyll build; fi'
  before_install:
-    - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
+    # - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
     - gem install bundler -v '1.16.2'
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv -in client-secrets.json.enc -out client-secrets.json -d
