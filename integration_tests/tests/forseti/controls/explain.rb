@@ -32,6 +32,65 @@ control 'explain' do
             end
         end
 
+        describe "List all roles" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/cloudtrace.user/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/compute.admin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/storage.objectAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/stackdriver.accounts.viewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/serviceusage.serviceUsageViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/servicemanagement.quotaAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.sourcesEditor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.findingsStateSetter/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.findingsEditor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/pubsub.editor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/monitoring.viewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/container.clusterViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/dataflow.worker/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/datastore.viewer/
+            end
+        end
+
         describe "List IAM roles" do
 
             it "should be visible from the command-line" do
