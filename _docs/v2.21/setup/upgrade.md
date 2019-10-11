@@ -27,8 +27,8 @@ for example, `deploy-forseti-server-79c4374.yaml`.
 
 ### Change deployment properties
 
-1. Review [`deploy-forseti-server.yaml.in`](https://github.com/forseti-security/forseti-security/blob/dev/deployment-templates/deploy-forseti-server.yaml.in) 
-and [`deploy-forseti-client.yaml.in`](https://github.com/forseti-security/forseti-security/blob/dev/deployment-templates/deploy-forseti-client.yaml.in) 
+1. Review [`deploy-forseti-server.yaml.in`](https://github.com/forseti-security/forseti-security/blob/master-old/deployment-templates/deploy-forseti-server.yaml.in) 
+and [`deploy-forseti-client.yaml.in`](https://github.com/forseti-security/forseti-security/blob/master-old/deployment-templates/deploy-forseti-client.yaml.in) 
 for any new properties that you need to copy to your previous deployment template. To compare what's changed, use
 the `git diff` command. For example, to see the diff between v2.1.0 and v2.2.0, run:
 
@@ -431,7 +431,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.11.0 to 2.12.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-11-0-to-2-12-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.12.0 by running the following commands:
@@ -500,7 +500,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
     under `rules/` in your Forseti server GCS bucket to be able to use the four
     new use cases that have been added.
   
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-11-0-to-2-12-0}
 
 1. Update the `version` inside `main.tf` file to `1.2.0`.
 1. Run command `terraform plan` to see the infrastructure plan.
@@ -517,7 +517,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.12.0 to 2.13.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-12-0-to-2-13-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.13.0 by running the following commands:
@@ -549,7 +549,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-9` for Forseti client. 
  
   
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-12-0-to-2-13-0}
 
 1. Update the version inside main.tf file to 1.3.0.
 1. Run command terraform init to get the plugins.
@@ -563,7 +563,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.13.0 to 2.14.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-13-0-to-2-14-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.14.0 by running the following commands:
@@ -670,7 +670,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
    - Add GSuite scope `https://www.googleapis.com/auth/apps.groups.settings` to your Forseti server service 
      account to allow it to obtain GSuite groups settings data during the inventory process.
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-13-0-to-2-14-0}
 
 1. Update the `version` inside `main.tf` file to `1.4.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -687,7 +687,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.14.0 to 2.15.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-14-0-to-2-15-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.15.0 by running the following commands:
@@ -736,7 +736,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
      under `rules/` in your Forseti server GCS bucket to exclude gmail as a 
      default whitelisted group
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-14-0-to-2-15-0}
 
 1. Update the `version` inside `main.tf` file to `1.6.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -751,7 +751,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.15.0 to 2.16.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-15-0-to-2-16-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.16.0 by running the following commands:
@@ -782,7 +782,7 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-9` for Forseti client.
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-15-0-to-2-16-0}
 
 1. Update the `version` inside `main.tf` file to `2.1.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -797,7 +797,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.16.0 to 2.17.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-16-0-to-2-17-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.17.0 by running the following commands:
@@ -854,7 +854,7 @@ gcloud projects add-iam-policy-binding 1234567890 --member=serviceAccount:forset
             ...
       ```
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-16-0-to-2-17-0}
 
 1. Update the `version` inside `main.tf` file to `2.2.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -869,7 +869,7 @@ gcloud projects add-iam-policy-binding 1234567890 --member=serviceAccount:forset
 
 You can upgrade from 2.17.0 to 2.18.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-17-0-to-2-18-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.18.0 by running the following commands:
@@ -903,7 +903,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
    - Update [ke_rules.yaml](https://github.com/forseti-security/forseti-security/blob/release-2.18.0/rules/ke_rules.yaml#L89-L100)
      under `rules/` in your Forseti server GCS bucket to include the latest vulnerable ke versions.
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-17-0-to-2-18-0}
 
 1. Update the `version` inside `main.tf` file to `2.3.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -920,7 +920,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.18.0 to 2.19.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-18-0-to-2-19-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.19.0 by running the following commands:
@@ -951,7 +951,7 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-9` for Forseti client.
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-18-0-to-2-19-0}
 
 1. Update the `version` inside `main.tf` file to `4.0.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -965,7 +965,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.19.0 to 2.20.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-19-0-to-2-20-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.20.0 by running the following commands:
@@ -1011,7 +1011,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
             ...
       ```
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-19-0-to-2-20-0}
 
 1. Update the `version` inside `main.tf` file to `4.1.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -1025,7 +1025,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 You can upgrade from 2.20.0 to 2.21.0 using Deployment Manager or Terraform. 
 
-### Steps to upgrade using Deployment Manager
+### Steps to upgrade using Deployment Manager {#dm-upgrade-2-20-0-to-2-21-0}
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.21.0 by running the following commands:
@@ -1070,7 +1070,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
             ...
       ```
 
-### Steps to upgrade using Terraform
+### Steps to upgrade using Terraform {#tf-upgrade-2-20-0-to-2-21-0}
 
 1. Update the `version` inside `main.tf` file to `4.2.0`.
 1. Run command `terraform init` to initialize terraform.
@@ -1078,7 +1078,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Run command `terraform apply` to apply the infrastructure build.
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.20.0 to 2.21.0" content=upgrading_2_20_0_to_2_21_0 uid=21 %}
+{% include site/zippy/item.html title="Upgrading 2.20.0 to 2.21.0" content=upgrading_2_20_0_to_2_21_0 uid=22 %}
 
 {% capture deployment_manager_error %}
 
