@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Sendgrid email connector module."""
 
 # The pre-commit linter will complain about useless disable of no-member, but
 # this is needed because quiet the Sendgrid no-member error on Travis.

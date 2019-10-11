@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Mailjet email connector module."""
 
 # The pre-commit linter will complain about useless disable of no-member, but
 # this is needed because quiet the Sendgrid no-member error on Travis.
@@ -25,9 +25,6 @@ import urllib.parse
 from future import standard_library
 from requests import Response
 from retrying import retry
-
-from mailjet_rest import Client
-
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
@@ -36,6 +33,16 @@ from google.cloud.forseti.common.util.email import base_email_connector
 standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
+
+try:
+    from mailjet_rest import Client
+    MAILJET_ENABLED = True
+except ImportError:
+    LOGGER.warning('Cannot enable Mailjet connector because the '
+                   '`mailjet_rest` library was not found. Run '
+                   '`sudo pip3 install mailjet_rest` to install '
+                   'Mailjet.')
+    MAILJET_ENABLED = False
 
 
 class Attachment:

@@ -14,7 +14,8 @@
 
 """Tests for Email Factory"""
 
-from google.cloud.forseti.common.util.email import email_factory, mailjet_connector
+from google.cloud.forseti.common.util.email import email_factory
+from google.cloud.forseti.common.util.email import mailjet_connector
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.errors import InvalidInputError
 from tests.unittest_utils import ForsetiTestCase

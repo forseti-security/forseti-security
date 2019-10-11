@@ -12,22 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the Email utility."""
+"""Tests for the Mailjet email connector module."""
 import tempfile
 import unittest
 from base64 import b64decode
 from unittest.mock import patch, call
 from urllib.error import HTTPError
 
+from google.cloud.forseti.common.util.email import mailjet_connector
 from google.cloud.forseti.common.util.email.mailjet_connector import MailjetConnector, Attachment
 from google.cloud.forseti.common.util.errors import EmailSendError
 from tests.unittest_utils import ForsetiTestCase
 
 
 class MailjetConnectorTest(ForsetiTestCase):
-    """Tests for the Email utility."""
+    """Tests for the Mailjet email connector module."""
 
     def setUp(self):
+        if not mailjet_connector.MAILJET_ENABLED:
+            self.skipTest('Package `mailjet` not installed.')
+
         self.connector = MailjetConnector(
             sender="this field is useless",
             recipient="this field is also useless",

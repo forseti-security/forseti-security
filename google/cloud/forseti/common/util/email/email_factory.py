@@ -16,16 +16,16 @@
 
 from builtins import object
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.email import mailjet_connector
+from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.errors import InvalidInputError
 
 
 LOGGER = logger.get_logger(__name__)
 
 EMAIL_CONNECTOR_FACTORY = {
-    'sendgrid': sendgrid_connector.SendgridConnector,
-    'mailjet': mailjet_connector.MailjetConnector
+    'mailjet': mailjet_connector.MailjetConnector,
+    'sendgrid': sendgrid_connector.SendgridConnector
 }
 
 
