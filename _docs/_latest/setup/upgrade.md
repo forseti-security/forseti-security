@@ -1137,6 +1137,30 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.21.0 to 2.22.0" content=upgrading_2_21_0_to_2_22_0 uid=23 %}
 
+{% capture upgrading_2_22_0_to_2_23_0 %}
+
+### Steps Migrate from Deployment Manager
+If your Forseti deployment was previously deployed with Deployment Manager, please see the [migration documentation]({% link _docs/latest/setup/migrate.md %}) on migrating to Terraform.  Following these steps will also result in an upgraded deployment of Forseti.
+
+### Steps to Upgrade using Terraform
+If Forseti was previously deployed or upgraded via Terraform, do ONE of the following.
+1. Use Terraform to clean up the state and [automatically create a backup](https://www.terraform.io/docs/commands/state/index.html#backups).
+```
+terraform state rm $(terraform state list)
+```
+OR<br />
+
+2. Manually backup and delete the current state.
+  - Make a backup of the existing Terraform state state (terraform.tfstate).
+    - This may be on a local filesystem in the directory from where you execute the Terraform command.
+    - This may also be in a remote storage.
+  - Remove current state file: terraform.tfstate
+
+Follow the steps documented in the [migration documentation]({% link _docs/latest/setup/migrate.md %}) to import existing Terraform state.  Following these steps will also result in an upgraded deployment of Forseti.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.22.0 to 2.23.0" content=upgrading_2_22_0_to_2_23_0 uid=24 %}
+
 {% capture deployment_manager_error %}
 
 If you get the following error while running the deployment manager:
