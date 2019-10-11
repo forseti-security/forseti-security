@@ -142,7 +142,7 @@ With the dependencies now present, try installing Jekyll again:
 gem install jekyll
 ```
 
-### Fetch, Build, and Run Forseti Web Code {#fetch-code}
+### Fetch, Build, and Run Forseti Web Code
 
 #### Fetch Code
 Create a folder for the Forseti website and pull down the code.
