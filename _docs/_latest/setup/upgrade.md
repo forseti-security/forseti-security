@@ -1139,7 +1139,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 
 {% capture upgrading_2_22_0_to_2_23_0 %}
 
-### Steps Migrate from Deployment Manager
+### Steps to Migrate from Deployment Manager
 If your Forseti deployment was previously deployed with Deployment Manager, please see the [migration documentation]({% link _docs/latest/setup/migrate.md %}) on migrating to Terraform.  Following these steps will also result in an upgraded deployment of Forseti.
 
 ### Steps to Upgrade using Terraform
