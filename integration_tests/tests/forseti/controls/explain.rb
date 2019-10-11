@@ -177,7 +177,7 @@ control 'explain' do
             end
         end
 
-        describe "List IAM storage.Admin permissions" do
+        describe "List storage.Admin permissions" do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /firebase.projects.get/
@@ -256,6 +256,25 @@ control 'explain' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+        end
+
+        describe "List permissions in storage role" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /roles\/editor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /project\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
             end
         end
 
