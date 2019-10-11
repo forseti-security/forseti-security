@@ -55,6 +55,9 @@ class EmailFactoryTest(ForsetiTestCase):
                                    sendgrid_connector.SendgridConnector))
 
     def test_get_connector_correctness_mailjet(self):
+        if not mailjet_connector.MAILJET_ENABLED:
+            self.skipTest('Package `mailjet` not installed.')
+
         """Test get_connector() correctness."""
         sample_notifier_config = {
             'email_connector': {
