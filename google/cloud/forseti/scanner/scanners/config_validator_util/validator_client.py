@@ -93,51 +93,6 @@ class ValidatorClient(object):
             self.buffer_sender.add(asset)
         self.buffer_sender.flush()
 
-    def paged_audit(self, assets):
-        """Audit in a paged manner to avoid memory problem.
-
-        Args:
-            assets (Generator): A list of asset data.
-
-        Yields:
-            list: A list of violations of the paged assets.
-        """
-        paged_assets = []
-        current_page_size = 0
-        data_loaded = 0
-        for asset in assets:
-            asset_size = sys.getsizeof(asset)
-            # Dictionary size is not properly reflected, cast the dictionary to
-            # string instead to estimate the actual dictionary size.
-            asset_size += sys.getsizeof(str(asset.resource))
-            asset_size += sys.getsizeof(str(asset.iam_policy))
-            if current_page_size + asset_size >= self.max_page_size:
-                LOGGER.debug('Adding paged data to Config Validator, size: '
-                             '%s, content: %s',
-                             current_page_size, paged_assets)
-                data_loaded += current_page_size
-                self.add_data(paged_assets)
-                paged_assets = []
-                current_page_size = 0
-            if data_loaded >= self.max_audit_size:
-                LOGGER.debug('Reviewing data, size: %s', data_loaded)
-                violations = self.review()
-                self.reset()
-                data_loaded = 0
-                if violations:
-                    yield violations
-            paged_assets.append(asset)
-            current_page_size += asset_size
-
-        if paged_assets:
-            self.add_data(paged_assets)
-            data_loaded += current_page_size
-            LOGGER.debug('Reviewing data, size: %s', data_loaded)
-            violations = self.review()
-            self.reset()
-            if violations:
-                yield violations
-
     def paged_review(self, assets):
         """Review in a paged manner to avoid memory problem.
 
