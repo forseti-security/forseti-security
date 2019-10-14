@@ -48,8 +48,6 @@ class ValidatorClient(object):
         self.buffer_sender = BufferedCVDataSender(self)
         self.max_length = 1024 ** 3
         # Default grpc message size limit is 4MB, set the
-        # max page size to 3.5 MB.
-        self.max_page_size = 1024 ** 2 * 100
         # Audit once every 100 MB of data sent to Config Validator.
         self.max_audit_size = 1024 ** 2 * 100
         self.channel = grpc.insecure_channel(endpoint, options=[
@@ -170,10 +168,11 @@ class ValidatorClient(object):
                 Unavailable Error.
         """
         try:
-            # pylint: disable=no-member
+
             review_request = validator_pb2.ReviewRequest()
-            # pylint: enable=no-member
+            # pylint: disable=no-member
             review_request.assets.extend(assets)
+            # pylint: enable=no-member
             LOGGER.info('Reviewing %s assets, content: %s',
                         len(assets), assets)
             return self.stub.Review(review_request).violations
