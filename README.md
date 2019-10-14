@@ -22,7 +22,7 @@ development efforts, please review our
 ### forsetisecurity.org
 If you would like to contribute to forsetisecurity.org, the website and its
 content are contained in the `forsetisecurity.org` branch. Visit its
-[README](https://github.com/GoogleCloudPlatform/forseti-security/tree/forsetisecurity.org)
+[README](https://github.com/forseti-security/forseti-security/tree/forsetisecurity.org)
 for instructions on how to make changes.
 
 ## Community
