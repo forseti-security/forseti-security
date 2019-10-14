@@ -170,7 +170,9 @@ class ValidatorClient(object):
                 Unavailable Error.
         """
         try:
+            # pylint: disable=no-member
             review_request = validator_pb2.ReviewRequest()
+            # pylint: enable=no-member
             review_request.assets.extend(assets)
             LOGGER.info('Reviewing %s assets, content: %s',
                         len(assets), assets)
