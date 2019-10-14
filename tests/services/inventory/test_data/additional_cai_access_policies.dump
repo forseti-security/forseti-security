@@ -1,0 +1,8 @@
+# Add additional iam policies to this file that are only supported when CAI is
+# enabled. These resources are merged into mock_cai_iam_policies.dump by the
+# update_cai_dumps.py script. Any lines that start with a '#' are ignored.
+#
+# Cloudresource manager with organization id
+{"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","access_policy":{"name":"accessPolicies/1008882730433","parent":"organizations/abc","title":"default policy"},"ancestors":["organizations/111222333"]}
+{"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","access_level":{"name":"accessPolicies/1008882730433/accessLevels/abcb","title":"abcb","basic":{"conditions":[{"ip_subnetworks":["0.0.0.0/0"],"regions":["US"]}]}},"ancestors":["organizations/111222333"]}
+{"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","access_level":{"name":"accessPolicies/1008882730433/accessLevels/Ebil","title":"Ebil","basic":{"conditions":[{"device_policy":{"require_screenlock":true,"allowed_encryption_statuses":[3]}}]}},"ancestors":["organizations/111222333"]}
