@@ -16,6 +16,7 @@
 
 from builtins import object
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.email import mailjet_connector
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.errors import InvalidInputError
 
@@ -23,6 +24,7 @@ from google.cloud.forseti.common.util.errors import InvalidInputError
 LOGGER = logger.get_logger(__name__)
 
 EMAIL_CONNECTOR_FACTORY = {
+    'mailjet': mailjet_connector.MailjetConnector,
     'sendgrid': sendgrid_connector.SendgridConnector
 }
 
@@ -55,15 +57,17 @@ class EmailFactory(object):
 
         if self.email_connector_config:
             connector_name = self.email_connector_config.get('name')
-            auth = self.email_connector_config.get('auth')
             sender = self.email_connector_config.get('sender')
             recipient = self.email_connector_config.get('recipient')
+            auth = self.email_connector_config.get('auth')
+            custom = self.email_connector_config.get('custom')
         # else block below is added for backward compatibility.
         else:
             connector_name = 'sendgrid'
-            auth = self.notifier_config
             sender = self.notifier_config.get('sender')
             recipient = self.notifier_config.get('recipient')
+            auth = self.notifier_config
+            custom = self.notifier_config.get('custom')
 
         try:
             connector = EMAIL_CONNECTOR_FACTORY[connector_name]
@@ -73,7 +77,7 @@ class EmailFactory(object):
             raise InvalidInputError(self.notifier_config)
 
         try:
-            return connector(sender, recipient, auth)
+            return connector(sender, recipient, auth, custom)
         except Exception:
             LOGGER.exception('Error occurred to instantiate connector.')
             raise InvalidInputError(self.notifier_config)

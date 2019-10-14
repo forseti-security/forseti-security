@@ -22,7 +22,7 @@ import unittest
 from datetime import datetime
 
 # pylint: disable=line-too-long
-from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
+from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
 from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
@@ -84,7 +84,7 @@ class EmailViolationsTest(ForsetiTestCase):
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
     def test_make_attachment_csv_correctness(self, mock_os, mock_get_connector):
         """Test the CSV file correctness."""
-        connector = mock.MagicMock(spec=SendgridConnector)
+        connector = mock.MagicMock(spec=BaseEmailConnector)
         mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
@@ -98,7 +98,7 @@ class EmailViolationsTest(ForsetiTestCase):
     @mock.patch.object(EmailFactory, 'get_connector')
     def test_make_attachment_json_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_json() leaves no temp files behind."""
-        connector = mock.MagicMock(spec=SendgridConnector)
+        connector = mock.MagicMock(spec=BaseEmailConnector)
         mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_json()
@@ -110,7 +110,7 @@ class EmailViolationsTest(ForsetiTestCase):
     @mock.patch.object(EmailFactory, 'get_connector')
     def test_make_attachment_csv_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_csv() leaves no temp files behind."""
-        connector = mock.MagicMock(spec=SendgridConnector)
+        connector = mock.MagicMock(spec=BaseEmailConnector)
         mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
