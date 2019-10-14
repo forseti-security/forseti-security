@@ -52,6 +52,8 @@ For an in-depth instruction on how to use the interface, refer to the official C
 
 ## Disabling Cloud Profiler
 
+*Important:* Once you have completed an analysis of your Forseti application, we recommend that you disable the Cloud Profiler.
+
 In your `main.tf` file, set the `cloud_profiler_enabled` variable in the Forseti Terraform module to `false`:
 
 ```
