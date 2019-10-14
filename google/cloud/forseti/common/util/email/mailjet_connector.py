@@ -12,22 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sendgrid email connector module."""
+"""Mailjet email connector module."""
 
 # The pre-commit linter will complain about useless disable of no-member, but
 # this is needed because quiet the Sendgrid no-member error on Travis.
 # pylint: disable=no-member,useless-suppression
 
-import base64
+from base64 import b64encode
 import urllib.request
 import urllib.error
 import urllib.parse
-
 from future import standard_library
-import sendgrid
-from sendgrid.helpers import mail
+from requests import Response
 from retrying import retry
-
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
@@ -37,9 +34,54 @@ standard_library.install_aliases()
 
 LOGGER = logger.get_logger(__name__)
 
+try:
+    from mailjet_rest import Client
+    MAILJET_ENABLED = True
+except ImportError:
+    LOGGER.warning('Cannot enable Mailjet connector because the '
+                   '`mailjet_rest` library was not found. Run '
+                   '`sudo pip3 install mailjet_rest` to install '
+                   'Mailjet.')
+    MAILJET_ENABLED = False
 
-class SendgridConnector(base_email_connector.BaseEmailConnector):
-    """Utility for sending emails using Sendgrid API Key."""
+
+class Attachment:
+    """Mailjet attachment."""
+    def __init__(self,
+                 filename,
+                 content_type,
+                 content,
+                 disposition='attachment'):
+        """Create a Mailjet attachment.
+
+        Mailjet attachments file content must be base64 encoded.
+
+        Args:
+            content_type (str): The content type of the attachment.
+            content (str): The base64 encoded content the attachment.
+            filename (str): The filename of attachment.
+            disposition (str): Content disposition, defaults to "attachment".
+        """
+        self.filename = filename
+        self.content_type = content_type
+        self.content = content
+        self.disposition = disposition
+
+    def payload(self):
+        """Returns mailjet_rest API attachment payload.
+
+        Returns:
+            dict: mailjet_rest API attachment payload
+        """
+        return {
+            'Filename': self.filename,
+            'Content-type': self.content_type,
+            'content': self.content
+        }
+
+
+class MailjetConnector(base_email_connector.BaseEmailConnector):
+    """Utility for sending emails using Mailjet API Key."""
 
     def __init__(self, sender, recipient, auth, custom=None):
         """Initialize the email util.
@@ -49,54 +91,35 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             recipient (str): The email recipient.
             auth (dict): A set of authentication attributes
             corresponding to the selected connector.
-            custom (dict): A set of custom attributes.
+            custom (dict): A set of custom attributes,
+            only 'campaign' attribute is used yet
         """
         self.sender = sender
         self.recipient = recipient
-        if auth.get('api_key'):
-            api_key = auth.get('api_key')
-        # else block below is for backward compatibility
-        else:
-            api_key = auth.get('sendgrid_api_key')
-        self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
-
-        if custom:
-            LOGGER.warning('Unable to process custom attributes: %s', custom)
+        self.mailjet = Client(
+            auth=(
+                auth.get('api_key'),
+                auth.get('api_secret')
+            )
+        )
+        self.campaign = custom.get('campaign') if custom else None
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def _execute_send(self, email):
+    def _execute_send(self, email) -> Response:
         """Executes the sending of the email.
 
         This needs to be a standalone method so that we can wrap it with retry,
         and the final exception can be gracefully handled upstream.
 
         Args:
-            email (SendGrid): SendGrid mail object
+            email (dict): Mailjet mail object
 
         Returns:
             dict: urllib2 response object
         """
-        return self.sendgrid.client.mail.send.post(request_body=email.get())
-
-    @staticmethod
-    def _add_recipients(email, email_recipients):
-        """Add multiple recipients to the sendgrid email object.
-
-        Args:
-            email (SendGrid): SendGrid mail object
-            email_recipients (Str): comma-separated text of the email recipients
-
-        Returns:
-            SendGrid: SendGrid mail object with multiple recipients.
-        """
-        personalization = mail.Personalization()
-        recipients = email_recipients.split(',')
-        for recipient in recipients:
-            personalization.add_to(mail.Email(recipient))
-        email.add_personalization(personalization)
-        return email
+        return self.mailjet.send.create(data=email)
 
     def send(self, email_sender=None, email_recipient=None,
              email_subject=None, email_content=None, content_type=None,
@@ -115,7 +138,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             email_subject (str): The email subject.
             email_content (str): The email content (aka, body).
             content_type (str): The email content type.
-            attachment (Attachment): A SendGrid Attachment.
+            attachment (Attachment): A Mailjet Attachment.
 
         Raises:
             EmailSendError: An error with sending email has occurred.
@@ -125,30 +148,45 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
                            email_sender, email_recipient)
             raise util_errors.EmailSendError
 
-        email = mail.Mail()
-        email.from_email = mail.Email(email_sender)
-        email.subject = email_subject
-        email.add_content(mail.Content(content_type, email_content))
-
-        email = self._add_recipients(email, email_recipient)
+        email = {
+            'FromEmail': email_sender,
+            'FromName': email_sender,
+            'Subject': email_subject,
+            'Text-part': email_content,
+            'Recipients': [
+                {'Email': email_address}
+                for email_address in email_recipient.split(',')
+            ],
+            'Attachments': [attachment] if attachment else []
+        }
 
         if attachment:
-            email.add_attachment(attachment)
+            if attachment.disposition == 'attachment':
+                email['Attachments'] = [attachment.payload()]
+            elif attachment.disposition == 'inline':
+                email['Inline_attachments'] = [attachment.payload()]
+            else:
+                LOGGER.exception(
+                    'Unable to send attachment, disposition is invalid: %s',
+                    attachment.disposition
+                )
+                raise util_errors.EmailSendError
+
+        if self.campaign:
+            email['Mj-campaign'] = self.campaign
 
         try:
             response = self._execute_send(email)
         except urllib.error.HTTPError as e:
-            LOGGER.exception('Unable to send email: %s %s',
-                             e.code, e.reason)
+            LOGGER.exception('Unable to send email: %s %s', e.code, e.reason)
             raise util_errors.EmailSendError
 
-        if response.status_code == 202:
-            LOGGER.info('Email accepted for delivery:\n%s',
-                        email_subject)
+        if 200 <= response.status_code < 300:
+            LOGGER.info('Email accepted for delivery:\n%s', email_subject)
         else:
             LOGGER.error('Unable to send email:\n%s\n%s\n%s\n%s',
                          email_subject, response.status_code,
-                         response.body, response.headers)
+                         response.content, response.headers)
             raise util_errors.EmailSendError
 
     @classmethod
@@ -158,9 +196,9 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
                           filename=None,
                           disposition='attachment',
                           content_id=None):
-        """Create a SendGrid attachment.
+        """Create a Mailjet attachment.
 
-        SendGrid attachments file content must be base64 encoded.
+        Mailjet attachments file content must be base64 encoded.
 
         Args:
             file_location (str): The path of the file.
@@ -170,18 +208,12 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             content_id (str): The content id.
 
         Returns:
-            Attachment: A SendGrid Attachment.
+            Attachment: A Mailjet Attachment.
         """
-        file_content = ''
         with open(file_location, 'rb') as f:
-            file_content = f.read()
-        content = base64.b64encode(file_content)
-
-        attachment = mail.Attachment()
-        attachment.content = content.decode('utf-8')
-        attachment.type = content_type
-        attachment.filename = filename
-        attachment.disposition = disposition
-        attachment.content_id = content_id
-
-        return attachment
+            return Attachment(
+                filename=filename,
+                content_type=content_type,
+                content=b64encode(f.read()).decode('utf-8'),
+                disposition=disposition
+            )

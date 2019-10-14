@@ -67,6 +67,9 @@ REQUIRED_PACKAGES = [
 OPTIONAL_PACKAGES = {
     'profiler': [
         'google-cloud-profiler==1.0.8'
+    ],
+    'mailjet': [
+        'mailjet-rest==1.3.3'
     ]
 }
 
