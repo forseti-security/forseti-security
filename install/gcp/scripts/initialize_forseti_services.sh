@@ -99,6 +99,7 @@ CONFIG_VALIDATOR_SERVICE="$(cat << EOF
 Description=Config Validator API Server
 [Service]
 User=ubuntu
+Environment="GOGC=1000"
 ExecStart=$CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target
