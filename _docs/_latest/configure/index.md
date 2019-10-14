@@ -39,6 +39,11 @@ alerting you to events in your environment.
 Configure Real-Time Enforcer to automatically remediate non-compliant configurations in targeted 
 Google Cloud Platform (GCP) resources.
 
+**[Configuring Cloud Profiler]({% link _docs/latest/configure/cloud-profiler/index.md %})**
+
+Configure Cloud Profiler to view and analyze CPU usage and memory-allocation of your Forseti application on a 
+Google Cloud Platform (GCP) interface.
+
 **[Enabling G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})**
 
 Enable the data collection of G Suite for processing by Forseti Inventory. G Suite access helps

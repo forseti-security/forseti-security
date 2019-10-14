@@ -30,6 +30,7 @@ bundle exec htmlproofer --check-img-http --check-html \
 --internal-domains 'forsetisecurity.org' \
 --check-favicon --report-missing-names --report-script-embeds \
 --url-ignore '/forseti-security/forseti-security/edit/,/maxcdn.bootstrapcdn.com/,/d3js.org/' \
---file-ignore '/develop/reference/' './_www/www/'
+--file-ignore '/develop/reference/' './_www/www/' \
+--only_4xx
 
 exit ${return_code}
