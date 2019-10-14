@@ -65,6 +65,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         """
 
         for violation in violations:
+            LOGGER.debug('Config validator violation: %s', violation)
             resource_id = violation.resource.split('/')[-1]
             full_name, resource_type, resource_data = (
                 self.resource_lookup_table.get(violation.resource,
@@ -126,8 +127,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
             LOGGER.info('Retrieving GCP %s data.', data_type)
             for resource_type in resource_types:
                 for resource in data_access.scanner_iter(session,
-                                                         resource_type,
-                                                         stream_results=False):
+                                                         resource_type):
                     if (not resource.cai_resource_name and
                             resource.type not in
                             cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
@@ -161,7 +161,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         # Get all the data in Config Validator Asset format.
         cv_assets = self._retrieve(iam_policy=iam_policy)
 
-        for violations in self.validator_client.paged_audit(cv_assets):
+        for violations in self.validator_client.paged_review(cv_assets):
             flattened_violations = self._flatten_violations(violations)
             # Clean up the lookup table to free up the memory.
             self.resource_lookup_table = {}
