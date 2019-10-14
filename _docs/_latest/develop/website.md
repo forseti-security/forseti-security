@@ -168,7 +168,7 @@ user@host:~/forseti-web$ bundle install
 Generate the Sphinx docs:
 
 ```bash
-user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "dev"
+user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "master"
 ```
 
 NOTE: You do not have to run this scrit to get the website running locally.
