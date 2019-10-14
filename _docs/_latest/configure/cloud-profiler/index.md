@@ -5,9 +5,8 @@ order: 600
 
 # {{ page.title }}
 
-[Cloud Profiler](https://cloud.google.com/profiler/) is a statistical, low-overhead profiler on GCP that continuously 
-gathers CPU usage and memory-allocation information from your Forseti application, helping you identify the parts of 
-the application consuming the most resources and providing a more complete picture of the application's performance.
+[Cloud Profiler](https://cloud.google.com/profiler/) is a statistical, low-overhead flame graph profiler on GCP that continuously gathers CPU usage and memory-allocation information from your Forseti application, helping you identify 
+the parts of the application consuming the most resources and providing a more complete picture of the application's performance.
 
 ---
 
@@ -50,3 +49,26 @@ In your GCP console, navigate to Stackdriver and click on Profiler to view the d
 
 For an in-depth instruction on how to use the interface, refer to the official Cloud Profiler 
 [documentation](https://cloud.google.com/profiler/docs/using-profiler).
+
+## Disabling Cloud Profiler
+
+In your `main.tf` file, set the `cloud_profiler_enabled` variable in the Forseti Terraform module to `false`:
+
+```
+module "forseti" {
+  source                   = "terraform-google-modules/forseti/google"
+  project_id               = "PROJECT_ID"
+  org_id                   = "ORG_ID"
+  domain                   = "DOMAIN"
+  
+  ...
+  
+  cloud_profiler_enabled   = false
+}
+```
+
+Apply the Terraform module.
+
+```
+terraform apply
+```
