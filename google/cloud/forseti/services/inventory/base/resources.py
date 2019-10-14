@@ -1053,6 +1053,38 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self.add_warning(err_msg)
             return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Get Org policy for this folder.
+        Args:
+            client (object): GCP API client.
+        Returns:
+            dict: Folder Org Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_org_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Get access policy for this organization.
+        Args:
+            client (object): GCP API client.
+        Returns:
+            dict: Folder Access Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_access_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Access Policy: %s', e)
+            self.add_warning(e)
+            return None
+
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset.

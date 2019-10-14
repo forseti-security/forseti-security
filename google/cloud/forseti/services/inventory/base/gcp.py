@@ -77,6 +77,13 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     """The gcp api client interface"""
 
     @abc.abstractmethod
+    def iter_crm_organization_access_policies(self, org_id):
+        """Iterate Access Policies from GCP API.
+        Args:
+            org_id (str): id of the organization to get policy.
+        """
+
+    @abc.abstractmethod
     def fetch_bigquery_dataset_policy(self, project_id,
                                       project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
@@ -1508,6 +1515,18 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute Addresses are not supported by '
                                    'this API client')
 
+    def iter_crm_organization_access_policies(self, org_id):
+        """Iterate Access Policies  from GCP API.
+
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Access Policies are not supported '
+                                   'by this API client')
+
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.
 
@@ -1875,6 +1894,7 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute TargetPools are not '
                                    'supported by this API client')
+
 
     def iter_compute_targetsslproxies(self, project_number):
         """Iterate Target SSL proxies from GCP API.
