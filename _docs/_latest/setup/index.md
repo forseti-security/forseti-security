@@ -34,7 +34,7 @@ Deploy Forseti manually on GCP.
 
 **[Deploy Forseti Security on Google Kubernetes Engine]({% link _docs/latest/setup/forseti-on-gke.md %})**
 
-Deploy Forseti on Google GKE (**ALPHA**)
+Deploy Forseti on Google GKE (**BETA**)
 
 **[Deploy Real-Time Enforcer]({% link _docs/latest/setup/real-time-enforcer.md %})**
 
