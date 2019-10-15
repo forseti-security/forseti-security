@@ -36,7 +36,7 @@ jobs:
   - stage: Integration test
     name: Integration test - docker
     # Check on cron ensures build for integration tests is triggered only when
-    # cron job runs on dev branch. This cron job is currently set to run daily.
+    # cron job runs on master branch. This cron job is currently set to run daily.
     if: type = cron
     services:
     - docker
