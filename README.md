@@ -1,7 +1,8 @@
-**branch: dev** | **branch: master** | **branch: forsetisecurity.org**
-:------------ | :------------ | :------------
-[![Build Status](https://travis-ci.org/forseti-security/forseti-security.svg?branch=dev)](https://travis-ci.org/forseti-security/forseti-security)|[![Build Status](https://travis-ci.org/forseti-security/forseti-security.svg?branch=master)](https://travis-ci.org/forseti-security/forseti-security)|[![Build Status](https://travis-ci.org/forseti-security/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/forseti-security/forseti-security)
-[![codecov](https://codecov.io/gh/forseti-security/forseti-security/branch/dev/graph/badge.svg)](https://codecov.io/gh/forseti-security/forseti-security)|[![codecov](https://codecov.io/gh/forseti-security/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/forseti-security/forseti-security)
+**branch: master** | **branch: forsetisecurity.org**
+:------------ | :------------
+[![Build Status](https://travis-ci.org/forseti-security/forseti-security.svg?branch=master)](https://travis-ci.org/forseti-security/forseti-security)|[![Build Status](https://travis-ci.org/forseti-security/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/forseti-security/forseti-security)
+[![codecov](https://codecov.io/gh/forseti-security/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/forseti-security/forseti-security)|
+
 
 [More info on the branches.](https://forsetisecurity.org/docs/latest/develop/branch-management.html)
 
@@ -21,7 +22,7 @@ development efforts, please review our
 ### forsetisecurity.org
 If you would like to contribute to forsetisecurity.org, the website and its
 content are contained in the `forsetisecurity.org` branch. Visit its
-[README](https://github.com/GoogleCloudPlatform/forseti-security/tree/forsetisecurity.org)
+[README](https://github.com/forseti-security/forseti-security/tree/forsetisecurity.org)
 for instructions on how to make changes.
 
 ## Community

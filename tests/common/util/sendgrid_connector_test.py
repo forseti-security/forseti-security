@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the Email utility."""
+"""Tests for the Sendgrid email connector module."""
 
 import unittest.mock as mock
 import unittest
@@ -25,7 +25,7 @@ from google.cloud.forseti.common.util import errors as util_errors
 
 
 class SendgridConnectorTest(ForsetiTestCase):
-    """Tests for the Email utility."""
+    """Tests for the Sendgrid email connector module."""
 
     def test_can_send_email_to_single_recipient(self):
         """Test can send email to single recipient."""
