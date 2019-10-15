@@ -20,9 +20,18 @@ control 'explain' do
         before :context do
             command("forseti inventory purge 0").result
             command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
+
+            # This variable cannot be used after all the inventories have been purged.
+            @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{@inventory_id} model_explain").result
+            command("forseti model use model_explain").result
+        end
+
+        describe "Successful inventory creation" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stdout).to match /SUCCESS/
+            end
         end
 
         describe "List members" do
@@ -411,7 +420,7 @@ control 'explain' do
 
             after(:context) do
                 command("forseti inventory purge 0").result
-                command("forseti model delete model_new").result
+                command("forseti model delete model_explain").result
             end
         end
     end
