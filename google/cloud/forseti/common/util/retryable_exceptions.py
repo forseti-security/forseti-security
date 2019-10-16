@@ -17,11 +17,11 @@
 import http.client
 import socket
 import ssl
-import urllib.request
 import urllib.error
 import urllib.parse
 
 from future import standard_library
+from googleapiclient import errors
 import httplib2
 
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
@@ -53,6 +53,10 @@ def is_retryable_exception(e):
     Returns:
         bool: True for exceptions to retry. False otherwise.
     """
+    if isinstance(e, errors.HttpError):
+        if e.resp.status == 429:
+            # Resource exhausted error.
+            return True
     return isinstance(e, RETRYABLE_EXCEPTIONS)
 
 
