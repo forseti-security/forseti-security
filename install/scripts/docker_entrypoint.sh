@@ -107,7 +107,7 @@ start_server(){
 
     forseti_server \
     --endpoint ${SERVER_HOST}:${SERVER_PORT} \
-    --forseti_db "mysql+pymysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
+    --forseti_db "mysql+pymysql://${SQL_DB_USER}:${SQL_DB_PASSWORD}@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
