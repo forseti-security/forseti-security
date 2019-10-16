@@ -31,7 +31,6 @@ fi
 # We had issue creating DB user through deployment template, if the issue is
 # resolved in the future, we should create a forseti db user instead of using
 # root.
-# https://github.com/GoogleCloudPlatform/forseti-security/issues/921
 SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://${SQL_DB_USER}:${SQL_DB_PASSWORD}@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
@@ -99,6 +98,7 @@ CONFIG_VALIDATOR_SERVICE="$(cat << EOF
 Description=Config Validator API Server
 [Service]
 User=ubuntu
+Environment="GOGC=1000"
 ExecStart=$CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target

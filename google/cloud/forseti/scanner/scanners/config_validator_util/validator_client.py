@@ -36,7 +36,8 @@ LOGGER = logger.get_logger(__name__)
 class ValidatorClient(object):
     """Validator client."""
 
-    DEFAULT_ENDPOINT = os.getenv('CONFIG_VALIDATOR_ENDPOINT', 'localhost:50052')
+    DEFAULT_ENDPOINT = os.getenv('CONFIG_VALIDATOR_ENDPOINT',
+                                 'localhost:50052')
 
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         """Initialize
@@ -45,9 +46,12 @@ class ValidatorClient(object):
             endpoint (String): The Config Validator endpoint.
         """
         self.buffer_sender = BufferedCVDataSender(self)
-        self.gigabyte = 1024 ** 3
+        self.max_length = 1024 ** 3
+        # Default grpc message size limit is 4MB, set the
+        # Audit once every 100 MB of data sent to Config Validator.
+        self.max_audit_size = 1024 ** 2 * 100
         self.channel = grpc.insecure_channel(endpoint, options=[
-            ('grpc.max_receive_message_length', self.gigabyte)])
+            ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
@@ -89,6 +93,37 @@ class ValidatorClient(object):
             self.buffer_sender.add(asset)
         self.buffer_sender.flush()
 
+    def paged_review(self, assets):
+        """Review in a paged manner to avoid memory problem.
+
+        Args:
+            assets (Generator): A list of asset data.
+
+        Yields:
+            list: A list of violations of the paged assets.
+        """
+        paged_assets = []
+        current_page_size = 0
+        for asset in assets:
+            asset_size = sys.getsizeof(asset)
+            # Dictionary size is not properly reflected, cast the dictionary to
+            # string instead to estimate the actual dictionary size.
+            asset_size += sys.getsizeof(str(asset.resource))
+            asset_size += sys.getsizeof(str(asset.iam_policy))
+            if current_page_size + asset_size >= self.max_audit_size:
+                violations = self.review(paged_assets)
+                if violations:
+                    yield violations
+                paged_assets = []
+                current_page_size = 0
+            paged_assets.append(asset)
+            current_page_size += asset_size
+
+        if paged_assets:
+            violations = self.review(paged_assets)
+            if violations:
+                yield violations
+
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
@@ -105,6 +140,42 @@ class ValidatorClient(object):
         """
         try:
             return self.stub.Audit(validator_pb2.AuditRequest()).violations
+        except grpc.RpcError as e:
+            # pylint: disable=no-member
+            if e.code() == grpc.StatusCode.UNAVAILABLE:
+                raise errors.ConfigValidatorServerUnavailableError(
+                    e.message)
+            else:
+                LOGGER.exception('ConfigValidatorAuditError: %s', e.message)
+                raise errors.ConfigValidatorAuditError(e.message)
+
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
+           wait_exponential_multiplier=10, wait_exponential_max=100,
+           stop_max_attempt_number=5)
+    def review(self, assets):
+        """Review existing data in Config Validator (Audit in parallel
+        per policy).
+
+        Args:
+            assets (list): A list of assets to review.
+
+        Returns:
+            list: List of violations.
+
+        Raises:
+            ConfigValidatorAuditError: Config Validator Audit Error.
+            ConfigValidatorServerUnavailableError: Config Validator Server
+                Unavailable Error.
+        """
+        try:
+
+            review_request = validator_pb2.ReviewRequest()
+            # pylint: disable=no-member
+            review_request.assets.extend(assets)
+            # pylint: enable=no-member
+            LOGGER.info('Reviewing %s assets, content: %s',
+                        len(assets), assets)
+            return self.stub.Review(review_request).violations
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
