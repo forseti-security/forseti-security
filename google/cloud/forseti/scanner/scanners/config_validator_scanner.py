@@ -161,7 +161,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         # Get all the data in Config Validator Asset format.
         cv_assets = self._retrieve(iam_policy=iam_policy)
 
-        for violations in self.validator_client.paged_audit(cv_assets):
+        for violations in self.validator_client.paged_review(cv_assets):
             flattened_violations = self._flatten_violations(violations)
             # Clean up the lookup table to free up the memory.
             self.resource_lookup_table = {}

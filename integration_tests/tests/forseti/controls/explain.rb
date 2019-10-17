@@ -32,6 +32,106 @@ control 'explain' do
             end
         end
 
+        describe "List all members" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projecteditor\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projectowner\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projectviewer\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projecteditor\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com"/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com"/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/158866727632-compute@developer.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
+              
+        describe "List all roles" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/cloudtrace.user/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/compute.admin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/storage.objectAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/stackdriver.accounts.viewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/serviceusage.serviceUsageViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/servicemanagement.quotaAdmin/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.sourcesEditor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.findingsStateSetter/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/securitycenter.findingsEditor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/pubsub.editor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/monitoring.viewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/container.clusterViewer/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/dataflow.worker/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_roles").stdout).to match /roles\/datastore.viewer/
+            end
+        end
+
         describe "List IAM roles" do
 
             it "should be visible from the command-line" do
@@ -177,7 +277,7 @@ control 'explain' do
             end
         end
 
-        describe "List IAM storage.Admin permissions" do
+        describe "List storage.Admin permissions" do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /firebase.projects.get/
@@ -256,6 +356,25 @@ control 'explain' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+        end
+
+        describe "List permissions in storage role" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /roles\/editor/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /project\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
             end
         end
 
