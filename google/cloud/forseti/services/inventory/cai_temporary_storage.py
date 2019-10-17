@@ -121,6 +121,29 @@ class CaiTemporaryStore(BASE):
                 'asset_data': asset_data.encode('utf-8')}
 
     @classmethod
+    def is_pending_delete(cls, asset_json):
+        """Checks if Asset is in pending delete state from json data.
+
+        Args:
+            asset_json (str): The json representation of an Asset.
+
+        Returns:
+            bool: whether Asset is in pending delete state or not.
+        """
+        pending_delete = {'state': 'PENDING_DELETE',
+                          'lifecycleState': 'DELETE_REQUESTED'}
+
+        asset = json.loads(asset_json)
+
+        if 'resource' in asset:
+            resource_data = asset['resource']['data']
+            for key, value in pending_delete.items():
+                if resource_data.get(key) == value:
+                    LOGGER.info("Key: %s is equal to value here: %s", key, value)
+                    return True
+        return False
+
+    @classmethod
     def delete_all(cls, engine):
         """Deletes all rows from this table.
 
@@ -271,7 +294,7 @@ class CaiDataAccess(object):
         return CaiTemporaryStore.delete_all(engine)
 
     @staticmethod
-    def populate_cai_data(data, engine):
+    def populate_cai_data(data, engine, ignore_deleted=False):
         """Add assets from cai data dump into cai temporary table.
 
         Args:
@@ -279,6 +302,8 @@ class CaiDataAccess(object):
                 data representing assets from Cloud Asset Inventory exportAssets
                 API.
             engine (object): Database engine.
+            ignore_deleted (bool): Whether delete pending assets should be
+                                   ignored.
 
         Returns:
             int: The number of rows inserted
@@ -292,7 +317,12 @@ class CaiDataAccess(object):
                 if not line:
                     continue
 
-                row = CaiTemporaryStore.from_json(line.strip().encode())
+                encoded_line = line.strip().encode()
+                row = CaiTemporaryStore.from_json(encoded_line)
+
+                if ignore_deleted:
+                    if CaiTemporaryStore.is_pending_delete(encoded_line):
+                        row = None
                 if row:
                     num_rows += 1
                     rows.append(row)

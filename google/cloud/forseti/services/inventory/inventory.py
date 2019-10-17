@@ -156,7 +156,8 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background):
+                  background,
+                  ignore_deleted):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -165,6 +166,8 @@ def run_inventory(service_config,
         session (object): Database session.
         progresser (object): Progresser implementation to use.
         background (bool): whether to run the inventory in background
+        ignore_deleted (bool): whether to ignore deleted or pending delete
+            assets in CAI
 
     Returns:
         QueueProgresser: Returns the result of the crawl.
@@ -182,7 +185,8 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 ignore_deleted)
         except Exception as e:
             LOGGER.exception(e)
             buf = StringIO()
@@ -229,12 +233,14 @@ class Inventory(object):
 
         init_storage(self.config.get_engine())
 
-    def create(self, background, model_name):
+    def create(self, background, model_name, ignore_deleted):
         """Create a new inventory,
 
         Args:
             background (bool): Run import in background, return immediately
             model_name (str): Model name to import into
+            ignore_deleted (bool): Whether to ignore deleted or pending delete
+                assets in CAI
 
         Yields:
             object: Yields status updates.
@@ -262,7 +268,8 @@ class Inventory(object):
                             queue,
                             session,
                             progresser,
-                            background)
+                            background,
+                            ignore_deleted)
                         if not result:
                             LOGGER.error('Error during inventory run.')
                             queue.put(None)

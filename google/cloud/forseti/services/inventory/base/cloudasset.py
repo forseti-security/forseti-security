@@ -142,12 +142,14 @@ def _download_cloudasset_data(config):
             yield future.result()
 
 
-def load_cloudasset_data(engine, config):
+def load_cloudasset_data(engine, config, ignore_deleted):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
         engine (object): Database engine.
         config (InventoryConfig): Inventory configuration on server.
+        ignore_deleted (bool): whether to ignore deleted or pending delete
+            assets in CAI.
 
     Returns:
         int: The count of assets imported into the database, or None if there
@@ -166,7 +168,8 @@ def load_cloudasset_data(engine, config):
         try:
             assets = _stream_gcs_to_database(gcs_path,
                                              engine,
-                                             storage_client)
+                                             storage_client,
+                                             ignore_deleted)
             imported_assets += assets
         except StreamError as e:
             LOGGER.error('Error streaming data from GCS to Database: %s', e)
@@ -181,7 +184,7 @@ def load_cloudasset_data(engine, config):
     return imported_assets
 
 
-def _stream_cloudasset_worker(cai_data, engine, output_queue):
+def _stream_cloudasset_worker(cai_data, engine, output_queue, ignore_deleted):
     """Worker to stream data from GCS into sqlite temporary table.
 
     Args:
@@ -189,16 +192,18 @@ def _stream_cloudasset_worker(cai_data, engine, output_queue):
         engine (sqlalchemy.engine.Engine): Database engine to write data to.
         output_queue (collections.deque): A queue storing the results of this
             thread.
+        ignore_deleted (bool): whether to ignore deleted or pending delete
+            assets in CAI.
     """
     # Codecs transforms the raw byte stream into an iterable of lines.
     cai_iter = codecs.getreader('utf-8')(cai_data)
     rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
-        cai_iter, engine)
+        cai_iter, engine, ignore_deleted)
     LOGGER.info('%s assets imported to database.', rows)
     output_queue.append(rows)
 
 
-def _stream_gcs_to_database(gcs_object, engine, storage_client):
+def _stream_gcs_to_database(gcs_object, engine, storage_client, ignore_deleted):
     """Stream data from GCS into a local database using pipes.
 
     Args:
@@ -206,6 +211,8 @@ def _stream_gcs_to_database(gcs_object, engine, storage_client):
         engine (sqlalchemy.engine.Engine): The db engine to store the data in.
         storage_client (storage.StorageClient): The storage client to use to
             download data from GCS.
+        ignore_deleted (bool): whether to ignore deleted or pending delete
+            assets in CAI.
 
     Returns:
         int: The number of rows stored in the database.
@@ -233,7 +240,10 @@ def _stream_gcs_to_database(gcs_object, engine, storage_client):
     # Create a separate thread for writing the data to sqlite, reading
     # from the input side of the pipe.
     worker = threading.Thread(target=_stream_cloudasset_worker,
-                              args=(read_file, engine, imported_rows))
+                              args=(read_file,
+                                    engine,
+                                    imported_rows,
+                                    ignore_deleted))
     worker.start()
 
     try:

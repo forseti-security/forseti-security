@@ -101,7 +101,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         for progress in self.inventory.create(request.background,
-                                              request.model_name):
+                                              request.model_name,
+                                              request.ignore_deleted):
 
             if request.enable_debug:
                 last_warning = repr(progress.last_warning)

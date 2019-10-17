@@ -367,7 +367,8 @@ class InventoryClient(ForsetiClient):
         echo = self.stub.Ping(inventory_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def create(self, background=False, import_as=None, enable_debug=False):
+    def create(self, background=False, import_as=None, enable_debug=False,
+               ignore_deleted=False):
         """Creates a new inventory, with an optional import.
 
         Args:
@@ -376,7 +377,8 @@ class InventoryClient(ForsetiClient):
                 inventory is created
             enable_debug (bool): whether to emit additional information
                 for debugging
-
+            ignore_deleted (bool): whether to ignore deleted or pending delete
+                CAI assets
         Returns:
             proto: the returned proto message of create inventory
         """
@@ -384,7 +386,8 @@ class InventoryClient(ForsetiClient):
         request = inventory_pb2.CreateRequest(
             background=background,
             model_name=import_as,
-            enable_debug=enable_debug)
+            enable_debug=enable_debug,
+            ignore_deleted=ignore_deleted)
         return self.stub.Create(request)
 
     def get(self, inventory_index_id):
