@@ -135,3 +135,15 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   rotation_period = "100000s"
 }
 
+provider "gsuite" {
+  version     = "~> 0.1"
+  credentials = "/workspace/release-silver.json"
+  impersonated_user_email = "admin@silver.forsetisecurity.dev"
+}
+
+resource "gsuite_group" "devteam" {
+  email       = "automated-group-creation@silver.forsetisecurity.dev"
+  name        = "automated-group-creation@silver.forsetisecurity.dev"
+  description = "G Suite Group Automated Creation Testing"
+}
+
