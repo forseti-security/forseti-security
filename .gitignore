@@ -27,6 +27,13 @@
 /*.json
 install/gcp/*.json
 
+# Ignore JSON key for service account and not all JSON files.
+service-account-key.json
+
+# Ignore environment files
+*.env
+
+
 # Scripts we don't want to commit
 scripts/dev*.sh
 grant_forseti_roles.sh
