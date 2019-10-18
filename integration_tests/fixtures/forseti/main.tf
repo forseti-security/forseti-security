@@ -143,7 +143,7 @@ provider "gsuite" {
 
 resource "gsuite_group" "devteam" {
   email       = "automated-group-creation@silver.forsetisecurity.dev"
-  name        = "automated-group-creation@silver.forsetisecurity.dev"
+  name        = "gsuite-group-${random_pet.random_name_generator.id}"
   description = "G Suite Group Automated Creation Testing"
 }
 
