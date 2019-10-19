@@ -1221,8 +1221,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         # return super(CaiApiClientImpl, self).iter_crm_project_org_policies(
         #     project_number)
 
-
-
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
 
