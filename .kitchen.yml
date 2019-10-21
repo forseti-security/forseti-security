@@ -35,7 +35,6 @@ suites:
     verifier:
       systems:
         - name: inventory-module
-          sudo: true
           backend: ssh
           hosts_output: forseti-server-vm-ip
           user: ubuntu
