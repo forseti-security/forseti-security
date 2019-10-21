@@ -1,6 +1,6 @@
 # Add comment related to interrupts action on new issues.
 issueOpened: >
-  Thank your for raising an issue. We will have our interrupts engineer reivew your issue shortly.
+  Thank your for opening an issue. Our team's interrupts engineer will reivew your issue shortly.
   
    **Issue Resolution:**
    - [ ] _[Interrupts Engineer]_ Apply triage / categorization labels
