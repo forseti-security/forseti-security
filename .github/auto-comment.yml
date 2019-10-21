@@ -3,7 +3,7 @@ issueOpened: >
   Thank your for opening an issue. Our team's interrupts engineer will reivew your issue shortly.
   
    **Issue Resolution:**
-   - [ ] _[Interrupts Engineer]_ Apply triage / categorization labels
+   - [ ] _[Interrupts Engineer]_  Triage / apply categorization labels
    - [ ] _[Interrupts Engineer]_ Verify / Reproduce the reported issue
    - [ ] _[Forseti Engineer]_ Perform root cause analysis
    - [ ] _Forseti Engineer]_ Add tasks and next steps to resolve this issue.
