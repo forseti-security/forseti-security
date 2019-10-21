@@ -27,8 +27,7 @@ control 'Scanner' do
            command("sudo cp /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server_backup.yaml").result
            @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
            @modified_yaml["scanner"]["scanners"][0]["enabled"] = "true"
-           command("echo -en \"#{@modified_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml").result
-           puts "file content", command("cat /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml").stdout
+           command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml").result
            command("forseti server configuration reload").result
        end
 
@@ -37,7 +36,7 @@ control 'Scanner' do
            end
 
            it "should be visible from the command-line" do
-               expect(command("forseti scanner run").stdout).to match /completed/
+               expect(command("forseti scanner run").stdout).to match /Scan completed/
            end
 
        after :context do
