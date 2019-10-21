@@ -1,0 +1,12 @@
+# Add comment related to interrupts action on new issues.
+issueOpened: >
+  Thank your for raising a issue. We will have our interrupts engineer reivew your issue report shortly.
+  
+   **Issue Resolution:**
+   - [ ] _[Interrupts Engineer]_ Apply categorization labels
+   - [ ] _[Interrupts Engineer]_ Verify / Reproduce the reported issue
+   - [ ] _[Forseti Engineer]_ Perform root cause analysis
+   - [ ] _Forseti Engineer]_ Add tasks and next steps to resolve this issue.
+
+#pullRequestOpened: >
+#  Thank your for raising your pull request.
