@@ -59,7 +59,7 @@ The Service Account and required APIs can be setup automatically with a provided
 This can also be done manually by reviewing the [Requirements](#requirements) section.
 
 ```bash
-git clone --branch module-release-5.0.0 --depth 1 https://github.com/forseti-security/terraform-google-forseti
+git clone --branch module-release-5.0.0 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
 ```
 
 ```bash
