@@ -24,7 +24,7 @@ organization Cloud IAM policy.
 
 ## Setting up Forseti Security
 
-The Forseti Terraform module is the only supported method of installing Forseti Security The default infrastructure for 
+The Forseti Terraform module is the only supported method of installing Forseti Security. The default infrastructure for 
 Forseti is Google Compute Engine. This module also supports installing Forseti on Google Kubernetes Engine (GKE), 
 and at some point in the future will become the default. For more information on installing Forseti on-GKE, please see 
 the [detailed guide on setting up Forseti on-GKE]({% link _docs/latest/setup/forseti-on-gke.md %}).
