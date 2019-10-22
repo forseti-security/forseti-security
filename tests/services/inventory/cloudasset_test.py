@@ -14,6 +14,7 @@
 """Unit Tests: Cloud Asset API integration for Forseti Server."""
 
 import os
+import time
 import unittest
 from googleapiclient import errors
 import httplib2
@@ -80,6 +81,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                                                 {'enabled': True,
                                                  'gcs_path': 'gs://test-bucket'}
                                                )
+        self.inventory_index_id = int(time.time()
         self.mock_auth = mock.patch.object(
             google.auth,
             'default',
