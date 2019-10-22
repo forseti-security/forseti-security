@@ -67,7 +67,7 @@ cd terraform-google-forseti
 ```
 
 ```bash
-./helpers/setup.sh -p PROJECT_ID -o ORG_ID
+. ./helpers/setup.sh -p PROJECT_ID -o ORG_ID
 ```
 
 This will create a service account called `cloud-foundation-forseti-<suffix>`,
@@ -120,8 +120,25 @@ Cloud SQL [machine type](https://cloud.google.com/sql/pricing#2nd-gen-pricing)
 have been set to `n1-standard-8` and `db-n1-standard-4` to account for larger GCP environments. 
 These can be changed by providing the `server_type` and `cloudsql_type` variables.
 
+The following optional variables have been listed to help you identify and set any customized values.
+
 View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) 
-to see all of the available options.
+to see all of the available options and default values.
+
+{: .table .table-striped}
+| Name | Description | Type | Default |
+|---|---|:---:|:---:|
+| composite\_root\_resources | A list of root resources that Forseti will monitor. This supersedes the root_resource_id when set. | list(string) | `<list>` |
+| cscc\_source\_id | Source ID for CSCC Beta API | string | `""` | 
+| cscc\_violations\_enabled | Notify for CSCC violations | bool | `"false"` |
+| excluded\_resources | A list of resources to exclude during the inventory phase. | list(string) | `<list>` |
+| forseti\_email\_recipient | Email address that receives Forseti notifications | string | `""` |
+| forseti\_email\_sender | Email address that sends the Forseti notifications | string | `""` |
+| gsuite\_admin\_email | G-Suite administrator email address to manage your Forseti installation | string | `""` |
+| inventory\_email\_summary\_enabled | Email summary for inventory enabled | bool | `"false"` |
+| inventory\_gcs\_summary\_enabled | GCS summary for inventory enabled | bool | `"true"` |
+| sendgrid\_api\_key | Sendgrid.com API key to enable email notifications | string | `""` |
+| violations\_slack\_webhook | Slack webhook for any violation. Will apply to all scanner violation notifiers. | string | `""` |
 
 ### Run Terraform
 Forseti is ready to be installed! First you will need to initialize Terraform to download any of the module 
@@ -143,7 +160,7 @@ Review the Terraform plan and enter `yes` to perform these actions.
 Remember to cleanup the service account used to install Forseti either manually or by running the command:
 
 ```bash
-. ./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -s cloud-foundation-forseti-<suffix>
+./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -s cloud-foundation-forseti-<suffix>
 ```
 
 This will deprovision and delete the service account, and then delete the credentials file.
@@ -152,7 +169,7 @@ If the service account was provisioned with the roles needed for the real time
 policy enforcer, you can set the `-e` flag to clean up those roles as well:
 
 ```bash
-. ./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -S cloud-foundation-forseti-<suffix> -e
+./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -S cloud-foundation-forseti-<suffix> -e
 ```
 
 ## Forseti Configuration
