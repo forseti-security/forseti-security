@@ -1,0 +1,3 @@
+- cloudresourcemanager.googleapis.com
+- compute.googleapis.com
+- serviceusage.googleapis.com
