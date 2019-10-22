@@ -26,7 +26,8 @@ control 'Scanner' do
            command("forseti model use model_scanner").result
            command("sudo cp /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server_backup.yaml").result
            @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
-           @modified_yaml["scanner"]["scanners"][0]["enabled"] = "true"
+           @scanner_index = @modified_yaml["scanner"]["scanners"].find_index { |scanner| scanner["name"] == "audit_logging" }
+           @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = "true"
            command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml").result
            command("forseti server configuration reload").result
        end
