@@ -120,7 +120,8 @@ Cloud SQL [machine type](https://cloud.google.com/sql/pricing#2nd-gen-pricing)
 have been set to `n1-standard-8` and `db-n1-standard-4` to account for larger GCP environments. 
 These can be changed by providing the `server_type` and `cloudsql_type` variables.
 
-The following optional variables have been listed to help you identify and set any customized values.
+The following variables have been listed as a sample to help you identify and set any customized values. 
+There may be other variables with customized values that will need to be set.
 
 View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) 
 to see all of the available options and default values.
