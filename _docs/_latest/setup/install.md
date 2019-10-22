@@ -120,9 +120,8 @@ Cloud SQL [machine type](https://cloud.google.com/sql/pricing#2nd-gen-pricing)
 have been set to `n1-standard-8` and `db-n1-standard-4` to account for larger GCP environments. 
 These can be changed by providing the `server_type` and `cloudsql_type` variables.
 
-View the list of [inputs](#inputs) to see all of the available options.
-
-
+View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) 
+to see all of the available options.
 
 ### Run Terraform
 Forseti is ready to be installed! First you will need to initialize Terraform to download any of the module 
@@ -192,11 +191,6 @@ In order to execute this module you must have a Service Account with the followi
 For this module to work, you need the following roles enabled on the Service Account.
 
 {% include docs/latest/forseti-terraform-sa-roles.md %}
-
-## Inputs
-Forseti provides many optional settings for users to customize for their environment and security requirements. 
-View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) 
-to see all of the available options.
 
 ## Outputs
 When completed, the Terraform deployment will output a list of values on the terminal that can help users identify 
