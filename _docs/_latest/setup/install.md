@@ -59,7 +59,7 @@ The Service Account and required APIs can be setup automatically with a provided
 This can also be done manually by reviewing the [Requirements](#requirements) section.
 
 ```bash
-git clone https://github.com/forseti-security/terraform-google-forseti.git
+git clone --branch module-release-5.0.0 --depth 1 https://github.com/forseti-security/terraform-google-forseti
 ```
 
 ```bash
@@ -79,13 +79,13 @@ service account with a few extra roles. This can be enabled with the `-e`
 flag:
 
 ```bash
-./helpers/setup.sh -p PROJECT_ID -o ORG_ID -e
+. ./helpers/setup.sh -p PROJECT_ID -o ORG_ID -e
 ```
 
 Utilizing a shared VPC via a host project is supported with the `-f` flag:
 
 ```bash
-./helpers/setup.sh -p PROJECT_ID -f HOST_PROJECT_ID -o ORG_ID
+. ./helpers/setup.sh -p PROJECT_ID -f HOST_PROJECT_ID -o ORG_ID
 ```
 
 #### APIs
@@ -102,11 +102,6 @@ You can copy these examples or use the snippet below as a starting point to your
 Create a file named `main.tf` in an empty directory and copy the contents below into the file.
 
 ```hcl
-
-provider "google" {
-  credentials = "${file("/path/to/credentials.json")}"
-}
-
 module "forseti" {
   source  = "terraform-google-modules/forseti/google"
   version = "~> 5.0.0"
@@ -126,6 +121,8 @@ have been set to `n1-standard-8` and `db-n1-standard-4` to account for larger GC
 These can be changed by providing the `server_type` and `cloudsql_type` variables.
 
 View the list of [inputs](#inputs) to see all of the available options.
+
+
 
 ### Run Terraform
 Forseti is ready to be installed! First you will need to initialize Terraform to download any of the module 
@@ -147,7 +144,7 @@ Review the Terraform plan and enter `yes` to perform these actions.
 Remember to cleanup the service account used to install Forseti either manually or by running the command:
 
 ```bash
-./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -s cloud-foundation-forseti-<suffix>
+. ./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -s cloud-foundation-forseti-<suffix>
 ```
 
 This will deprovision and delete the service account, and then delete the credentials file.
@@ -156,7 +153,7 @@ If the service account was provisioned with the roles needed for the real time
 policy enforcer, you can set the `-e` flag to clean up those roles as well:
 
 ```bash
-./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -S cloud-foundation-forseti-<suffix> -e
+. ./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -S cloud-foundation-forseti-<suffix> -e
 ```
 
 ## Forseti Configuration
@@ -198,15 +195,13 @@ For this module to work, you need the following roles enabled on the Service Acc
 
 ## Inputs
 Forseti provides many optional settings for users to customize for their environment and security requirements. 
-View the list of inputs below to see all of the available options.
-
-{% include docs/latest/forseti-terraform-inputs.md %}
+View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) 
+to see all of the available options.
 
 ## Outputs
 When completed, the Terraform deployment will output a list of values on the terminal that can help users identify 
-important resources that have been created by the Forseti installation:
-
-{% include docs/latest/forseti-terraform-outputs.md %}
+important resources that have been created by the Forseti installation. View the list of outputs 
+[here](https://github.com/forseti-security/terraform-google-forseti#outputs).
 
 ## What's next
 
