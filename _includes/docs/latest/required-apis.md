@@ -17,6 +17,5 @@
 |Kubernetes Engine|`container.googleapis.com`|
 |Resource Manager|`cloudresourcemanager.googleapis.com`|
 |Stackdriver Logging|`logging.googleapis.com`|
-|Stackdriver Trace|`cloudtrace.googleapis.com`|
 |Service Management|`servicemanagement.googleapis.com`|
 |Service Usage|`serviceusage.googleapis.com`|
