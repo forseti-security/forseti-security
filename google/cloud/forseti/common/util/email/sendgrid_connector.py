@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Sendgrid email connector module."""
 
 # The pre-commit linter will complain about useless disable of no-member, but
 # this is needed because quiet the Sendgrid no-member error on Travis.
@@ -41,23 +41,27 @@ LOGGER = logger.get_logger(__name__)
 class SendgridConnector(base_email_connector.BaseEmailConnector):
     """Utility for sending emails using Sendgrid API Key."""
 
-    def __init__(self, sender, recipient, kwargs):
+    def __init__(self, sender, recipient, auth, custom=None):
         """Initialize the email util.
 
         Args:
             sender (str): The email sender.
             recipient (str): The email recipient.
-            **kwargs (dict): A set of authentication attributes
+            auth (dict): A set of authentication attributes
             corresponding to the selected connector.
+            custom (dict): A set of custom attributes.
         """
         self.sender = sender
         self.recipient = recipient
-        if kwargs.get('api_key'):
-            api_key = kwargs.get('api_key')
+        if auth.get('api_key'):
+            api_key = auth.get('api_key')
         # else block below is for backward compatibility
         else:
-            api_key = kwargs.get('sendgrid_api_key')
+            api_key = auth.get('sendgrid_api_key')
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
+
+        if custom:
+            LOGGER.warning('Unable to process custom attributes: %s', custom)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -148,8 +152,12 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
             raise util_errors.EmailSendError
 
     @classmethod
-    def create_attachment(cls, file_location, content_type, filename,
-                          disposition='attachment', content_id=None):
+    def create_attachment(cls,
+                          file_location=None,
+                          content_type=None,
+                          filename=None,
+                          disposition='attachment',
+                          content_id=None):
         """Create a SendGrid attachment.
 
         SendGrid attachments file content must be base64 encoded.

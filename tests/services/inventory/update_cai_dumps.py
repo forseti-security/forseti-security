@@ -79,6 +79,7 @@ class NullProgresser(Progresser):
     def get_summary(self):
         pass
 
+
 def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
     resource = {
         'name': name,
@@ -97,7 +98,7 @@ def _create_asset(name, asset_type, parent_name, data_dict, iam_policy_dict):
                                      sort_keys=True)
     else:
         iam_policy_data = None
-    return (resource_data, iam_policy_data)
+    return resource_data, iam_policy_data
 
 
 def organization(item):
@@ -115,6 +116,7 @@ def folder(item):
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
+
 def project(item):
     name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         item['projectNumber'])
@@ -123,6 +125,7 @@ def project(item):
         item['parent']['type'], item['parent']['id'])
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
+
 
 def appengine_app(item):
     parent = item.parent()
@@ -152,6 +155,18 @@ def bigquery_dataset(item):
     asset_type = 'bigquery.googleapis.com/Dataset'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
+def bigquery_table(item):
+    name = '//bigquery.googleapis.com/projects/{}/datasets/{}/tables/{}'.format(
+        item['tableReference']['projectId'],
+        item['tableReference']['datasetId'],
+        item['tableReference']['tableId'])
+    asset_type = 'bigquery.googleapis.com/Table'
+    parent_name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+        item['tableReference']['projectId'],
+        item['tableReference']['datasetId'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
@@ -216,16 +231,16 @@ def serviceaccount(item):
                          item.get_iam_policy())
 
 
-# def kubernetes_cluster(item):
-#     parent = item.parent()
-#     name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
-#             'clusters/{}'.format(parent['projectId'],
-#                                  item['zone'],
-#                                  item['name']))
-#     asset_type = 'container.googleapis.com/Cluster'
-#     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-#         parent['projectNumber'])
-#     return _create_asset(name, asset_type, parent_name, item.data(), None)
+def kubernetes_cluster(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
+            'clusters/{}'.format(parent['projectId'],
+                                 item['zone'],
+                                 item['name']))
+    asset_type = 'container.googleapis.com/Cluster'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
 def _create_compute_asset(item, asset_type):
@@ -273,11 +288,15 @@ def instancegroupmanager(item):
     return _create_compute_asset(item,
                                  'compute.googleapis.com/InstanceGroupManager')
 
-
 def instancetemplate(item):
     return _create_compute_asset(item,
                                  'compute.googleapis.com/InstanceTemplate')
 
+def interconnect(item):
+    return _create_compute_asset(item, 'compute.googleapis.com/Interconnect')
+
+def interconnect_attachment(item):
+    return _create_compute_asset(item, 'compute.googleapis.com/InterconnectAttachment')
 
 def network(item):
     return _create_compute_asset(item, 'compute.googleapis.com/Network')
@@ -312,12 +331,15 @@ CAI_TYPE_MAP = {
     'instancegroup': instancegroup,
     'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
-    # 'kubernetes_cluster': kubernetes_cluster,
+    'interconnect': interconnect,
+    'interconnect_attachment': interconnect_attachment,
+    'kubernetes_cluster': kubernetes_cluster,
     'network': network,
     'role': role,
     'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
+    'table': bigquery_table,
 }
 
 

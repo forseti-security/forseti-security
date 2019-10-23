@@ -22,6 +22,7 @@ inventory:
     # service account before they can be included in the inventory.
     #
     # Forseti Explain is not supported with a composite root at this time.
+    #
     # Resources can exist in multiple organizations.
     #
     #composite_root_resources:
@@ -86,12 +87,12 @@ inventory:
           max_calls: 9
           period: 1.0
           disable_polling: False
-        securitycenter:
-          max_calls: 1
-          period: 1.1
-          disable_polling: False
         servicemanagement:
           max_calls: 2
+          period: 1.1
+          disable_polling: False
+        serviceusage:
+          max_calls: 4
           period: 1.1
           disable_polling: False
         sqladmin:
@@ -127,6 +128,9 @@ inventory:
         #    - appengine.googleapis.com/Version
         #    - bigquery.googleapis.com/Dataset
         #    - bigquery.googleapis.com/Table
+        #    - bigtableadmin.googleapis.com/Cluster
+        #    - bigtableadmin.googleapis.com/Instance
+        #    - bigtableadmin.googleapis.com/Table
         #    - cloudbilling.googleapis.com/BillingAccount
         #    - cloudkms.googleapis.com/CryptoKey
         #    - cloudkms.googleapis.com/CryptoKeyVersion
@@ -134,12 +138,14 @@ inventory:
         #    - cloudresourcemanager.googleapis.com/Folder
         #    - cloudresourcemanager.googleapis.com/Organization
         #    - cloudresourcemanager.googleapis.com/Project
+        #    - compute.googleapis.com/Address
         #    - compute.googleapis.com/Autoscaler
         #    - compute.googleapis.com/BackendBucket
         #    - compute.googleapis.com/BackendService
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalAddress
         #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck
@@ -149,12 +155,15 @@ inventory:
         #    - compute.googleapis.com/InstanceGroup
         #    - compute.googleapis.com/InstanceGroupManager
         #    - compute.googleapis.com/InstanceTemplate
+        #    - compute.googleapis.com/Interconnect
+        #    - compute.googleapis.com/InterconnectAttachment
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project
         #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
+        #    - compute.googleapis.com/SecurityPolicy
         #    - compute.googleapis.com/Snapshot
         #    - compute.googleapis.com/SslCertificate
         #    - compute.googleapis.com/Subnetwork
@@ -211,7 +220,7 @@ scanner:
 
     # Enable the scanners as default to true when integrated for Forseti 2.0.
 
-     scanners:
+    scanners:
         - name: audit_logging
           enabled: false
         - name: bigquery
@@ -250,6 +259,10 @@ scanner:
 ##############################################################################
 
 notifier:
+    api_quota:
+        securitycenter:
+            max_calls: 14
+            period: 1.0
 
     # Provide connector details
     email_connector:
@@ -274,7 +287,7 @@ notifier:
                 data_format: csv
                 # gcs_path should begin with "gs://"
                 gcs_path: ''
-            # Slack webhook pipeline
+            # Slack webhook pipeline.
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
             # Add the provided URL in the configuration below in `webhook_url`.
@@ -298,7 +311,7 @@ notifier:
     violation:
       cscc:
         enabled: true
-        # Cloud SCC API uses a new source_id. It is unique per
+        # Cloud SCC uses a source_id. It is unique per
         # organization and must be generated via a self-registration process.
         # The format is: organizations/ORG_ID/sources/SOURCE_ID
         source_id:
@@ -312,4 +325,3 @@ notifier:
         gcs_path: gs://MY_BUCKET/inventory_summary
       email_summary:
         enabled: true
-

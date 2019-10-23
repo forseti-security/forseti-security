@@ -31,8 +31,7 @@ fi
 # We had issue creating DB user through deployment template, if the issue is
 # resolved in the future, we should create a forseti db user instead of using
 # root.
-# https://github.com/GoogleCloudPlatform/forseti-security/issues/921
-SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
+SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://${SQL_DB_USER}:${SQL_DB_PASSWORD}@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
@@ -41,9 +40,34 @@ FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
 CONFIG_VALIDATOR_COMMAND="${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer"
-CONFIG_VALIDATOR_COMMAND+=" --policyPath='${FORSETI_HOME}/policy-library/policies'"
-CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${FORSETI_HOME}/policy-library/lib'"
+CONFIG_VALIDATOR_COMMAND+=" --policyPath='${POLICY_LIBRARY_HOME}/policy-library/policies'"
+CONFIG_VALIDATOR_COMMAND+=" --policyLibraryPath='${POLICY_LIBRARY_HOME}/policy-library/lib'"
 CONFIG_VALIDATOR_COMMAND+=" -port=50052"
+
+if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
+  POLICY_LIBRARY_SYNC_COMMAND="$(which docker) run -d"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-driver=gcplogs"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt gcp-log-cmd=true"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --log-opt labels=git-sync"
+  POLICY_LIBRARY_SYNC_COMMAND+=" -v ${POLICY_LIBRARY_HOME}:/tmp/git"
+  POLICY_LIBRARY_SYNC_COMMAND+=" -v /etc/git-secret:/etc/git-secret"
+  POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYNC_TAG}"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --wait=30"
+
+  # If the SSH file is present, tell git-sync to use SSH to connect to the repo
+  if [ -e "/etc/git-secret/ssh" ]; then
+    POLICY_LIBRARY_SYNC_COMMAND+=" --ssh"
+  fi
+
+  # If the known_hosts file is NOT present, tell git-sync to not check known hosts
+  if ! [ -e "/etc/git-secret/known_hosts" ]; then
+    POLICY_LIBRARY_SYNC_COMMAND+=" --ssh-known-hosts=false"
+  fi
+fi
 
 # Update the permission of the config validator.
 sudo chmod ugo+x ${FORSETI_HOME}/external-dependencies/config-validator/ConfigValidatorRPCServer
@@ -74,6 +98,7 @@ CONFIG_VALIDATOR_SERVICE="$(cat << EOF
 Description=Config Validator API Server
 [Service]
 User=ubuntu
+Environment="GOGC=1000"
 ExecStart=$CONFIG_VALIDATOR_COMMAND
 [Install]
 WantedBy=multi-user.target
@@ -98,6 +123,20 @@ EOF
 echo "$SQL_PROXY_SERVICE" > /tmp/cloudsqlproxy.service
 sudo mv /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
 
+# Policy Library Sync Service
+if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
+  POLICY_LIBRARY_SYNC_SERVICE="$(cat << EOF
+[Unit]
+Description=Policy Library Sync
+[Service]
+ExecStart=$POLICY_LIBRARY_SYNC_COMMAND
+[Install]
+WantedBy=multi-user.target
+EOF
+  )"
+  echo "$POLICY_LIBRARY_SYNC_SERVICE" > /tmp/policy-library-sync.service
+  sudo mv /tmp/policy-library-sync.service /lib/systemd/system/policy-library-sync.service
+fi
 
 # Define a foreground runner. This runner will start the CloudSQL
 # proxy and block on the Forseti API server.
@@ -117,6 +156,7 @@ echo "immediately by running the following:"
 echo ""
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
+echo "    systemctl start policy-library-sync"
 echo "    systemctl start config-validator"
 echo ""
 echo "Additionally, the Forseti server can be run in the foreground by using"

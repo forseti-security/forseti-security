@@ -17,6 +17,7 @@
 from __future__ import print_function
 
 from builtins import object
+import os
 import sys
 
 # Importing migrate.changeset adds some new methods to existing SQLAlchemy
@@ -30,8 +31,11 @@ import google.cloud.forseti.services.dao as general_dao
 
 from google.cloud.forseti.common.util import logger
 
-
-DEFAULT_DB_CONN_STR = 'mysql://root@127.0.0.1:3306/forseti_security'
+DB_NAME = os.environ.get('FORSETI_DB_NAME', 'forseti_security')
+DB_USER = os.environ.get('SQL_DB_USER', '')
+DB_PASSWORD = os.environ.get('SQL_DB_PASSWORD', '')
+DEFAULT_DB_CONN_STR = (f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@'
+                       f'127.0.0.1:3306/{DB_NAME}')
 LOGGER = logger.get_logger(__name__)
 
 
@@ -196,14 +200,6 @@ if __name__ == '__main__':
     SQL_ENGINE = general_dao.create_engine(DB_CONN_STR,
                                            pool_recycle=3600)
 
-    # Drop the CaiTemporaryStore table to ensure it is using the
-    # latest schema.
-    inventory_dao.initialize(SQL_ENGINE)
-    INVENTORY_TABLES = inventory_dao.BASE.metadata.tables
-    CAI_TABLE = INVENTORY_TABLES.get(
-        inventory_dao.CaiTemporaryStore.__tablename__)
-    CAI_TABLE.drop(SQL_ENGINE)
-
     # Create tables if not exists.
     inventory_dao.initialize(SQL_ENGINE)
     scanner_dao.initialize(SQL_ENGINE)
@@ -212,7 +208,6 @@ if __name__ == '__main__':
     SCANNER_DAO_CLASSES = _find_subclasses(scanner_dao.BASE)
 
     INVENTORY_DAO_CLASSES = _find_subclasses(inventory_dao.BASE)
-    INVENTORY_DAO_CLASSES.extend([inventory_dao.CaiTemporaryStore])
 
     DECLARITIVE_BASE_MAPPING = {
         scanner_dao.BASE: SCANNER_DAO_CLASSES,

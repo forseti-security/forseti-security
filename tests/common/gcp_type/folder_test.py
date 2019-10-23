@@ -86,6 +86,5 @@ class FolderTest(ForsetiTestCase):
                          my_folder.lifecycle_state)
 
 
-
 if __name__ == '__main__':
     unittest.main()

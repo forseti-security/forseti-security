@@ -47,17 +47,6 @@ class Storage(object):
         """
         raise NotImplementedError()
 
-    def update(self, resource):
-        """Not Implemented.
-
-        Args:
-            resource (object): the resource object to update
-
-        Raises:
-            NotImplementedError: Because not implemented.
-        """
-        raise NotImplementedError()
-
     def error(self, message):
         """Not Implemented.
 
@@ -69,10 +58,12 @@ class Storage(object):
         """
         raise NotImplementedError()
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Not Implemented.
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
 
         Raises:
@@ -144,14 +135,6 @@ class Memory(Storage):
         """
         self.mem[resource.type() + resource.key()] = resource
 
-    def update(self, resource):
-        """Update a existing resource object in memory
-
-        Args:
-            resource (object): the resource object to update
-        """
-        pass
-
     def read(self, key):
         """Read a resource object from storage
 
@@ -171,10 +154,12 @@ class Memory(Storage):
         """
         pass
 
-    def warning(self, message):
+    def warning(self, resource_full_name, message):
         """Ignore the warning message
 
         Args:
+            resource_full_name (str): The full name of the resource that raised
+                the error.
             message (str): Warning message describing the problem.
         """
         pass

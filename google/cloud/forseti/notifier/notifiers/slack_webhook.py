@@ -38,6 +38,12 @@ class SlackWebhook(base_notification.BaseNotification):
             output: a string formatted violation
         """
         output = ''
+
+        if not isinstance(data, dict):
+            LOGGER.debug('Violation data is not a dictionary type. '
+                         f'Violation data: {data}')
+            return '\t' * (indent + 1) + '`' + str(data) + '`\n'
+
         for key, value in sorted(data.items()):
             output += '\t' * indent + '*' + str(key) + '*:'
             if isinstance(value, dict):
