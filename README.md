@@ -28,3 +28,20 @@ for instructions on how to make changes.
 ## Community
 Check out our [community page](http://forsetisecurity.org/community/) for ways
 to engage with the Forseti Community.
+
+## Integration test
+To run integration tests on your local environment without having to 
+store sensitive information/secrets in the forseti-security repository, store
+project id in TF_VAR_project_id variable, organization id in TF_VAR_org_id, 
+domain in TF_VAR_domain, billing account in TF_VAR_billing_account and 
+service account key in SERVICE_ACCOUNT_JSON variable.
+
+Run the following command after setting environment variables from bash shell.
+
+```
+docker container run -it -e KITCHEN_TEST_BASE_PATH="integration_tests/tests" -e 
+SERVICE_ACCOUNT_JSON -e TF_VAR_project_id -e TF_VAR_org_id -e 
+TF_VAR_billing_account -e TF_VAR_domain 
+-v $(pwd):/workspace gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
+/bin/bash
+```
