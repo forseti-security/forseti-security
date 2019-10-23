@@ -23,3 +23,14 @@ rules:
     settings:
       whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE"
       whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+  - name: All groups with iam policies should have all of these settings
+    mode: whitelist
+    only_iam_groups: True
+    groups_emails:
+      - 'settings6@testing.com'
+    settings:
+      allowExternalMembers: False
+      whoCanAdd: "ALL_MANAGERS_CAN_ADD"
+      whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
+      whoCanJoin: "INVITED_CAN_JOIN"
+      whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE"

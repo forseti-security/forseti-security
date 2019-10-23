@@ -13,7 +13,6 @@
 # limitations under the License.
 """Location data to be used in the unit tests."""
 
-from builtins import str
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -92,6 +91,7 @@ _GCE_INSTANCE_JSON = """{
 GCE_INSTANCE = resource_util.create_resource_from_json(
     'instance', PROJECT, _GCE_INSTANCE_JSON)
 
+
 def build_violations(res):
     """Build an expected violation.
 
@@ -101,6 +101,11 @@ def build_violations(res):
     Returns:
         RuleViolation: The violation.
     """
+    violation_data = {
+        'full_name': res.full_name,
+        'resource_type': res.type,
+        'locations': res.locations
+    }
     return [location_rules_engine.RuleViolation(
         resource_id=res.id,
         resource_name=res.display_name,
@@ -109,6 +114,6 @@ def build_violations(res):
         rule_index=0,
         rule_name='Location test rule',
         violation_type='LOCATION_VIOLATION',
-        violation_data=str(res.locations),
+        violation_data=violation_data,
         resource_data=res.data,
     )]

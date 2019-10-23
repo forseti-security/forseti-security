@@ -35,12 +35,11 @@ NAMESPACE_PACKAGES = [
 REQUIRED_PACKAGES = [
     # Installation related.
     'anytree==2.4.3',
-    'google-api-python-client==1.7.7',
-    'google-auth==1.6.2',
+    'google-api-python-client==1.7.10',
+    'google-auth==1.6.3',
     'google-auth-httplib2==0.0.3',
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
-    'mysqlclient==1.4.2.post1',
     'netaddr==0.7.19',
     'pyyaml==4.2b4',
     'python-graph-core==1.8.2',
@@ -52,17 +51,27 @@ REQUIRED_PACKAGES = [
     'simple-crypt==4.1.7',
     'unicodecsv==0.14.1',
     # Setup related.
-    'grpcio==1.18.0',
-    'grpcio-tools==1.18.0',
-    'protobuf==3.7.1',
+    'grpcio==1.22.0',
+    'grpcio-tools==1.22.0',
+    'protobuf==3.9.0',
     # Testing related.
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
     'pylint==1.9.4',
     'pylint-quotes==0.2.1',
+    'PyMySQL==0.9.3',
     'SQLAlchemy==1.2.18',
     'sqlalchemy-migrate==0.11.0'
 ]
+
+OPTIONAL_PACKAGES = {
+    'profiler': [
+        'google-cloud-profiler==1.0.8'
+    ],
+    'mailjet': [
+        'mailjet-rest==1.3.3'
+    ]
+}
 
 if sys.version_info.major < 3:
     sys.exit('Sorry, Python 2 is not supported.')
@@ -122,6 +131,7 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     setup_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
+    extras_require=OPTIONAL_PACKAGES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,

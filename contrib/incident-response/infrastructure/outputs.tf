@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-output "Timesketch server URL" {
-  description = "Timesketch server URL"
+# Timesketch outputs
+output "timesketch-server-url" {
   value = "${module.timesketch.timesketch-server-url}"
 }
 
-output "Timesketch admin username" {
-  description = "Timesketch admin username"
+output "timesketch-admin-username" {
   value = "${module.timesketch.timesketch-admin-username}"
 }
 
-output "Timesketch admin password" {
-  description = "Timesketch admin password"
+output "timesketch-admin-password" {
   value = "${module.timesketch.timesketch-admin-password}"
+}
+
+# Turbinia outputs
+output "turbinia-config" {
+  value = "${module.turbinia.turbinia-config}"
 }

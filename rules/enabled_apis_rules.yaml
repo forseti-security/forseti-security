@@ -38,6 +38,7 @@
 #       - 'replicapoolupdater.googleapis.com'
 #       - 'resourceviews.googleapis.com'
 #       - 'servicemanagement.googleapis.com'
+#       - 'serviceusage.googleapis.com'
 #       - 'sql-component.googleapis.com'
 #       - 'storage-api.googleapis.com'
 #       - 'storage-component.googleapis.com'
