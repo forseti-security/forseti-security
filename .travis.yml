@@ -4,8 +4,6 @@ language: ruby
 services:
   - docker
 cache: bundler
-rvm:
-- 2.6.3
 addons:
   apt:
     packages:
