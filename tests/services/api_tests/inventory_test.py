@@ -96,15 +96,9 @@ class ApiTest(ForsetiTestCase):
             for inventory_index in client.inventory.list():
                 self.assertTrue(inventory_index.id == progress.id)
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.get(inventory_index.id)
-                              .inventory))
-
-            self.assertEqual(inventory_index,
-                             (client.inventory.delete(inventory_index.id)
-                              .inventory))
-
-            self.assertEqual([], [i for i in client.inventory.list()])
+                              .inventory.id))
 
         with gcp_api_mocks.mock_gcp():
             setup = create_tester()
@@ -134,13 +128,13 @@ class ApiTest(ForsetiTestCase):
             for inventory_index in client.inventory.list():
                 self.assertTrue(inventory_index.id == progress.id)
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.get(inventory_index.id)
-                              .inventory))
+                              .inventory.id))
 
-            self.assertEqual(inventory_index,
+            self.assertEqual(inventory_index.id,
                              (client.inventory.delete(inventory_index.id)
-                              .inventory))
+                              .inventory.id))
 
             self.assertEqual([], [i for i in client.inventory.list()])
 
@@ -148,6 +142,31 @@ class ApiTest(ForsetiTestCase):
             setup = create_tester()
             setup.run(test)
 
+    def test_error(self):
+        """Test: Create inventory, foreground, exception raised."""
+
+        def test(client):
+            """API test callback."""
+            progress = None
+            inventory_index = None
+
+            for progress in client.inventory.create(background=False,
+                                                    import_as=''):
+                continue
+
+            for inventory_index in client.inventory.list():
+                self.assertTrue(inventory_index.id == progress.id)
+
+            result = client.inventory.get(inventory_index.id).inventory
+            # Ensure inventory failure.
+            self.assertEqual('FAILURE', result.status)
+            self.assertIn('Boom!', result.errors)
+
+        with unittest.mock.patch.object(Storage, 'write') as mock_write:
+            mock_write.side_effect = Exception('Boom!')
+            with gcp_api_mocks.mock_gcp():
+                setup = create_tester()
+                setup.run(test)
 
 if __name__ == '__main__':
     unittest.main()

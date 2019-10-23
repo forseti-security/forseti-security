@@ -14,20 +14,12 @@
 
 """Tests the LocationRulesEngine."""
 
-import copy
-import itertools
-import json
 import unittest.mock as mock
 import tempfile
 import unittest
-import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import location_rules_engine
-from google.cloud.forseti.scanner.audit import rules as scanner_rules
-from tests.unittest_utils import get_datafile_path
 from tests.scanner.test_data import fake_location_scanner_data as data
 
 
@@ -43,7 +35,6 @@ rules:
           resource_ids: {ids}
     locations: {locations}
 """
-
 
 
 def get_rules_engine_with_rule(rule):
@@ -236,6 +227,7 @@ rules:
         rules_engine = get_rules_engine_with_rule(rule)
         got_violations = list(rules_engine.find_violations(data.BUCKET))
         self.assertEqual(got_violations, data.build_violations(data.BUCKET))
+
 
 if __name__ == '__main__':
     unittest.main()

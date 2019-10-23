@@ -16,6 +16,15 @@ inventory:
     # project number instead of project id, e.g. "projects/<project number>".
     root_resource_id: {ROOT_RESOURCE_ID}
 
+    # Resources to be excluded during the inventory process.
+    # Only organizations/<ORG_NUMBER>, folders/<FOLDER_NUMBER>,
+    # projects/<PROJECT_ID> or projects/<PROJECT_NUMBER> are accepted.
+    # The child resources under the excluded resources will also be excluded.
+    #
+    # Example:
+    # excluded_resources: ['folders/1234', 'projects/my-project-123', 'projects/4321']
+    excluded_resources: []
+
     # Composite root resources: combines multiple resource roots into a single
     # inventory, for use across all Forseti modules. Can contain one or more
     # resources from the GCP Resource Hierarchy in any combination.
@@ -90,12 +99,12 @@ inventory:
           max_calls: 9
           period: 1.0
           disable_polling: False
-        securitycenter:
-          max_calls: 1
-          period: 1.1
-          disable_polling: False
         servicemanagement:
           max_calls: 2
+          period: 1.1
+          disable_polling: False
+        serviceusage:
+          max_calls: 4
           period: 1.1
           disable_polling: False
         sqladmin:
@@ -114,6 +123,14 @@ inventory:
         # Defaults to 3600 if not set.
         api_timeout: 3600
 
+
+        # Path to the CAI dump files. This is used when you have access to the
+        # dump files directly and would like forseti to parse them into the
+        # gcp_inventory table to use scanner / explainer on top of the data.
+        # E.g. cai_dump_file_gcs_paths: ['gs://my-bucket/123-iam-policy.dump',
+        #                                'gs://my-bucket/123-resource.dump']
+        # cai_dump_file_gcs_paths: []
+
         # Optional list of asset types supported by Cloud Asset inventory API.
         # https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
         # If included, only the asset types listed will be included in the
@@ -131,6 +148,9 @@ inventory:
         #    - appengine.googleapis.com/Version
         #    - bigquery.googleapis.com/Dataset
         #    - bigquery.googleapis.com/Table
+        #    - bigtableadmin.googleapis.com/Cluster
+        #    - bigtableadmin.googleapis.com/Instance
+        #    - bigtableadmin.googleapis.com/Table
         #    - cloudbilling.googleapis.com/BillingAccount
         #    - cloudkms.googleapis.com/CryptoKey
         #    - cloudkms.googleapis.com/CryptoKeyVersion
@@ -138,12 +158,14 @@ inventory:
         #    - cloudresourcemanager.googleapis.com/Folder
         #    - cloudresourcemanager.googleapis.com/Organization
         #    - cloudresourcemanager.googleapis.com/Project
+        #    - compute.googleapis.com/Address
         #    - compute.googleapis.com/Autoscaler
         #    - compute.googleapis.com/BackendBucket
         #    - compute.googleapis.com/BackendService
         #    - compute.googleapis.com/Disk
         #    - compute.googleapis.com/Firewall
         #    - compute.googleapis.com/ForwardingRule
+        #    - compute.googleapis.com/GlobalAddress
         #    - compute.googleapis.com/GlobalForwardingRule
         #    - compute.googleapis.com/HealthCheck
         #    - compute.googleapis.com/HttpHealthCheck
@@ -153,12 +175,15 @@ inventory:
         #    - compute.googleapis.com/InstanceGroup
         #    - compute.googleapis.com/InstanceGroupManager
         #    - compute.googleapis.com/InstanceTemplate
+        #    - compute.googleapis.com/Interconnect
+        #    - compute.googleapis.com/InterconnectAttachment
         #    - compute.googleapis.com/License
         #    - compute.googleapis.com/Network
         #    - compute.googleapis.com/Project
         #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
+        #    - compute.googleapis.com/SecurityPolicy
         #    - compute.googleapis.com/Snapshot
         #    - compute.googleapis.com/SslCertificate
         #    - compute.googleapis.com/Subnetwork
@@ -264,6 +289,10 @@ scanner:
 ##############################################################################
 
 notifier:
+    api_quota:
+        securitycenter:
+            max_calls: 14
+            period: 1.0
 
     # Provide connector details
     email_connector:

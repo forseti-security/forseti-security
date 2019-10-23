@@ -87,6 +87,16 @@ rules:
         minor: '5-gke.4'
         operator: '>='
       - major: '1.11'
+        minor: '8-gke.10'
+        operator: '>='
+      - major: '1.12'
+        minor: '7-gke.24'
+        operator: '='
+      - major: '1.12'
+        minor: '8-gke.10'
+        operator: '>='
+      - major: '1.13'
+        minor: '6-gke.13'
         operator: '>='
 
 # Example rules.

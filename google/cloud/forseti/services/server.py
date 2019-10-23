@@ -35,6 +35,17 @@ from google.cloud.forseti.services.server_config.service import GrpcServerConfig
 
 LOGGER = logger.get_logger(__name__)
 
+try:
+    import googlecloudprofiler
+    LOGGER.info('Cloud Profiler library successfully imported.')
+    CLOUD_PROFILER_IMPORTED = True
+except ImportError:
+    LOGGER.warning('Cannot enable Cloud Profiler because the '
+                   '`googlecloudprofiler` library was not found. Run '
+                   '`sudo pip3 install .[profiler]` to install '
+                   'Cloud Profiler.')
+    CLOUD_PROFILER_IMPORTED = False
+
 SERVICE_MAP = {
     'explain': GrpcExplainerFactory,
     'inventory': GrpcInventoryFactory,
@@ -89,7 +100,13 @@ def serve(endpoint,
         forseti_config_file_path=config_file_path,
         forseti_db_connect_string=forseti_db_connect_string,
         endpoint=endpoint)
-    config.update_configuration()
+
+    is_config_updated, error_msg = config.update_configuration()
+    if not is_config_updated:
+        update_config_msg = (
+            'Please update the forseti_conf_server.yaml file on GCS '
+            'and reset the server VM.')
+        raise Exception(error_msg + ' ' + update_config_msg)
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
@@ -135,9 +152,6 @@ def check_args(args):
     return (0, 'All good!')
 
 
-# pylint: enable=too-many-locals
-
-
 def main():
     """Run."""
     parser = argparse.ArgumentParser()
@@ -148,7 +162,7 @@ def main():
     parser.add_argument(
         '--forseti_db',
         help=('Forseti database string, formatted as '
-              '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
+              '"mysql+pymysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
         '--config_file_path',
         help='Path to Forseti configuration file.')
@@ -170,6 +184,10 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
+    parser.add_argument(
+        '--enable_profiler',
+        action='store_true',
+        help='Enable Cloud Profiler.')
 
     args = vars(parser.parse_args())
 
@@ -179,6 +197,18 @@ def main():
         sys.stderr.write('%s\n\n' % error_msg)
         parser.print_usage()
         sys.exit(exit_code)
+
+    if args['enable_profiler'] and CLOUD_PROFILER_IMPORTED:
+        try:
+            googlecloudprofiler.start(
+                service='forseti-server',
+                verbose=2,
+                # project_id must be set if not running on GCP, such as in your
+                # local dev environment.
+                # project_id='my_project_id',
+            )
+        except (ValueError, NotImplementedError) as exc:
+            LOGGER.warning('Unable to enable Cloud Profiler: %s', exc)
 
     serve(args['endpoint'],
           args['services'],

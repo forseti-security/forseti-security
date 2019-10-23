@@ -52,6 +52,19 @@ class SlackWebhooknotifierTest(ForsetiTestCase):
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
 
+    def test_dump_slack_output_for_string_returns_string(self):
+        violation_data = 'Test violation data string'
+        with mock.patch.object(
+                slack_webhook.SlackWebhook,
+                '__init__',
+                lambda x: None):
+            slack_notifier = slack_webhook.SlackWebhook()
+            actual_output = slack_notifier._dump_slack_output(violation_data)
+
+            expected_output = '\t' + '`' + str(violation_data) + '`\n'
+
+            self.assertEqual(expected_output.strip(), actual_output.strip())
+
     def test_no_url_no_run_notifier(self):
         """Test that no url for Slack notifier will skip running."""
         with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):

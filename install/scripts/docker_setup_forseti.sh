@@ -38,7 +38,11 @@ fi
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
     echo "Building our Docker base image... "
-    docker build --target build -t forseti/build .
+    if [ ${TRAVIS+x} ]; then
+        docker build --target build -t forseti/build .
+    else
+        docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --target build -t forseti/build .
+    fi
 else
     echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi
