@@ -75,12 +75,17 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
                 'whoCanLeaveGroup': violation.whoCanLeaveGroup,
             }
 
+            violation_data = {
+                'group_email': violation.group_email,
+                'violation_settings': violation.violation_settings,
+            }
+
             yield {
                 'resource_id': violation.group_email,
                 'full_name': violation.group_email,
                 'resource_name': violation.group_email,
                 'resource_data': json.dumps(resource_data, sort_keys=True),
-                'violation_data': violation.violation_reason,
+                'violation_data': violation_data,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
@@ -152,7 +157,7 @@ class GroupsSettingsScanner(base_scanner.BaseScanner):
                 all_groups_settings.append(groups_settings.GroupsSettings
                                            .from_json(email, settings[1]))
 
-        return (all_groups_settings, iam_groups_settings)
+        return all_groups_settings, iam_groups_settings
 
     def run(self):
         """Run, the entry point for this scanner."""

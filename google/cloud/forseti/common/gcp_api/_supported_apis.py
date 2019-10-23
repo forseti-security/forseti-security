@@ -71,6 +71,10 @@ SUPPORTED_APIS = {
         'default_version': 'v1',
         'supported_versions': ['v1']
     },
+    'serviceusage': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
+    },
     'sqladmin': {
         'default_version': 'v1beta4',
         'supported_versions': ['v1beta4']

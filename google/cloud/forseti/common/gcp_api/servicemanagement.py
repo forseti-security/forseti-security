@@ -120,6 +120,35 @@ class _ServiceManagementServicesRepository(
             service_name = 'services/{}'.format(service_name)
         return service_name
 
+    def get_config(self, resource, config_id=None, view=None, verb='getConfig'):
+        """Gets the Service Configuration associated with a Service.
+
+        Args:
+            resource (str): Name of the service
+            config_id (str): The ID of the Service Configuration to fetch
+            view (ConfigView): Specifies which portion of the Service
+                Configuration should be returned.
+                https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/ConfigView
+            verb (str): The method to call on the API.
+
+        Returns:
+            dict: Response from the API (of type Service)
+                https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service
+        """
+        arguments = {
+            self._get_key_field: resource,
+        }
+
+        if config_id:
+            arguments['configId'] = config_id
+        if view:
+            arguments['view'] = view
+
+        return self.execute_query(
+            verb=verb,
+            verb_arguments=arguments,
+        )
+
 
 class ServiceManagementClient(object):
     """Service Management Client."""
@@ -279,4 +308,31 @@ class ServiceManagementClient(object):
 
         LOGGER.debug('Getting IAM Policy for a service, service_name = %s, '
                      'result = %s', service_name, result)
+        return result
+
+    def get_full_api_configuration(self, service_name):
+        """Gets the full Service Configuration associated with a service.
+
+        Args:
+            service_name (str): The service name to query.
+
+        Returns:
+            dict: A single Service resource dict.
+            https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        try:
+            result = self.repository.services.get_config(service_name)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError(
+                'serviceConfig', e, 'serviceName', service_name)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+        LOGGER.debug('Getting Service Config for a service, service_name = %s, '
+                     'result = %s', service_name, result)
+
         return result

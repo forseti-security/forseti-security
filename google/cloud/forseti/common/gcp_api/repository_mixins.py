@@ -262,22 +262,25 @@ class OrgPolicyQueryMixin(object):
 class ExportAssetsQueryMixin(object):
     """Mixin that implements the exportAssets query."""
 
-    def export_assets(self, parent, destination_object,
-                      content_type=None, asset_types=None,
+    def export_assets(self, parent, output_config, content_type=None,
+                      asset_types=None, read_time=None,
                       fields=None, verb='exportAssets', **kwargs):
         """Export assets under a parent resource to a file on GCS.
 
         Args:
             parent (str): The name of the parent resource to export assests
                 under.
-            destination_object (str): The GCS path and file name to store the
-                results in. The bucket must be in the same project that has the
-                Cloud Asset API enabled.
+            output_config (dict): The full outputConfig message to pass to the
+                export assets API.
+                https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/reference/rest/v1/TopLevel/exportAssets#OutputConfig
             content_type (str): The specific content type to export, currently
                 supports "RESOURCE" and "IAM_POLICY". If not specified only the
                 CAI metadata for assets are included.
             asset_types (list): The list of asset types to filter the results
                 to, if not specified, exports all assets known to CAI.
+            read_time (str): A timestamp to take an asset snapshot in RFC3339
+                UTC "Zulu" format, accurate to nanoseconds.
+                Example: "2014-10-02T15:01:23.045123456Z"
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
             **kwargs (dict): Additional parameters to pass to the API method.
@@ -286,13 +289,17 @@ class ExportAssetsQueryMixin(object):
             dict: The response from the API.
         """
         body = {
-            'outputConfig': {'gcsDestination': {'uri': destination_object}}
+            'outputConfig': output_config
         }
+
         if content_type:
             body['contentType'] = content_type
 
         if asset_types:
             body['assetTypes'] = asset_types
+
+        if read_time:
+            body['readTime'] = read_time
 
         arguments = {
             'parent': parent,
