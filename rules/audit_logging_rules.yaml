@@ -63,6 +63,7 @@
 #       - 'DATA_WRITE'
 
 # CIS example
+# This scanner has not been validated by the formal CIS certification process.
 #  - name: 'CIS_GCP_2.1 Ensure Cloud Audit Logging Configured'
 #    resource:
 #      - type: project
