@@ -54,45 +54,17 @@ Terraform version 0.12 is required for this module, which can be downloaded from
 ### Create the Service Account and enable required APIs
 
 #### Service Account
-The Service Account and required APIs can be setup automatically with a provided script on the 
-[Forseti Terraform Github repository](https://github.com/forseti-security/terraform-google-forseti/blob/master/helpers/setup.sh). 
-The Service Account and required APIs can also be configured manually by reviewing the [Requirements](#requirements) section.
-Alternatively, if you are an Org Admin, you can use your own credentials to install Forseti.
 
-```bash
-git clone --branch module-release-5.0.0 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
-```
+{% include docs/latest/setup-script-credentials.md %}
 
-```bash
-cd terraform-google-forseti
-```
-
-```bash
-. ./helpers/setup.sh -p PROJECT_ID -o ORG_ID
-```
-
-This will create a service account called `cloud-foundation-forseti-<suffix>`,
-assign it the proper roles, and download the service account credentials to
-`${PWD}/credentials.json`.
-
-If you are using the Real-Time Enforcer, you will need to generate a
-service account with a few extra roles. This can be enabled with the `-e`
-flag:
-
-```bash
-. ./helpers/setup.sh -p PROJECT_ID -o ORG_ID -e
-```
-
-Utilizing a shared VPC via a host project is supported with the `-f` flag:
-
-```bash
-. ./helpers/setup.sh -p PROJECT_ID -f HOST_PROJECT_ID -o ORG_ID
-```
+{% include docs/latest/setup-script-credentials-gce.md %}
 
 #### APIs
 For this module to work, you need the following APIs enabled on the Forseti project:
 
 {% include docs/latest/forseti-terraform-setup-apis.md %}
+
+The setup script above will enable the API's for you.
 
 ### Terraform Configuration
 Example configurations are included in the 

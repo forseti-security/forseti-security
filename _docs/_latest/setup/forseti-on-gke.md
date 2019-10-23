@@ -15,17 +15,6 @@ The following tools are required:
 * [Terraform](https://www.terraform.io/downloads.html) - 0.12.x
 * [gsutil](https://cloud.google.com/storage/docs/gsutil)
 
-## Service Account Credentials
-Terraform uses an IAM Service Account to deploy and configure resources on behalf of the user.  This
-service account and key can be created by executing the [setup.sh](https://github.com/forseti-security/terraform-google-forseti/blob/master/helpers/setup.sh)
-helper script.
-
-### Run the Setup Script
-Execute the setup script replacing **ORG_ID** and **PROJECT_ID** with the orgainization ID and project ID respectively.
-```sh
-setup.sh -o ORG_ID -p PROJECT_ID -k
-```
-The above command will result in a *credentials.json* being downloaded to the your current working directory and.  The above command will also `export GOOGLE_APPLICATION_CREDENTIALS=credentials.json`.
 
 ## Deploying with Terraform
 The *on_gke** examples are found in the [examples/](https://github.com/forseti-security/terraform-google-forseti/tree/master/examples/) folder of the *terraform-google-forseti* Terraform module.  Each "on-GKE" specific example is prepended with "on_gke_".  Please understand that each of these examples are just that, examples.  Each example has a *main.tf* file that describes how the environment will be built addressing common scenarios.  Please review the examples to determine if the examples are sufficient for the environment where Forseti is deployed.
@@ -33,8 +22,13 @@ The *on_gke** examples are found in the [examples/](https://github.com/forseti-s
 Wherever possible, the examples utilize [modules](https://registry.terraform.io/modules/terraform-google-modules) developed and curated by the [Cloud Foundation Toolkit](https://cloud.google.com/foundation-toolkit/) team.  These modules implement opinionated best practices for deploying GCP components.  For example, the [kubernetes-engine](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/5.0.0) module applies practices found in the [GKE hardening](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster).
 
 ### Re-using an Existing Forseti Deployment
-If you wish to reuse an existing Forseti deployment (e.g. you deployed Forseti on GCE with either Deployment Manager or Terraform), please follow the terraform-google-forseti [upgrade guide](https://github.com/forseti-security/terraform-google-forseti/blob/master/docs/upgrading_to_v5.0.md)
+If you wish to reuse an existing Forseti deployment (e.g. you deployed Forseti on GCE with either Deployment Manager or Terraform), please follow the terraform-google-forseti [upgrade guide]({% link _docs/latest/setup/upgrade.md %}).
 
+#### Service Account
+
+{% include docs/latest/setup-script-credentials.md %}
+
+{% include docs/latest/setup-script-credentials-gke.md %}
 
 ### Deploy Forseti on-GKE
 
@@ -85,7 +79,7 @@ After these preconditions are met, add the *forseti-security-charts* Helm repo t
 helm repo add forseti-security https://forseti-security-charts.storage.googleapis.com/release
 ```
 
-Follow the [chart installation instructions](https://github.com/forseti-security/helm-charts/tree/master/charts/forseti-security#installing-the-forseti-security-chart) to install Forseti on-GKE.
+Follow the [chart installation instructions](https://hub.helm.sh/charts/forseti-security/forseti-security) to install Forseti on-GKE.
 
 
 ## Post Deployment Configuration Changes
