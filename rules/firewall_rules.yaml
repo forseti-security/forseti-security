@@ -55,6 +55,7 @@ org_policy:
           - 'default_rules'
           
 # CIS Proof of Concept examples
+# These scanners have not been validated by the formal CIS certification process.
 #  - rule_id: 'CIS_GCP_3.6'
 #    description: Don't allow allow SSH from 0.0.0.0/0
 #    mode: blacklist
