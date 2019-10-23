@@ -84,7 +84,7 @@ rules:
   #        - user:*@{DOMAIN}
 
 # Example CIS benchmarks as a Proof of Concept
- 
+# These scanners have not been validated by the formal CIS certification process. 
 #  - name: 'CIS_GCP_1.1 Ensure Corporate Login Credentials Used'
 #    mode: whitelist
 #    resource:
