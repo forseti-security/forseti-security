@@ -250,8 +250,7 @@ class CrawlerTest(CrawlerBase):
             'gsuite_groups_settings': {'resource': 4},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
-            'organization': {'iam_policy': 1, 'org_policy': 1,
-                             'access_policy': 1, 'resource': 1},
+            'organization': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 19},
             'sink': {'resource': 2}
         }
@@ -277,8 +276,7 @@ class CrawlerTest(CrawlerBase):
             'appengine_version': {'resource': 1},
             'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
             'folder': {'iam_policy': 2, 'org_policy': 1, 'resource': 2},
-            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
-                        'org_policy': 1, 'resource': 1},
+            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1},
             'role': {'resource': 1},
             'sink': {'resource': 1},
         }
@@ -300,7 +298,7 @@ class CrawlerTest(CrawlerBase):
         result_counts = self._run_crawler(config)
 
         expected_counts = {
-            'folder': {'iam_policy': 2, 'org_policy': 1, 'resource': 2},
+            'folder': {'iam_policy': 2, 'resource': 2},
             'sink': {'resource': 1},
         }
 
@@ -375,7 +373,7 @@ class CrawlerTest(CrawlerBase):
             'lien': {'resource': 1},
             'network': {'resource': 1},
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
-                        'org_policy': 1, 'resource': 1},
+                        'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 2},
