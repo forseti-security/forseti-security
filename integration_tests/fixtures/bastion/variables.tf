@@ -30,7 +30,7 @@ variable "project_id" {
  * dig +short nat.travisci.net | sort | awk '{printf "\"" $0 "/32\","}' | awk '{print substr($0, 1, length($0)-1)}'
  */
 variable "bastion_firewall_netblocks" {
-  description = "Trusted Travis CI firewall network blocks for bastion host ssh access. 
+  description = "Trusted Travis CI firewall network blocks for Forseti bastion host ssh access. "
   type        = list
   default     = [
     "104.154.113.151/32",
