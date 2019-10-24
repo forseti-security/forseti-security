@@ -77,12 +77,9 @@ resource "google_compute_firewall" "main" {
   direction     = "INGRESS"
   priority      = "100"
 
-  # It is okay to leave this open to everyone as SSH key is also required to
-  # SSH into the server VM and SSH key is generated dynamically. Also, the host
-  # is ephemeral and the environment itself is deconstructed soon after tests
-  # are executed. Narrowing it down to few IP addresses makes it difficult for
-  # the developers to test on their local dev environment.
-  source_ranges = ["0.0.0.0/0"]
+  # Setting source range to Travis netblocks defined here: https://docs.travis-ci.com/user/ip-addresses/
+  source_ranges = ["${var.firewall_netblocks}"]
+  
   target_tags   = ["bastion"]
   project       = "${var.project_id}"
 }
