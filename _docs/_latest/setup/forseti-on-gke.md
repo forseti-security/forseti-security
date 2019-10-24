@@ -46,7 +46,6 @@ module "forseti-on-gke" {
     org_id                  = ""
     project_id              = ""
     region                  = ""
-    zones                   = [""]
 }
 ```
 
