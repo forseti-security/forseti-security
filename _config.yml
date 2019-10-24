@@ -140,65 +140,6 @@ defaults:
     values:
       category: Google Cloud Platform Resource Coverage
   - scope:
-      path: _docs/v2.12
-    values:
-      category: Overview (v2.12)
-      layout: docs
-  - scope:
-      path: _docs/v2.12/concepts
-    values:
-      category: Concepts (v2.12)
-  - scope:
-      path: _docs/v2.12/setup
-    values:
-      category: Setup (v2.12)
-  - scope:
-      path: _docs/v2.12/use
-    values:
-      category: Use (v2.12)
-  - scope:
-      path: _docs/v2.12/configure
-    values:
-      category: Configure (v2.12)
-  - scope:
-      path: _docs/v2.12/develop
-    values:
-      category: Develop (v2.12)
-  - scope:
-      path: _docs/v2.12/faq
-    values:
-      category: FAQ (v2.12)
-
-  - scope:
-      path: _docs/v2.13
-    values:
-      category: Overview (v2.13)
-      layout: docs
-  - scope:
-      path: _docs/v2.13/concepts
-    values:
-      category: Concepts (v2.13)
-  - scope:
-      path: _docs/v2.13/setup
-    values:
-      category: Setup (v2.13)
-  - scope:
-      path: _docs/v2.13/use
-    values:
-      category: Use (v2.13)
-  - scope:
-      path: _docs/v2.13/configure
-    values:
-      category: Configure (v2.13)
-  - scope:
-      path: _docs/v2.13/develop
-    values:
-      category: Develop (v2.13)
-  - scope:
-      path: _docs/v2.13/faq
-    values:
-      category: FAQ (v2.13)
-  - scope:
       path: _docs/v2.14
     values:
       category: Overview (v2.14)
@@ -488,3 +429,32 @@ defaults:
       path: _docs/v2.22/faq
     values:
       category: FAQ (v2.22)
+  - scope:
+      path: _docs/v2.23
+    values:
+      category: Overview (v2.23)
+      layout: docs
+  - scope:
+      path: _docs/v2.23/concepts
+    values:
+      category: Concepts (v2.23)
+  - scope:
+      path: _docs/v2.23/setup
+    values:
+      category: Setup (v2.23)
+  - scope:
+      path: _docs/v2.23/use
+    values:
+      category: Use (v2.23)
+  - scope:
+      path: _docs/v2.23/configure
+    values:
+      category: Configure (v2.23)
+  - scope:
+      path: _docs/v2.23/develop
+    values:
+      category: Develop (v2.23)
+  - scope:
+      path: _docs/v2.23/faq
+    values:
+      category: FAQ (v2.23)

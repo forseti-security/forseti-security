@@ -1,0 +1,261 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.servicemanagement module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.servicemanagement">
+<span id="google-cloud-forseti-common-gcp-api-servicemanagement-module"></span><h1>google.cloud.forseti.common.gcp_api.servicemanagement module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.servicemanagement" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Service Management API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient">
+<em class="property">class </em><code class="descname">ServiceManagementClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Service Management Client.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.DEFAULT_MAX_RESULTS">
+<code class="descname">DEFAULT_MAX_RESULTS</code><em class="property"> = 100</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.DEFAULT_MAX_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_all_apis">
+<code class="descname">get_all_apis</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient.get_all_apis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_all_apis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all APIs that can be enabled (based on caller’s permissions).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of ManagedService resource dicts.
+<a class="reference external" href="https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService">https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService</a><dl class="docutils">
+<dt>{</dt>
+<dd>“serviceName”: string,
+“producerProjectId”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_api_iam_policy">
+<code class="descname">get_api_iam_policy</code><span class="sig-paren">(</span><em>service_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient.get_api_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_api_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the IAM policy associated with a service.</p>
+<p>NOTE: This does <em>not</em> include IAM policy inherited from a service’s
+producer project. (I.e. project-level IAM Policy may grant service-level
+permissions that do not appear in a service’s IAM Policy.)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_name</strong> (<em>str</em>) – The service name to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A single Policy resource dict.
+<a class="reference external" href="https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/Policy">https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/Policy</a><dl class="docutils">
+<dt>{</dt>
+<dd>“version”: string,
+“bindings”: list(Binding),
+“auditConfigs”: list(AuditConfig),
+“etag”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_enabled_apis">
+<code class="descname">get_enabled_apis</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient.get_enabled_apis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_enabled_apis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the enabled APIs for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id for a GCP project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of ManagedService resource dicts.
+<a class="reference external" href="https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService">https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService</a><dl class="docutils">
+<dt>{</dt>
+<dd>“serviceName”: string,
+“producerProjectId”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_full_api_configuration">
+<code class="descname">get_full_api_configuration</code><span class="sig-paren">(</span><em>service_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient.get_full_api_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_full_api_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the full Service Configuration associated with a service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_name</strong> (<em>str</em>) – The service name to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A single Service resource dict.
+<a class="reference external" href="https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service">https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_produced_apis">
+<code class="descname">get_produced_apis</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementClient.get_produced_apis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementClient.get_produced_apis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the APIs produced by a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id for a GCP project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of ManagedService resource dicts.
+<a class="reference external" href="https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService">https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService</a><dl class="docutils">
+<dt>{</dt>
+<dd>“serviceName”: string,
+“producerProjectId”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementRepositoryClient">
+<em class="property">class </em><code class="descname">ServiceManagementRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=100.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#ServiceManagementRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Service Management API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementRepositoryClient.services">
+<code class="descname">services</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement.ServiceManagementRepositoryClient.services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _ServiceManagementServicesRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository">
+<em class="property">class </em><code class="descname">_ServiceManagementServicesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#_ServiceManagementServicesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Service Management Services repository.</p>
+<p>NOTE: unlike the list() API used for other GCP resources, the
+services.list() API does not accept a singular ‘resource’. Instead, two
+optional arguments allow specification of either the producer (parent)
+project (which results in a list of its child services), or the consumer
+project (which results in a list of services enabled on that project).
+If neither is specified, services.list() returns <em>all</em> visible services
+(where visibility is based on the provided credentials).</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_config">
+<code class="descname">get_config</code><span class="sig-paren">(</span><em>resource</em>, <em>config_id=None</em>, <em>view=None</em>, <em>verb='getConfig'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#_ServiceManagementServicesRepository.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the Service Configuration associated with a Service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – Name of the service</li>
+<li><strong>config_id</strong> (<em>str</em>) – The ID of the Service Configuration to fetch</li>
+<li><strong>view</strong> (<em>ConfigView</em>) – Specifies which portion of the Service
+Configuration should be returned.
+<a class="reference external" href="https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/ConfigView">https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/ConfigView</a></li>
+<li><strong>verb</strong> (<em>str</em>) – The method to call on the API.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>Response from the API (of type Service)</dt>
+<dd><p class="first last"><a class="reference external" href="https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service">https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs#Service</a></p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_formatted_project_name">
+<em class="property">static </em><code class="descname">get_formatted_project_name</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#_ServiceManagementServicesRepository.get_formatted_project_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_formatted_project_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted project_id string, required for some api args.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id to query, either just the
+id or the id prefixed with ‘projects/’.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The formatted project id.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_formatted_service_name">
+<em class="property">static </em><code class="descname">get_formatted_service_name</code><span class="sig-paren">(</span><em>service_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/servicemanagement.html#_ServiceManagementServicesRepository.get_formatted_service_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.servicemanagement._ServiceManagementServicesRepository.get_formatted_service_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted service_name string, required for some api args.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_name</strong> (<em>str</em>) – The name of the service to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The formatted service name.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

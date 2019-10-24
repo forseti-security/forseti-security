@@ -1,0 +1,951 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.client module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.client">
+<span id="google-cloud-forseti-services-client-module"></span><h1>google.cloud.forseti.services.client module<a class="headerlink" href="#module-google.cloud.forseti.services.client" title="Permalink to this headline">¶</a></h1>
+<p>Forseti gRPC client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ClientComposition">
+<em class="property">class </em><code class="descname">ClientComposition</code><span class="sig-paren">(</span><em>endpoint='localhost:50051'</em>, <em>ping=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Client composition class.</p>
+<p>Most convenient to use since it comprises the common use cases among
+the different services.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.client.ClientComposition.DEFAULT_ENDPOINT">
+<code class="descname">DEFAULT_ENDPOINT</code><em class="property"> = 'localhost:50051'</em><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.DEFAULT_ENDPOINT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientComposition.delete_model">
+<code class="descname">delete_model</code><span class="sig-paren">(</span><em>model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition.delete_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.delete_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a model. Deletes all associated data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model_name</strong> (<em>str</em>) – the handle of the data model to delete</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of deleting model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientComposition.get_model">
+<code class="descname">get_model</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the details of a model by name or handle</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<em>str</em>) – the name or the handle for the data model to query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of get model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientComposition.list_models">
+<code class="descname">list_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition.list_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.list_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>List existing models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of list_models</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientComposition.new_model">
+<code class="descname">new_model</code><span class="sig-paren">(</span><em>source</em>, <em>name</em>, <em>inventory_index_id=0</em>, <em>background=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition.new_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.new_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new model from the specified source.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>source</strong> (<em>str</em>) – the source to create the model, either EMPTY
+or INVENTORY.</li>
+<li><strong>name</strong> (<em>str</em>) – the name for the model.</li>
+<li><strong>inventory_index_id</strong> (<em>int64</em>) – the index id of the inventory to
+import from.</li>
+<li><strong>background</strong> (<em>bool</em>) – whether to run in background.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the returned proto message of creating model</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">proto</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientComposition.switch_model">
+<code class="descname">switch_model</code><span class="sig-paren">(</span><em>model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientComposition.switch_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientComposition.switch_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switch the client into using a model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model_name</strong> (<em>str</em>) – the handle of the data model to switch to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ClientConfig">
+<em class="property">class </em><code class="descname">ClientConfig</code><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<p>Provide access to client configuration data.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ClientConfig.handle">
+<code class="descname">handle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ClientConfig.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ClientConfig.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return currently active handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The data model handle of client configuration.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ExplainClient">
+<em class="property">class </em><code class="descname">ExplainClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Explain service allows the client to reason about a model.</p>
+<dl class="docutils">
+<dt>Explain provides the following functionality:</dt>
+<dd><ul class="first last simple">
+<li>List access by resource/member</li>
+<li>Provide information on why a member has access</li>
+<li>Provide recommendations on how to provide access</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.check_iam_policy">
+<code class="descname">check_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.check_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.check_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.explain_denied">
+<code class="descname">explain_denied</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.explain_denied"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.explain_denied" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.explain_granted">
+<code class="descname">explain_granted</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.explain_granted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.explain_granted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.get_iam_policy">
+<code class="descname">get_iam_policy</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.get_iam_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.get_iam_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Explain’ service is available by performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the “Inventory” service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.list_members">
+<code class="descname">list_members</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.list_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.list_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.list_resources">
+<code class="descname">list_resources</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.list_resources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.list_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.list_roles">
+<code class="descname">list_roles</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.list_roles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.list_roles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.query_access_by_members">
+<code class="descname">query_access_by_members</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.query_access_by_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.query_access_by_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.query_access_by_permissions">
+<code class="descname">query_access_by_permissions</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.query_access_by_permissions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.query_access_by_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.query_access_by_resources">
+<code class="descname">query_access_by_resources</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.query_access_by_resources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.query_access_by_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ExplainClient.query_permissions_by_roles">
+<code class="descname">query_permissions_by_roles</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ExplainClient.query_permissions_by_roles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ExplainClient.query_permissions_by_roles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ForsetiClient">
+<em class="property">class </em><code class="descname">ForsetiClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ForsetiClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ForsetiClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Client base class.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ForsetiClient.metadata">
+<code class="descname">metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ForsetiClient.metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ForsetiClient.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create default metadata for gRPC call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the default metada for gRPC call</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.InventoryClient">
+<em class="property">class </em><code class="descname">InventoryClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Inventory service allows the client to create GCP inventory.</p>
+<dl class="docutils">
+<dt>Inventory provides the following functionality:</dt>
+<dd><ul class="first last simple">
+<li>Create a new inventory and optionally import it</li>
+<li>Manage your inventory using List/Get/Delete</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>background=False</em>, <em>import_as=None</em>, <em>enable_debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new inventory, with an optional import.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>background</strong> (<em>bool</em>) – whether to run in background</li>
+<li><strong>import_as</strong> (<em>str</em>) – the name of the data model to create after
+inventory is created</li>
+<li><strong>enable_debug</strong> (<em>bool</em>) – whether to emit additional information
+for debugging</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the returned proto message of create inventory</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">proto</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>inventory_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete an inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inventory_index_id</strong> (<em>int64</em>) – the index id of the inventory to delete.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of delete inventory.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>inventory_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all information about a particular inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inventory_index_id</strong> (<em>int</em>) – the index id of the inventory to query.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of get inventory.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Inventory’ service is available by performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the “Inventory” service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.list">
+<code class="descname">list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists all available inventory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of list inventory</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.InventoryClient.purge">
+<code class="descname">purge</code><span class="sig-paren">(</span><em>retention_days</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#InventoryClient.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.InventoryClient.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purge all inventory data older than the retention days.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retention_days</strong> (<em>str</em>) – Days of inventory data to retain.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of purge inventory.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ModelClient">
+<em class="property">class </em><code class="descname">ModelClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Model service allows the client to create models from inventory.</p>
+<dl class="docutils">
+<dt>Model provides the following functionality:</dt>
+<dd><ul class="first last simple">
+<li>Create a new model by importing from inventory or create an empty</li>
+<li>List/Delete functionality on models</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ModelClient.delete_model">
+<code class="descname">delete_model</code><span class="sig-paren">(</span><em>model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient.delete_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient.delete_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a model, deletes all corresponding data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model_name</strong> (<em>str</em>) – the handle of the data model to delete</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of deleting model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ModelClient.get_model">
+<code class="descname">get_model</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the details of a model by name or handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<em>str</em>) – the name or the handle for the data model to query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of get model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ModelClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Model’ service is available by performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the “Inventory” service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ModelClient.list_models">
+<code class="descname">list_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient.list_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient.list_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>List existing models in the service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message of list_models</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ModelClient.new_model">
+<code class="descname">new_model</code><span class="sig-paren">(</span><em>source</em>, <em>name</em>, <em>inventory_index_id=0</em>, <em>background=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelClient.new_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelClient.new_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new model, reply contains the handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>source</strong> (<em>str</em>) – the source to create the model, either EMPTY
+or INVENTORY.</li>
+<li><strong>name</strong> (<em>str</em>) – the name for the model.</li>
+<li><strong>inventory_index_id</strong> (<em>int64</em>) – the index id of the inventory to
+import from.</li>
+<li><strong>background</strong> (<em>bool</em>) – whether to run in background.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the returned proto message of creating model</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">proto</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.services.client.ModelNotSetError">
+<em class="property">exception </em><code class="descname">ModelNotSetError</code><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ModelNotSetError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ModelNotSetError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>ModelNotSetError.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.NotifierClient">
+<em class="property">class </em><code class="descname">NotifierClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#NotifierClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.NotifierClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Notifier service allows the client to send violation notifications.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.NotifierClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#NotifierClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.NotifierClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Notifier’ service is available by performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the “Inventory” service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.NotifierClient.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>inventory_index_id</em>, <em>scanner_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#NotifierClient.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.NotifierClient.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the notifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inventory_index_id</strong> (<em>int64</em>) – Inventory Index Id.</li>
+<li><strong>scanner_index_id</strong> (<em>int64</em>) – Scanner Index Id.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the returned proto message.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">proto</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ScannerClient">
+<em class="property">class </em><code class="descname">ScannerClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ScannerClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ScannerClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Scanner service allows the client to scan a model.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ScannerClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ScannerClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ScannerClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Scanner’ service is available by performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ScannerClient.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ScannerClient.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ScannerClient.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function wrapper to perform model handle existence check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – args to be passed to the function</li>
+<li><strong>kwargs</strong> – kwargs to be passed to the function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Results of executing f if model handle exists</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.services.client.ModelNotSetError" title="google.cloud.forseti.services.client.ModelNotSetError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelNotSetError</span></code></a> – Model handle not set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient">
+<em class="property">class </em><code class="descname">ServerConfigClient</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.client.ForsetiClient" title="google.cloud.forseti.services.client.ForsetiClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.client.ForsetiClient</span></code></a></p>
+<p>Allows the client to update the server configuration.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient.get_log_level">
+<code class="descname">get_log_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient.get_log_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient.get_log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the current log level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient.get_server_configuration">
+<code class="descname">get_server_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient.get_server_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient.get_server_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the server configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient.is_available">
+<code class="descname">is_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient.is_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient.is_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the ‘Server Config’ service is available by
+performing a ping.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the service is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient.reload_server_configuration">
+<code class="descname">reload_server_configuration</code><span class="sig-paren">(</span><em>config_file_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient.reload_server_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient.reload_server_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload the server configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config_file_path</strong> (<em>str</em>) – Forseti configuration file path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.client.ServerConfigClient.set_log_level">
+<code class="descname">set_log_level</code><span class="sig-paren">(</span><em>log_level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#ServerConfigClient.set_log_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.ServerConfigClient.set_log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>log_level</strong> (<em>str</em>) – The updated log level.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the returned proto message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">proto</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.client.require_model">
+<code class="descname">require_model</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/client.html#require_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.client.require_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to perform check that the model handle exists in the service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>func</em>) – The model handle should exists when executing function f</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Function wrapper to perform model handle existence check.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">wrapper</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

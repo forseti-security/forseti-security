@@ -1,0 +1,70 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.groups_settings module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.groups_settings">
+<span id="google-cloud-forseti-common-gcp-api-groups-settings-module"></span><h1>google.cloud.forseti.common.gcp_api.groups_settings module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.groups_settings" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Groups Settings  API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsClient">
+<em class="property">class </em><code class="descname">GroupsSettingsClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/groups_settings.html#GroupsSettingsClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>GSuite Groups Settings API Client.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsClient.get_groups_settings">
+<code class="descname">get_groups_settings</code><span class="sig-paren">(</span><em>group_email</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/groups_settings.html#GroupsSettingsClient.get_groups_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsClient.get_groups_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the group settings for a given group.</p>
+<p><a class="reference external" href="https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups/get">https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups/get</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>group_email</strong> (<em>str</em>) – The gsuite group email to scope the request to.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">group settings for given group_email.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">dict</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">api_errors.ApiExecutionError</span></code> – If groups retrieval fails.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">RefreshError</span></code> – If the authentication fails.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsRepositoryClient">
+<em class="property">class </em><code class="descname">GroupsSettingsRepositoryClient</code><span class="sig-paren">(</span><em>credentials</em>, <em>quota_max_calls=None</em>, <em>quota_period=1.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/groups_settings.html#GroupsSettingsRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Groups Settings API Respository Client.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsRepositoryClient.groups">
+<code class="descname">groups</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.groups_settings.GroupsSettingsRepositoryClient.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _GroupsSettingsGroupsRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.groups_settings._GroupsSettingsGroupsRepository">
+<em class="property">class </em><code class="descname">_GroupsSettingsGroupsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/groups_settings.html#_GroupsSettingsGroupsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.groups_settings._GroupsSettingsGroupsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Groups Settings repository.</p>
+</dd></dl>
+
+</div>
+
