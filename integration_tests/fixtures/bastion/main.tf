@@ -76,10 +76,7 @@ resource "google_compute_firewall" "main" {
 
   direction     = "INGRESS"
   priority      = "100"
-
-  # Setting source range to Travis netblocks defined here: https://docs.travis-ci.com/user/ip-addresses/
   source_ranges = ["${bastion_firewall_netblocks}"]
-  
   target_tags   = ["bastion"]
   project       = "${var.project_id}"
 }
