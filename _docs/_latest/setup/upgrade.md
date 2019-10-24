@@ -648,20 +648,9 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 If your Forseti deployment was previously deployed with Deployment Manager, please see the [migration documentation]({% link _docs/latest/setup/migrate.md %}) on migrating to Terraform.  Following these steps will also result in an upgraded deployment of Forseti.
 
 ### Steps to Upgrade using Terraform
-If Forseti was previously deployed or upgraded via Terraform, do ONE of the following.
-1. Use Terraform to clean up the state and [automatically create a backup](https://www.terraform.io/docs/commands/state/index.html#backups).
-```
-terraform state rm $(terraform state list)
-```
-OR<br />
+A Cloud Shell walkthrough is provided to assist with upgrading Forseti previously deployed with Terraform.  Completing this guide will also result in a Forseti deployment upgraded to the most recent version.
 
-2. Manually backup and delete the current state.
-  - Make a backup of the existing Terraform state state (terraform.tfstate).
-    - This may be on a local filesystem in the directory from where you execute the Terraform command.
-    - This may also be in a remote storage.
-  - Remove current state file: terraform.tfstate
-
-Follow the steps documented in the [migration documentation]({% link _docs/latest/setup/migrate.md %}) to import existing Terraform state.  Following these steps will also result in an upgraded deployment of Forseti.
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=module-release-5.0.0&cloudshell_working_dir=examples/upgrade_forseti_with_v5.0&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.22.0 to 2.23.0" content=upgrading_2_22_0_to_2_23_0 uid=24 %}
