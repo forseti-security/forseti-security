@@ -76,7 +76,7 @@ resource "google_compute_firewall" "main" {
 
   direction     = "INGRESS"
   priority      = "100"
-  source_ranges = ["${bastion_firewall_netblocks}"]
+  source_ranges = "${var.bastion_firewall_netblocks}"
   target_tags   = ["bastion"]
   project       = "${var.project_id}"
 }
