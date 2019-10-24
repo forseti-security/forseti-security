@@ -29,7 +29,6 @@ variable "project_id" {
  * Example shell command to build netblock list dynamically from Travis DNS entry: 
  * dig +short nat.travisci.net | sort | awk '{printf "\"" $0 "/32\","}' | awk '{print substr($0, 1, length($0)-1)}'
  */
-   
 variable "bastion_firewall_netblocks" {
   description = "Trusted Travis CI firewall network blocks for bastion host ssh access. 
   type        = list
