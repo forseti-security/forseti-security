@@ -25,7 +25,7 @@ variable "project_id" {
 }
 
 variable "bastion_firewall_netblocks" {
-  description = "The trusted Travis CI firewall network blocks for bastion host ssh access. 
+  description = "Trusted Travis CI firewall network blocks for bastion host ssh access. 
                  Travis netblock details here: https://docs.travis-ci.com/user/ip-addresses/.
                  Example shell command to build this list dynamically from DNS: 
                  dig +short nat.gce-us-central1.travisci.net '{print $0"/32"}' | tr '\n' ' '"
