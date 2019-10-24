@@ -25,7 +25,7 @@ variable "project_id" {
 }
 
 /**
- *  Travis netblocks documentation:  https://docs.travis-ci.com/user/ip-addresses/.
+ * Travis netblocks documentation:  https://docs.travis-ci.com/user/ip-addresses/
  * Example shell command to build netblock list dynamically from Travis DNS entry: 
  * dig +short nat.travisci.net | sort | awk '{printf "\"" $0 "/32\","}' | awk '{print substr($0, 1, length($0)-1)}'
  */
