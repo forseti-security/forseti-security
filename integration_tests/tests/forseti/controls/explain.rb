@@ -81,7 +81,9 @@ control 'explain' do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer list_members").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
-              
+            end
+        end
+
         describe "List all roles" do
 
             it "should be visible from the command-line" do
