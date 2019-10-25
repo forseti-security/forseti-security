@@ -135,7 +135,6 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   rotation_period = "100000s"
 }
 
-
 provider "gsuite" {
   version     = "~> 0.1"
   credentials = "/workspace/release-silver.json"
@@ -148,4 +147,4 @@ resource "gsuite_group" "test-gsuite-group" {
   description = "G Suite Group Automated Creation Testing"
 }
 
-
+  
