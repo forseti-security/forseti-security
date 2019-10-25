@@ -18,5 +18,4 @@
 **Granted at the project level**
 
  * `roles/storage.objectViewer`
- * `roles/cloudtrace.agent`
  * `roles/logging.logWriter`

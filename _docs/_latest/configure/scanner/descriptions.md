@@ -133,7 +133,7 @@ The Groups Settings scanner supports a whitelist and blacklist mode, to prevent 
 events from ever happening.
 
 For examples of how to define scanner rules for your G Suite Settings scanner, 
-see the [`groups_settings_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/groups_settings_rules.yaml)
+see the [`groups_settings_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/groups_settings_rules.yaml)
 rule file.
 
 ## IAM policy scanner (organization resources)
@@ -184,7 +184,7 @@ time specified. You can also check if the algorithm, protection level
 and purpose of the cryptographic key is correctly configured.
 
 For examples of how to define scanner rules for your crypto keys, see the
-[`kms_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/kms_rules.yaml)
+[`kms_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/kms_rules.yaml)
 rule file.
 
 ## Kubernetes Engine scanner
@@ -202,7 +202,7 @@ features:
 * Rules can be whitelists or a blacklists.
 
 You can find example rules in the
-[`ke_scanner_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/ke_scanner_rules.yaml)
+[`ke_scanner_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/ke_scanner_rules.yaml)
 file.  The only rule enabled by default checks that logging is
 enabled.  Check out some of the commented-out rules for more
 advanced ideas.
@@ -225,7 +225,7 @@ Allow customers to ensure projects do not get deleted, by ensuring Liens
 for their projects exist and are configured correctly.
 
 For examples of how to define scanner rules for lien, see the
-[`lien_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/lien_rules.yaml)
+[`lien_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/lien_rules.yaml)
 rule file.
 
 ## Load balancer forwarding rules scanner
@@ -244,7 +244,7 @@ Allow customers to ensure their resources are located only in the intended
 locations. Set guards around locations as part of automated project deployment.
 
 For examples of how to define scanner rules for location, see the
-[`location_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/location_rules.yaml)
+[`location_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/location_rules.yaml)
 rule file.
 
 ## Log sink scanner
@@ -252,14 +252,14 @@ Alert or notify if a project does not have required log sinks. This scanner will
 be able to check if the sink destination is correctly configured.
 
 For examples of how to define scanner rules for log sink, see the
-[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/dev/rules/log_sink_rules.yaml)
+[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/log_sink_rules.yaml)
 rule file.
 
 ## Retention scanner
 
 Allow customers to ensure the retention policies on their resources are set as intended.
 
-For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/forseti-security/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/forseti-security/forseti-security/blob/master/rules/retention_rules.yaml) rule file.
 
 ## Service Account Key scanner
 

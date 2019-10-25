@@ -31,7 +31,7 @@ Before you begin the migration process, you will need:
 - The suffix appended to the names of the Forseti resources; this is
   likely a string of seven characters like a1b2c3d.
 - A service account in the organization with the
-  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.2.0#iam-roles).
+  [roles required by the Terraform module](https://registry.terraform.io/modules/terraform-google-modules/forseti/google/4.3.0#iam-roles).
 - A
   [JSON key file](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
   for the service account.
@@ -172,11 +172,9 @@ You should carefully review this section as well as the output from
 
 ### Created
 
-- The `forseti-client-gcp-RESOURCE_NAME_SUFFIX` service account will
-  gain the Cloud Trace Agent (`roles/cloudtrace.agent`) role
-- The `forseti-server-gcp-RESOURCE_NAME_SUFFIX` service account will
-  gain the Cloud Trace Agent (`roles/cloudtrace.agent`) role and the
-  IAM Service Account Token Creator (`roles/iam.serviceAccountTokenCreator`) role
+- The `forseti-server-gcp-RESOURCE_NAME_SUFFIX` service account will gain 
+  the IAM Service Account Token Creator (`roles/iam.serviceAccountTokenCreator`) 
+  role
 
 ### Updated In-Place
 

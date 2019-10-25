@@ -3,7 +3,7 @@ title: Forseti on-GKE
 order: 006
 ---
 
-{% include docs/latest/alpha-release-feature.md %}
+{% include docs/latest/beta-release-feature.md %}
 
 # {{ page.title }}
 
@@ -44,11 +44,11 @@ The following describes the container image tags used in a Forseti on-GKE instal
 |  Tag(s)  |  Description |
 |----------|--------------|
 | latest<br />v2.x.x | With each release of Forseti, a new container image is built with a tag corresponding to a tag in GitHub.  The latest release is also tagged with :latest. |
-| dev | Every time a pull request is merged into the *dev* branch in GitHub, a new container image build is triggered resulting in an image with the :dev tag. |
+| master | Every time a pull request is merged into the *master* branch in GitHub, a new container image build is triggered resulting in an image with the :master tag. |
 
 ### Container Builds
 
-Forseti Security employs [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) wherever possible for example the **forseti** image.  With multi-stage builds, container images can be built where the build-time dependencies are not necissarily present in the runtime container image.  The result is a smaller image for deployment.  The following image and chart describe each of the container image layers defined by the [Dockerfile](https://raw.githubusercontent.com/forseti-security/forseti-security/dev/Dockerfile)
+Forseti Security employs [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) wherever possible for example the **forseti** image.  With multi-stage builds, container images can be built where the build-time dependencies are not necissarily present in the runtime container image.  The result is a smaller image for deployment.  The following image and chart describe each of the container image layers defined by the [Dockerfile](https://raw.githubusercontent.com/forseti-security/forseti-security/master/Dockerfile)
 
 
 {% responsive_image path: images/docs/concepts/forseti-gke-build-layers.png alt: "forseti container build layers" %}

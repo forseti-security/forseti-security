@@ -1,0 +1,282 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.utils"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Forseti Server utilities.&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="c1"># pylint: disable=protected-access</span>
+
+
+<div class="viewcode-block" id="autoclose_stream"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.autoclose_stream">[docs]</a><span class="k">def</span> <span class="nf">autoclose_stream</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator to close gRPC stream.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f (func): The function to decorate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        wrapper: wrapper of the decorator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wrapper function, checks context state to close stream.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args (list): All arguments provided to the wrapped function.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Whatever the wrapped function yields to the stream.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Returns true iff the connection is closed.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                context (object): the connection to check</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                bool: whether the connection is closed</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span> <span class="o">==</span> <span class="s1">&#39;closed&#39;</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">result</span>
+            <span class="k">if</span> <span class="n">closed</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+                <span class="k">return</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="logcall"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.logcall">[docs]</a><span class="k">def</span> <span class="nf">logcall</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Call logging decorator.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f (func): The function to decorate</span>
+<span class="sd">        level (str): the level of logging</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        wrapper: wrapper of the decorator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements the log wrapper including parameters and result.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: All args provided to the wrapped function.</span>
+<span class="sd">            **kwargs: All kwargs provided to the wrapped function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: the f execution result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;enter </span><span class="si">%s</span><span class="s1">(</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;exit </span><span class="si">%s</span><span class="s1">(</span><span class="si">%s</span><span class="s1">) -&gt; </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="mutual_exclusive"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.mutual_exclusive">[docs]</a><span class="k">def</span> <span class="nf">mutual_exclusive</span><span class="p">(</span><span class="n">lock</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Mutex decorator.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lock (object): The lock to lock out exclusive method</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: decorator generator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator generator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            f (func): the function to decorate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            func: the decorated function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Decorated functionality, mutexing wrapped function.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                *args: All args provided to the wrapped function</span>
+<span class="sd">                **kw: All kw provided to the wrapped function</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                object: the execution results of f</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">wrap</span></div>
+
+
+<div class="viewcode-block" id="oneof"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.oneof">[docs]</a><span class="k">def</span> <span class="nf">oneof</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns true iff one of the parameters is true.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *args: arguments to check</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: true iff one of the parameters is true.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="n">x</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="full_to_type_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.full_to_type_name">[docs]</a><span class="k">def</span> <span class="nf">full_to_type_name</span><span class="p">(</span><span class="n">full_resource_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a type/name format from full resource name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        full_resource_name (str): the full_resource_name of the resource</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: type_name of that resource</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">full_resource_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span></div>
+
+
+<div class="viewcode-block" id="to_full_resource_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.to_full_resource_name">[docs]</a><span class="k">def</span> <span class="nf">to_full_resource_name</span><span class="p">(</span><span class="n">full_parent_name</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a full resource name by parent full name and type name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        full_parent_name (str): the full_resource_name of the parent</span>
+<span class="sd">        resource_type_name (str): the full_resource_name of the child</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: full_resource_name of the child</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Strip out the fake composite root parent from the full resource name.</span>
+    <span class="k">if</span> <span class="n">full_parent_name</span> <span class="o">==</span> <span class="s1">&#39;composite_root/root/&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resource_type_name</span><span class="p">)</span>
+
+    <span class="c1"># For resource names that contain embedded /s, set the full type name</span>
+    <span class="c1"># to just the first and last part.</span>
+    <span class="n">type_name_parts</span> <span class="o">=</span> <span class="n">resource_type_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_name_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">resource_type_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">type_name_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                            <span class="n">type_name_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">full_parent_name</span><span class="p">,</span> <span class="n">resource_type_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_type_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.to_type_name">[docs]</a><span class="k">def</span> <span class="nf">to_type_name</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a type/name from type and name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource_type (str): the resource type</span>
+<span class="sd">        resource_name (str): the resource name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: type_name of the resource</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="split_type_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.split_type_name">[docs]</a><span class="k">def</span> <span class="nf">split_type_name</span><span class="p">(</span><span class="n">resource_type_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Split the type name of the resource</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource_type_name (str): the type_name of the resource</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuples: type and name of the resource</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">resource_type_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="resource_to_type_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.resource_to_type_name">[docs]</a><span class="k">def</span> <span class="nf">resource_to_type_name</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a type/name format from a resource dbo.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource (object): the resource to get the the type_name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: type_name of the resource</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">resource</span><span class="o">.</span><span class="n">type_name</span></div>
+
+
+<div class="viewcode-block" id="get_sql_dialect"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.get_sql_dialect">[docs]</a><span class="k">def</span> <span class="nf">get_sql_dialect</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the active SqlAlchemy dialect.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (object): the session to check for SqlAlchemy dialect</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: name of the SqlAlchemy dialect</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">bind</span><span class="o">.</span><span class="n">dialect</span><span class="o">.</span><span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="get_resources_from_full_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.get_resources_from_full_name">[docs]</a><span class="k">def</span> <span class="nf">get_resources_from_full_name</span><span class="p">(</span><span class="n">full_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse resource info from full name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        full_name (str): Full name of the resource in hierarchical format.</span>
+<span class="sd">            Example of a full_name:</span>
+<span class="sd">            organization/88888/project/myproject/firewall/99999/</span>
+<span class="sd">            full_name has a trailing / that needs to be removed.</span>
+
+
+<span class="sd">    Yields:</span>
+<span class="sd">        iterator: strings of resource_type and resource_id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">full_name_parts</span> <span class="o">=</span> <span class="n">full_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">full_name_parts</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="n">resource_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">full_name_parts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">resource_iter</span><span class="p">,</span> <span class="n">resource_iter</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_id</span></div>
+
+
+<div class="viewcode-block" id="get_resource_id_from_type_name"><a class="viewcode-back" href="../../../../../google.cloud.forseti.services.utils.html#google.cloud.forseti.services.dao.get_resource_id_from_type_name">[docs]</a><span class="k">def</span> <span class="nf">get_resource_id_from_type_name</span><span class="p">(</span><span class="n">type_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the key from type_name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        type_name (str): Type name.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Resource id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">type_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">type_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">type_name</span></div>
+</pre></div>
