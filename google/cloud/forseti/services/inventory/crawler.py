@@ -233,12 +233,13 @@ class ParallelCrawler(Crawler):
         self._dispatch_queue.put(callback)
 
 
-def _api_client_factory(config, threads):
+def _api_client_factory(config, threads, inventory_index_id):
     """Creates the proper initialized API client based on the configuration.
 
     Args:
         config (object): Inventory configuration on server.
         threads (int): how many threads to use.
+        inventory_index_id (int): The inventory index ID for this export.
 
     Returns:
         Union[gcp.ApiClientImpl, cai_gcp_client.CaiApiClientImpl]:
@@ -251,7 +252,10 @@ def _api_client_factory(config, threads):
         # TODO: When CAI supports resource exclusion, update the following
         #       method to handle resource exclusion during export time.
         engine, tmpfile = cai_temporary_storage.create_sqlite_db(threads)
-        asset_count = cloudasset.load_cloudasset_data(engine, config)
+        asset_count = cloudasset.load_cloudasset_data(
+            engine,
+            config,
+            inventory_index_id)
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
@@ -336,7 +340,8 @@ def run_crawler(storage,
         parallel = False
         threads = 1
 
-    client = _api_client_factory(config, threads)
+    client = _api_client_factory(
+        config, threads, progresser.inventory_index_id)
     crawler_impl = _crawler_factory(storage, progresser, client, parallel,
                                     threads)
     resource = _root_resource_factory(config, client)
