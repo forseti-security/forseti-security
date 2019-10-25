@@ -1,0 +1,484 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.retention_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.retention_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Rules engine for Bucket retention.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">type_resource</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span> <span class="k">as</span> <span class="n">dt</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">relationship</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">SUPPORTED_RETENTION_RES_TYPES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="n">type_resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">BUCKET</span><span class="p">,</span>
+                                           <span class="n">type_resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">TABLE</span><span class="p">])</span>
+<span class="n">VIOLATION_TYPE</span> <span class="o">=</span> <span class="s1">&#39;RETENTION_VIOLATION&#39;</span>
+
+<span class="n">_MS_PER_DAY</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">1000</span>
+
+<span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s1">&#39;resource_name&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;full_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_data&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_data&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;resource_id&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="RetentionRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">RetentionRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for retention.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RetentionRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RetentionRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build RetentionRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">RetentionRuleBook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RetentionRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether supported resources violates rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): Object</span>
+<span class="sd">                containing retention data</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+
+        <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">()</span>
+        <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="n">resource_ancestors</span> <span class="o">=</span> <span class="p">(</span><span class="n">relationship</span><span class="o">.</span><span class="n">find_ancestors</span><span class="p">(</span>
+            <span class="n">resource</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">full_name</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">related_resources</span> <span class="ow">in</span> <span class="n">resource_ancestors</span><span class="p">:</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="n">resource_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">related_resources</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+                <span class="n">violations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="n">violations</span><span class="p">,</span>
+                    <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="get_retention_range"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.get_retention_range">[docs]</a><span class="k">def</span> <span class="nf">get_retention_range</span><span class="p">(</span><span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the min and max value of the retention.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rule_def (dict): A dictionary containing rule definition properties.</span>
+<span class="sd">        rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">            Assigned automatically when the rule book is built.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pair: the minimum and maximum value of the Age.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">minimum_retention</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;minimum_retention&#39;</span><span class="p">)</span>
+    <span class="n">maximum_retention</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maximum_retention&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">minimum_retention</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">maximum_retention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+            <span class="s1">&#39;Lack of minimum_retention and &#39;</span>
+            <span class="s1">&#39;maximum_retention in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">minimum_retention</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">maximum_retention</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">minimum_retention</span> <span class="o">&gt;</span> <span class="n">maximum_retention</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;minimum_retention larger than &#39;</span>
+                <span class="s1">&#39;maximum_retention in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">minimum_retention</span><span class="p">,</span> <span class="n">maximum_retention</span></div>
+
+
+<div class="viewcode-block" id="RetentionRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRuleBook">[docs]</a><span class="k">class</span> <span class="nc">RetentionRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for Retention resources.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RetentionRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_sema</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">BoundedSemaphore</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">applies_to</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">applies_to</span> <span class="ow">in</span> <span class="n">SUPPORTED_RETENTION_RES_TYPES</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RetentionRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetentionRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_sema</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">applies_to</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;applies_to&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">applies_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Lack of applies_to in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+            <span class="n">minimum_retention</span><span class="p">,</span> <span class="n">maximum_retention</span> <span class="o">=</span> <span class="n">get_retention_range</span><span class="p">(</span>
+                <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">support_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_RETENTION_RES_TYPES</span>
+                   <span class="k">for</span> <span class="n">support_type</span> <span class="ow">in</span> <span class="n">applies_to</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid applies_to resource in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+            <span class="n">added_applies_to</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">appto</span> <span class="ow">in</span> <span class="n">applies_to</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">appto</span> <span class="ow">in</span> <span class="n">added_applies_to</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;redundant applies_to in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+                <span class="n">added_applies_to</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">appto</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">create_and_add_rule</span><span class="p">(</span>
+                    <span class="n">rule_def</span><span class="p">,</span>
+                    <span class="n">rule_index</span><span class="p">,</span>
+                    <span class="n">appto</span><span class="p">,</span>
+                    <span class="n">minimum_retention</span><span class="p">,</span>
+                    <span class="n">maximum_retention</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rules_sema</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RetentionRuleBook.create_and_add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRuleBook.create_and_add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">create_and_add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">apply_to</span><span class="p">,</span>
+                            <span class="n">min_retention</span><span class="p">,</span> <span class="n">max_retention</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">            apply_to (str): The resource type that the rule is applied to</span>
+<span class="sd">            min_retention(int): minimum value of the age in lifecycle</span>
+<span class="sd">            max_retention(int): maximum value of the age in lifecycle</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;resource&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_def</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                <span class="s1">&#39;Lack of resource in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">rule_def</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Lack of type in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s1">&#39;resource_ids&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Lack of resource_ids in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+            <span class="n">resource_ids</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;resource_ids&#39;</span><span class="p">]</span>
+
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">rule_name</span><span class="o">=</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                        <span class="n">rule_index</span><span class="o">=</span><span class="n">rule_index</span><span class="p">,</span>
+                        <span class="n">min_retention</span><span class="o">=</span><span class="n">min_retention</span><span class="p">,</span>
+                        <span class="n">max_retention</span><span class="o">=</span><span class="n">max_retention</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">rid</span> <span class="ow">in</span> <span class="n">resource_ids</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">rid</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                        <span class="s1">&#39;The symbol * is not allowed in rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">rule_index</span><span class="p">))</span>
+
+                <span class="n">gcp_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                    <span class="n">resource_id</span><span class="o">=</span><span class="n">rid</span><span class="p">,</span>
+                    <span class="n">resource_type</span><span class="o">=</span><span class="n">resource_type</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="p">[</span><span class="n">apply_to</span><span class="p">][</span><span class="n">gcp_resource</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                    <span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetentionRuleBook.get_resource_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.RetentionRuleBook.get_resource_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applies_to</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the rules for the resource &quot;applies_to&quot;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            applies_to (str): The type of the resource</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           defaultdict:  A list of ResourceRules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="p">[</span><span class="n">applies_to</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file. Also finds violations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">min_retention</span><span class="p">,</span> <span class="n">max_retention</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule.</span>
+<span class="sd">            rule_index (int): The index of the rule.</span>
+<span class="sd">            min_retention(int): minimum value of the age in lifecycle.</span>
+<span class="sd">            max_retention(int): maximum value of the age in lifecycle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_retention</span> <span class="o">=</span> <span class="n">min_retention</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_retention</span> <span class="o">=</span> <span class="n">max_retention</span>
+
+<div class="viewcode-block" id="Rule.generate_bucket_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.generate_bucket_violation">[docs]</a>    <span class="k">def</span> <span class="nf">generate_bucket_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a violation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (Bucket): The bucket that triggers the violation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: The violation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_lifecycle</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">get_lifecycle_rule</span><span class="p">()</span>
+        <span class="n">data_lifecycle_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data_lifecycle</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">bucket</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">bucket</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">bucket</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">bucket</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="n">violation_type</span><span class="o">=</span><span class="n">VIOLATION_TYPE</span><span class="p">,</span>
+            <span class="n">violation_data</span><span class="o">=</span><span class="n">data_lifecycle_str</span><span class="p">,</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="n">bucket</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.generate_table_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.generate_table_violation">[docs]</a>    <span class="k">def</span> <span class="nf">generate_table_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a violation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table (Table): The bucket that triggers the violation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: The violation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">RuleViolation</span><span class="p">(</span>
+            <span class="n">resource_name</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+            <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+            <span class="n">violation_type</span><span class="o">=</span><span class="n">VIOLATION_TYPE</span><span class="p">,</span>
+            <span class="n">violation_data</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">resource_data</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a generator for violations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            res (Resource): A class derived from Resource.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Generator: Retention violation of supported resources.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised if the resource type is not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">type_resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">BUCKET</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_violations_in_bucket</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">res</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">type_resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">TABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_violations_in_table</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;only </span><span class="si">%s</span><span class="s1"> are currently supported.&#39;</span> <span class="o">%</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">SUPPORTED_RETENTION_RES_TYPES</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Rule.bucket_max_retention_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.bucket_max_retention_violation">[docs]</a>    <span class="k">def</span> <span class="nf">bucket_max_retention_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate violations for bucket that exceeded the maximum retention.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (bucket): Bucket to find violation from.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            RuleViolation: Retention violation of buckets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># There should be a condition which guarantees to delete data</span>
+        <span class="n">bucket_lifecycle</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">get_lifecycle_rule</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bucket_lifecycle</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">lc_item</span> <span class="ow">in</span> <span class="n">bucket_lifecycle</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lc_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;Delete&#39;</span><span class="p">:</span>
+                    <span class="n">conditions</span> <span class="o">=</span> <span class="n">lc_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                    <span class="n">age</span> <span class="o">=</span> <span class="n">conditions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">age</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># the config does not have conditions other than age</span>
+                        <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retention</span><span class="p">:</span>
+                            <span class="k">return</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_bucket_violation</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.bucket_min_retention_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.bucket_min_retention_violation">[docs]</a>    <span class="k">def</span> <span class="nf">bucket_min_retention_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate violations for bucket that under the minimum retention.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (bucket): Bucket to find violation from.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            RuleViolation: Retention violation of buckets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_retention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">bucket_lifecycle</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">get_lifecycle_rule</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">lc_item</span> <span class="ow">in</span> <span class="n">bucket_lifecycle</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">lc_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;Delete&#39;</span> <span class="ow">and</span>
+                    <span class="ow">not</span> <span class="n">bucket_conditions_guarantee_min</span><span class="p">(</span>
+                        <span class="n">lc_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="p">{}),</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_retention</span><span class="p">)):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_bucket_violation</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations_in_bucket"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.find_violations_in_bucket">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations_in_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a generator for violations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket (Bucket): Bucket to find violation from.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Generator: Retention violation of buckets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violation_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket_max_retention_violation</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="n">violation_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket_min_retention_violation</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">violation_max</span><span class="p">,</span> <span class="n">violation_min</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.table_max_retention_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.table_max_retention_violation">[docs]</a>    <span class="k">def</span> <span class="nf">table_max_retention_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate violations for bigquery table that exceeded the maximum</span>
+<span class="sd">        retention.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table (Table): Table to find violation from.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            RuleViolation: Retention violation of bigquery tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">table_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">table_expiration</span> <span class="o">=</span> <span class="n">table_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;expirationTime&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table_expiration</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_table_violation</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">table_creation</span> <span class="o">=</span> <span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;creationTime&#39;</span><span class="p">]</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">table_expiration</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">table_creation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retention</span> <span class="o">*</span> <span class="n">_MS_PER_DAY</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_table_violation</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.table_min_retention_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.table_min_retention_violation">[docs]</a>    <span class="k">def</span> <span class="nf">table_min_retention_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate violations for bigquery table that under the minimum</span>
+<span class="sd">        retention.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table (Table): Table to find violation from.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            RuleViolation: Retention violation of bigquery tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_retention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">table_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">table_expiration</span> <span class="o">=</span> <span class="n">table_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;expirationTime&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table_expiration</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">table_creation</span> <span class="o">=</span> <span class="n">table_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creationTime&#39;</span><span class="p">)</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">table_expiration</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">table_creation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">diff</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_retention</span> <span class="o">*</span> <span class="n">_MS_PER_DAY</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_table_violation</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations_in_table"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.Rule.find_violations_in_table">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations_in_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a generator for violations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table (Table): Table to find violation from.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Generator: Retention violation of bigquery tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violation_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_max_retention_violation</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">violation_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_min_retention_violation</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">violation_max</span><span class="p">,</span> <span class="n">violation_min</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="bucket_conditions_guarantee_min"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.retention_rules_engine.html#google.cloud.forseti.scanner.audit.retention_rules_engine.bucket_conditions_guarantee_min">[docs]</a><span class="k">def</span> <span class="nf">bucket_conditions_guarantee_min</span><span class="p">(</span><span class="n">conditions</span><span class="p">,</span> <span class="n">min_retention</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if other conditions can guarantee minimum retention.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conditions (dict): the condition dict of the bucket</span>
+<span class="sd">        min_retention (int): the value of minimum retention.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True: min is guaranteed even if age is too small.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">age</span> <span class="o">=</span> <span class="n">conditions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">age</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="n">min_retention</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="c1"># if createdBefore is old enough, it&#39;s OK.</span>
+    <span class="k">if</span> <span class="s1">&#39;createdBefore&#39;</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+        <span class="n">created_before</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="s1">&#39;createdBefore&#39;</span><span class="p">]</span>
+        <span class="n">dt_cfg</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">get_datetime_from_string</span><span class="p">(</span><span class="n">created_before</span><span class="p">,</span>
+                                             <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">dt_now</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">get_utc_now_datetime</span><span class="p">()</span>
+        <span class="n">day_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt_now</span> <span class="o">-</span> <span class="n">dt_cfg</span><span class="p">)</span><span class="o">.</span><span class="n">days</span>
+        <span class="k">if</span> <span class="n">day_diff</span> <span class="o">&gt;=</span> <span class="n">min_retention</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="c1"># if number of new version is larger than 0, OK.</span>
+    <span class="k">if</span> <span class="n">conditions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;numNewerVersions&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="kc">False</span></div>
+</pre></div>
