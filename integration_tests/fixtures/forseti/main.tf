@@ -141,9 +141,10 @@ provider "gsuite" {
   impersonated_user_email = "admin@silver.forsetisecurity.dev"
 }
 
-resource "gsuite_group" "devteam" {
-  email       = "automated-group-creation@silver.forsetisecurity.dev"
-  name        = "automated-group-creation@silver.forsetisecurity.dev"
+resource "gsuite_group" "test-gsuite-group" {
+  email       = "gsuite-${random_pet.random_name_generator.id}@silver.forsetisecurity.dev"
+  name        = "gsuite-${random_pet.random_name_generator.id}"
   description = "G Suite Group Automated Creation Testing"
 }
 
+  
