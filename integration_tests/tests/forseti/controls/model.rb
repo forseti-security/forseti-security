@@ -20,7 +20,7 @@ control 'model' do
             command("forseti inventory purge 0").result
             command("forseti inventory create").result
 
-            # This variable cannot be used after all the inventories have been purged..
+            # This variable cannot be used after all the inventories have been purged.
             @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
             command("forseti model create --inventory_index_id #{@inventory_id} model_new").result
             command("forseti model use model_new").result
