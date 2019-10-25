@@ -15,6 +15,7 @@
 """Tests for Email Factory"""
 
 from google.cloud.forseti.common.util.email import email_factory
+from google.cloud.forseti.common.util.email import mailjet_connector
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util.errors import InvalidInputError
 from tests.unittest_utils import ForsetiTestCase
@@ -23,10 +24,22 @@ from tests.unittest_utils import ForsetiTestCase
 class EmailFactoryTest(ForsetiTestCase):
     """Tests for Email Factory"""
 
-    def test_get_connector_correctness(self):
+    def test_get_connector_correctness_default(self):
         """Test get_connector() correctness."""
         sample_notifier_config = {
-            'email_connector_config': {
+            'sender': 'abc',
+            'recipient': 'xyz',
+            'api_key': 'a0b0c0'
+        }
+        connector = email_factory.EmailFactory(
+            sample_notifier_config).get_connector()
+        self.assertTrue(isinstance(connector,
+                                   sendgrid_connector.SendgridConnector))
+
+    def test_get_connector_correctness_sendgrid(self):
+        """Test get_connector() correctness."""
+        sample_notifier_config = {
+            'email_connector': {
                 'name': 'sendgrid',
                 'sender': 'abc',
                 'recipient': 'xyz',
@@ -40,6 +53,29 @@ class EmailFactoryTest(ForsetiTestCase):
             sample_notifier_config).get_connector()
         self.assertTrue(isinstance(connector,
                                    sendgrid_connector.SendgridConnector))
+
+    def test_get_connector_correctness_mailjet(self):
+        if not mailjet_connector.MAILJET_ENABLED:
+            self.skipTest('Package `mailjet` not installed.')
+
+        """Test get_connector() correctness."""
+        sample_notifier_config = {
+            'email_connector': {
+                'name': 'mailjet',
+                'sender': 'abc',
+                'recipient': 'xyz',
+                'data_format': 'csv',
+                'auth': {
+                    'api_key': 'a0b0c0',
+                    'api_secret': 'z9y9x9'
+                },
+                'custom': {
+                    'campaign': 'forseti'
+                }
+            }
+        }
+        connector = email_factory.EmailFactory(sample_notifier_config).get_connector()
+        self.assertIsInstance(connector, mailjet_connector.MailjetConnector)
 
     def test_get_connector_invalid_input(self):
         """Test get_connector() with invalid input."""

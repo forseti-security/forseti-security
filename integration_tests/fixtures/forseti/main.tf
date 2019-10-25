@@ -159,3 +159,15 @@ resource "google_storage_default_object_access_control" "public_all_authenticate
   entity             = "allAuthenticatedUsers"
 }
 
+provider "gsuite" {
+  version     = "~> 0.1"
+  credentials = "/workspace/release-silver.json"
+  impersonated_user_email = "admin@silver.forsetisecurity.dev"
+}
+
+resource "gsuite_group" "test-gsuite-group" {
+  email       = "gsuite-${random_pet.random_name_generator.id}@silver.forsetisecurity.dev"
+  name        = "gsuite-${random_pet.random_name_generator.id}"
+  description = "G Suite Group Automated Creation Testing"
+}
+
