@@ -100,7 +100,7 @@ class MailjetConnectorTest(ForsetiTestCase):
                     'FromEmail': email_sender,
                     'FromName': email_sender,
                     'Subject': email_subject,
-                    'Text-part': email_content,
+                    'Html-part': email_content,
                     'Recipients': [{'Email': email_recipient}],
                     'Attachments': [self.attachment.payload()],
                     'Mj-campaign': self.campaign
