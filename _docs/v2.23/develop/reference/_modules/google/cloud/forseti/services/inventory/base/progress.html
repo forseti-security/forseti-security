@@ -1,0 +1,121 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.progress"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.inventory.base.progress</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot; Crawler implementation. &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="c1"># pylint: disable=no-self-use</span>
+
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+
+
+<div class="viewcode-block" id="Progresser"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.Progresser">[docs]</a><span class="k">class</span> <span class="nc">Progresser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Progress state Interface&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Progresser.on_new_object"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.Progresser.on_new_object">[docs]</a>    <span class="k">def</span> <span class="nf">on_new_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (object): the Resource object</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Progresser.on_warning"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.Progresser.on_warning">[docs]</a>    <span class="k">def</span> <span class="nf">on_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">warning</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            warning (str): warning message</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Progresser.on_error"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.Progresser.on_error">[docs]</a>    <span class="k">def</span> <span class="nf">on_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            error (str): error message</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Progresser.get_summary"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.Progresser.get_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="CliProgresser"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.CliProgresser">[docs]</a><span class="k">class</span> <span class="nc">CliProgresser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The command line progress state&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="CliProgresser.on_new_object"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_new_object">[docs]</a>    <span class="k">def</span> <span class="nf">on_new_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show progress state when found a new object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (Resource): the Resource object in resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;found new object: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resource</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CliProgresser.on_warning"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_warning">[docs]</a>    <span class="k">def</span> <span class="nf">on_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">warning</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show progress state when have a warning</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            warning (str): warning message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warning: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">warning</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CliProgresser.on_error"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.CliProgresser.on_error">[docs]</a>    <span class="k">def</span> <span class="nf">on_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show progress state when encounter an error</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            error (str): error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;error: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CliProgresser.get_summary"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.progress.html#google.cloud.forseti.services.inventory.base.progress.CliProgresser.get_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show progress state when finish&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Errors: </span><span class="si">{}</span><span class="s1">, Warnings: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warnings</span><span class="p">)))</span></div></div>
+</pre></div>
