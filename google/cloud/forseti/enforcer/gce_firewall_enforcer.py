@@ -20,6 +20,7 @@ import hashlib
 import http.client
 import json
 import operator
+import re
 import socket
 import ssl
 
