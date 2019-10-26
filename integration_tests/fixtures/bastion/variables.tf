@@ -24,6 +24,46 @@ variable "project_id" {
   type        = "string"
 }
 
+/**
+ * Travis netblocks documentation:  https://docs.travis-ci.com/user/ip-addresses/
+ * Example shell command to build netblock list dynamically from Travis DNS entry: 
+ * dig +short nat.travisci.net | sort | awk '{printf "\"" $0 "/32\","}' | awk '{print substr($0, 1, length($0)-1)}'
+ */
+variable "bastion_firewall_netblocks" {
+  description = "Trusted Travis CI firewall network blocks for Forseti bastion host ssh access. "
+  type        = list
+  default     = [
+    "104.154.113.151/32",
+    "104.154.120.187/32",
+    "104.197.122.201/32",
+    "104.198.131.58/32",
+    "207.254.16.35/32",
+    "207.254.16.36/32",
+    "207.254.16.37/32",
+    "207.254.16.38/32",
+    "207.254.16.39/32",
+    "34.66.178.120/32",
+    "34.66.200.49/32",
+    "34.66.25.221/32",
+    "34.66.50.208/32",
+    "34.68.144.114/32",
+    "35.184.226.236/32",
+    "35.188.15.155/32",
+    "35.188.1.99/32",
+    "35.188.73.34/32",
+    "35.192.10.37/32",
+    "35.192.136.167/32",
+    "35.192.187.174/32",
+    "35.192.85.2/32",
+    "35.192.91.101/32",
+    "35.193.14.140/32",
+    "35.193.7.13/32",
+    "35.202.145.110/32",
+    "35.202.245.105/32",
+    "35.222.7.205/32",
+    "35.224.112.202/32"]
+}
+   
 variable "subnetwork" {
   description = "The name of the subnetwork in which the bastion host will be deployed."
   type        = "string"
