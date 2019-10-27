@@ -72,7 +72,7 @@ provide the corresponding values for all the fields mentioned below.
   inventory summary.
   * **Valid values**: one of valid `csv` or `json`.
   
-YAML below shows the email connector config for SendGrid.
+#### YAML below shows the email connector config for SendGrid.
 
 To configure other email connector, `name` and `auth` fields should be modified
 accordingly.
@@ -88,6 +88,22 @@ accordingly.
       data_format: csv
   ```
 
+#### YAML below shows the email connector config for Mailjet.
+
+To configure other email connector, `name` and `auth` fields should be modified
+accordingly.
+
+  ```yaml
+  notifier:
+    email_connector:
+      name: sendgrid
+      auth:
+        api_key: {Mailjet_API_KEY}
+        mailjet_api_key: {Mailjet_API_KEY}
+      sender: {SENDER EMAIL}
+      recipient: {RECIPIENT EMAIL}
+      data_format: csv
+  ```
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
