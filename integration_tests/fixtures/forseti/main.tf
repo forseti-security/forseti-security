@@ -27,7 +27,7 @@ resource "tls_private_key" "main" {
 }
 
 resource "local_file" "gce-keypair-pk" {
-  content  = "${tls_private_key.main.private_key_pem}"
+  content  = tls_private_key.main.private_key_pem
   filename = "${path.module}/sshkey"
 }
 
@@ -35,17 +35,17 @@ module "bastion" {
   source = "../bastion"
 
   network    = "default"
-  project_id = "${var.project_id}"
+  project_id = var.project_id
   subnetwork = "default"
   zone       = "us-central1-f"
 }
 
-module "forseti-install-simple" {
+module "forseti" {
   source = "github.com/forseti-security/terraform-google-forseti"
 
-  project_id         = "${var.project_id}"
-  org_id             = "${var.org_id}"
-  domain             = "${var.domain}"
+  project_id         = var.project_id
+  org_id             = var.org_id
+  domain             = var.domain
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
@@ -57,7 +57,7 @@ module "forseti-install-simple" {
 
 resource "null_resource" "wait_for_server" {
   triggers = {
-    always_run = "${uuid()}"
+    always_run = uuid()
   }
 
   provisioner "remote-exec" {
@@ -66,19 +66,19 @@ resource "null_resource" "wait_for_server" {
     connection {
       type                = "ssh"
       user                = "ubuntu"
-      host                = "${module.forseti-install-simple.forseti-server-vm-ip}"
-      private_key         = "${tls_private_key.main.private_key_pem}"
-      bastion_host        = "${module.bastion.host}"
-      bastion_port        = "${module.bastion.port}"
-      bastion_private_key = "${module.bastion.private_key}"
-      bastion_user        = "${module.bastion.user}"
+      host                = module.forseti.forseti-server-vm-ip
+      private_key         = tls_private_key.main.private_key_pem
+      bastion_host        = module.bastion.host
+      bastion_port        = module.bastion.port
+      bastion_private_key = module.bastion.private_key
+      bastion_user        = module.bastion.user
     }
   }
 }
 
 resource "null_resource" "wait_for_client" {
   triggers = {
-    always_run = "${uuid()}"
+    always_run = uuid()
   }
 
   provisioner "remote-exec" {
@@ -87,19 +87,19 @@ resource "null_resource" "wait_for_client" {
     connection {
       type                = "ssh"
       user                = "ubuntu"
-      host                = "${module.forseti-install-simple.forseti-client-vm-ip}"
-      private_key         = "${tls_private_key.main.private_key_pem}"
-      bastion_host        = "${module.bastion.host}"
-      bastion_port        = "${module.bastion.port}"
-      bastion_private_key = "${module.bastion.private_key}"
-      bastion_user        = "${module.bastion.user}"
+      host                = module.forseti.forseti-client-vm-ip
+      private_key         = tls_private_key.main.private_key_pem
+      bastion_host        = module.bastion.host
+      bastion_port        = module.bastion.port
+      bastion_private_key = module.bastion.private_key
+      bastion_user        = module.bastion.user
     }
   }
 }
 
 resource "null_resource" "install-mysql-client" {
   triggers = {
-    always_run = "${uuid()}"
+    always_run = uuid()
   }
 
   provisioner "remote-exec" {
@@ -110,12 +110,12 @@ resource "null_resource" "install-mysql-client" {
     connection {
       type                = "ssh"
       user                = "ubuntu"
-      host                = "${module.forseti-install-simple.forseti-server-vm-ip}"
-      private_key         = "${tls_private_key.main.private_key_pem}"
-      bastion_host        = "${module.bastion.host}"
-      bastion_port        = "${module.bastion.port}"
-      bastion_private_key = "${module.bastion.private_key}"
-      bastion_user        = "${module.bastion.user}"
+      host                = module.forseti.forseti-server-vm-ip
+      private_key         = tls_private_key.main.private_key_pem
+      bastion_host        = module.bastion.host
+      bastion_port        = module.bastion.port
+      bastion_private_key = module.bastion.private_key
+      bastion_user        = module.bastion.user
     }
   }
 }
@@ -124,25 +124,24 @@ resource "random_pet" "random_name_generator" {
 }
 
 resource "google_kms_key_ring" "test-keyring" {
-  project = "${var.project_id}"
-  name = "keyring-${random_pet.random_name_generator.id}"
+  project  = var.project_id
+  name     = "keyring-${random_pet.random_name_generator.id}"
   location = "global"
 }
 
 resource "google_kms_crypto_key" "test-crypto-key" {
   name            = "crypto-key-${random_pet.random_name_generator.id}"
-  key_ring        = "${google_kms_key_ring.test-keyring.self_link}"
+  key_ring        = google_kms_key_ring.test-keyring.self_link
   rotation_period = "100000s"
 }
 
 provider "gsuite" {
-  version     = "~> 0.1"
-  credentials = "/workspace/release-silver.json"
-  impersonated_user_email = "admin@silver.forsetisecurity.dev"
+  version                 = "~> 0.1"
+  impersonated_user_email = var.gsuite_admin_email
 }
 
 resource "gsuite_group" "test-gsuite-group" {
-  email       = "gsuite-${random_pet.random_name_generator.id}@silver.forsetisecurity.dev"
+  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
   name        = "gsuite-${random_pet.random_name_generator.id}"
   description = "G Suite Group Automated Creation Testing"
 }

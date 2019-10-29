@@ -14,14 +14,6 @@
 * limitations under the License.
 */
 
-variable "project_id" {
-  description = "The ID of an existing Google project where Forseti will be installed"
-}
-
-variable "org_id" {
-  description = "GCP Organization ID that Forseti will have purview over"
-}
-
 variable "billing_account" {
   description = "GCP Organization billing account details"
 }
@@ -30,3 +22,14 @@ variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
 
+variable "gsuite_admin_email" {
+  description = "The email of a GSuite super admin, used for pulling user directory information *and* sending notifications."
+}
+
+variable "org_id" {
+  description = "GCP Organization ID that Forseti will have purview over"
+}
+
+variable "project_id" {
+  description = "The ID of an existing Google project where Forseti will be installed"
+}
