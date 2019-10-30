@@ -14,11 +14,7 @@
 
 require 'json'
 control "scanner - external project access" do
-  describe command("forseti inventory purge 0") do
-    its('exit_status') { should eq 0 }
-  end
-
-  describe command("forseti inventory create") do
+  describe command("forseti inventory create --import_as {RANDOM}") do
     its('exit_status') { should eq 0 }
   end
 
