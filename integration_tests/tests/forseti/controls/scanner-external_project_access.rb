@@ -15,7 +15,7 @@
 require 'securerandom'
 require 'json'
 
-uuid = SecureRandom.uuid
+uuid = SecureRandom.uuid.gsub!('-', '')
 
 control "scanner - external project access" do
   describe command("forseti inventory create --import_as " + uuid) do
