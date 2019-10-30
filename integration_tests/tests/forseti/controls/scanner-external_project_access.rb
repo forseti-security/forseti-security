@@ -18,12 +18,6 @@ control "scanner - external project access" do
     its('exit_status') { should eq 0 }
   end
 
-  inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-
-  describe command("forseti model create --inventory_index_id #{inventory_id} model_new") do
-    its('exit_status') { should eq 0 }
-  end
-
   describe command("forseti model use model_new") do
     its('exit_status') { should eq 0 }
   end
@@ -33,10 +27,6 @@ control "scanner - external project access" do
     its('stdout') { should match (/Scanner Index ID: [0-9]* is created/)}
     its('stdout') { should match (/Running ExternalProjectAccessScanner.../)}
     its('stdout') { should match (/Scan completed!/)}
-  end
-
-  describe command("forseti inventory purge 0") do
-    its('exit_status') { should eq 0 }
   end
 
   describe command("forseti model delete model_new") do
