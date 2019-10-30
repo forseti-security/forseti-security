@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'securerandom'
 require 'json'
+
+uuid = SecureRandom.uuid
+
 control "scanner - external project access" do
-  describe command("forseti inventory create --import_as {RANDOM}") do
+  describe command("forseti inventory create --import_as " + uuid) do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model use model_new") do
+  describe command("forseti model use " + uuid) do
     its('exit_status') { should eq 0 }
   end
 
@@ -29,7 +33,7 @@ control "scanner - external project access" do
     its('stdout') { should match (/Scan completed!/)}
   end
 
-  describe command("forseti model delete model_new") do
+  describe command("forseti model delete " + uuid) do
     its('exit_status') { should eq 0 }
   end
 end
