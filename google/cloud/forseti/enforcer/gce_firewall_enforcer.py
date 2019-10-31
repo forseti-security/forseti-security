@@ -20,6 +20,7 @@ import hashlib
 import http.client
 import json
 import operator
+import re
 import socket
 import ssl
 
@@ -58,6 +59,10 @@ OPERATION_TIMEOUT = 120.0
 
 # The number of times to retry an operation if it times out before completion.
 OPERATION_RETRY_COUNT = 5
+
+# Name restrictions described at
+# https://cloud.google.com/compute/docs/reference/rest/v1/firewalls
+VALID_RESOURCE_NAME_RE = re.compile('(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$)')
 
 
 class Error(Exception):
@@ -573,8 +578,10 @@ class FirewallRules(object):
                 'Rule name exceeds length limit of 63 chars: "%s".' %
                 rule['name'])
 
-        # TODO: Verify rule name matches regex of allowed
-        # names from reference
+        if VALID_RESOURCE_NAME_RE.match(rule['name']) is None:
+            raise InvalidFirewallRuleError(
+                'Rule name does not match valid GCP resource name regex "'
+                '(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?)": "%s".' % rule['name'])
 
         if rule['name'] in self.rules:
             raise DuplicateFirewallRuleNameError(

@@ -443,6 +443,27 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
         with self.assertRaises(fe.InvalidFirewallRuleError):
             self.firewall_rules._check_rule_before_adding(self.test_rule)
 
+    def test_invalid_name_capitals(self):
+        """A rule with capital in name raises InvalidFirewallRuleError."""
+        # Make rule name contain invalid Capital letters
+        self.test_rule['name'] = 'no-Capital-Letters-Allowed'
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_invalid_name_number_at_start(self):
+        """A rule with number at start raises InvalidFirewallRuleError."""
+        # Make rule name contain number at start
+        self.test_rule['name'] = '1-no-number-at-start'
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_invalid_name_punctuation(self):
+        """A rule with invalid char in name raises InvalidFirewallRuleError."""
+        # Make rule name contain '_' which is not valid
+        self.test_rule['name'] = 'punctuation_not_allowed'
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(self.test_rule)
+
     def test_duplicate_rule_name(self):
         """A rule with the same name as an existing rule raises an exception.
 

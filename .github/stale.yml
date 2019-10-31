@@ -26,9 +26,9 @@ pulls:
     daysUntilStale: 30
     daysUntilClose: 7
     markComment: >
-    This pull request has been automatically marked as stale because it has not had
-    recent activity. It will be closed in 7 days if no further activity occurs. Thank you
-    for your contributions.
+      This pull request has been automatically marked as stale because it has not had
+      recent activity. It will be closed in 7 days if no further activity occurs. Thank you
+      for your contributions.
 
 # Configuration settings specific to issues
 # Details: Issues older than 5 months will become stale at 152 days. After 182 days of no activity the issue is closed.
@@ -37,6 +37,6 @@ issues:
     daysUntilStale: 152
     daysUntilClose: 30
     markComment: >
-    This issue has been automatically marked as stale because it has not had
-    recent activity. It will be closed in 30 days if no further activity occurs. Thank you
-    for your contributions.
+      This issue has been automatically marked as stale because it has not had
+      recent activity. It will be closed in 30 days if no further activity occurs. Thank you
+      for your contributions.

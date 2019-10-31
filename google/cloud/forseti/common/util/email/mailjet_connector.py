@@ -136,7 +136,7 @@ class MailjetConnector(base_email_connector.BaseEmailConnector):
             email_sender (str): The email sender.
             email_recipient (str): The email recipient.
             email_subject (str): The email subject.
-            email_content (str): The email content (aka, body).
+            email_content (str): The email HTML content (aka, body).
             content_type (str): The email content type.
             attachment (Attachment): A Mailjet Attachment.
 
@@ -152,7 +152,7 @@ class MailjetConnector(base_email_connector.BaseEmailConnector):
             'FromEmail': email_sender,
             'FromName': email_sender,
             'Subject': email_subject,
-            'Text-part': email_content,
+            'Html-part': email_content,
             'Recipients': [
                 {'Email': email_address}
                 for email_address in email_recipient.split(',')

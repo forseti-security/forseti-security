@@ -20,15 +20,43 @@ control 'explain' do
         before :context do
             command("forseti inventory purge 0").result
             command("forseti inventory create").result
-            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
-            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
-            command("forseti model use model_new").result
+
+            # This variable cannot be used after all the inventories have been purged.
+            @inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{@inventory_id} model_explain").result
+            command("forseti model use model_explain").result
+        end
+
+        describe "Successful inventory creation" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti inventory list").stdout).to match /SUCCESS/
+            end
         end
 
         describe "List members" do
 
             it "should be visible from the command-line" do
                 expect(command("forseti explainer list_members --prefix rdevani").stdout).to match /memberName/
+            end
+        end
+
+        describe "List all members" do
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projecteditor\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projectowner\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projectviewer\/release-automate-silver/
+            end
+
+            it "should be visible from the command-line" do
+                expect(command("forseti explainer list_members").stdout).to match /projecteditor\/release-automate-silver/
             end
         end
 
@@ -236,77 +264,6 @@ control 'explain' do
             end
         end
 
-        describe "List storage.Admin permissions" do
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /firebase.projects.get/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /resourcemanager.projects.get/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /resourcemanager.projects.list/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.create/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.delete/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.get/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.getIamPolicy/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.list/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.setIamPolicy/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.buckets.update/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.create/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.delete/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.get/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.getIamPolicy/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.list/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.setIamPolicy/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer list_permissions --roles roles/storage.Admin").stdout).to match /storage.objects.update/
-            end
-        end
-
         describe "List members who has access to IAM storage.Admin role expand groups" do
 
             it "should be visible from the command-line" do
@@ -331,10 +288,6 @@ control 'explain' do
             it "should be visible from the command-line" do
                 expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/project-factory-22907@release-automate-silver.iam.gserviceaccount.com/
             end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission iam.serviceAccounts.get").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
-            end
         end
 
         describe "List members who has access to IAM storage.Admin role" do
@@ -351,27 +304,7 @@ control 'explain' do
         describe "List members who have relation to storage.bucket.delete permission" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/integration-1-a26b/
-            end
-
-            it "should be visible from the command-line" do
                 expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/release-automate-silver/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete").stdout).to match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/
             end
 
             it "should be visible from the command-line" do
@@ -382,27 +315,7 @@ control 'explain' do
         describe "List members who have relation to storage.bucket.delete permission expand groups" do
 
             it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/integration-1-a26b/
-            end
-
-            it "should be visible from the command-line" do
                 expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /project\/release-automate-silver/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/158866727632@cloudservices.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/74120606973@cloudservices.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/84605163300-compute@developer.gserviceaccount.com/
-            end
-
-            it "should be visible from the command-line" do
-                expect(command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups").stdout).to match /serviceaccount\/84605163300@cloudservices.gserviceaccount.com/
             end
 
             it "should be visible from the command-line" do
@@ -411,7 +324,7 @@ control 'explain' do
 
             after(:context) do
                 command("forseti inventory purge 0").result
-                command("forseti model delete model_new").result
+                command("forseti model delete model_explain").result
             end
         end
     end
