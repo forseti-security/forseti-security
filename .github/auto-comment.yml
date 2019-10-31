@@ -1,5 +1,5 @@
 # Add comment related to interrupts action on new issues.
-issueOpened: >
+issuesOpened: >
   Thank you for opening an issue. Our team's interrupts engineer will review your issue shortly.
   
    **Issue Resolution:**
