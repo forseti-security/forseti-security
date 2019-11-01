@@ -169,7 +169,7 @@ In the Helm example above, the following variables are required in the user defi
 # configValidator.policyLibrary.bucket is the GCS
 # storage bucket containing the policy-library.
 # This overrides policyLibrary.respositoryURL.
-# Ommit the gs://.
+# Omit the gs://.
 configValidator.policyLibrary.bucket: ""
 
 # configValidator.policyLibrary.bucketFolder is 
