@@ -15,6 +15,8 @@
 """Test http_helpers utility functions."""
 
 import httplib2
+import os
+import unittest.mock as mock
 import unittest.mock as mock
 import unittest
 
@@ -53,16 +55,36 @@ class HttpHelpersTest(ForsetiTestCase):
         response, content = http.request(DUMMY_URL)
         self.assertIn(UA_KEY, mock_http.headers)
         self.assertRegex(
-            mock_http.headers[UA_KEY], r'forseti-security/[0-9.]+$')
+            mock_http.headers[UA_KEY], r'forseti-security/[0-9.]+\s+gce$')
 
-    def test_with_suffix(self):
+    def test_with_suffix_set_platform(self):
         http_helpers.set_user_agent_suffix("foobar")
         mock_http = MockHttp()
         http = http_helpers.build_http(mock_http)
         response, content = http.request(DUMMY_URL)
         self.assertIn(UA_KEY, mock_http.headers)
         self.assertRegex(
-            mock_http.headers[UA_KEY], r'foobar$')
+            mock_http.headers[UA_KEY], r'foobar\s+gce$')
+
+    def test_without_suffix_set_platform(self):
+        with mock.patch.dict('os.environ', {'FORSETI_PLATFORM': 'gke'}):
+            http_helpers.set_user_agent_suffix("")
+            mock_http = MockHttp()
+            http = http_helpers.build_http(mock_http)
+            response, content = http.request(DUMMY_URL)
+            self.assertIn(UA_KEY, mock_http.headers)
+            self.assertRegex(
+                mock_http.headers[UA_KEY], r'forseti-security/[0-9.]+\s+gke$')
+
+    def test_with_suffix_set_platform(self):
+        with mock.patch.dict('os.environ', {'FORSETI_PLATFORM': 'gke'}):
+            http_helpers.set_user_agent_suffix("foobar")
+            mock_http = MockHttp()
+            http = http_helpers.build_http(mock_http)
+            response, content = http.request(DUMMY_URL)
+            self.assertIn(UA_KEY, mock_http.headers)
+            self.assertRegex(
+                mock_http.headers[UA_KEY], r'foobar\s+gke$')
 
 
 if __name__ == '__main__':
