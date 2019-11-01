@@ -12,7 +12,7 @@ This guide explains how to setup Forseti on Kubernetes.  Most installation scena
 ## Install Pre-Requisites
 
 The following tools are required:
-* [Terraform](https://www.terraform.io/downloads.html) - 0.12.x
+* [Terraform](https://www.terraform.io/downloads.html) - 0.12.12
 * [gsutil](https://cloud.google.com/storage/docs/gsutil)
 
 
@@ -32,15 +32,12 @@ If you wish to reuse an existing Forseti deployment (e.g. you deployed Forseti o
 
 ### Deploy Forseti on-GKE
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content per one of the two scenarios below.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
-In the module below:
-* If you do not have a GKE cluster set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke_end_to_end`
-* If you have a GKE cluster, set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke`
-
+#### New GKE Cluster
 ```bash
 module "forseti-on-gke" {
-    source                  = ""
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke_end_to_end"
     domain                  = ""
     gsuite_admin_email      = ""
     org_id                  = ""
@@ -48,6 +45,23 @@ module "forseti-on-gke" {
     region                  = ""
 }
 ```
+
+#### Existing GKE Cluster
+```bash
+module "forseti-on-gke" {
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke"
+    domain                  = ""
+    gsuite_admin_email      = ""
+    org_id                  = ""
+    project_id              = ""
+    region                  = ""
+
+    gke_cluster_name        = ""
+    gke_cluster_location    = ""
+}
+```
+
+#### Next Steps
 
 Initialize the Terraform module.
 
@@ -116,12 +130,16 @@ module "forseti-on-gke-with-config-validator" {
 
     # Enable config-validator
     config_validator_enabled = true
+
+    # Enable the policy-library git-sync
+    policy_library_sync_enabled = true
     
     # Path to the private SSH key file
     git_sync_private_ssh_key_file = ""
 
     # SSH Git repository location, usually in the following
     # format: git@repo-host:repo-owner/repo-name.git
+    # Cloud Source format: ssh://user@org.com@source.developers.google.com:2022/p/[project-id]/r/[reponame]
     policy_library_repository_url = ""
 }
 ```
@@ -132,18 +150,19 @@ In the Helm example above, the following variables are required in the user defi
 
 ```yaml
 # configValidator sets whether or not to deploy config-validator
-configValidator: true
+configValidator.enabled: true
 
 # gitSyncPrivateSSHKey is the private OpenSSH key generated to allow the git-sync to clone the policy library repository.
-gitSyncPrivateSSHKey: ""
+configValidator.policyLibrary.gitSync.privateSSHKey: ""
 
 # gitSyncSSH use SSH for git-sync operations
-gitSyncSSH: true
+configValidator.policyLibrary.gitSync.enabled: true
 
 # policyLibraryRepositoryURL is a git repository policy-library.
-policyLibraryRepositoryURL: ""
+configValidator.policyLibrary.gitSync.repositoryURL: ""
 
 ```
+
 ## Accessing Forseti from the Client VM
 Forseti on-GKE is configured to accept connections from the CIDR on which the Client VM is deployed.  You can access the Forseti deployment, for example to run `forseti inventory create` by doing the following:
 
