@@ -7,7 +7,7 @@ gem 'therubyracer'
 gem 'html-proofer'
 gem 'liquid-c'
 
-gem "jekyll", "~> 3.8"
+gem "jekyll", "~> 4.0"
 
 group :jekyll_plugins do
   gem 'jekyll-github-metadata'
