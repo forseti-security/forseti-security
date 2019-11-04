@@ -31,4 +31,8 @@ control "inventory - cai gsc export file" do
   describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
+
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
 end
