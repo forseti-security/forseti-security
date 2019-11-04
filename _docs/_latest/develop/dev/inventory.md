@@ -16,8 +16,9 @@ To add a new type of Inventory data, you'll complete the following tasks:
 1. Create an iterator to retrieve the data with the API client
 1. Add the iterator to Inventory factories to make it available for crawling
 1. Add the Inventory data to a data model
+1. Update unit tests for the new Inventory resource
 
-The following guide demonstrates these steps as a walkthrough of 
+The following guide demonstrates these steps as a walkthrough of
 [PR #883](https://github.com/forseti-security/forseti-security/pull/883),
 which adds Compute Engine Image data to Inventory and a data model.
 
@@ -175,3 +176,33 @@ to connect `foo` with the `_convert_foo()` in the `handlers` map in
         }
     ```
 Your new data type is now added to Inventory and a new data model.
+
+## Step 5: Update Unit Tests
+
+To exercise unit tests for Inventory resources, there are some existing unit
+tests that use mock data to verify that the Inventory modules are working
+correctly together. These tests will verify that the number of resources match
+the expected value.
+
+1. Edit [tests/services/inventory/test_data/mock_gcp_results.py](https://github.com/forseti-security/forseti-security/blob/master/tests/services/inventory/test_data/mock_gcp_results.py)
+to add mock data for the new Inventory resource. This file contains a lot of
+mock data for various resources. Take a valid response from the API that is
+being added and generalize it to remove any sensitive information (e.g.
+Organization Id can be replaced with the ORGANIZATION_ID variable).
+1. Edit [tests/services/inventory/gcp_api_mocks.py](https://github.com/forseti-security/forseti-security/blob/master/tests/services/inventory/gcp_api_mocks.py)
+to add a hook for the tests to return the mock data created in the previous
+step.
+  - Declare the mock object in the `__init__` method
+  - Initialize the mock object in the `start` method
+  - Destroy the mock object in the `stop` method
+  - Add a new method to mock the resource and return the mock data. The
+  `_mock_cloudsql` method provides a short and straight forward example.
+1. Edit [tests/services/inventory/crawling_test.py](https://github.com/forseti-security/forseti-security/blob/master/tests/services/inventory/crawling_test.py)
+to update the `test_crawling_to_memory_storage` test to ensure that the mock
+resources are accounted for in the inventory.
+  - Add the resource and expected counts (the number of resources contained in
+    the sample response provided in step 1) to the `GCP_API_RESOURCES` variable.
+
+Now that the new Inventory resource will be included in the test data, the
+`test_crawling_to_memory_storage` test can be run by following the
+[Testing instructions](https://forsetisecurity.org/docs/latest/develop/dev/testing.html).
