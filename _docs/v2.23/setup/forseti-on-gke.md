@@ -32,15 +32,12 @@ If you wish to reuse an existing Forseti deployment (e.g. you deployed Forseti o
 
 ### Deploy Forseti on-GKE
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content per one of the two scenarios below.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
-In the module below:
-* If you do not have a GKE cluster set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke_end_to_end`
-* If you have a GKE cluster, set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke`
-
+#### New GKE Cluster
 ```bash
 module "forseti-on-gke" {
-    source                  = ""
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke_end_to_end"
     domain                  = ""
     gsuite_admin_email      = ""
     org_id                  = ""
@@ -48,6 +45,23 @@ module "forseti-on-gke" {
     region                  = ""
 }
 ```
+
+#### Existing GKE Cluster
+```bash
+module "forseti-on-gke" {
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke"
+    domain                  = ""
+    gsuite_admin_email      = ""
+    org_id                  = ""
+    project_id              = ""
+    region                  = ""
+
+    gke_cluster_name        = ""
+    gke_cluster_location    = ""
+}
+```
+
+#### Next Steps
 
 Initialize the Terraform module.
 
