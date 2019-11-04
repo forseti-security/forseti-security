@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.bigquery\_scanner module
-==============================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.bigquery_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:

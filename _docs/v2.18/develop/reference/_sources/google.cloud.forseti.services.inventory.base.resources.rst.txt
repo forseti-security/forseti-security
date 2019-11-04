@@ -1,7 +1,0 @@
-google.cloud.forseti.services.inventory.base.resources module
-=============================================================
-
-.. automodule:: google.cloud.forseti.services.inventory.base.resources
-    :members:
-    :undoc-members:
-    :show-inheritance:

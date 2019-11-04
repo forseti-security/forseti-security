@@ -1,7 +1,0 @@
-google.cloud.forseti.common.util.email.email\_factory module
-============================================================
-
-.. automodule:: google.cloud.forseti.common.util.email.email_factory
-    :members:
-    :undoc-members:
-    :show-inheritance:
