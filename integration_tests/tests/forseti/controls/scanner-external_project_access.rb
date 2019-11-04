@@ -18,11 +18,9 @@ require 'json'
 random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "scanner - external project access" do
-  describe command("forseti inventory create --import_as " + random_string) do
-    its('exit_status') { should eq 0 }
-  end
-
-  describe command("forseti model use " + random_string) do
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  
+  describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
@@ -33,7 +31,12 @@ control "scanner - external project access" do
     its('stdout') { should match (/Scan completed!/)}
   end
 
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
   describe command("forseti model delete " + random_string) do
     its('exit_status') { should eq 0 }
   end
+
 end
