@@ -22,9 +22,10 @@ random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "inventory - cai gsc export file" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  gs_file = "gs://forseti-cai-export-#{suffix}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
 
-  describe google_storage_bucket_object(bucket: "forseti-cai-export-#{suffix}",  object: "organizations-#{org_id}-resource-#{@inventory_id}.dump") do
-    it { should exist }
+  describe command("gsutil ls #{gs_file} | grep #{gs_file}") do
+    its('stdout') { should match (gs_file)}
   end
 
   describe command("forseti model delete #{random_string}") do
