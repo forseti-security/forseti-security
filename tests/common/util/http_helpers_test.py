@@ -57,7 +57,7 @@ class HttpHelpersTest(ForsetiTestCase):
         self.assertRegex(
             mock_http.headers[UA_KEY], r'forseti-security/[0-9.]+\s+gce$')
 
-    def test_with_suffix_set_platform(self):
+    def test_with_suffix(self):
         http_helpers.set_user_agent_suffix("foobar")
         mock_http = MockHttp()
         http = http_helpers.build_http(mock_http)
