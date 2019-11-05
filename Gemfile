@@ -1,13 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'listen'
-gem 'rouge'
-gem 'execjs'
-gem 'therubyracer'
-gem 'html-proofer'
-gem 'liquid-c'
-gem "jekyll", "~> 4.0"
-
 group :jekyll_plugins do
   gem 'rouge'
   gem 'jekyll-github-metadata'
