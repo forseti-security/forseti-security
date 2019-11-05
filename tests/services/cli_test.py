@@ -365,6 +365,13 @@ class ImporterTest(ForsetiTestCase):
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
+
+        ('--version',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
         ])
     @mock.patch('google.cloud.forseti.services.cli.MessageToJson', mock.MagicMock())
     def test_cli(self, test_cases):
