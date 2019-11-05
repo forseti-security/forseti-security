@@ -39,6 +39,11 @@ requires the following permissions:
 
 {% include docs/latest/forseti-server-gcp-required-roles.md %}
 
+
+Users can grant additional roles to the `forseti-server-gcp` service account to utilize optional features:
+
+{% include docs/latest/forseti-server-gcp-optional-roles.md %}
+
 ## The Client Service Account
 
 The `forseti-client-gcp` service account has less access and is used
