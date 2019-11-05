@@ -691,11 +691,6 @@ class FirewallAction(object):
                         validate_port_range(port)
                     else:
                         validate_port(port)
-            invalid_keys = set(rule.keys()) - {'IPProtocol', 'ports'}
-            if invalid_keys:
-                raise InvalidFirewallActionError(
-                    'Action can only have "IPProtocol" and "ports": %s' %
-                    invalid_keys)
 
     @property
     def applies_to_all(self):
