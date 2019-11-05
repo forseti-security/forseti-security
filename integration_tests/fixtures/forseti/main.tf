@@ -41,7 +41,7 @@ module "bastion" {
 }
 
 module "forseti" {
-  source = "terraform-google-modules/forseti/google"
+  source = "github.com/forseti-security/terraform-google-forseti"
 
   project_id         = var.project_id
   org_id             = var.org_id
