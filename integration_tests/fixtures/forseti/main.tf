@@ -1,5 +1,5 @@
 /**
-* Copyright 2018 Google LLC
+* Copyright 2019 Google LLC
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -41,11 +41,12 @@ module "bastion" {
 }
 
 module "forseti" {
-  source = "github.com/forseti-security/terraform-google-forseti"
+  source = "terraform-google-modules/forseti/google"
 
   project_id         = var.project_id
   org_id             = var.org_id
   domain             = var.domain
+  forseti_version    = var.forseti_version
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
