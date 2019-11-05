@@ -12,7 +12,7 @@ This guide explains how to setup Forseti on Kubernetes.  Most installation scena
 ## Install Pre-Requisites
 
 The following tools are required:
-* [Terraform](https://www.terraform.io/downloads.html) - 0.12.x
+* [Terraform](https://www.terraform.io/downloads.html) - 0.12.12
 * [gsutil](https://cloud.google.com/storage/docs/gsutil)
 
 
@@ -32,15 +32,12 @@ If you wish to reuse an existing Forseti deployment (e.g. you deployed Forseti o
 
 ### Deploy Forseti on-GKE
 
-Create a file named *main.tf* in an empty directory and add the following content.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
+Create a file named *main.tf* in an empty directory and add the following content per one of the two scenarios below.  Add the appropiate values for each of the input variables (e.g. domain, gsuite_admin_email).
 
-In the module below:
-* If you do not have a GKE cluster set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke_end_to_end`
-* If you have a GKE cluster, set the `source` variable to `terraform-google-modules/forseti/google//examples/on_gke`
-
+#### New GKE Cluster
 ```bash
 module "forseti-on-gke" {
-    source                  = ""
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke_end_to_end"
     domain                  = ""
     gsuite_admin_email      = ""
     org_id                  = ""
@@ -48,6 +45,23 @@ module "forseti-on-gke" {
     region                  = ""
 }
 ```
+
+#### Existing GKE Cluster
+```bash
+module "forseti-on-gke" {
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke"
+    domain                  = ""
+    gsuite_admin_email      = ""
+    org_id                  = ""
+    project_id              = ""
+    region                  = ""
+
+    gke_cluster_name        = ""
+    gke_cluster_location    = ""
+}
+```
+
+#### Next Steps
 
 Initialize the Terraform module.
 
@@ -80,9 +94,7 @@ helm repo add forseti-security https://forseti-security-charts.storage.googleapi
 
 Follow the [chart installation instructions](https://hub.helm.sh/charts/forseti-security/forseti-security) to install Forseti on-GKE.
 
-
 ## Post Deployment Configuration Changes
-
 **Note:** If any changes are made to the *forseti_server_conf.yaml* file in GCS, one of the following steps is necessary.  In a future version of this feature, this will be automated.
 
 #### With Terraform
@@ -99,16 +111,19 @@ helm upgrade -i forseti forseti-security/forseti-security \
     --values=forseti-values.yaml
 ```
 
-### Deploying with config-validator on-GKE
+## Deploying with config-validator on-GKE
+Forseti on-GKE supports a config-validator policy-library either a Git repository or GCS bucket.
 
-The config-validator in Forseti on-GKE obtains policies from a policy-library in a Git repository via SSH.  The pre-requisites for this are as follows.
+### Policy Library in a Git Repository
 
-1. A [policy-library](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#get-started-with-the-policy-library-repository) in a Git repository.
-2. A generated SSH key with the private key local to the host running Terraform or Helm, and the public key uploaded to the service hosting the policy-library Git repository.
+The config-validator in Forseti on-GKE can obtain a policy-library in a Git repository via SSH or HTTPS.  The pre-requisites for this are as follows.
+
+1. A [policy-library in a Git repository](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#policy-library-sync-from-git-repository).
+2. If accessing the policy-library in a Git repo over SSH, a generated SSH key with the private key local to the host running Terraform or Helm.
 
 #### With Terraform
 
-In any of the Terraform examples above, the following additional variables are required:
+In addition to the variables shown in the example above, the following variables are required:
 
 ```bash
 module "forseti-on-gke-with-config-validator" {
@@ -116,34 +131,75 @@ module "forseti-on-gke-with-config-validator" {
 
     # Enable config-validator
     config_validator_enabled = true
+
+    # Enable the policy-library git-sync
+    policy_library_sync_enabled = true
     
     # Path to the private SSH key file
     git_sync_private_ssh_key_file = ""
 
     # SSH Git repository location, usually in the following
     # format: git@repo-host:repo-owner/repo-name.git
+    # Cloud Source format: ssh://user@org.com@source.developers.google.com:2022/p/[project-id]/r/[reponame]
     policy_library_repository_url = ""
+
+    # Whether or not to enable the periodic git-sync.
+    policy_library_sync_enabled   = true
+}
+```
+#### With Helm
+In the Helm example above, the following variables are required in the user defined *values.yaml* file.
+
+```yaml
+# configValidator.enabled sets whether or not to deploy config-validator
+configValidator.enabled: true
+
+# configValidator.policyLibrary.gitSync.privateSSHKey
+# is the private OpenSSH key generated to allow the 
+# git-sync to clone the policy library repository.
+configValidator.policyLibrary.gitSync.privateSSHKey: ""
+
+# configValidator.policyLibrary.repositoryURL is a git
+# repository policy-library.
+configValidator.policyLibrary.repositoryURL: ""
+
+
+# configValidator.policyLibrary.gitSync.enabled 
+# determines if the Git repository will be polled
+# periodically for changes.
+configValidator.policyLibrary.gitSync.enabled: true
+```
+### Policy Library in a GCS bucket
+The config-validator in Forseti on-GKE can obtain a policy-library from a GCS bucket.  The pre-requisites for this are as follows.
+
+1. A [policy-library in a GCS bucket](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#policy-library-sync-from-gcs).
+
+#### With Terraform
+```bash
+module "forseti-on-gke-with-config-validator" {
+    # Other parameters/variables removed for brevity
+
+    # Enable config-validator
+    config_validator_enabled = true
 }
 ```
 
 #### With Helm
-
 In the Helm example above, the following variables are required in the user defined *values.yaml* file.
 
 ```yaml
-# configValidator sets whether or not to deploy config-validator
-configValidator: true
+# configValidator.policyLibrary.bucket is the GCS
+# storage bucket containing the policy-library.
+# This overrides policyLibrary.respositoryURL.
+# Omit the gs://.
+configValidator.policyLibrary.bucket: ""
 
-# gitSyncPrivateSSHKey is the private OpenSSH key generated to allow the git-sync to clone the policy library repository.
-gitSyncPrivateSSHKey: ""
-
-# gitSyncSSH use SSH for git-sync operations
-gitSyncSSH: true
-
-# policyLibraryRepositoryURL is a git repository policy-library.
-policyLibraryRepositoryURL: ""
-
+# configValidator.policyLibrary.bucketFolder is 
+# the folder inside the policyLibrary.bucket containing
+# all the policy-library lib and policies folders.
+configValidator.policyLibrary.bucketFolder: "policy-library"
 ```
+
 ## Accessing Forseti from the Client VM
 Forseti on-GKE is configured to accept connections from the CIDR on which the Client VM is deployed.  You can access the Forseti deployment, for example to run `forseti inventory create` by doing the following:
 
