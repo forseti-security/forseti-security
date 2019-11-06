@@ -1,5 +1,5 @@
 /**
-*   Copyright 2018 Google LLC
+*   Copyright 2019 Google LLC
 *  
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -33,3 +33,9 @@ variable "org_id" {
 variable "project_id" {
   description = "The ID of an existing Google project where Forseti will be installed"
 }
+
+variable "forseti_version" {
+  description = "The version of Forseti to deploy"
+  default = "master"
+}
+

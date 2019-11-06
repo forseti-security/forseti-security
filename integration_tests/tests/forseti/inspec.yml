@@ -51,9 +51,9 @@ attributes:
 - name: forseti-server-service-account
   required: true
   type: string
-- name: forseti-cai-storage-bucket
-  required: true
-  type: string
+#- name: forseti-cai-storage-bucket
+#  required: true
+#  type: string
 - name: kms_resources_names
   required: true
   type: array
