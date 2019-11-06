@@ -1,5 +1,5 @@
 /**
-* Copyright 2018 Google LLC
+* Copyright 2019 Google LLC
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ output "bastion_host" {
   value = module.bastion.host
 }
 
-output "forseti-cai-storage-bucket" {
-  description = "Forseti CAI storage bucket"
-  value       = module.forseti.forseti-cai-storage-bucket
-}
+//output "forseti-cai-storage-bucket" {
+//  description = "Forseti CAI storage bucket"
+//  value       = module.forseti.forseti-cai-storage-bucket
+//}
 
 output "forseti-client-vm-ip" {
   description = "Forseti Client VM private IP address"
