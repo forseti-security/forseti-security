@@ -37,13 +37,12 @@ def _get_iam_members(members):
         list: A list of IamPolicyMembers.
     """
     member_list = []
-    for m in members:
+    for member in members:
         try:
-            member_list.append(IamPolicyMember.create_from(m))
+            member_list.append(IamPolicyMember.create_from(member))
 
         except errors.InvalidIamPolicyMemberError as e:
             LOGGER.info('Invalid IAM policy member: %s.', str(e))
-
 
     return member_list
 
@@ -200,7 +199,6 @@ class IamPolicyBinding(object):
             return None
 
         return iam_policy_binding
-
 
     def merge_members(self, other):
         """Add `other` members to mine if the role names are the same.
