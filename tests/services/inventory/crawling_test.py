@@ -15,6 +15,7 @@
 
 import copy
 import os
+import time
 import unittest
 import unittest.mock as mock
 from tests.services.inventory import gcp_api_mocks
@@ -22,8 +23,6 @@ from tests.services.util.mock import MockServerConfig
 from tests import unittest_utils
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
-from google.cloud.forseti.services.inventory import cai_temporary_storage
-from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
@@ -92,6 +91,7 @@ class NullProgresser(Progresser):
     def __init__(self):
         super(NullProgresser, self).__init__()
         self.errors = 0
+        self.inventory_index_id = int(time.time())
         self.objects = 0
         self.warnings = 0
 

@@ -58,6 +58,8 @@ htmlcov/
 .terraform/
 .kitchen/
 terraform.tfvars
+**/tls_private_key
+terraform.tfstate.d/
 
 # SSH key
 sshkey
