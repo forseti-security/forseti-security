@@ -16,10 +16,7 @@ require 'json'
 
 db_user_name = attribute('db_user_name')
 db_password = attribute('db_password')
-if db_password.strip != ""
-  db_password = "-p#{db_password}"
-end
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
+random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "scanner - db no errors" do
   @inventory_id = /"id": "([0-9]*)"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
@@ -30,7 +27,7 @@ control "scanner - db no errors" do
 
   @scanner_index_id = /Scanner Index ID: ([0-9]*) is created/.match(command("forseti scanner run").stdout)[1]
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT SI.* FROM scanner_index SI WHERE id = #{@scanner_index_id};\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT SI.* FROM scanner_index SI WHERE id = #{@scanner_index_id};\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/SUCCESS/)}
   end
