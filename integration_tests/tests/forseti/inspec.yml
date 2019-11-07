@@ -27,6 +27,14 @@ attributes:
 - name: suffix
   required: true
   type: string
+- name: db_user_name
+  required: true
+  type: string
+  value: root
+- name: db_password
+  required: true
+  type: string
+  value: ''
 - name: forseti-client-vm-name
   required: true
   type: string
