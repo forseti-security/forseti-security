@@ -15,24 +15,24 @@
 require 'securerandom'
 require 'json'
 
-DB_USER_NAME = attribute('db_user_name')
-DB_PASSWORD = attribute('db_password')
-RANDOM_STRING = SecureRandom.uuid.gsub!('-', '')
+db_user_name = attribute('db_user_name')
+db_password = attribute('db_password')
+random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "model - create and get" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{RANDOM_STRING}").stdout)[1]
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
-  describe command("forseti model use #{RANDOM_STRING}") do
+  describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model get #{RANDOM_STRING}") do
+  describe command("forseti model get #{random_string}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{RANDOM_STRING}/)}
+    its('stdout') { should match (/#{random_string}/)}
     its('stdout') { should match (/PARTIAL_SUCCESS/)}
   end
 
-  describe command("mysql -u #{DB_USER_NAME} -p#{DB_PASSWORD} --host 127.0.0.1 --database forseti_security --execute \"select state from model where name = '#{RANDOM_STRING}';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select state from model where name = '#{random_string}';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/PARTIAL_SUCCESS/)}
   end
@@ -41,7 +41,7 @@ control "model - create and get" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{RANDOM_STRING}") do
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end

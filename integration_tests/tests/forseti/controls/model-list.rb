@@ -15,25 +15,25 @@
 require 'securerandom'
 require 'json'
 
-RANDOM_STRING = SecureRandom.uuid.gsub!('-', '')
+random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "model - list" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{RANDOM_STRING}").stdout)[1]
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
-  describe command("forseti model use #{RANDOM_STRING}") do
+  describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
   describe command("forseti model list") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{RANDOM_STRING}/)}
+    its('stdout') { should match (/#{random_string}/)}
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{RANDOM_STRING}") do
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end

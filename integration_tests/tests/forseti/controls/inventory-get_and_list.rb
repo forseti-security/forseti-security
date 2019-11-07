@@ -15,15 +15,20 @@
 require 'securerandom'
 require 'json'
 
-DB_USER_NAME = attribute('db_user_name')
-DB_PASSWORD = attribute('db_password')
-RANDOM_STRING = SecureRandom.uuid.gsub!('-', '')
+db_user_name = attribute('db_user_name')
+db_password = attribute('db_password')
+random_string = SecureRandom.uuid.gsub!('-', '')
 
-control "inventory - list" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{RANDOM_STRING}").stdout)[1]
+control "inventory - get" do
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
-  describe command("forseti model use #{RANDOM_STRING}") do
+  describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
+  end
+
+  describe command("forseti inventory get #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/#{@inventory_id}/)}
   end
 
   describe command("forseti inventory list") do
@@ -31,16 +36,16 @@ control "inventory - list" do
     its('stdout') { should match (/#{@inventory_id}/)}
   end
 
-  describe command("mysql -u #{DB_USER_NAME} -p#{DB_PASSWORD} --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index on inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/)}
+    its('stdout') { should match (/#{@inventory_id}/)}
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{RANDOM_STRING}") do
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end

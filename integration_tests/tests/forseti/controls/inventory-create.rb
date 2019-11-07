@@ -15,38 +15,38 @@
 require 'securerandom'
 require 'json'
 
-DB_USER_NAME = attribute('db_user_name')
-DB_PASSWORD = attribute('db_password')
-KMS_RESOURCE_NAMES = attribute('kms_resources_names')
-RANDOM_STRING = SecureRandom.uuid.gsub!('-', '')
+db_user_name = attribute('db_user_name')
+db_password = attribute('db_password')
+kms_resources_names = attribute('kms_resources_names')
+random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "inventory - create" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{RANDOM_STRING}").stdout)[1]
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
-  describe command("forseti model use #{RANDOM_STRING}") do
+  describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("mysql -u #{DB_USER_NAME} -p#{DB_PASSWORD} --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id;\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
 
-  describe command("mysql -u #{DB_USER_NAME} -p#{DB_PASSWORD} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
 
-  describe command("mysql -u #{DB_USER_NAME} -p#{DB_PASSWORD} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{KMS_RESOURCE_NAMES.count}/)}
+    its('stdout') { should match (/#{kms_resources_names.count}/)}
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{RANDOM_STRING}") do
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end
