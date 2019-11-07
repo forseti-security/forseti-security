@@ -15,7 +15,7 @@ It depends on your setup:
 |Customer deployed and managed|Fully managed by GCP with SLA|
 |Community support|GCP support|
 |[Customizable auditing]({% link _docs/latest/configure/scanner/rules.md %})|Comprehensive set of benchmarks (e.g. CIS certified)|
-|Policy-as-code ecosystem (write the rules once, and re-use them everywhere in your workflow)|Managed rules added by GCP|
+|Policy-as-code ecosystem (write the rules once, <br> and re-use them everywhere in your workflow)|Managed rules added by GCP|
 |[Real-time enforcement]({% link _docs/latest/configure/real-time-enforcer/default-policies.md %}) |Scanning only|
 |Basic integration with CSCC|Deeper integrations with CSCC (reporting, dashboards, etc.)|
 
