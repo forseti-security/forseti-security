@@ -181,7 +181,7 @@ class InventorySummaryTest(ForsetiTestCase):
                                                       mock_progess_queue)
         notifier._get_output_filename = mock.MagicMock()
 
-        # arrange
+        # assert
         with self.assertRaises(base_notification.InvalidDataFormatError):
             notifier._upload_to_gcs([{}])
 
