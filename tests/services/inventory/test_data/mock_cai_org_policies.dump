@@ -3,4 +3,4 @@
 # update_cai_dumps.py script. Any lines that start with a '#' are ignored.
 #
 # Cloudresource manager with organization id
-{"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","org_policy":[{"constraint":"constraints/compute.disableSerialPortAccess","update_time":{"seconds":1539891911,"nanos":215000000},"boolean_policy":{"enforced":true}}],"ancestors":["organizations/abc"]}
+{"name":"//cloudresourcemanager.googleapis.com/organizations/111222333","asset_type":"cloudresourcemanager.googleapis.com/Organization","org_policy":[{"constraint":"constraints/compute.disableSerialPortAccess","update_time":{"seconds":1539891911,"nanos":215000000},"boolean_policy":{"enforced":true}}],"ancestors":["organizations/111222333"]}
