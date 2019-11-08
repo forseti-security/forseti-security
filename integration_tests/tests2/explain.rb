@@ -101,5 +101,4 @@ control "explain" do
   describe command("forseti model delete " + random_string) do
     its('exit_status') { should eq 0 }
   end
-
 end
