@@ -35,9 +35,11 @@ jobs:
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
   - stage: Integration test
     name: Integration test - docker
-    # Check on cron ensures build for integration tests is triggered only when
-    # cron job runs on master branch. This cron job is currently set to run daily.
-    if: type = cron
+    branches:
+      only:
+        - master
+        - /^release-.*$/
+        - /^test\/.*$/
     services:
     - docker
     before_install:
@@ -46,8 +48,6 @@ jobs:
     - tar xvf secret-key.tar
     install:
     - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
-    # Environment setup, tests execution and clean up is happening in
-    # /usr/local/bin/test_integration.sh
     script:
     - docker container run -it
       -e KITCHEN_TEST_BASE_PATH="integration_tests/tests"
