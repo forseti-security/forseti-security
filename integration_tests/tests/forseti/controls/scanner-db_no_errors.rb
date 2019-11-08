@@ -17,7 +17,7 @@ require 'json'
 db_user_name = attribute('db_user_name')
 db_password = attribute('db_password')
 if db_password.strip != ""
-  db_password = "-P#{db_password}"
+  db_password = "-p#{db_password}"
 end
 random_string = SecureRandom.uuid.gsub!('-', '')
 
