@@ -186,7 +186,12 @@ def run(inventory_index_id,
                                                 api_quota)
                      .run(violations_as_dict, source_id=source_id))
 
-        InventorySummary(service_config, inventory_index_id).run()
+        # Inventory Summary - Save to GCS and/or send email
+        inventory_summary = InventorySummary(
+            service_config,
+            inventory_index_id,
+            progress_queue)
+        inventory_summary.run()
 
         log_message = 'Notification completed!'
         progress_queue.put(log_message)
