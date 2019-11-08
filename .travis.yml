@@ -1,10 +1,9 @@
+dist: bionic
 sudo: required
 language: ruby
 services:
   - docker
 cache: bundler
-rvm:
-- 2.5.3
 addons:
   apt:
     packages:
