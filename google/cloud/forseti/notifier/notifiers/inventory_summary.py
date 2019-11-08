@@ -34,15 +34,17 @@ LOGGER = logger.get_logger(__name__)
 class InventorySummary(object):
     """Create and send inventory summary."""
 
-    def __init__(self, service_config, inventory_index_id):
+    def __init__(self, service_config, inventory_index_id, progress_queue):
         """Initialization.
 
         Args:
             inventory_index_id (int64): Inventory index id.
             service_config (ServiceConfig): Forseti 2.0 service configs.
+            progress_queue (Queue): The progress queue.
         """
         self.service_config = service_config
         self.inventory_index_id = inventory_index_id
+        self.progress_queue = progress_queue
 
         self.notifier_config = self.service_config.get_notifier_config()
 
@@ -69,6 +71,8 @@ class InventorySummary(object):
             summary_data (list): Summary of inventory data as a list of dicts.
                 Example: [{resource_type, count}, {}, {}, ...]
         """
+        gcs_upload_path = ''
+
         LOGGER.debug('Uploading inventory summary data to GCS.')
         gcs_summary_config = (
             self.notifier_config.get('inventory').get('gcs_summary'))
@@ -98,6 +102,10 @@ class InventorySummary(object):
                     self._get_output_filename(
                         string_formats.INVENTORY_SUMMARY_JSON_FMT))
                 file_uploader.upload_json(summary_data, gcs_upload_path)
+            log_message = f'Inventory Summary file saved to GCS path: ' \
+                          f'{gcs_upload_path}'
+            self.progress_queue.put(log_message)
+            LOGGER.info(log_message)
         except HttpError:
             LOGGER.exception('Unable to upload inventory summary in bucket %s:',
                              gcs_upload_path)
