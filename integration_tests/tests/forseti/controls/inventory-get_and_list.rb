@@ -17,6 +17,9 @@ require 'json'
 
 db_user_name = attribute('db_user_name')
 db_password = attribute('db_password')
+if db_password.strip != ""
+  db_password = "-p#{db_password}"
+end
 random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "inventory - get" do
@@ -36,7 +39,7 @@ control "inventory - get" do
     its('stdout') { should match (/#{@inventory_id}/)}
   end
 
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{@inventory_id};\"") do
+  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/#{@inventory_id}/)}
   end
