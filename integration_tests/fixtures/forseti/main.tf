@@ -170,4 +170,3 @@ resource "gsuite_group" "test-gsuite-group" {
   name        = "gsuite-${random_pet.random_name_generator.id}"
   description = "G Suite Group Automated Creation Testing"
 }
-
