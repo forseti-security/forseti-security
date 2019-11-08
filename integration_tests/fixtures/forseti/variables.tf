@@ -38,4 +38,3 @@ variable "forseti_version" {
   description = "The version of Forseti to deploy"
   default = "master"
 }
-
