@@ -35,11 +35,12 @@ jobs:
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
   - stage: Integration test
     name: Integration test - docker
-    branches:
-      only:
-        - master
-        - /^release-.*$/
-        - /^test\/.*$/
+    if: (type = push AND branch = master) OR (branch =~ /^release-.*$/) OR (branch =~ /^test\/.*$/)
+#    branches:
+#      only:
+#        - master
+#        - /^release-.*$/
+#        - /^test\/.*$/
     services:
     - docker
     before_install:
@@ -50,6 +51,7 @@ jobs:
     - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
     script:
     - docker container run -it
+      -e TF_VAR_forseti_version=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
       -e KITCHEN_TEST_BASE_PATH="integration_tests/tests"
       -e SERVICE_ACCOUNT_JSON="$(< credentials.json)"
       --env-file travis-integration.env
