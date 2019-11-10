@@ -711,8 +711,12 @@ class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
         Returns:
             str: key of this resource
         """
-        unique_key = '/'.join([self.parent().type(),
-                               self.parent().key(),
+        t = self.parent().type()
+        k = self.parent().key()
+        c = self['constraint']
+        d = 'abc'
+        unique_key = '/'.join([self.parent().type(), # organization
+                               self.parent().key(),  # 111222333
                                self['constraint']])
         return '%u' % ctypes.c_size_t(hash(unique_key)).value
 
@@ -1857,11 +1861,14 @@ def resource_iter_class_factory(api_method_name,
                         args.extend(
                             self.resource[key] for key in additional_arg_keys)
                     for data, metadata in iter_method(*args, **kwargs):
+                        print('123')
                         yield FACTORIES[resource_name].create_new(
                             data, metadata=metadata)
                 except ResourceNotSupported as e:
                     # API client doesn't support this resource, ignore.
                     LOGGER.debug(e)
+                except Exception as e:
+                    LOGGER.exception(e)
 
     return ResourceIteratorSubclass
 
@@ -2073,6 +2080,12 @@ class BigtableTableIterator(ResourceIterator):
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
+    """The Resource iterator implementation for Billing Account."""
+
+
+class ResourceManagerOrganizationAccessPolicyIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_organization_access_policies',
+        resource_name='access_policy')):
     """The Resource iterator implementation for Billing Account."""
 
 
@@ -2772,6 +2785,7 @@ FACTORIES = {
             ResourceManagerOrganizationOrgPolicyIterator,
             ResourceManagerFolderIterator,
             ResourceManagerProjectIterator,
+            ResourceManagerOrganizationAccessPolicyIterator,
         ]}),
 
     'folder': ResourceFactory({
@@ -3087,6 +3101,11 @@ FACTORIES = {
 
     'crm_org_policy': ResourceFactory({
         'dependsOn': ['folder', 'organization', 'project'],
+        'cls': ResourceManagerOrgPolicy,
+        'contains': []}),
+
+    'crm_access_policy': ResourceFactory({
+        'dependsOn': ['organization'],
         'cls': ResourceManagerOrgPolicy,
         'contains': []}),
 
