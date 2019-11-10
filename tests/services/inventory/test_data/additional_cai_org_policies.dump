@@ -1,6 +1,1 @@
-# Add additional iam policies to this file that are only supported when CAI is
-# enabled. These resources are merged into mock_cai_iam_policies.dump by the
-# update_cai_dumps.py script. Any lines that start with a '#' are ignored.
-#
-# Cloudresource manager with organization id
 {"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","org_policy":[{"constraint":"constraints/compute.disableSerialPortAccess","update_time":{"seconds":1539891911,"nanos":215000000},"boolean_policy":{"enforced":true}}],"ancestors":["organizations/abc"]}

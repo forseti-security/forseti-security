@@ -1155,13 +1155,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Folder organization policy.
         """
-        resource = self.dao.fetch_cai_asset(
+        resource = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.engine)
-        for folder in resource:
-            return folder
+        if resource:
+            return resource
         # Fall back to live API if the data isn't in the CAI cache.
         # return super(CaiApiClientImpl, self).iter_crm_folder_org_policies(
         #     folder_id)
@@ -1173,13 +1173,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Access organization policy.
         """
-        resource = self.dao.fetch_cai_asset(
+        resource = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        for org in resource:
-            return org
+        if resource:
+            return resource
         # Fall back to live API if the data isn't in the CAI cache.
         # return super(CaiApiClientImpl, self).iter_crm_organization_access_policies(
         #     org_id)
@@ -1191,13 +1191,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Organization organization policy.
         """
-        resource = self.dao.fetch_cai_asset(
+        resource = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        for org in resource:
-            return org
+        if resource:
+            return resource
+
         # Fall back to live API if the data isn't in the CAI cache.
         # return super(CaiApiClientImpl, self).iter_crm_organization_org_policies(
         #     org_id)
@@ -1209,14 +1210,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Project organization Policy.
         """
-        resource = self.dao.fetch_cai_asset(
+        resource = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.engine)
-        for project in resource:
-            return project
+        if resource:
+            return resource
         # Fall back to live API if the data isn't in the CAI cache.
         # return super(CaiApiClientImpl, self).iter_crm_project_org_policies(
         #     project_number)
