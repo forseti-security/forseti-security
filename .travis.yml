@@ -36,11 +36,6 @@ jobs:
   - stage: Integration test
     name: Integration test - docker
     if: (type = push AND branch = master) OR (branch =~ /^release-.*$/) OR (branch =~ /^test\/.*$/)
-#    branches:
-#      only:
-#        - master
-#        - /^release-.*$/
-#        - /^test\/.*$/
     services:
     - docker
     before_install:

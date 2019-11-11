@@ -40,6 +40,10 @@ control 'Scanner' do
                expect(command("forseti scanner run").stdout).to match /Scan completed/
            end
 
+           it "should be visible in the database" do
+               expect(command("mysql -u root --host 127.0.0.1 --database forseti_security --execute \"select count(*) from violations where violation_type = 'IAM_POLICY_VIOLATION';\"").stdout).to match /2/
+           end
+
        after :context do
            command("sudo mv /home/ubuntu/forseti-security/configs/forseti_conf_server_backup.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml").result
            command("forseti server configuration reload").result
