@@ -9,4 +9,5 @@ Join us for a fun, interactive, and hands-on day shaping the next generation
 of Google Cloud Platform (GCP) security tools. [Register now to
 attend](https://docs.google.com/forms/d/e/1FAIpQLSe3X3hC3OxHI6PywtEUVfEOiM2JgHc7GVifZNIp8dMzk4TizA/viewform).
 
+## Forseti Day Schedule
 {% responsive_image path: images/news/forseti_day_19_london.png alt: "Forseti Day Schedule" %}
