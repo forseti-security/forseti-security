@@ -20,7 +20,7 @@ random_string = SecureRandom.uuid.gsub!('-', '')
 control "enforcer - remediates non compliant rule" do
   fw_rules = JSON.parse(command("gcloud compute firewall-rules list --format=json").stdout)
 
-  new_rules = []
+  filtered_rules = []
   fw_rules.each { |rule|
     if  /forseti-test-allow-icmp-deleteme-/.match(rule["name"])
       # mark all rules generated for this test for deletion
@@ -33,11 +33,11 @@ control "enforcer - remediates non compliant rule" do
     rule.delete("creationTimestamp")
     rule.delete("targetServiceAccounts")
     rule.delete("sourceServiceAccounts")
-    new_rules.push(rule)
+    filtered_rules.push(rule)
   }
 
   # Write the current firewall rules to a json file
-  describe command("echo '#{JSON.dump(new_rules)}' > /tmp/current_fw_rule.json") do
+  describe command("echo '#{JSON.dump(filtered_rules)}' > /tmp/current_fw_rule.json") do
     its('exit_status') { should eq 0 }
   end
 
