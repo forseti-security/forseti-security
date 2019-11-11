@@ -262,6 +262,36 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
+    def _applies_to_user(self, user_email):
+        """Determine if the rule applies to a user
+
+        Args:
+            user_email (string): The e-mail of the user
+
+        Return:
+            applies_to_user: True or False
+        """
+        applies_to_user = True
+        if 'users' in list(self.rules.keys()):
+            if user_email not in self.rules['users']:
+                applies_to_user = False
+        return applies_to_user
+
+    def _matched_ancestry(self, ancestry):
+        """Determine if the resource's ancestors are found in the rule.
+
+        Args:
+            ancestry (dict): The ancestry provided by the scanner
+
+        Return:
+            matched_ancestry: True or False
+        """
+        matched_ancestry = False
+        for resource in self.rules['ancestor_resources']:
+            if resource in ancestry:
+                matched_ancestry = True
+        return matched_ancestry
+
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violation(self, user_email, ancestry):
         """Find external project access policy acl violations in the rule book.
@@ -274,18 +304,10 @@ class Rule(object):
             namedtuple: Returns RuleViolation named tuple or None if
                 not violated.
         """
-        matched_resources = []
-        applies_to_user = True
+        applies_to_user = self._applies_to_user(user_email)
+        matched_ancestry = self._matched_ancestry(ancestry)
 
-        for resource in self.rules['ancestor_resources']:
-            if resource in ancestry:
-                matched_resources.append(resource)
-
-        if 'users' in list(self.rules.keys()):
-            if user_email not in self.rules['users']:
-                applies_to_user = False
-
-        if not (matched_resources and applies_to_user):
+        if not applies_to_user or (applies_to_user and not matched_ancestry):
 
             return self.RuleViolation(
                 resource_type=resource_mod.ResourceType.PROJECT,
