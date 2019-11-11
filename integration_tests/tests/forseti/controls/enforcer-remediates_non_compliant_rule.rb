@@ -18,6 +18,7 @@ project_id = attribute('project_id')
 random_string = SecureRandom.uuid.gsub!('-', '')
 
 control "enforcer - remediates non compliant rule" do
+  # Get the latest firewall rules
   fw_rules = JSON.parse(command("gcloud compute firewall-rules list --format=json").stdout)
 
   filtered_rules = []
