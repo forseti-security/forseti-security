@@ -650,7 +650,7 @@ If your Forseti deployment was previously deployed with Deployment Manager, plea
 ### Steps to Upgrade using Terraform
 A Cloud Shell walkthrough is provided to assist with upgrading Forseti previously deployed with Terraform.  Completing this guide will also result in a Forseti deployment upgraded to the most recent version.
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=module-release-5.0.0&cloudshell_working_dir=examples/upgrade_forseti_with_v5.0&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=modulerelease500&cloudshell_working_dir=examples/upgrade_forseti_with_v5.0&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.22.0 to 2.23.0" content=upgrading_2_22_0_to_2_23_0 uid=24 %}
