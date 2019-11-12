@@ -20,7 +20,7 @@ suffix = attribute('suffix')
 
 control "inventory - verify inventory summary csv" do
   # Run the command that will generate the inventory
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as gsc-test#{random_string}").stdout)[1]
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
   # Run notifier
   describe command("forseti notifier run") do
