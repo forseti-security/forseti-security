@@ -42,7 +42,7 @@ jobs:
     install:
     - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
     script:
-    - docker container run -it
+    - docker run --rm -it
       -e TF_VAR_forseti_version=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
       -e KITCHEN_TEST_BASE_PATH="tests"
       -e SERVICE_ACCOUNT_JSON="$(< credentials.json)"
