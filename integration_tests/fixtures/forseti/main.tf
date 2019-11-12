@@ -17,10 +17,18 @@ provider "google-beta" {
   version     = "~> 2.10"
 }
 
+provider "gsuite" {
+  version                 = "~> 0.1"
+  impersonated_user_email = var.gsuite_admin_email
+}
+
 provider "tls" {
   version = "~> 2.0"
 }
 
+#-------------------------#
+# Bastion Host
+#-------------------------#
 resource "tls_private_key" "main" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -40,6 +48,9 @@ module "bastion" {
   zone       = "us-central1-f"
 }
 
+#-------------------------#
+# Forseti
+#-------------------------#
 module "forseti" {
   source = "github.com/forseti-security/terraform-google-forseti"
 
@@ -121,6 +132,9 @@ resource "null_resource" "install-mysql-client" {
   }
 }
 
+#-------------------------#
+# Test Resources
+#-------------------------#
 resource "random_pet" "random_name_generator" {
 }
 
@@ -136,33 +150,19 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   rotation_period = "100000s"
 }
 
-resource "google_storage_bucket" "bucket-europe-region" {
-  name               = "bucket-eu-${random_pet.random_name_generator.id}"
-  project            = "${var.project_id}"
-  location           = "EU"
+# scanner-bucket_scanner.rb: Create a bucket with AllAuth Reader ACL
+resource "google_storage_bucket" "test_resource_bucket_scanner_bucket" {
+  name     = "foresti-test-bucket-${random_pet.random_name_generator.id}"
+  project  = var.project_id
+  location = "US"
 }
 
-resource "google_storage_default_object_access_control" "public_all_users_rule" {
-  bucket             = "${google_storage_bucket.bucket-europe-region.name}"
-  role               = "READER"
-  entity             = "allUsers"
-}
+resource "google_storage_bucket_access_control" "test_resource_bucket_scanner_bucket_acl" {
+  bucket = google_storage_bucket.test_resource_bucket_scanner_bucket.name
+  role   = "READER"
+  entity = "allAuthenticatedUsers"
 
-resource "google_storage_bucket" "bucket-us-region" {
-  name               = "bucket-us-${random_pet.random_name_generator.id}"
-  project            = "${var.project_id}"
-  location           = "US"
-}
-
-resource "google_storage_default_object_access_control" "public_all_authenticated_users_rule" {
-  bucket             = "${google_storage_bucket.bucket-us-region.name}"
-  role               = "READER"
-  entity             = "allAuthenticatedUsers"
-}
-
-provider "gsuite" {
-  version                 = "~> 0.1"
-  impersonated_user_email = var.gsuite_admin_email
+  depends_on = [google_storage_bucket.test_resource_bucket_scanner_bucket]
 }
 
 resource "gsuite_group" "test-gsuite-group" {

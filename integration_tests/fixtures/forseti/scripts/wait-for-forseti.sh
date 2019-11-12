@@ -23,7 +23,7 @@ echo "Waiting for up to $MAX_WAIT seconds for Forseti to be ready."
 for _ in $(seq 1 $MAX_WAIT); do
   if [[ -f /etc/profile.d/forseti_environment.sh ]]; then
     echo "Waiting for startup script to complete"
-    sleep 60
+    sleep 5
     exit 0
   else
     sleep 10
