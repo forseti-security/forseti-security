@@ -47,6 +47,6 @@ jobs:
       -e KITCHEN_TEST_BASE_PATH="tests"
       -e SERVICE_ACCOUNT_JSON="$(< credentials.json)"
       --env-file travis-integration.env
-      -v $(CURDIR):/workspace \
-      -w /workspace/integration_tests \
+      -v $(pwd):/workspace
+      -w /workspace/integration_tests
       gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1 /usr/local/bin/test_integration.sh
