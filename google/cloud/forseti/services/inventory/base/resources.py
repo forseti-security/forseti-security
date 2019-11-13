@@ -702,6 +702,27 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
         return self['name'].split('/', 1)[-1]
 
 
+class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
+                                                         None)):
+    """The Resource implementation for Resource Manager Access Policy."""
+
+    def key(self):
+        """Get key of this resource.
+
+        Returns:
+            str: key of this resource
+        """
+        if 'constraint' not in self._data:
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self[0]['constraint']])
+        else:
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self['constraint']])
+        return '%u' % ctypes.c_size_t(hash(unique_key)).value
+
+
 class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
     """The Resource implementation for Resource Manager Organization Policy."""
 
@@ -1853,7 +1874,6 @@ def resource_iter_class_factory(api_method_name,
                         args.extend(
                             self.resource[key] for key in additional_arg_keys)
                     for data, metadata in iter_method(*args, **kwargs):
-                        print('123')
                         yield FACTORIES[resource_name].create_new(
                             data, metadata=metadata)
                 except ResourceNotSupported as e:
@@ -2075,10 +2095,11 @@ class BillingAccountIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Billing Account."""
 
 
-class ResourceManagerOrganizationAccessPolicyIterator(resource_iter_class_factory(
+class ResourceManagerOrganizationAccessPolicyIterator(
+    resource_iter_class_factory(
         api_method_name='iter_crm_organization_access_policies',
         resource_name='access_policy')):
-    """The Resource iterator implementation for Billing Account."""
+    """The Resource iterator implementation for Access Policy."""
 
 
 class CloudSqlInstanceIterator(resource_iter_class_factory(
@@ -3099,7 +3120,7 @@ FACTORIES = {
 
     'crm_access_policy': ResourceFactory({
         'dependsOn': ['organization'],
-        'cls': ResourceManagerOrgPolicy,
+        'cls': ResourceManagerAccessPolicy,
         'contains': []}),
 
     'dataproc_cluster': ResourceFactory({

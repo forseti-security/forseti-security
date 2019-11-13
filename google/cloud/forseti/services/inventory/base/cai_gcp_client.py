@@ -1167,7 +1167,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         #     folder_id)
 
     def iter_crm_organization_access_policies(self, org_id):
-        """Organization organization policy from Cloud Asset data.
+        """Organization access policy from Cloud Asset data.
         Args:
             org_id (str): id of the organization to get policy.
         Returns:
