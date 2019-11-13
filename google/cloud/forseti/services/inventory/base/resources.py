@@ -711,13 +711,14 @@ class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
         Returns:
             str: key of this resource
         """
-        t = self.parent().type()
-        k = self.parent().key()
-        c = self['constraint']
-        d = 'abc'
-        unique_key = '/'.join([self.parent().type(), # organization
-                               self.parent().key(),  # 111222333
-                               self['constraint']])
+        if 'constraint' not in self._data:
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self[0]['constraint']])
+        else:
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self['constraint']])
         return '%u' % ctypes.c_size_t(hash(unique_key)).value
 
 

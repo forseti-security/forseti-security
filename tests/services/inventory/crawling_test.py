@@ -43,7 +43,7 @@ GCP_API_RESOURCES = {
     'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
     'cloudsqlinstance': {'resource': 1},
     'compute_project': {'resource': 2},
-    'crm_org_policy': {'resource': 6},
+    'crm_org_policy': {'resource': 5},
     'dataset': {'dataset_policy': 1, 'iam_policy': 1, 'resource': 1},
     'disk': {'resource': 4},
     'firewall': {'resource': 7},
@@ -219,8 +219,7 @@ class CrawlerTest(CrawlerBase):
             'gsuite_groups_settings': {'resource': 4},
             'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
-            'organization': {'iam_policy': 1, 'org_policy': 1,
-                             'access_policy': 1, 'resource': 1},
+            'organization': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 19},
             'sink': {'resource': 2}
         }
@@ -275,7 +274,8 @@ class CrawlerTest(CrawlerBase):
             'appengine_version': {'resource': 1},
             'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
             'folder': {'iam_policy': 2, 'resource': 2},
-            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1},
+            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
+                        'resource': 1},
             'role': {'resource': 1},
             'sink': {'resource': 1},
         }
@@ -340,7 +340,7 @@ class CrawlerTest(CrawlerBase):
 
         expected_counts = {
             'folder': {'iam_policy': 1, 'resource': 1},
-            'sink': {'resource': 1}
+            'sink': {'resource': 1},
         }
 
         self.assertEqual(expected_counts, result_counts)
@@ -578,6 +578,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
+            'crm_org_policy': {'resource': 3},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'disk': {'resource': 5},
@@ -615,7 +616,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'container': {'disable_polling': True},
             'crm': {'disable_polling': True},
             'iam': {'disable_polling': True},
-            'org': {'disable_polling': True},
             'logging': {'disable_polling': True},
             'servicemanagement': {'disable_polling': True},
             'serviceusage': {'disable_polling': True},
@@ -659,7 +659,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
-            'crm_org_policy': {'resource': 5},
+            'crm_org_policy': {'resource': 3},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'disk': {'resource': 5},
@@ -757,8 +757,10 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         with unittest_utils.create_temp_file(filtered_assets) as resources:
             with unittest_utils.create_temp_file(filtered_iam) as iam_policies:
-                with unittest_utils.create_temp_file(filtered_org) as org_policies:
-                    with unittest_utils.create_temp_file(filtered_access) as access_policies:
+                with unittest_utils.create_temp_file(
+                        filtered_org) as org_policies:
+                    with unittest_utils.create_temp_file(
+                            filtered_access) as access_policies:
                         # Mock download to return correct test data file
                         def _fake_download(full_bucket_path, output_file):
                             if 'resource' in full_bucket_path:
@@ -772,53 +774,53 @@ class CloudAssetCrawlerTest(CrawlerBase):
                             with open(fake_file, 'rb') as f:
                                 output_file.write(f.read())
 
-                    with MemoryStorage() as storage:
-                        progresser = NullProgresser()
-                        with gcp_api_mocks.mock_gcp() as gcp_mocks:
-                            gcp_mocks.mock_storage.download.side_effect = (
-                                _fake_download)
-                            run_crawler(storage,
-                                        progresser,
-                                        inventory_config)
+                        with MemoryStorage() as storage:
+                            progresser = NullProgresser()
+                            with gcp_api_mocks.mock_gcp() as gcp_mocks:
+                                gcp_mocks.mock_storage.download.side_effect = (
+                                    _fake_download)
+                                run_crawler(storage,
+                                            progresser,
+                                            inventory_config)
 
-                            # Validate export_assets called with asset_types
-                            expected_calls = [
-                                mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                          output_config=mock.ANY,
-                                          content_type='RESOURCE',
-                                          asset_types=asset_types,
-                                          blocking=mock.ANY,
-                                          timeout=mock.ANY),
-                                mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                          output_config=mock.ANY,
-                                          content_type='IAM_POLICY',
-                                          asset_types=asset_types,
-                                          blocking=mock.ANY,
-                                          timeout=mock.ANY),
-                                mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                          output_config=mock.ANY,
-                                          content_type='ORG_POLICY',
-                                          asset_types=asset_types,
-                                          blocking=mock.ANY,
-                                          timeout=mock.ANY),
-                                mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                          output_config=mock.ANY,
-                                          content_type='ACCESS_POLICY',
-                                          asset_types=asset_types,
-                                          blocking=mock.ANY,
-                                          timeout=mock.ANY)]
-                            (gcp_mocks.mock_cloudasset.export_assets
-                            .assert_has_calls(expected_calls, any_order=True))
+                                # Validate export_assets called with asset_types
+                                expected_calls = [
+                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                              output_config=mock.ANY,
+                                              content_type='RESOURCE',
+                                              asset_types=asset_types,
+                                              blocking=mock.ANY,
+                                              timeout=mock.ANY),
+                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                              output_config=mock.ANY,
+                                              content_type='IAM_POLICY',
+                                              asset_types=asset_types,
+                                              blocking=mock.ANY,
+                                              timeout=mock.ANY),
+                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                              output_config=mock.ANY,
+                                              content_type='ORG_POLICY',
+                                              asset_types=asset_types,
+                                              blocking=mock.ANY,
+                                              timeout=mock.ANY),
+                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                              output_config=mock.ANY,
+                                              content_type='ACCESS_POLICY',
+                                              asset_types=asset_types,
+                                              blocking=mock.ANY,
+                                              timeout=mock.ANY)]
+                                (gcp_mocks.mock_cloudasset.export_assets
+                                .assert_has_calls(expected_calls, any_order=True))
 
-                    self.assertEqual(0,
-                                     progresser.errors,
-                                     'No errors should have occurred')
+                        self.assertEqual(0,
+                                         progresser.errors,
+                                         'No errors should have occurred')
 
-                    result_counts = self._get_resource_counts_from_storage(
-                        storage)
+                        result_counts = self._get_resource_counts_from_storage(
+                            storage)
 
         expected_counts = {
-            'crm_org_policy': {'resource': 5},
+            'crm_org_policy': {'resource': 3},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
