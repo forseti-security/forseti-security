@@ -39,4 +39,9 @@ control "inventory - summary csv" do
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
+
+  # Delete the model
+  describe command("forseti model delete " + random_string) do
+    its('exit_status') { should eq 0 }
+  end
 end
