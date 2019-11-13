@@ -301,8 +301,6 @@ class CaiDataAccess(object):
             for line in data:
                 if not line:
                     continue
-                LOGGER.info('line:', line)
-                print('line:', line)
                 row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     num_rows += 1
