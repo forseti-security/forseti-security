@@ -1904,7 +1904,6 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute TargetPools are not '
                                    'supported by this API client')
 
-
     def iter_compute_targetsslproxies(self, project_number):
         """Iterate Target SSL proxies from GCP API.
 
