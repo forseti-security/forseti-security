@@ -1,11 +1,13 @@
+#!/usr/bin/env python3
+
 from __future__ import print_function
 import pickle
 import os.path
+import argparse
+
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-
-import json
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -32,33 +34,49 @@ def get_service():
     service = build('gmail', 'v1', credentials=creds)
     return service
 
-def verify_email(query, sender, subject, body):
-    """Shows basic usage of the Gmail API.
-    Lists the user's Gmail labels.
+def verify_email(sender=None, subject=None, after_timestamp=None, before_timestamp=None, filename=None, importance=None):
+    """
+    verify at least one mail fitting query exist.
     """
 
     service = get_service()
 
+    query = []
+
+    if sender:
+        query.append("from:(" + sender + ")")
+
+    if subject:
+        query.append("subject:(" + subject + ")")
+
+    if after_timestamp:
+        query.append("after:" + after_timestamp)
+
+    if before_timestamp:
+        query.append("before:" + before_timestamp)
+
+    if filename:
+        query.append("filename:" + filename)
+
+    if importance:
+        query.append("is:" + importance)
+
     # Call the Gmail API
-    response = service.users().messages().list(userId='me', q=query).execute()
+    response = service.users().messages().list(userId='me', q=" ".join(query)).execute()
 
-    # Get al message ids
-    messages = []
     if 'messages' in response:
-        messages.extend(response['messages']['id'])
-
-    # print(messages)
-    message = service.users().messages().get(userId='me', id=messages[0]["id"]).execute()
-
-    print(json.dumps(message, sort_keys=True, indent = 4, separators = (',', ': ')))
-    # labels = results.get('messages', [])
-    #
-    # if not labels:
-    #     print('No labels found.')
-    # else:
-    #     print('Labels:')
-    #     for label in labels:
-    #         print(label['name'])
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
-    verify_email("Github", "adf", "Qwe", "adsf")
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--from_sender', help='from')
+    parser.add_argument('--subject', help='subject')
+    parser.add_argument('--after_timestamp', help='after timestamp')
+    parser.add_argument('--before_timestamp', help='before timestamp')
+    parser.add_argument('--filename', help='attached filename')
+    parser.add_argument('--importance', help='importance: starred, unstarred, snoozed, read, unread')
+
+    args = parser.parse_args()
+    print(verify_email(args.from_sender, args.subject, args.after_timestamp, args.before_timestamp, args.filename, args.importance))
