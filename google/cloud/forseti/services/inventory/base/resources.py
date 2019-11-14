@@ -712,15 +712,7 @@ class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
         Returns:
             str: key of this resource
         """
-        if 'constraint' not in self._data:
-            unique_key = '/'.join([self.parent().type(),
-                                   self.parent().key(),
-                                   self[0]['constraint']])
-        else:
-            unique_key = '/'.join([self.parent().type(),
-                                   self.parent().key(),
-                                   self['constraint']])
-        return '%u' % ctypes.c_size_t(hash(unique_key)).value
+        return self['name']
 
 
 class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
@@ -2107,7 +2099,8 @@ class BillingAccountIterator(resource_iter_class_factory(
 class ResourceManagerOrganizationAccessPolicyIterator(
     resource_iter_class_factory(
         api_method_name='iter_crm_organization_access_policies',
-        resource_name='access_policy')):
+        resource_name='crm_access_policy',
+        api_method_arg_key='name')):
     """The Resource iterator implementation for Access Policy."""
 
 
