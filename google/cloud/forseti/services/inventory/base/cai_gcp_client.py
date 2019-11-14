@@ -1101,6 +1101,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
+    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_folder_org_policies(self, folder_id):
         """Folder organization policy in a folder from Cloud Asset data.
         Args:
@@ -1117,6 +1118,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_organization_access_policies(self, org_id):
         """Organization access policy from Cloud Asset data.
         Args:
@@ -1133,6 +1135,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_organization_org_policies(self, org_id):
         """Organization organization policy from Cloud Asset data.
         Args:
@@ -1149,6 +1152,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         if resource:
             return resource
 
+    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_project_org_policies(self, project_number):
         """Project organization policy from Cloud Asset data.
         Args:
@@ -1164,9 +1168,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        # return super(CaiApiClientImpl, self).iter_crm_project_org_policies(
-        #     project_number)
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.

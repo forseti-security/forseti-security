@@ -361,6 +361,7 @@ class Inventory(BASE):
         schema_update_actions = {'CREATE': columns_to_create}
         return schema_update_actions
 
+    # pylint: disable=too-many-locals
     @classmethod
     def from_resource(cls, index, resource):
         """Creates a database row object from a crawled resource.

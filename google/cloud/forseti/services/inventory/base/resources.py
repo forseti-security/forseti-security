@@ -1882,7 +1882,7 @@ def resource_iter_class_factory(api_method_name,
                 except ResourceNotSupported as e:
                     # API client doesn't support this resource, ignore.
                     LOGGER.debug(e)
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-except
                     LOGGER.exception(e)
 
     return ResourceIteratorSubclass
@@ -2099,10 +2099,10 @@ class BillingAccountIterator(resource_iter_class_factory(
 
 
 class ResourceManagerOrganizationAccessPolicyIterator(
-    resource_iter_class_factory(
-        api_method_name='iter_crm_organization_access_policies',
-        resource_name='crm_access_policy',
-        api_method_arg_key='name')):
+        resource_iter_class_factory(
+            api_method_name='iter_crm_organization_access_policies',
+            resource_name='crm_access_policy',
+            api_method_arg_key='name')):
     """The Resource iterator implementation for Access Policy."""
 
 
