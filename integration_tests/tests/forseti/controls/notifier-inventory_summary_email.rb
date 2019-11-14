@@ -51,6 +51,7 @@ control "notifier - inventory summary email" do
   # Verify the email.
   # describe command("") do
   #   its('exit_status') { should eq 0 }
+  # its('stdout') { should match(/True/)}
   # end
 
   # Delete the inventory.
