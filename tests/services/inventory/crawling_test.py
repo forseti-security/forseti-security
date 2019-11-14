@@ -574,6 +574,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
+            'crm_access_policy': {'resource': 1},
             'crm_org_policy': {'resource': 3},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
@@ -657,6 +658,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
+            'crm_access_policy': {'resource': 1},
             'crm_org_policy': {'resource': 3},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
@@ -819,6 +821,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
                             storage)
 
         expected_counts = {
+            'crm_access_policy': {'resource': 1},
             'crm_org_policy': {'resource': 3},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
