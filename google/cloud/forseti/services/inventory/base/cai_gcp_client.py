@@ -1105,6 +1105,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Folder organization policy in a folder from Cloud Asset data.
         Args:
             folder_id (str): id of the folder to get policy.
+
         Returns:
             dict: Folder organization policy.
         """
@@ -1115,14 +1116,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        # return super(CaiApiClientImpl, self).iter_crm_folder_org_policies(
-        #     folder_id)
 
     def iter_crm_organization_access_policies(self, org_id):
         """Organization access policy from Cloud Asset data.
         Args:
             org_id (str): id of the organization to get policy.
+
         Returns:
             dict: Access organization policy.
         """
@@ -1133,14 +1132,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        # return super(CaiApiClientImpl, self).iter_crm_organization_access_policies(
-        #     org_id)
 
     def iter_crm_organization_org_policies(self, org_id):
         """Organization organization policy from Cloud Asset data.
         Args:
             org_id (str): id of the organization to get policy.
+
         Returns:
             dict: Organization organization policy.
         """
@@ -1151,10 +1148,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         if resource:
             return resource
-
-        # Fall back to live API if the data isn't in the CAI cache.
-        # return super(CaiApiClientImpl, self).iter_crm_organization_org_policies(
-        #     org_id)
 
     def iter_crm_project_org_policies(self, project_number):
         """Project organization policy from Cloud Asset data.
