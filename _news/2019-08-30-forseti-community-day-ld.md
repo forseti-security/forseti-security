@@ -9,6 +9,7 @@ Join us for a fun, interactive, and hands-on day shaping the next generation
 of Google Cloud Platform (GCP) security tools.
 Registration is now closed for this event.
 
+
 Date: Monday, November 18th
 
 Time: 9:30AM to 5:00PM
