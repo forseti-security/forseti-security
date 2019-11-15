@@ -1,0 +1,279 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.storage module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.inventory.base.storage">
+<span id="google-cloud-forseti-services-inventory-base-storage-module"></span><h1>google.cloud.forseti.services.inventory.base.storage module<a class="headerlink" href="#module-google.cloud.forseti.services.inventory.base.storage" title="Permalink to this headline">¶</a></h1>
+<p>Crawler implementation.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory">
+<em class="property">class </em><code class="descname">Memory</code><span class="sig-paren">(</span><em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.services.inventory.base.storage.Storage" title="google.cloud.forseti.services.inventory.base.storage.Storage"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.inventory.base.storage.Storage</span></code></a></p>
+<p>The storage in memory</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>To support with statement for auto closing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The memory storage object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.services.inventory.base.storage.Storage" title="google.cloud.forseti.services.inventory.base.storage.Storage">Storage</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.__exit__">
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>type_p</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>To support with statement for auto closing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>type_p</strong> (<em>object</em>) – Unused.</li>
+<li><strong>value</strong> (<em>object</em>) – Unused.</li>
+<li><strong>tb</strong> (<em>object</em>) – Unused.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>close the memory storage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>No need to commit when using a memory storage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.error">
+<code class="descname">error</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ignore the error message</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>str</em>) – Error message describing the problem.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>handle=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the memory storage</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>handle</strong> (<em>str</em>) – If None, create a new index instead
+of opening an existing one.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">inventory index</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a resource object from storage</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>str</em>) – key of the resource object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the resource object being read</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.rollback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>No rollback when using a memory storage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.warning">
+<code class="descname">warning</code><span class="sig-paren">(</span><em>resource_full_name</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ignore the warning message</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resource_full_name</strong> (<em>str</em>) – The full name of the resource that raised
+the error.</li>
+<li><strong>message</strong> (<em>str</em>) – Warning message describing the problem.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Memory.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Memory.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Memory.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a resource object into storage</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<em>object</em>) – the resource object to write</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage">
+<em class="property">class </em><code class="descname">Storage</code><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The inventory storage interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.error">
+<code class="descname">error</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>str</em>) – Error message describing the problem.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>handle=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>handle</strong> (<em>str</em>) – If None, create a new index instead
+of opening an existing one.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.rollback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.warning">
+<code class="descname">warning</code><span class="sig-paren">(</span><em>resource_full_name</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource_full_name</strong> (<em>str</em>) – The full name of the resource that raised
+the error.</li>
+<li><strong>message</strong> (<em>str</em>) – Warning message describing the problem.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.inventory.base.storage.Storage.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/inventory/base/storage.html#Storage.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.inventory.base.storage.Storage.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<em>object</em>) – the resource object to write</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Because not implemented.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

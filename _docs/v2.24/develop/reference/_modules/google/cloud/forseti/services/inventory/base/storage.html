@@ -1,0 +1,208 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.base.storage"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.inventory.base.storage</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot; Crawler implementation. &quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">string_formats</span>
+
+<span class="c1"># pylint: disable=invalid-name</span>
+
+
+<div class="viewcode-block" id="Storage"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage">[docs]</a><span class="k">class</span> <span class="nc">Storage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The inventory storage interface&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Storage.open"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            handle (str): If None, create a new index instead</span>
+<span class="sd">                of opening an existing one.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.write"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (object): the resource object to write</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.error"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message (str): Error message describing the problem.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.warning"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.warning">[docs]</a>    <span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_full_name</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_full_name (str): The full name of the resource that raised</span>
+<span class="sd">                the error.</span>
+<span class="sd">            message (str): Warning message describing the problem.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.close"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.commit"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Storage.rollback"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Storage.rollback">[docs]</a>    <span class="k">def</span> <span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Implemented.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Because not implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="Memory"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory">[docs]</a><span class="k">class</span> <span class="nc">Memory</span><span class="p">(</span><span class="n">Storage</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The storage in memory&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session (object): An optional session for inventory cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Memory</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mem</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+<div class="viewcode-block" id="Memory.open"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the memory storage</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            handle (str): If None, create a new index instead</span>
+<span class="sd">                of opening an existing one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: inventory index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">handle</span><span class="p">:</span>
+            <span class="n">handle</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">handle</span> <span class="o">=</span> <span class="n">date_time</span><span class="o">.</span><span class="n">get_utc_now_datetime</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_MICROS</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">handle</span></div>
+
+<div class="viewcode-block" id="Memory.write"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write a resource object into storage</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (object): the resource object to write</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mem</span><span class="p">[</span><span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">+</span> <span class="n">resource</span><span class="o">.</span><span class="n">key</span><span class="p">()]</span> <span class="o">=</span> <span class="n">resource</span></div>
+
+<div class="viewcode-block" id="Memory.read"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read a resource object from storage</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (str): key of the resource object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: the resource object being read</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Memory.error"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ignore the error message</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message (str): Error message describing the problem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Memory.warning"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.warning">[docs]</a>    <span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_full_name</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ignore the warning message</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_full_name (str): The full name of the resource that raised</span>
+<span class="sd">                the error.</span>
+<span class="sd">            message (str): Warning message describing the problem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Memory.close"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;close the memory storage&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Memory.__enter__"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To support with statement for auto closing.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Storage: The memory storage object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Memory.__exit__"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_p</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To support with statement for auto closing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            type_p (object): Unused.</span>
+<span class="sd">            value (object): Unused.</span>
+<span class="sd">            tb (object): Unused.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Memory.commit"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;No need to commit when using a memory storage&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Memory.rollback"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.services.inventory.base.storage.html#google.cloud.forseti.services.inventory.base.storage.Memory.rollback">[docs]</a>    <span class="k">def</span> <span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;No rollback when using a memory storage&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
