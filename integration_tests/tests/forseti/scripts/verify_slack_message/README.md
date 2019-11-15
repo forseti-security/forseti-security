@@ -46,7 +46,8 @@
 
 ## Python packages
 
-    cd /path/to/verify_slack_message pip install -r requirements.txt
+    cd /path/to/verify_slack_message
+    pip install -r requirements.txt
     
 ## Run
 
