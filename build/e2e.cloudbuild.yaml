@@ -14,7 +14,7 @@
 
 timeout: 3600s
 steps:
-- id: prepare
+- id: e2etest
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/usr/local/bin/test_integration.sh']
   env:
@@ -25,6 +25,9 @@ steps:
   - 'TF_VAR_gsuite_admin_email=$_GSUITE_ADMIN_EMAIL'
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_project_id=$_PROJECT_ID'
+- id: temp
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', 'terraform', 'workspace', 'list']
 tags:
 - 'ci'
 - 'integration'
