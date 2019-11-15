@@ -27,7 +27,8 @@
 - Copy OAuth Access Token
 
   - Goto => https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
-  xoxp-RANDOM-RANDOM-RANDOM-RANDOM
+  
+    xoxp-RANDOM-RANDOM-RANDOM-RANDOM
     
 - Copy Slack channel_id
 
