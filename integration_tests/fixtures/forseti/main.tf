@@ -59,10 +59,6 @@ module "forseti" {
   domain             = var.domain
   forseti_version    = var.forseti_version
 
-  inventory_email_summary_enabled = true
-  sendgrid_api_key = ""
-  forseti_email_recipient = var.gsuite_admin_email
-
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
   }
