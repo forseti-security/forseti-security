@@ -18,10 +18,10 @@ output "bastion_host" {
   value = module.bastion.host
 }
 
-output "forseti-cai-storage-bucket" {
-  description = "Forseti CAI storage bucket"
-  value       = module.forseti.forseti-cai-storage-bucket
-}
+//output "forseti-cai-storage-bucket" {
+//  description = "Forseti CAI storage bucket"
+//  value       = module.forseti.forseti-cai-storage-bucket
+//}
 
 output "forseti-client-vm-ip" {
   description = "Forseti Client VM private IP address"
