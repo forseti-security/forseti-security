@@ -15,8 +15,8 @@
 require 'securerandom'
 require 'json'
 
+suffix = attribute('suffix')
 org_id = attribute('org_id')
-forseti_cai_storage_bucket = attribute('forseti-cai-storage-bucket')
 
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
@@ -26,7 +26,6 @@ control "inventory - cai gcs export file" do
   gs_file = "gs://#{forseti_cai_storage_bucket}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
 
   describe command("gsutil ls #{gs_file} | grep #{gs_file}") do
-    its('exit_status') { should eq 0 }
     its('stdout') { should match (gs_file)}
   end
 
