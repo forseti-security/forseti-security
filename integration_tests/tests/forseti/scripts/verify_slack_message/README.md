@@ -4,32 +4,35 @@
 
 - Create Slack app
 
-  https://api.slack.com/apps?new_app=1
+  - Go to => https://api.slack.com/apps?new_app=1
   
 - Add OAuth Scopes
 
-  https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
+  - Go to => https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
   
-  Scroll down to the Scopes panel.
+  - Scroll down to the Scopes panel.
   
-  Click Button => "Add an OAuth Scope"
-  Select in combobox => channels:history
+  - Click Button => "Add an OAuth Scope"
+  
+  - Select in combobox => channels:history
   
 - Install App to Workspace
 
-  https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
+  - Go to => https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
   
-  Click Button => "Install App to Workspace"
-  Click Button => "Allow"
+  - Click Button => "Install App to Workspace"
+  
+  - Click Button => "Allow"
   
 - Copy OAuth Access Token
 
-  https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
+  - Goto => https://api.slack.com/apps/<SLACK_APP_ID>/oauth?
   xoxp-RANDOM-RANDOM-RANDOM-RANDOM
     
 - Copy Slack channel_id
 
   Sign into slack's web interface.
+  
   https://app.slack.com/client/<REDACTED>/<CHANNEL_ID>/user_profile/<REDACTED>
   
 - Test the endpoint
