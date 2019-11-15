@@ -11,13 +11,13 @@ SLACK_API_TOKEN = os.environ["SLACK_API_TOKEN"]
 
 
 def verify_slack_message(channel, msg_text, after_ts=None, retries=1):
-    PARAMS = {
+    params = {
         'token': SLACK_API_TOKEN,
         'channel': channel
     }
 
     while retries != 0:
-        response = requests.get("https://slack.com/api/channels.history", params=PARAMS)
+        response = requests.get("https://slack.com/api/channels.history", params=params)
         response_obj = json.loads(response.text)
         if not response_obj["ok"]:
             print(response_obj)
