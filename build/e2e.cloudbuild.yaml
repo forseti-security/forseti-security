@@ -18,7 +18,7 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/usr/local/bin/test_integration.sh']
   env:
-  - 'KITCHEN_TEST_BASE_PATH=/integration_tests/tests'
+  - 'KITCHEN_TEST_BASE_PATH=integration_tests/tests'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   - 'TF_VAR_domain=$_DOMAIN'
   - 'TF_VAR_forseti_version=$BRANCH_NAME'
