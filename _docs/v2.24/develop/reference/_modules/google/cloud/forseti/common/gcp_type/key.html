@@ -1,0 +1,188 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.key"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.key</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A &quot;key&quot; uniquely identifying a GCP resource.</span>
+
+<span class="sd">Keys can be converted to and from URLs.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+
+<span class="kn">from</span> <span class="nn">past.builtins</span> <span class="k">import</span> <span class="nb">cmp</span>
+<span class="kn">from</span> <span class="nn">future</span> <span class="k">import</span> <span class="n">standard_library</span>
+<span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="Key"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key">[docs]</a><span class="k">class</span> <span class="nc">Key</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a reference to a unique GCP object.</span>
+
+<span class="sd">    Entities in the GCP API have a composite &#39;key&#39; that can</span>
+<span class="sd">    uniquely identify them. For instance, if a GET request for</span>
+<span class="sd">    an object requires a project and a name, then (project, name)</span>
+<span class="sd">    is a unique key for that object. Or, if the URL to an object</span>
+<span class="sd">    has a path containing a project, a zone, and an object ID,</span>
+<span class="sd">    then (project, zone, ID) forms a key to the object.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_kind</span><span class="p">,</span> <span class="n">object_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a key given a &#39;path&#39; to the object.</span>
+
+<span class="sd">        Suggested usage: Specific gcp_type classes should subclass</span>
+<span class="sd">        this and provide a &#39;from_args&#39; with a fixed object_kind</span>
+<span class="sd">        and specific kwargs for object_path. Callers (other than subclassers)</span>
+<span class="sd">        should use &#39;from_args&#39; or &#39;from_url&#39; instead of calling this directly!</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            object_kind (str): The kind of resource the key represents</span>
+<span class="sd">            object_path (dict): Description of the properties that uniquely</span>
+<span class="sd">                                identify the object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_kind</span> <span class="o">=</span> <span class="n">object_kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">object_path</span><span class="p">)</span>
+
+        <span class="c1"># Turn all None into empty string. Otherwise it&#39;s too easy for</span>
+        <span class="c1"># two keys to compare as unequal because one has zone=None while</span>
+        <span class="c1"># the other has zone=&#39;&#39;, the two are semantically equivalent.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_path_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<div class="viewcode-block" id="Key._from_url"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key._from_url">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_from_url</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">object_kind</span><span class="p">,</span> <span class="n">path_component_map</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a key given a GCP object reference URL.</span>
+
+<span class="sd">        Inter-object references in GCP APIs use URLs. These URLs are a sequence</span>
+<span class="sd">        of key-value pairs describing the path to the resource, e.g.:</span>
+<span class="sd">          https://www.googleapis.com/compute/v1</span>
+<span class="sd">          /projects/foo</span>
+<span class="sd">          /global</span>
+<span class="sd">          /backendServices/bar</span>
+<span class="sd">        describes a backend service named &#39;bar&#39; with global scope in</span>
+<span class="sd">        project &#39;foo&#39;, whereas:</span>
+<span class="sd">          https://www.googleapis.com/compute/v1</span>
+<span class="sd">          /projects/foo</span>
+<span class="sd">          /zones/us-east1-a</span>
+<span class="sd">          /instances/bar</span>
+<span class="sd">        describes a compute instance named &#39;bar&#39; in zone &#39;us-east1-a&#39;</span>
+<span class="sd">        of project &#39;foo&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            object_kind (str): The kind of resource the key represents</span>
+<span class="sd">            path_component_map (dict): Maps components in the URL</span>
+<span class="sd">                                       path to object_path keys. In the backend</span>
+<span class="sd">                                       service example, this would be:</span>
+<span class="sd">                                         {&#39;projects&#39;: &#39;project_id&#39;,</span>
+<span class="sd">                                          &#39;backendServices&#39;: &#39;name&#39;}</span>
+<span class="sd">                                       The special component &#39;global&#39;</span>
+<span class="sd">                                       is ignored.  If a component not</span>
+<span class="sd">                                       seen in this map is seen, this</span>
+<span class="sd">                                       function raises an</span>
+<span class="sd">                                       exception. The caller is</span>
+<span class="sd">                                       responsible for checking that</span>
+<span class="sd">                                       all required components were</span>
+<span class="sd">                                       present.</span>
+<span class="sd">            url (str): Resource URL</span>
+<span class="sd">            defaults (dict): If non-None, a dictionary specifying default values</span>
+<span class="sd">                             for object_path keys.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: A Key instance</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the URL is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The first two components identify the API name and version,</span>
+        <span class="c1"># e.g. (&#39;compute&#39;, &#39;v1&#39;). Ignore those.</span>
+        <span class="n">path_components</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">3</span><span class="p">:]</span>
+
+        <span class="n">key_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">object_path</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span>
+                           <span class="nb">list</span><span class="p">(</span><span class="n">path_component_map</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">defaults</span><span class="p">:</span>
+            <span class="n">object_path</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path_component</span> <span class="ow">in</span> <span class="n">path_components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key_name</span><span class="p">:</span>
+                <span class="n">object_path</span><span class="p">[</span><span class="n">key_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">path_component</span>
+                <span class="n">key_name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">path_component</span> <span class="o">==</span> <span class="s1">&#39;global&#39;</span><span class="p">:</span>
+                <span class="c1"># GCE APIs use special path &#39;global&#39; to indicate that there&#39;s</span>
+                <span class="c1"># no scope (zone, region, etc.)</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key_name</span> <span class="o">=</span> <span class="n">path_component_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path_component</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">key_name</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected key </span><span class="si">%s</span><span class="s1"> in </span><span class="si">%s</span><span class="s1"> URL </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">path_component</span><span class="p">,</span> <span class="n">object_kind</span><span class="p">,</span> <span class="n">url</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">key_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No value found for key </span><span class="si">%s</span><span class="s1"> in </span><span class="si">%s</span><span class="s1"> URL </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">key_name</span><span class="p">,</span> <span class="n">object_kind</span><span class="p">,</span> <span class="n">url</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">object_kind</span><span class="p">,</span> <span class="n">object_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Key._path_component"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key._path_component">[docs]</a>    <span class="k">def</span> <span class="nf">_path_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves a specific element from the path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (str): The component to retrieve</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: The value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Key.__cmp__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key.__cmp__">[docs]</a>    <span class="k">def</span> <span class="nf">__cmp__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare a Key with another object for sorting purposes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): The object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: (-1 if self &lt; other, 0 if self == other, 1 if self &gt; other)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Key</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">cmp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_kind</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_object_kind</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="nb">cmp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_path_tuple</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_object_path_tuple</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">cmp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Key.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key.__hash__">[docs]</a>    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hashcode for the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The hash code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_path_tuple</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Key.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Debugging representation of the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The debug string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;Key(</span><span class="si">%r</span><span class="s1">, </span><span class="si">%r</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_path</span><span class="p">)</span></div></div>
+</pre></div>
