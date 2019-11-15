@@ -165,8 +165,8 @@ resource "google_storage_bucket_access_control" "test_resource_bucket_scanner_bu
   depends_on = [google_storage_bucket.test_resource_bucket_scanner_bucket]
 }
 
-resource "gsuite_group" "test-gsuite-group" {
-  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
-  name        = "gsuite-${random_pet.random_name_generator.id}"
-  description = "G Suite Group Automated Creation Testing"
-}
+//resource "gsuite_group" "test-gsuite-group" {
+//  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
+//  name        = "gsuite-${random_pet.random_name_generator.id}"
+//  description = "G Suite Group Automated Creation Testing"
+//}
