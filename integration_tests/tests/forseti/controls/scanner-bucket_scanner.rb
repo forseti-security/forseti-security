@@ -22,7 +22,7 @@ if db_password.strip != ""
   db_password = "-p#{db_password}"
 end
 project_id = attribute('project_id')
-model_name = SecureRandom.uuid.gsub!('-', '')
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control 'scanner - iam policy scanner' do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
