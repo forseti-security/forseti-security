@@ -163,9 +163,9 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
         for violations in self.validator_client.paged_review(cv_assets):
             flattened_violations = self._flatten_violations(violations)
-            # Clean up the lookup table to free up the memory.
-            self.resource_lookup_table = {}
             yield flattened_violations
+        # Clean up the lookup table to free up the memory.
+        self.resource_lookup_table = {}
 
     def run(self):
         """Runs the Config Validator Scanner.
