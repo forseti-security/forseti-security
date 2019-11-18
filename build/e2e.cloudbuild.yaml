@@ -16,7 +16,7 @@ timeout: 3600s
 steps:
 - id: run_e2e_tests
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && prepare_environment']
+  args: ['/usr/local/bin/test_integration.sh']
   env:
   - 'KITCHEN_TEST_BASE_PATH=integration_tests/tests'
   - 'SERVICE_ACCOUNT_JSON=$_SERVICE_ACCOUNT_JSON'
