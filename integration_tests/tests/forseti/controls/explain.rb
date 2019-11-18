@@ -15,7 +15,7 @@
 require 'securerandom'
 require 'json'
 
-random_string = SecureRandom.uuid.gsub!('-', '')
+random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "explain" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
