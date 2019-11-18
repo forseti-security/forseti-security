@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,25 +15,31 @@
 require 'securerandom'
 require 'json'
 
-org_id = attribute('org_id')
-forseti_cai_storage_bucket = attribute('forseti-cai-storage-bucket')
-
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "inventory - cai gcs export file" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-  gs_file = "gs://#{forseti_cai_storage_bucket}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
+control "inventory - temp file deletion" do
+  # Run the command that will generate the inventory
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as gsc-test#{random_string}").stdout)[1]
 
-  describe command("gsutil ls #{gs_file} | grep #{gs_file}") do
+  # Run notifier
+  describe command("forseti notifier run") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (gs_file)}
+    its('stdout') { should match(/Notification completed!/)}
   end
 
-  describe command("forseti model delete #{random_string}") do
+  # Verify temp directory has no csv files
+  describe command("find /tmp -maxdepth 1 -name \"*.csv\" -printf '.' | wc -m") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match(/0/)}
   end
 
+  # Delete the inventory
   describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Delete the model
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end
