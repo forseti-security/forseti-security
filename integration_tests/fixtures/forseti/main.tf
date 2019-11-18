@@ -116,7 +116,7 @@ resource "null_resource" "install-mysql-client" {
 
   provisioner "remote-exec" {
     inline = [
-       "sudo apt-get -y install mysql-client"
+       "sudo apt-get update && sudo apt-get -y install mysql-client"
        ]
 
     connection {
