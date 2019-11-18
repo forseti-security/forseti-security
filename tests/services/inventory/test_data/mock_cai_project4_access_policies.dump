@@ -1,0 +1,1 @@
+{"name":"//cloudresourcemanager.googleapis.com/organizations/abc","asset_type":"cloudresourcemanager.googleapis.com/Organization","access_policy":{"name":"accessPolicies/1008882730433","parent":"organizations/abc","title":"default policy"},"ancestors":["organizations/111222333"]}

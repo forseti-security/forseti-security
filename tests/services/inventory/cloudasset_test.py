@@ -178,9 +178,12 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             elif 'iam_policy' in full_bucket_path:
                 fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
                                          'mock_cai_iam_policies.dump')
-            else:
+            elif 'org_policy' in full_bucket_path:
                 fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_empty_file.dump')
+                                         'mock_cai_empty_org_policies.dump')
+            elif 'access_policy' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_empty_access_policies.dump')
             with open(fake_file, 'rb') as f:
                 output_file.write(f.read())
 
@@ -226,9 +229,24 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                     fake_file = os.path.join(
                         TEST_RESOURCE_DIR_PATH,
                         'mock_cai_project4_iam_policies.dump')
-            else:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_empty_file.dump')
+            elif 'org_policy' in full_bucket_path:
+                if 'projects-1043' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project3_org_policies.dump')
+                if 'projects-1044' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project4_org_policies.dump')
+            elif 'access_policy' in full_bucket_path:
+                if 'projects-1043' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project3_access_policies.dump')
+                if 'projects-1044' in full_bucket_path:
+                    fake_file = os.path.join(
+                        TEST_RESOURCE_DIR_PATH,
+                        'mock_cai_project4_access_policies.dump')
             with open(fake_file, 'rb') as f:
                 output_file.write(f.read())
 
@@ -236,7 +254,9 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.engine,
                                                   inventory_config)
-        expected_results = 12  # Total of resources and IAM policies in dumps.
+        # Total of resources, IAM policies, org policies and access policies
+        # in dumps.
+        expected_results = 16
         self.assertEqual(expected_results, results)
 
         # Validate data from both projects in database.
@@ -275,9 +295,6 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
             elif 'access_policy' in full_bucket_path:
                 fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
                                          'mock_cai_empty_access_policies.dump')
-            else:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_empty_file.dump')
             with open(fake_file, 'rb') as f:
                 output_file.write(f.read())
 
