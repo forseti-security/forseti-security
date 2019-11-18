@@ -76,9 +76,6 @@ def isfile(file_path, storage_client=None):
     file_exists = True
 
     if file_path.startswith('gs://'):
-        if not storage_client:
-            storage_client = storage.StorageClient()
-
         try:
             read_and_parse_file(file_path)
         except HttpError as http_error:
@@ -95,15 +92,11 @@ def access(file_path, storage_client=None):
     accessible = True
 
     if file_path.startswith('gs://'):
-        if not storage_client:
-            storage_client = storage.StorageClient()
-
         try:
             read_and_parse_file(file_path)
         except HttpError as http_error:
             LOGGER.error("Unable to read %s due to %s", file_path, http_error)
             accessible = False
-
     else:
         accessible = os.access(file_path, os.R_OK)
 
