@@ -15,6 +15,10 @@
 require 'securerandom'
 require 'json'
 
+forseti_server_service_account = attribute('forseti-server-service-account')
+project_id = attribute('project_id')
+org_id = attribute('org_id')
+
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "explain" do
@@ -24,6 +28,36 @@ control "explain" do
     its('exit_status') { should eq 0 }
   end
 
+  # access_by_authz
+  describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/roles\/editor/)}
+  end
+
+  # get_policy
+  describe command("forseti explainer get_policy organization/#{org_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/10/)}
+  end
+  describe command("forseti explainer get_policy project/#{project_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/5/)}
+  end
+
+  # list_permissions
+  describe command("forseti explainer list_permissions --roles roles/iam.roleAdmin") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/iam.roles.create/)}
+    its('stdout') { should match (/iam.roles.delete/)}
+    its('stdout') { should match (/iam.roles.get/)}
+    its('stdout') { should match (/iam.roles.list/)}
+    its('stdout') { should match (/iam.roles.undelete/)}
+    its('stdout') { should match (/iam.roles.update/)}
+    its('stdout') { should match (/resourcemanager.projects.get/)}
+    its('stdout') { should match (/resourcemanager.projects.getIamPolicy/)}
+  end
+
+  # list_roles
   describe command("forseti explainer list_roles") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/roles\/cloudtrace.user/)}
@@ -42,6 +76,7 @@ control "explain" do
     its('stdout') { should match (/roles\/datastore.viewer/)}
   end
 
+  # list_roles --prefix IAM
   describe command("forseti explainer list_roles --prefix roles/iam") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/roles\/iam.organizationRoleAdmin/)}
@@ -59,6 +94,7 @@ control "explain" do
     its('stdout') { should match (/roles\/iam.workloadIdentityUser/)}
   end
 
+  # list_roles --prefix storage
   describe command("forseti explainer list_roles --prefix roles/storage") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/roles\/storage.admin/)}
@@ -76,24 +112,7 @@ control "explain" do
     its('stdout') { should match (/roles\/storagetransfer.viewer/)}
   end
 
-  describe command("forseti explainer list_permissions --roles roles/iam.roleAdmin") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/iam.roles.create/)}
-    its('stdout') { should match (/iam.roles.delete/)}
-    its('stdout') { should match (/iam.roles.get/)}
-    its('stdout') { should match (/iam.roles.list/)}
-    its('stdout') { should match (/iam.roles.undelete/)}
-    its('stdout') { should match (/iam.roles.update/)}
-    its('stdout') { should match (/resourcemanager.projects.get/)}
-    its('stdout') { should match (/resourcemanager.projects.getIamPolicy/)}
-  end
-
-
-  describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/roles\/editor/)}
-  end
-
+  # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
@@ -101,5 +120,4 @@ control "explain" do
   describe command("forseti model delete " + random_string) do
     its('exit_status') { should eq 0 }
   end
-
 end
