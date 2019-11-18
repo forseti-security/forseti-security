@@ -19,6 +19,8 @@ import os
 import tempfile
 import yaml
 
+from googleapiclient.errors import HttpError
+
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
@@ -70,6 +72,42 @@ def copy_file_from_gcs(file_path, output_path=None, storage_client=None):
 
     return output_path
 
+def isfile(file_path, storage_client=None):
+    file_exists = True
+
+    if file_path.startswith('gs://'):
+        if not storage_client:
+            storage_client = storage.StorageClient()
+
+        try:
+            read_and_parse_file(file_path)
+        except HttpError as http_error:
+            if http_error.resp.status == 404:
+                file_exists = False
+            else:
+                raise http_error
+    else:
+        file_exists = os.path.isfile(file_path)
+    
+    return file_exists
+
+def access(file_path, storage_client=None):
+    accessible = True
+
+    if file_path.startswith('gs://'):
+        if not storage_client:
+            storage_client = storage.StorageClient()
+
+        try:
+            read_and_parse_file(file_path)
+        except HttpError as http_error:
+            LOGGER.error("Unable to read %s due to %s", file_path, http_error)
+            accessible = False
+
+    else:
+        accessible = os.access(file_path, os.R_OK)
+
+    return accessible
 
 def _get_filetype_parser(file_path, parser_type):
     """Return a parser function for parsing the file.
@@ -193,3 +231,8 @@ def _parse_yaml(data):
     except yaml.YAMLError as yaml_error:
         LOGGER.exception(yaml_error)
         raise yaml_error
+
+def _isfile_in_gcs(file_path, storage_client=None):
+
+    if not storage_client:
+        storage_client = storage.StorageClient()
