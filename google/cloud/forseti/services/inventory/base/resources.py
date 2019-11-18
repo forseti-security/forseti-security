@@ -398,6 +398,26 @@ class Resource(object):
         del client  # Unused.
         return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Get org policy template.
+
+        Args:
+            client (object): GCP API client.
+        """
+        del client  # Unused.
+        return None
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Get access policy template.
+
+        Args:
+            client (object): GCP API client.
+        """
+        del client  # Unused.
+        return None
+
     @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
         """Get gcs policy template.
