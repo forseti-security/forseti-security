@@ -231,8 +231,3 @@ def _parse_yaml(data):
     except yaml.YAMLError as yaml_error:
         LOGGER.exception(yaml_error)
         raise yaml_error
-
-def _isfile_in_gcs(file_path, storage_client=None):
-
-    if not storage_client:
-        storage_client = storage.StorageClient()
