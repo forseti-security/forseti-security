@@ -16,7 +16,6 @@
 
 # pylint: disable=line-too-long
 import argparse
-import os
 import sys
 import time
 
