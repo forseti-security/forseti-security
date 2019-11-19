@@ -169,17 +169,11 @@ class CloudAssetClient(object):
                 not exist.
             force (bool): If true, force write rows even on error.
         """
-        # TODO: Uncomment the below code and remove the exception when the
-        # bigquery support is live in the v1 API.
-        #
-        # dataset_full_name = 'projects/{}/datasets/{}'.format(project_id,
-        #                                                      dataset)
-        # return {'bigqueryDestination': {'dataset': dataset_full_name,
-        #                                 'table': table,
-        #                                 "force": force}}
-        raise NotImplementedError('The v1 API does not support this '
-                                  'destination, it will be enabled in a future '
-                                  'release.')
+        dataset_full_name = 'projects/{}/datasets/{}'.format(project_id,
+                                                             dataset)
+        return {'bigqueryDestination': {'dataset': dataset_full_name,
+                                        'table': table,
+                                        "force": force}}
 
     def export_assets(self, parent, destination_object=None, output_config=None,
                       content_type=None, asset_types=None, read_time=None,
