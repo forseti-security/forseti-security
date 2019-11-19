@@ -48,7 +48,7 @@ SQL_HOST=127.0.0.1
 SQL_PORT=3306
 
 SERVER_HOST=127.0.0.1
-SERVER_PORT=50051
+SERVER_PORT=${PORT:=50051}
 
 # Check if the k8s cloud sql proxy environment variables have been set, if so
 # overwrite our cloud sql variables with their contents
