@@ -31,7 +31,13 @@ control 'scanner - iam policy scanner' do
     its('exit_status') { should eq 0 }
   end
 
-  @scanner_id = /ID\: ([0-9]*)/.match(command("forseti scanner run").stdout)[1]
+  scanner_run = command("forseti scanner run")
+
+  describe scanner_run do
+    its('exit_status') { should eq 0 }
+  end
+
+  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
 
   describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do
     its('exit_status') { should eq 0 }
