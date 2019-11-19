@@ -1382,18 +1382,9 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
             return None
 
 
-class IamServiceAccountKey(resource_class_factory('serviceaccount_key', None)):
+class IamServiceAccountKey(resource_class_factory('serviceaccount_key', 'name',
+                                                  hash_key=True)):
     """The Resource implementation for IAM ServiceAccountKey."""
-
-    def key(self):
-        """Get key of this resource.
-
-        Key name is in the format:
-           projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
-        Returns:
-            str: id key of this resource
-        """
-        return self['name'].split('/')[-1]
 
 
 # Key Management Service resource classes
@@ -2442,9 +2433,10 @@ class IamServiceAccountIterator(resource_iter_class_factory(
 
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_serviceaccount_exported_keys',
+        api_method_name='iter_iam_serviceaccount_keys',
         resource_name='iam_serviceaccount_key',
-        api_method_arg_key='name')):
+        api_method_arg_key='projectId',
+        additional_arg_keys=['uniqueId'])):
     """The Resource iterator implementation for IAM ServiceAccount Key."""
 
 
