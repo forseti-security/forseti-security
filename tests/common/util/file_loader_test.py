@@ -105,5 +105,88 @@ class FileLoaderTest(ForsetiTestCase):
         finally:
             os.unlink(file_path)
 
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
+    def test_isfile_in_gcs(self, mock_default_credentials):
+        """Test HTTP 200 results in True."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+        self.assertTrue(file_loader.isfile('gs://fake/file.json'))
+
+
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
+    def test_isfile_not_in_gcs(self, mock_default_credentials):
+        """Test HTTP 404 results in False."""
+        mock_responses = [
+            ({'status': '404',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+        self.assertFalse(file_loader.isfile('gs://fake/file.json'))
+
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
+    def test_file_accessible_in_gcs(self, mock_default_credentials):
+        """Test HTTP 200 results in True."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+        self.assertTrue(file_loader.access('gs://fake/file.json'))
+
+
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
+    def test_file_not_accessible_in_gcs(self, mock_default_credentials):
+        """Test HTTP not 200 results in False."""
+        mock_responses = [
+            ({'status': '403',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+        self.assertFalse(file_loader.access('gs://fake/file.json'))
+
+    @mock.patch('os.path.isfile')
+    def test_isfile_in_local(self, mock_isfile):
+        """Test logic for testing local isfile"""
+        mock_isfile.return_value = True
+   
+        self.assertTrue(file_loader.isfile('test_file.yaml'))
+
+    @mock.patch('os.path.isfile')
+    def test_isfile_not_in_local(self, mock_isfile):
+        """Test logic for testing local isfile"""
+        mock_isfile.return_value = False
+   
+        self.assertFalse(file_loader.isfile('test_file.yaml'))
+
+    @mock.patch('os.access')
+    def test_local_file_is_accessilble(self, mock_isfile):
+        """Test logic for testing local access"""
+        mock_isfile.return_value = True
+   
+        self.assertTrue(file_loader.access('test_file.yaml'))
+
+    @mock.patch('os.access')
+    def test_local_file_is_not_accessilble(self, mock_isfile):
+        """Test logic for testing local access"""
+        mock_isfile.return_value = False
+   
+        self.assertFalse(file_loader.access('test_file.yaml'))
+
+
 if __name__ == '__main__':
     unittest.main()
