@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,26 +17,29 @@ require 'json'
 
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "scanner - external project access" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-  
-  describe command("forseti model use #{random_string}") do
+control "inventory - temp file deletion" do
+  # Run the command that will generate the inventory
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as gsc-test#{random_string}").stdout)[1]
+
+  # Run notifier
+  describe command("forseti notifier run") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match(/Notification completed!/)}
   end
 
-  describe command("forseti scanner run --scanner external_project_access_scanner") do
+  # Verify temp directory has no csv files
+  describe command("find /tmp -maxdepth 1 -name \"*.csv\" -printf '.' | wc -m") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Scanner Index ID: [0-9]* is created/)}
-    its('stdout') { should match (/Running ExternalProjectAccessScanner.../)}
-    its('stdout') { should match (/Scan completed!/)}
+    its('stdout') { should match(/0/)}
   end
 
+  # Delete the inventory
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete " + random_string) do
+  # Delete the model
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
-
 end

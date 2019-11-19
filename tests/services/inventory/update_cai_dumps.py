@@ -23,6 +23,7 @@ PYTHONPATH=. python tests/services/inventory/update_cai_dumps.py
 from builtins import object
 import json
 import os
+import time
 
 from tests.services.inventory import gcp_api_mocks
 from google.cloud.forseti.common.util import logger
@@ -64,6 +65,7 @@ class NullProgresser(Progresser):
 
     def __init__(self):
         super(NullProgresser, self).__init__()
+        self.inventory_index_id = int(time.time())
 
     def on_new_object(self, resource):
         pass
@@ -230,6 +232,15 @@ def serviceaccount(item):
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
+def serviceaccount_key(item):
+    parent = item.parent()
+    key_id = item['name'].split("/")[-1]
+    name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}/keys/{}'.format(
+        parent['projectId'], parent['uniqueId'], key_id)
+    asset_type = 'iam.googleapis.com/ServiceAccountKey'
+    parent_name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+        parent['projectId'], parent['uniqueId'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 def kubernetes_cluster(item):
     parent = item.parent()
@@ -337,6 +348,7 @@ CAI_TYPE_MAP = {
     'network': network,
     'role': role,
     'serviceaccount': serviceaccount,
+    'serviceaccount_key': serviceaccount_key,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
     'table': bigquery_table,

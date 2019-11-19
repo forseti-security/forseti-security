@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +15,35 @@
 require 'securerandom'
 require 'json'
 
+db_user_name = attribute('db_user_name')
+db_password = attribute('db_password')
+if db_password.strip != ""
+  db_password = "-p#{db_password}"
+end
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "scanner - external project access" do
+control "inventory - delete" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-  
+
   describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti scanner run --scanner external_project_access_scanner") do
+  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index on inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Scanner Index ID: [0-9]* is created/)}
-    its('stdout') { should match (/Running ExternalProjectAccessScanner.../)}
-    its('stdout') { should match (/Scan completed!/)}
+    its('stdout') { should match (/1/)}
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete " + random_string) do
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 
+  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index on inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/0/)}
+  end
 end

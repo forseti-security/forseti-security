@@ -94,6 +94,7 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Node',
     'k8s.io/Pod',
     'iam.googleapis.com/ServiceAccount',
+    'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
     'pubsub.googleapis.com/Topic',
     'rbac.authorization.k8s.io/ClusterRole',
