@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
-require 'json'
-
 forseti_server_service_account = attribute('forseti-server-service-account')
 project_id = attribute('project_id')
 
