@@ -84,7 +84,13 @@ output "suffix" {
   value       = module.forseti.suffix
 }
 
+output "test-resource-forseti-server-allow-icmp" {
+  description = "Test Firewall rule to be remediated by Firewall Enforcer"
+  value = google_compute_firewall.test_resource_forseti_server_allow_icmp.name
+}
+
 output "test-resource-bucket-scanner-bucket" {
-  description = ""
+  description = "Test bucket to be found as a violation by the Bucket Scanner"
   value = google_storage_bucket.test_resource_bucket_scanner_bucket.name
 }
+

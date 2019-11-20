@@ -138,6 +138,10 @@ resource "null_resource" "install-mysql-client" {
 resource "random_pet" "random_name_generator" {
 }
 
+resource "random_id" "random_id" {
+  byte_length = 4
+}
+
 resource "google_kms_key_ring" "test-keyring" {
   project  = var.project_id
   name     = "keyring-${random_pet.random_name_generator.id}"
@@ -148,6 +152,22 @@ resource "google_kms_crypto_key" "test-crypto-key" {
   name            = "crypto-key-${random_pet.random_name_generator.id}"
   key_ring        = google_kms_key_ring.test-keyring.self_link
   rotation_period = "100000s"
+}
+
+# enforcer-remediates_non_compliant_rule.rb: Create a firewall rule to be removed by FW Enforcer
+# describe command("gcloud compute firewall-rules create forseti-test-allow-icmp-deleteme-#{random_string} --source-ranges=10.0.0.0/32 --description=\"Allow ICMP from private subnet\" --allow=icmp") do
+resource "google_compute_firewall" "test_resource_forseti_server_allow_icmp" {
+  name                    = "forseti-server-allow-icmp-${random_id.random_id.hex}"
+  project                 = var.project_id
+  network                 = "default"
+  priority                = "100"
+  source_ranges           = ["10.0.0.0/32"]
+
+  allow {
+    protocol = "icmp"
+  }
+
+  depends_on = [module.forseti]
 }
 
 # scanner-bucket_scanner.rb: Create a bucket with AllAuth Reader ACL

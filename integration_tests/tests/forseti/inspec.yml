@@ -68,6 +68,9 @@ attributes:
 - name: test-resource-bucket-scanner-bucket
   required: true
   type: string
+- name: test-resource-forseti-server-allow-icmp
+  required: true
+  type: string
 depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git

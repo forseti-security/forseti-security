@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'securerandom'
 require 'json'
 
 project_id = attribute('project_id')
-random_string = SecureRandom.uuid.gsub!('-', '')
+firewall_rule_name = attribute('test-resource-forseti-server-allow-icmp')
 
-control "enforcer - remediates non compliant rule" do
+random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
+
+control "enforcer - remediate firewall rule" do
   # Get the latest firewall rules
   fw_rules = JSON.parse(command("gcloud compute firewall-rules list --format=json").stdout)
 
@@ -47,11 +50,6 @@ control "enforcer - remediates non compliant rule" do
     it { should exist }
   end
 
-  # Create a rule for deletion
-  describe command("gcloud compute firewall-rules create forseti-test-allow-icmp-deleteme-#{random_string} --source-ranges=10.0.0.0/32 --description=\"Allow ICMP from private subnet\" --allow=icmp") do
-    its('exit_status') { should eq 0 }
-  end
-
   # Sync the rules with enforcer
   describe command("forseti_enforcer --enforce_project #{project_id} --policy_file /tmp/current_fw_rule.json") do
     its('exit_status') { should eq 0 }
@@ -60,7 +58,7 @@ control "enforcer - remediates non compliant rule" do
   # Make sure rule no longer exist
   describe command("gcloud compute firewall-rules list --format=json") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should_not match (/forseti-test-allow-icmp-deleteme-/)}
+    its('stdout') { should_not match (/#{Regexp.quote(firewall_rule_name)}/) }
   end
 
   # Delete the rule file
