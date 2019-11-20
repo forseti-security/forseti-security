@@ -73,33 +73,14 @@ resource "null_resource" "wait_for_server" {
   }
 
   provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
+    inline = [
+       "until [ -f /home/ubuntu/forseti_env.sh ]; do echo Waiting for Forseti to start...; sleep 5; done; echo Forseti has started!"
+    ]
 
     connection {
       type                = "ssh"
       user                = "ubuntu"
       host                = module.forseti.forseti-server-vm-ip
-      private_key         = tls_private_key.main.private_key_pem
-      bastion_host        = module.bastion.host
-      bastion_port        = module.bastion.port
-      bastion_private_key = module.bastion.private_key
-      bastion_user        = module.bastion.user
-    }
-  }
-}
-
-resource "null_resource" "wait_for_client" {
-  triggers = {
-    always_run = uuid()
-  }
-
-  provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
-
-    connection {
-      type                = "ssh"
-      user                = "ubuntu"
-      host                = module.forseti.forseti-client-vm-ip
       private_key         = tls_private_key.main.private_key_pem
       bastion_host        = module.bastion.host
       bastion_port        = module.bastion.port
@@ -117,7 +98,7 @@ resource "null_resource" "install-mysql-client" {
   provisioner "remote-exec" {
     inline = [
        "sudo apt-get -y install mysql-client-5.7"
-       ]
+    ]
 
     connection {
       type                = "ssh"
