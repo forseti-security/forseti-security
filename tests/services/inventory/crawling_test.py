@@ -66,7 +66,6 @@ GCP_API_RESOURCES = {
                 'resource': 4},
     'role': {'resource': 20},
     'serviceaccount': {'iam_policy': 2, 'resource': 2},
-    'serviceaccount_key': {'resource': 1},
     'sink': {'resource': 7},
     'snapshot': {'resource': 3},
     'subnetwork': {'resource': 24},
@@ -374,7 +373,6 @@ class CrawlerTest(CrawlerBase):
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 2},
             'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
@@ -420,7 +418,6 @@ class CrawlerTest(CrawlerBase):
                         'resource': 2},
             'role': {'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 3},
             'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
@@ -531,7 +528,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             self.assertEqual(0,
                              progresser.errors,
                              'No errors should have occurred')
-
             return self._get_resource_counts_from_storage(storage)
 
     def tearDown(self):
@@ -592,6 +588,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kubernetes_rolebinding': {'resource': 1},
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
+            'serviceaccount': {'iam_policy': 2, 'resource': 3},
+            'serviceaccount_key': {'resource': 1},
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
         })
@@ -683,7 +681,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 2},
-            'serviceaccount': {'iam_policy': 2, 'resource': 2},
+            'serviceaccount': {'iam_policy': 2, 'resource': 3},
+            'serviceaccount_key': {'resource': 1},
             'snapshot': {'resource': 3},
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},

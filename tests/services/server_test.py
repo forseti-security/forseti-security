@@ -19,6 +19,7 @@ import unittest
 import unittest.mock as mock
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.services import server
 
 
@@ -105,9 +106,9 @@ class ServerTest(ForsetiTestCase):
             enable_console_log=False)
         mock_print_usage.return_value = None
 
-        with mock.patch.object(server.os.path, "isfile") as mock_isfile:
+        with mock.patch.object(file_loader, "isfile") as mock_isfile:
             mock_isfile.return_value = True
-            with mock.patch.object(server.os, "access") as mock_access:
+            with mock.patch.object(file_loader, "access") as mock_access:
                 mock_access.return_value = False
                 with self.assertRaises(SystemExit) as e:
                     server.main()
@@ -130,9 +131,9 @@ class ServerTest(ForsetiTestCase):
 
         mock_print_usage.return_value = None
 
-        with mock.patch.object(server.os.path, "isfile") as mock_isfile:
+        with mock.patch.object(file_loader, "isfile") as mock_isfile:
             mock_isfile.return_value = True
-            with mock.patch.object(server.os, "access") as mock_access:
+            with mock.patch.object(file_loader, "access") as mock_access:
                 mock_access.return_value = True
                 with self.assertRaises(SystemExit) as e:
                     server.main()
