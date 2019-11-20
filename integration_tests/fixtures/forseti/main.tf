@@ -17,10 +17,10 @@ provider "google-beta" {
   version     = "~> 2.10"
 }
 
-provider "gsuite" {
-  version                 = "~> 0.1"
-  impersonated_user_email = var.gsuite_admin_email
-}
+//provider "gsuite" {
+//  version                 = "~> 0.1"
+//  impersonated_user_email = var.gsuite_admin_email
+//}
 
 provider "tls" {
   version = "~> 2.0"
