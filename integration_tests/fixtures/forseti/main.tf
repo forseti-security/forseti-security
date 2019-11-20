@@ -68,7 +68,9 @@ resource "null_resource" "wait_for_server" {
   }
 
   provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
+    inline = [
+       "until [ -f /home/ubuntu/forseti_env.sh ]; do echo Waiting for Forseti to start...; sleep 5; done; echo Forseti has started!"
+    ]
 
     connection {
       type                = "ssh"
