@@ -83,3 +83,8 @@ output "suffix" {
   description = "The random suffix appended to Forseti resources"
   value       = module.forseti.suffix
 }
+
+output "test-resource-bucket-scanner-bucket" {
+  description = ""
+  value = google_storage_bucket.test_resource_bucket_scanner_bucket.name
+}
