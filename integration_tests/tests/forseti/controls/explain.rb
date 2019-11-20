@@ -174,7 +174,7 @@ control "explain" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/organization\/#{Regexp.quote(org_id)}/) }
   end
-
+  
   # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
