@@ -69,6 +69,8 @@ FROM base AS runtime
 
 USER forseti
 
+ENV PORT 50051
+
 COPY --from=build --chown=forseti:forseti \
     /home/forseti/.local \
     /home/forseti/.local
