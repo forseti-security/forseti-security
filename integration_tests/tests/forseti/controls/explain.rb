@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -229,6 +229,12 @@ control "explain" do
     its('stdout') { should match (/organization\/#{Regexp.quote(org_id)}/) }
   end
 
+  # forseti service account should have storage.objects.get as a permissions
+  describe command("forseti explainer check_policy project/#{project_id} storage.objects.get serviceAccount/#{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"result\": true/)}
+  end
+  
   # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
