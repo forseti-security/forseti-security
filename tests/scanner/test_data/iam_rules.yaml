@@ -1,10 +1,10 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,30 +55,3 @@ rules:
       - role: '*'
         members:
           - allAuthenticatedUsers
-
-  # Below are the example rules that you can reference to create your own custom rule.
-  #- name: Allow only service accounts to have access
-  #  mode: whitelist
-  #  resource:
-  #    - type: organization
-  #      applies_to: self_and_children
-  #      resource_ids:
-  #        - '*'
-  #  inherit_from_parents: true
-  #  bindings:
-  #    - role: roles/*
-  #      members:
-  #        - serviceAccount:*@*.gserviceaccount.com
-
-  #- name: All projects must have owner from my domain
-  #  mode: required
-  #  resource:
-  #    - type: project
-  #      applies_to: self
-  #      resource_ids:
-  #        - '*'
-  #  inherit_from_parents: true
-  #  bindings:
-  #    - role: roles/owner
-  #      members:
-  #        - user:*@{DOMAIN}
