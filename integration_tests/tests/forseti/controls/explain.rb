@@ -170,6 +170,16 @@ control "explain" do
     its('stdout') { should match (/roles\/storagetransfer.viewer/) }
   end
 
+  # why_denied permission for org
+  describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} organization/#{org_id} --role roles/resourcemanager.organizationAdmin") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # why_denied permission for project
+  describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} project/#{project_id} --permission storage.buckets.delete") do
+    its('exit_status') { should eq 0 }
+  end
+
   # why_granted permission for org
   describe command("forseti explainer why_granted serviceaccount/#{forseti_server_service_account} organization/#{org_id} --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
