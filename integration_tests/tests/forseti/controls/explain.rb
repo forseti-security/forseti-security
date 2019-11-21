@@ -35,6 +35,18 @@ control "explain" do
     its('stdout') { should match (/roles\/editor/) }
   end
 
+  # access_by_resource organization
+  describe command("forseti explainer access_by_resource organization/#{org_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/10/) }
+  end
+
+  # access_by_resource project
+  describe command("forseti explainer access_by_resource project/#{project_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/5/) }
+  end
+
   # get_policy for org
   describe command("forseti explainer get_policy organization/#{org_id} | grep -c #{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
@@ -63,20 +75,6 @@ control "explain" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (sa_client_service_account) }
     its('stdout') { should match (sa_server_service_account) }
-  end
-
-  # access_by_member
-  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account}") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/browser"/) }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/iam.securityReviewer"/) }
-    its('stdout') { should match (/"resources": [ "project\/#{Regexp.quote(project_id)}" ], "role": "roles\/cloudsql.client"/) }
-  end
-
-  # access_by_member storage.buckets.lists
-  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account} storage.buckets.list") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(project_id)}" ], "role": "roles\/iam.securityReviewer"/) }
   end
 
   # list_permissions roles/iam.roleAdmin
