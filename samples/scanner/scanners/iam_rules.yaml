@@ -1,0 +1,84 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+rules:
+  # Note: please use the id of the resource (such as organization id,
+  # folder id, project id, etc.) when specifying the resource ids.
+  # default rules
+  - name: Allow only IAM members in my domain to be an OrgAdmin
+    mode: whitelist
+    resource:
+      - type: organization
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: roles/resourcemanager.organizationAdmin
+        members:
+          - user:*@{DOMAIN}
+          - group:*@{DOMAIN}
+
+  - name: Prevent public users from having access to buckets via IAM
+    mode: blacklist
+    resource:
+      - type: bucket
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: '*'
+        members:
+          - allUsers
+
+  - name: Prevent public authenticated users from having access to buckets via IAM
+    mode: blacklist
+    resource:
+      - type: bucket
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: '*'
+        members:
+          - allAuthenticatedUsers
+
+  # Below are the example rules that you can reference to create your own custom rule.
+  #- name: Allow only service accounts to have access
+  #  mode: whitelist
+  #  resource:
+  #    - type: organization
+  #      applies_to: self_and_children
+  #      resource_ids:
+  #        - '*'
+  #  inherit_from_parents: true
+  #  bindings:
+  #    - role: roles/*
+  #      members:
+  #        - serviceAccount:*@*.gserviceaccount.com
+
+  #- name: All projects must have owner from my domain
+  #  mode: required
+  #  resource:
+  #    - type: project
+  #      applies_to: self
+  #      resource_ids:
+  #        - '*'
+  #  inherit_from_parents: true
+  #  bindings:
+  #    - role: roles/owner
+  #      members:
+  #        - user:*@{DOMAIN}

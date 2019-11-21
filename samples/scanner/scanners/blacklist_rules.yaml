@@ -1,0 +1,3 @@
+rules:
+    - blacklist: Emerging Threat blacklist
+      url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt

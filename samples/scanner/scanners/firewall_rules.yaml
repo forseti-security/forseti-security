@@ -1,0 +1,55 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+rules:
+  - rule_id: 'prevent_allow_all_ingress'
+    description: Detect allow ingress to all policies
+    mode: blacklist
+    match_policies:
+      - direction: ingress
+        allowed: ['*']
+    verify_policies:
+      - allowed:
+        - IPProtocol: 'all'
+
+  - rule_id: 'disallow_all_ports'
+    description: Don't allow policies that expose every port
+    mode: blacklist
+    match_policies:
+      - direction: ingress
+        allowed: ['*']
+    verify_policies:
+      - allowed:
+        - IPProtocol: 'tcp'
+          ports:
+            - 'all'
+      - allowed:
+        - IPProtocol: 'udp'
+          ports:
+            - 'all'
+
+rule_groups:
+  - group_id: 'default_rules'
+    rule_ids:
+      - 'prevent_allow_all_ingress'
+      - 'disallow_all_ports'
+
+org_policy:
+  resources:
+    - type: organization
+      resource_ids:
+        - {ORGANIZATION_ID}
+      rules:
+        group_ids:
+          - 'default_rules'

@@ -1,0 +1,46 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#rules:
+#  - name: Rule Name Example
+#    target: Forwarding Rule Target Example
+#    mode: whitelist
+#    load_balancing_scheme: EXTERNAL
+#    ip_protocol: ESP
+#    ip_address: "198.51.100.46"
+#
+#  - name: TCP LB For Internal App
+#    target: https://www.googleapis.com/compute/v1/projects/THEPROJECT/regions/us-central1/THELB/FWD_RULE_NAME
+#    mode: whitelist
+#    load_balancing_scheme: INTERNAL
+#    port: 8080
+#    ip_protocol: TCP
+#    ip_address: "198.51.100.23"
+#
+#  - name: UDP LB for External VPN
+#    target: https://www.googleapis.com/compute/v1/projects/THEPROJECT/regions/us-central1/THELB/FWD_RULE_NAME
+#    mode: whitelist
+#    load_balancing_scheme: EXTERNAL
+#    port_range: 4500-4500
+#    ip_protocol: UDP
+#    ip_address: "198.51.100.99"
+#
+#  - name: TCP LB for External VPN
+#    target: https://www.googleapis.com/compute/v1/projects/THEPROJECT/regions/us-central1/THELB/FWD_RULE_NAME
+#    mode: whitelist
+#    load_balancing_scheme: EXTERNAL
+#    port_range: 4500-4500
+#    ip_protocol: TCP
+#    ip_address: "198.51.100.35"
+

@@ -1,0 +1,58 @@
+# Copyright 2018 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#  The following optional fields can be set as binding members:
+#   domain, group_email, user_email, special_group.
+#  Only member fields that are set will be considered when searching for
+#  violations.
+#
+# Note: Supported resources for applies_to are: bucket, cloudsqlinstance,
+# cluster, dataset, and instance. '*' is also allowed as the type to capture
+# all supported resource types.
+#
+# Note: Due to differences in capitalization among resource locations, all
+# resources locations will be lower cased before being matched.
+# Thus, please write rule locations in lowercase.
+#
+# Note: Due to differences in region (europe-west1) vs multi regional (EU)
+# naming, we recommend writing rules that can cover both (e.g. eu* instead of
+# europe*).
+
+# rules:
+#   # Note: please use the id of the resource (such as organization id,
+#   # folder id, project id, etc.) when specifying the resource ids.
+#   - name: All buckets in organization must be in the US.
+#     mode: whitelist
+#     resource:
+#       - type: organization
+#         resource_ids:
+#           - {ORGANIZATION_ID}
+#     applies_to:
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
+#     locations:
+#       - 'us*'
+#  - name: All buckets in organization must not be in EU.
+#     mode: blacklist
+#     resource:
+#       - type: organization
+#         resource_ids:
+#           - {ORGANIZATION_ID}
+#     applies_to:
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
+#     locations:
+#       - 'eu*'

@@ -1,0 +1,55 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#  The following optional fields can be set as binding members:
+#   domain, group_email, user_email, special_group.
+#  Only member fields that are set will be considered when searching for
+#  violations.
+
+rules:
+  # Note: please use the id of the resource (such as organization id,
+  # folder id, project id, etc.) when specifying the resource ids.
+  - name: BigQuery rule to search for public datasets
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - {ORGANIZATION_ID}
+    dataset_ids: ['*']
+    bindings:
+      - role: '*'
+        members:
+        - special_group: 'allAuthenticatedUsers'
+  - name: BigQuery rule to search for datasets accessible by users with gmail.com addresses
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - {ORGANIZATION_ID}
+    dataset_ids: ['*']
+    bindings:
+      - role: '*'
+        members:
+        - user_email: '*@gmail.com'
+  - name: BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - {ORGANIZATION_ID}
+    dataset_ids: ['*']
+    bindings:
+      - role: '*'
+        members:
+        - group_email: '*@googlegroups.com'
