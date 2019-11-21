@@ -173,11 +173,19 @@ control "explain" do
   # why_denied permission for org
   describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} organization/#{org_id} --role roles/resourcemanager.organizationAdmin") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (forseti_server_service_account) }
+    its('stdout') { should match (forseti_server_service_account) }
+    its('stdout') { should match (/organization\/#{Regexp.quote(org_id)}/) }
+    its('stdout') { should match (/roles\/resourcemanager.organizationAdmin/) }
+    its('stdout') { should match (/"overgranting": 0/) }
   end
 
   # why_denied permission for project
   describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} project/#{project_id} --permission storage.buckets.delete") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (/roles\/cloudmigration.inframanager/) }
+    its('stdout') { should match (/roles\/owner/) }
+    its('stdout') { should match (/roles\/storage.admin/) }
   end
 
   # why_granted permission for org
