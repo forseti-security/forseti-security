@@ -32,7 +32,15 @@ control "explain" do
   # access_by_authz
   describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/roles\/editor/) }
+    its('stdout') { should match (/"resource": "project\/#{project_id}"/) }
+    its('stdout') { should match (/"role": "roles\/editor"/) }
+  end
+
+  # access_by_authz
+  describe command("forseti explainer access_by_authz --role roles/storage.objectCreator") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/#{project_id}/) }
+    its('stdout') { should match (/serviceaccount\/#{forseti_server_service_account}/) }
   end
 
   # access_by_resource organization
@@ -60,21 +68,18 @@ control "explain" do
   end
 
   # list_members
-  sa_client_service_account = "serviceaccount/#{forseti_client_service_account}"
-  sa_server_service_account = "serviceaccount/#{forseti_server_service_account}"
-  po_project_id = "projectowner/#{project_id}"
-  describe command("forseti explainer list_member") do
+  describe command("forseti explainer list_members") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (sa_client_service_account) }
-    its('stdout') { should match (sa_server_service_account) }
-    its('stdout') { should match (po_project_id) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_client_service_account)}/) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_server_service_account)}/) }
+    its('stdout') { should match (/projectowner\/#{Regexp.quote(project_id)}/) }
   end
 
   # list_members --prefix forseti
   describe command("forseti explainer list_members --prefix forseti") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (sa_client_service_account) }
-    its('stdout') { should match (sa_server_service_account) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_client_service_account)}/) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_server_service_account)}/) }
   end
 
   # list_permissions roles/iam.roleAdmin
@@ -223,7 +228,7 @@ control "explain" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/organization\/#{Regexp.quote(org_id)}/) }
   end
-  
+
   # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
