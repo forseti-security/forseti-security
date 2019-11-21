@@ -70,7 +70,6 @@ class StorageTest(ForsetiTestCase):
                                  res_org)
         res_proj1.set_iam_policy({'id': 'test'})
         res_proj1.set_billing_info({'id': 'test'})
-        res_proj1.set_org_policy({'id': 'test'})
         res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', 'resource',
                                 res_proj1)
         res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', 'resource',
@@ -170,7 +169,6 @@ class StorageTest(ForsetiTestCase):
                                  res_org)
         res_proj1.set_iam_policy({'id': 'test'})
         res_proj1.set_billing_info({'id': 'test'})
-        res_proj1.set_org_policy({'id': 'test'})
         res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
                                 res_org)
         res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',

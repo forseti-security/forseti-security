@@ -160,6 +160,3 @@ class ResourceMock(Resource):
 
     def set_billing_info(self, billing_info):
         self._set_cache('billing_info', billing_info)
-
-    def set_org_policy(self, org_policy):
-        self._set_cache('org_policy', org_policy)
