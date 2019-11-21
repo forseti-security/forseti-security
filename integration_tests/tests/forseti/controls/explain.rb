@@ -16,6 +16,7 @@ require 'securerandom'
 require 'json'
 
 forseti_server_service_account = attribute('forseti-server-service-account')
+forseti_client_service_account = attribute('forseti-client-service-account')
 project_id = attribute('project_id')
 org_id = attribute('org_id')
 
@@ -44,6 +45,24 @@ control "explain" do
   describe command("forseti explainer get_policy project/#{project_id} | grep -c #{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/5/) }
+  end
+
+  # list_members
+  sa_client_service_account = "serviceaccount/#{forseti_client_service_account}"
+  sa_server_service_account = "serviceaccount/#{forseti_server_service_account}"
+  po_project_id = "projectowner/#{project_id}"
+  describe command("forseti explainer list_member") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (sa_client_service_account) }
+    its('stdout') { should match (sa_server_service_account) }
+    its('stdout') { should match (po_project_id) }
+  end
+
+  # list_members --prefix forseti
+  describe command("forseti explainer list_members --prefix forseti") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (sa_client_service_account) }
+    its('stdout') { should match (sa_server_service_account) }
   end
 
   # list_permissions roles/iam.roleAdmin
