@@ -48,7 +48,7 @@ Then run (`gcp-forensics-deployment-test` is the name of a project that you've p
 set up):
 
 ```bash
-terraform apply -var 'gce_project=gcp-forensics-deployment-test'
+terraform apply -var 'gcp_project=gcp-forensics-deployment-test'
 ```
 
 Run the following to get information about the newly deployed infrastructure:
