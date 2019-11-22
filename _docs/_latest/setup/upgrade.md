@@ -650,10 +650,37 @@ If your Forseti deployment was previously deployed with Deployment Manager, plea
 ### Steps to Upgrade using Terraform
 A Cloud Shell walkthrough is provided to assist with upgrading Forseti previously deployed with Terraform.  Completing this guide will also result in a Forseti deployment upgraded to the most recent version.
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=module-release-5.0.0&cloudshell_working_dir=examples/upgrade_forseti_with_v5.0&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=modulerelease500&cloudshell_working_dir=examples/upgrade_forseti_with_v5.0&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.22.0 to 2.23.0" content=upgrading_2_22_0_to_2_23_0 uid=24 %}
+
+{% capture upgrading_2_23_0_to_2_24_0 %}
+
+### Forseti on-GCE
+1. Update the `version` inside `main.tf` file to `5.1.0`.
+1. Run command `terraform init` to initialize terraform.
+1. Run command `terraform plan` to see the infrastructure plan.
+1. Run command `terraform apply` to apply the infrastructure build.
+
+### Forseti on-GKE
+1. Update the `version` inside `main.tf` file to `5.1.0`.
+2. Run command `terraform init` to initialize terraform.
+3. If you previously configured Config Validator in your module by setting the following values:
+```
+  config_validator_enabled = true
+  git_sync_private_ssh_key_file = ""
+  policy_library_repository_url = ""
+```
+You will need to specify an additional value in your `main.tf` to maintain the periodic git-sync feature for the library:
+```
+  policy_library_sync_enabled   = true
+```
+4. Run command `terraform plan` to see the infrastructure plan.
+5. Run command `terraform apply` to apply the infrastructure build.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.23.0 to 2.24.0" content=upgrading_2_23_0_to_2_24_0 uid=25 %}
 
 {% capture deployment_manager_error %}
 

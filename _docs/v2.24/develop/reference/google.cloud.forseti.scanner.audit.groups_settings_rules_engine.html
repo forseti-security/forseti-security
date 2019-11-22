@@ -1,0 +1,565 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.groups_settings_rules_engine module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.audit.groups_settings_rules_engine">
+<span id="google-cloud-forseti-scanner-audit-groups-settings-rules-engine-module"></span><h1>google.cloud.forseti.scanner.audit.groups_settings_rules_engine module<a class="headerlink" href="#module-google.cloud.forseti.scanner.audit.groups_settings_rules_engine" title="Permalink to this headline">¶</a></h1>
+<p>Rules engine for checking gsuite groups settings configuration.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook">
+<em class="property">class </em><code class="descname">GroupsSettingsRuleBook</code><span class="sig-paren">(</span><em>rule_defs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook</span></code></a></p>
+<p>The RuleBook for GroupsSettings rules.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equals.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True or False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Equals.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True or False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The object representation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rule">
+<code class="descname">add_rule</code><span class="sig-paren">(</span><em>rule_def</em>, <em>rule_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.add_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a rule to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rule_def</strong> (<em>dict</em>) – A dictionary containing rule definition
+properties.</li>
+<li><strong>rule_index</strong> (<em>int</em>) – The index of the rule from the rule definitions.
+Assigned automatically when the rule book is built.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rule_defs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule_defs</strong> (<em>dict</em>) – rule definitions dictionary</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>settings</em>, <em>iam_only</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find groups settings violations in the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – The GCP resource to check for violations.</li>
+<li><strong>iam_only</strong> (<em>bool</em>) – IAM only.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">resource groups settings rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation">RuleViolation</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.get_resource_rules">
+<code class="descname">get_resource_rules</code><span class="sig-paren">(</span><em>_resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRuleBook.get_resource_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.get_resource_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all the resource rules for resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>_resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The gcp_type Resource find in the map.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A ResourceRules object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules" title="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules">ResourceRules</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.supported_settings">
+<code class="descname">supported_settings</code><em class="property"> = frozenset({'whoCanAdd', 'allowExternalMembers', 'whoCanViewGroup', 'whoCanViewMembership', 'whoCanLeaveGroup', 'whoCanJoin', 'whoCanInvite'})</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.supported_settings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine">
+<em class="property">class </em><code class="descname">GroupsSettingsRulesEngine</code><span class="sig-paren">(</span><em>rules_file_path</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRulesEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine</span></code></a></p>
+<p>Rules engine for Groups Settings scanner.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRulesEngine.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rules</strong> (<em>list</em>) – The list of rules to add to the book.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.build_rule_book">
+<code class="descname">build_rule_book</code><span class="sig-paren">(</span><em>global_configs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRulesEngine.build_rule_book"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.build_rule_book" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build GroupsSettingsRuleBook from the rules definition file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>global_configs</strong> (<em>dict</em>) – Global configurations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>settings</em>, <em>iam_only</em>, <em>force_rebuild=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#GroupsSettingsRulesEngine.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether Groups Settings violates rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – A GroupsSettings resource to check.</li>
+<li><strong>iam_only</strong> (<em>bool</em>) – IAM only.</li>
+<li><strong>force_rebuild</strong> (<em>bool</em>) – If True, rebuilds the rule book. This will
+reload the rules definition file and add the rules to the book.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">generator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules">
+<em class="property">class </em><code class="descname">ResourceRules</code><span class="sig-paren">(</span><em>_resource=None</em>, <em>iam_only_rules=None</em>, <em>not_iam_only_rules=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#ResourceRules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An association of a resource to rules.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#ResourceRules.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare == with another object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules" title="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules"><em>ResourceRules</em></a>) – object to compare with</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">comparison result</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#ResourceRules.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare != with another object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – object to compare with</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">comparison result</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#ResourceRules.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of this node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">debug string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>settings</em>, <em>iam_only</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#ResourceRules.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the policy binding matches this rule’s criteria.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – groups settings resource.</li>
+<li><strong>iam_only</strong> (<em>bool</em>) – IAM only.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">RuleViolation</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule">
+<em class="property">class </em><code class="descname">Rule</code><span class="sig-paren">(</span><em>rule_name</em>, <em>rule_index</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Rule properties from the rule definition file, also finds violations.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test whether Rule equals other Rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule"><em>Rule</em></a>) – object to compare to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">comparison result</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a hash of the rule index.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hash of the rule index.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test whether Rule is not equal to another Rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – object to compare to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">comparison result</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_blacklist_violation">
+<code class="descname">find_blacklist_violation</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.find_blacklist_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_blacklist_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds violations in case that rule is blacklist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – Groups Settings.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of group settings in violation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find GroupsSettings violations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – The resource to check for violations.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns a list of RuleViolation named tuples.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_whitelist_violation">
+<code class="descname">find_whitelist_violation</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.find_whitelist_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_whitelist_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds violations in case that rule is whitelist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>settings</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.groups_settings.html#google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings" title="google.cloud.forseti.common.gcp_type.groups_settings.GroupsSettings"><em>GroupsSettings</em></a>) – Groups settings.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of group settings in violation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.rule_requirements">
+<code class="descname">rule_requirements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/groups_settings_rules_engine.html#Rule.rule_requirements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.rule_requirements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to create violation reason.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">value couples specified in rule, joined by AND.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation">
+<em class="property">class </em><code class="descname">RuleViolation</code><span class="sig-paren">(</span><em>group_email</em>, <em>resource_type</em>, <em>rule_index</em>, <em>rule_name</em>, <em>violation_type</em>, <em>violation_settings</em>, <em>whoCanAdd</em>, <em>whoCanJoin</em>, <em>whoCanViewMembership</em>, <em>whoCanViewGroup</em>, <em>whoCanInvite</em>, <em>allowExternalMembers</em>, <em>whoCanLeaveGroup</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__getnewargs__">
+<code class="descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__getnewargs__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__new__">
+<em class="property">static </em><code class="descname">__new__</code><span class="sig-paren">(</span><em>_cls</em>, <em>group_email</em>, <em>resource_type</em>, <em>rule_index</em>, <em>rule_name</em>, <em>violation_type</em>, <em>violation_settings</em>, <em>whoCanAdd</em>, <em>whoCanJoin</em>, <em>whoCanViewMembership</em>, <em>whoCanViewGroup</em>, <em>whoCanInvite</em>, <em>allowExternalMembers</em>, <em>whoCanLeaveGroup</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__new__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of RuleViolation(group_email, resource_type, rule_index, rule_name, violation_type, violation_settings, whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite, allowExternalMembers, whoCanLeaveGroup)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a nicely formatted representation string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._asdict">
+<code class="descname">_asdict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._asdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new OrderedDict which maps field names to their values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._fields">
+<code class="descname">_fields</code><em class="property"> = ('group_email', 'resource_type', 'rule_index', 'rule_name', 'violation_type', 'violation_settings', 'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 'allowExternalMembers', 'whoCanLeaveGroup')</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._make">
+<em class="property">classmethod </em><code class="descname">_make</code><span class="sig-paren">(</span><em>iterable</em>, <em>new=&lt;built-in method __new__ of type object&gt;</em>, <em>len=&lt;built-in function len&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new RuleViolation object from a sequence or iterable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._replace">
+<code class="descname">_replace</code><span class="sig-paren">(</span><em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new RuleViolation object replacing specified fields with new values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._source">
+<code class="descname">_source</code><em class="property"> = &quot;from builtins import property as _property, tuple as _tuple\nfrom operator import itemgetter as _itemgetter\nfrom collections import OrderedDict\n\nclass RuleViolation(tuple):\n    'RuleViolation(group_email, resource_type, rule_index, rule_name, violation_type, violation_settings, whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite, allowExternalMembers, whoCanLeaveGroup)'\n\n    __slots__ = ()\n\n    _fields = ('group_email', 'resource_type', 'rule_index', 'rule_name', 'violation_type', 'violation_settings', 'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 'allowExternalMembers', 'whoCanLeaveGroup')\n\n    def __new__(_cls, group_email, resource_type, rule_index, rule_name, violation_type, violation_settings, whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite, allowExternalMembers, whoCanLeaveGroup):\n        'Create new instance of RuleViolation(group_email, resource_type, rule_index, rule_name, violation_type, violation_settings, whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite, allowExternalMembers, whoCanLeaveGroup)'\n        return _tuple.__new__(_cls, (group_email, resource_type, rule_index, rule_name, violation_type, violation_settings, whoCanAdd, whoCanJoin, whoCanViewMembership, whoCanViewGroup, whoCanInvite, allowExternalMembers, whoCanLeaveGroup))\n\n    &#64;classmethod\n    def _make(cls, iterable, new=tuple.__new__, len=len):\n        'Make a new RuleViolation object from a sequence or iterable'\n        result = new(cls, iterable)\n        if len(result) != 13:\n            raise TypeError('Expected 13 arguments, got %d' % len(result))\n        return result\n\n    def _replace(_self, **kwds):\n        'Return a new RuleViolation object replacing specified fields with new values'\n        result = _self._make(map(kwds.pop, ('group_email', 'resource_type', 'rule_index', 'rule_name', 'violation_type', 'violation_settings', 'whoCanAdd', 'whoCanJoin', 'whoCanViewMembership', 'whoCanViewGroup', 'whoCanInvite', 'allowExternalMembers', 'whoCanLeaveGroup'), _self))\n        if kwds:\n            raise ValueError('Got unexpected field names: %r' % list(kwds))\n        return result\n\n    def __repr__(self):\n        'Return a nicely formatted representation string'\n        return self.__class__.__name__ + '(group_email=%r, resource_type=%r, rule_index=%r, rule_name=%r, violation_type=%r, violation_settings=%r, whoCanAdd=%r, whoCanJoin=%r, whoCanViewMembership=%r, whoCanViewGroup=%r, whoCanInvite=%r, allowExternalMembers=%r, whoCanLeaveGroup=%r)' % self\n\n    def _asdict(self):\n        'Return a new OrderedDict which maps field names to their values.'\n        return OrderedDict(zip(self._fields, self))\n\n    def __getnewargs__(self):\n        'Return self as a plain tuple.  Used by copy and pickle.'\n        return tuple(self)\n\n    group_email = _property(_itemgetter(0), doc='Alias for field number 0')\n\n    resource_type = _property(_itemgetter(1), doc='Alias for field number 1')\n\n    rule_index = _property(_itemgetter(2), doc='Alias for field number 2')\n\n    rule_name = _property(_itemgetter(3), doc='Alias for field number 3')\n\n    violation_type = _property(_itemgetter(4), doc='Alias for field number 4')\n\n    violation_settings = _property(_itemgetter(5), doc='Alias for field number 5')\n\n    whoCanAdd = _property(_itemgetter(6), doc='Alias for field number 6')\n\n    whoCanJoin = _property(_itemgetter(7), doc='Alias for field number 7')\n\n    whoCanViewMembership = _property(_itemgetter(8), doc='Alias for field number 8')\n\n    whoCanViewGroup = _property(_itemgetter(9), doc='Alias for field number 9')\n\n    whoCanInvite = _property(_itemgetter(10), doc='Alias for field number 10')\n\n    allowExternalMembers = _property(_itemgetter(11), doc='Alias for field number 11')\n\n    whoCanLeaveGroup = _property(_itemgetter(12), doc='Alias for field number 12')\n\n&quot;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation._source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.allowExternalMembers">
+<code class="descname">allowExternalMembers</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.allowExternalMembers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.group_email">
+<code class="descname">group_email</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.group_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.resource_type">
+<code class="descname">resource_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.resource_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.rule_index">
+<code class="descname">rule_index</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.rule_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.rule_name">
+<code class="descname">rule_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.rule_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.violation_settings">
+<code class="descname">violation_settings</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.violation_settings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.violation_type">
+<code class="descname">violation_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.violation_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanAdd">
+<code class="descname">whoCanAdd</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanAdd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanInvite">
+<code class="descname">whoCanInvite</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanInvite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanJoin">
+<code class="descname">whoCanJoin</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanJoin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanLeaveGroup">
+<code class="descname">whoCanLeaveGroup</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanLeaveGroup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanViewGroup">
+<code class="descname">whoCanViewGroup</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanViewGroup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanViewMembership">
+<code class="descname">whoCanViewMembership</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.RuleViolation.whoCanViewMembership" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+

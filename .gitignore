@@ -45,6 +45,7 @@ _www/
 _config.yml~
 Gemfile.lock
 .sass-cache/
+.jekyll-cache
 
 # automatically resized images
 images/resized/

@@ -27,7 +27,7 @@ The client CLI is still provided through the GCE VM.  The endpoint configuration
 
 This is illustrated in the following diagram.
 
-{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture-2-21.png alt: "forseti on-GKE architecture" %}
+{% responsive_image path: images/docs/concepts/forseti-on-gke-architecture-2-24.png alt: "forseti on-GKE architecture" %}
 
 ## Container Strategy
 
