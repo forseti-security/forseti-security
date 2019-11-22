@@ -104,6 +104,8 @@ resource "null_resource" "install-mysql-client" {
       bastion_user        = module.bastion.user
     }
   }
+
+  depends_on = [null_resource.wait_for_server]
 }
 
 #-------------------------#
