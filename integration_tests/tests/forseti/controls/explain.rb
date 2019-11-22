@@ -32,15 +32,15 @@ control "explain" do
   # access_by_member
   describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/browser"/) }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/iam.securityReviewer"/) }
-    its('stdout') { should match (/"resources": [ "project\/#{Regexp.quote(project_id)}" ], "role": "roles\/cloudsql.client"/) }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/browser"/) }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/iam.securityReviewer"/) }
+    its('stdout') { should match (/"resources": \[\n    "project\/#{Regexp.quote(project_id)}"\n  \],\n  "role": "roles\/cloudsql.client"/) }
   end
 
   # access_by_member storage.buckets.lists
   describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account} storage.buckets.list") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(project_id)}" ], "role": "roles\/iam.securityReviewer"/) }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/iam.securityReviewer"/) }
   end
 
   # access_by_authz
@@ -248,7 +248,7 @@ control "explain" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/\"result\": true/)}
   end
-  
+
   # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
