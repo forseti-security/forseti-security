@@ -50,7 +50,7 @@ provide the corresponding values for all the fields mentioned below.
   * **Valid values**: sendgrid or mailjet
   
 * `auth`
-  * **Description**: The authentication/authorization key used to authorize requests to SendGrid.
+  * **Description**: The authentication/authorization key used to authorize requests to SendGrid or Mailjet.
   * **Valid values**: String
   
 * `api_key`
