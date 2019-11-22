@@ -17,11 +17,6 @@ provider "google-beta" {
   version     = "~> 2.10"
 }
 
-//provider "gsuite" {
-//  version                 = "~> 0.1"
-//  impersonated_user_email = var.gsuite_admin_email
-//}
-
 provider "tls" {
   version = "~> 2.0"
 }
@@ -74,10 +69,6 @@ resource "null_resource" "wait_for_server" {
 
   provisioner "remote-exec" {
     script = "${path.module}/scripts/wait-for-forseti.sh"
-
-//    inline = [
-//       "until [ -f /home/ubuntu/forseti_env.sh ]; do echo Waiting for Forseti to start...; sleep 10; done; echo Forseti has started!"
-//    ]
 
     connection {
       type                = "ssh"
@@ -147,9 +138,3 @@ resource "google_storage_bucket_access_control" "test_resource_bucket_scanner_bu
 
   depends_on = [google_storage_bucket.test_resource_bucket_scanner_bucket]
 }
-
-//resource "gsuite_group" "test-gsuite-group" {
-//  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
-//  name        = "gsuite-${random_pet.random_name_generator.id}"
-//  description = "G Suite Group Automated Creation Testing"
-//}
