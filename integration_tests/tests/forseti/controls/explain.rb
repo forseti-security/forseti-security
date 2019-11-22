@@ -29,6 +29,20 @@ control "explain" do
     its('exit_status') { should eq 0 }
   end
 
+  # access_by_member
+  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/browser"/) }
+    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(org_id)}" ], "role": "roles\/iam.securityReviewer"/) }
+    its('stdout') { should match (/"resources": [ "project\/#{Regexp.quote(project_id)}" ], "role": "roles\/cloudsql.client"/) }
+  end
+
+  # access_by_member storage.buckets.lists
+  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account} storage.buckets.list") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/"resources": [ "organization\/#{Regexp.quote(project_id)}" ], "role": "roles\/iam.securityReviewer"/) }
+  end
+
   # access_by_authz
   describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
