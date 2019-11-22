@@ -11,8 +11,8 @@ This page describes how to define rules for Forseti Scanner.
 
 ## Defining custom rules
 
-You can find some starter rules in the
-[rules](https://github.com/forseti-security/forseti-security/tree/master/rules)
+You can find some sample rules in the
+[rules](https://github.com/forseti-security/forseti-security/tree/master/samples/scanner/scanners)
 directory. When you make changes to the rule files, upload them to your
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
 listed in `forseti_server_conf.yaml`.
@@ -63,7 +63,7 @@ rules:
       * **Valid values**: One of `OWNER`, `WRITER` or `READER`.
     * `members`
       * **Description**: A list of members. You can also use an empty list. Only a single field must be set per member.
-        * `domain` 
+        * `domain`
           * **Description**: Domain.
           *  **Valid values**: String.
         * `group_email`
@@ -96,11 +96,11 @@ rules:
   * **Description**: User email. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
-The BigQuery Scanner rules specify entities that are allowed or not allowed 
-(depending on mode) to access your datasets. 
+The BigQuery Scanner rules specify entities that are allowed or not allowed
+(depending on mode) to access your datasets.
 For blacklists, when you set a value of `*` for `special_group`, `user_email`,
-`domain`, or `group_email`, the Scanner checks to make sure that no entities that 
-have the field set can access your datasets. If you specify any other value, the 
+`domain`, or `group_email`, the Scanner checks to make sure that no entities that
+have the field set can access your datasets. If you specify any other value, the
 Scanner only checks to make sure that the entity you specified doesn't have access.
 For whitelists, the specified entity specifies who has access to your datasets.
 Any entity that does not match a whitelist binding will be marked as a violation.
@@ -164,7 +164,7 @@ rules:
   * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
   * **Valid values**: String.
   * **Example values**: `user:user1@MYDOMAIN.com`
-  
+
 ## Cloud IAM policy rules
 
 This section describes rules for Cloud Identity and Access Management (Cloud IAM).
@@ -238,7 +238,7 @@ rules:
       * **Valid values**: String.
       * **Example values**: `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
         `user:*@company.com` (anyone with an identity at company.com).
- 
+
 ## Cloud IAP rules
 
 This section describes rules for Cloud Identity-Aware Proxy (Cloud IAP).
@@ -338,7 +338,7 @@ rules:
 * `ssl_enabled`
   * **Description**: Whether SSL should be enabled.
   * **Valid values**: One of `true` or `false`.
-  
+
 ## Cloud Storage bucket ACL rules
 
 ### Rule definition
@@ -389,7 +389,7 @@ rules:
 For more information, refer to the
 [BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls#resource)
 documentation.
-  
+
 ## Enabled APIs rules
 
 ### Rule definition
@@ -445,7 +445,7 @@ rules:
   * **Description**: The list of services to whitelist/blacklist/require.
   * **Valid values**: String.
   * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
-  
+
 ## External Project Access rules
 
 ### Rule definitions
@@ -459,16 +459,16 @@ rules:
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
-  
+
 * `allowed_ancestors`
   * **Description**: The folder or organization that is allowed as an ancestor of a project.
   * **Valid values**: String, organizations/111 or folder/111.
 
 * `users`
-  * **Description**: * Optional. The users that are allowed access. Omitting this section would mean that the rule 
+  * **Description**: * Optional. The users that are allowed access. Omitting this section would mean that the rule
   applies to all users in the organization.
   * **Valid values**: String, user1@example.com.
-  
+
 ## Firewall rules
 Firewall Scanner rules can be `blacklist`, `whitelist`, `required`, or `matches` policies.  
 
@@ -516,7 +516,7 @@ org_policy:
           - 'prevent_allow_all_ingress'
 ```
 
-### Rule definition 
+### Rule definition
 All modes share the same first-level rule structure:
 * `rule_id`
   * **Description**: (*required*) The id of the rule.
@@ -528,7 +528,7 @@ All modes share the same first-level rule structure:
 * `description`
   * **Description**: (*optional*) Your description of the rule.
   * **Valid values**: *String*.
-  
+
 * `mode`
   * **Description**: (*required*) The rule mode.
   * **Valid values**: *String*. One of `blacklist`, `whitelist`, `required`, `matches`.
@@ -569,8 +569,8 @@ All modes share the same first-level rule structure:
       * **Valid values**: List. Any GCP supported tag, e.g. `linux`.
     * `destinationRanges`:
       * **Description**: (*required if `egress`, 256 ranges max*) A list of destination ranges.
-      * **Valid values**: List of CIDR formatted IP ranges, e.g. `'0.0.0.0/0'` 
-    * `targetServiceAccounts`: 
+      * **Valid values**: List of CIDR formatted IP ranges, e.g. `'0.0.0.0/0'`
+    * `targetServiceAccounts`:
       * **Description**: (*optional*) A list of service accounts if using source service accounts in firewall rules.
       * **Valid values**: List of service account email addresses, e.g. `'PROJECT@compute.gserviceaccount.com'`.
     * `targetTags`:
@@ -590,7 +590,7 @@ All modes share the same first-level rule structure:
       * A combination of `sourceRanges` and `sourceTags`
     * The `target` parameters are only applicable to `egress` rules, `egress` rules cannot include `source` parameters.  
     The `destinationRanges` is required for `egress` rules.
-    
+
 
 * `verify_policies` (*only for `blacklist` and `whitelist` modes*)  
   * **Description**: Policies to verify on firewall rules when scanning.
@@ -794,10 +794,10 @@ rules:
           - '*'
     key:
       - rotation_period: 100 #days
-        algorithm: 
+        algorithm:
         - GOOGLE_SYMMETRIC_ENCRYPTION
         protection_level: SOFTWARE
-        purpose: 
+        purpose:
         - ENCRYPT_DECRYPT
         state:
         - ENABLED
@@ -806,7 +806,7 @@ rules:
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
-  
+
 * `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: String.  One of `blacklist` or `whitelist`.
@@ -826,31 +826,31 @@ rules:
 * `key`
   * **Description**: A list of crypto key configuration details to check for.
     * `rotation_period`
-      * **Description**: Optional, the maximum number of days in which the key 
+      * **Description**: Optional, the maximum number of days in which the key
       should be rotated.
       * **Valid values**: String, number of days.
-      
+
     * `algorithms`
       * **Description**: Optional, a list of algorithms to whitelist/blacklist.
       * **Valid values**: String.
       * **Example values**: `GOOGLE_SYMMETRIC_ENCRYPTION`, `EC_SIGN_P256_SHA256`
-      
+
     * `protection_level`
       * **Description**: Optional, the protection level to which you want to
       apply the rule.
       * **Valid values**: One of `SOFTWARE` or `HSM`.
-      
+
     * `purpose`
-      * **Description**: Optional, a list of purpose to whitelist/blacklist. 
+      * **Description**: Optional, a list of purpose to whitelist/blacklist.
       * **Valid values**: String
-      * **Example values**: `ENCRYPT_DECRYPT`, `ASYMMETRIC_SIGN` and 
+      * **Example values**: `ENCRYPT_DECRYPT`, `ASYMMETRIC_SIGN` and
       `ASYMMETRIC_DECRYPT`.
 
-      
+
     * `state`
       * **Description**: Optional, a list of states to whitelist/blacklist.
       * **Valid values**: String.
-      * **Example values**: `PENDING_GENERATION`, `ENABLED`, `DISABLED`, 
+      * **Example values**: `PENDING_GENERATION`, `ENABLED`, `DISABLED`,
       `DESTROY_SCHEDULED` and `DESTROYED`.
 
 ## Kubernetes Engine rules
@@ -909,7 +909,7 @@ rules:
     the JMESPath expression in `key` extracts an integer, you probably
     want integers in this list.  Similarly, if the expression extracts
     a list of values, you need to provide lists.
-    
+
 ## Kubernetes Engine version rules
 
 ### Rule definition
@@ -1069,16 +1069,16 @@ rules:
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
-    * **Valid values**: One of `bucket`, `cloudsqlinstance`, `dataset`, 
+    * **Valid values**: One of `bucket`, `cloudsqlinstance`, `dataset`,
       `instance`or `kubernetes_cluster`.
-    
+
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: List of strings. A single wildcard string is also accepted.
 
 * `locations`:
   * **Description**: A list of resource locations.
-  * **Value values**: String. Supports wildcards. 
+  * **Value values**: String. Supports wildcards.
   * **Note**:
     * Due to differences in capitalization among resource locations, all resources locations will be lower cased before being matched.
     * Due to differences in region (europe-west1) vs multi regional (EU) naming, we recommend writing rules that can cover both (e.g. eu* instead of europe*).
@@ -1131,7 +1131,7 @@ rules:
   * `filter`
     * **Description**: The logs filter. Determines which logs to export.
     * **Valid values**: String.
-  
+
   * `include_children`
     * **Description**: Whether to include children. It is only relevant to sinks created for organizations or folders.
     * **Valid values**: String. One of `true`, `false` or `*`. `*` means the rule will match sinks with either true or false.
@@ -1157,12 +1157,12 @@ rules:
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
-  
+
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
     * **Valid values**: String, Currently only supports `bucket` and `bigquery_table`.
-    
+
 * `resource`
   * `type`
     * **Description**: The type of the resource.
@@ -1184,7 +1184,7 @@ rules:
   * **Valid values**: Integer, number of days.
 
     *Tip*: The rule must include a minimum_retention, maximum_retention or both.
-    
+
 ## Service Account Key rules
 
 ### Rule definitions
@@ -1215,5 +1215,3 @@ rules:
 * `max_age`
   * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
   * **Valid values**: String, number of days.
-
-
