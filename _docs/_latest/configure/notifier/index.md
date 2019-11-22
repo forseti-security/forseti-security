@@ -58,11 +58,13 @@ provide the corresponding values for all the fields mentioned below.
   * **Valid values**: String
   
 * `api_secret`
-  * **Description**: The secret used to authorize requests to Mailjet.
+  * **Description**: The secret used to authorize requests to Mailjet. This 
+  field is required for Mailjet connector only.
   * **Valid values**: String
   
 * `campaign`
-  * **Description**: Campaign tag specific for Mailjet.
+  * **Description**: Campaign tag specific for Mailjet. This field is required 
+  for Mailjet connector only.
   * **Valid values**: String  
   
 * `sender`
@@ -104,7 +106,7 @@ accordingly.
   ```yaml
   notifier:
     email_connector:
-      name: sendgrid
+      name: mailjet
       auth:
         api_key: {Mailjet_API_KEY}
         api_secret: {Mailjet_API_secret}
