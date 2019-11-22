@@ -65,6 +65,9 @@ attributes:
 - name: kms_resources_names
   required: true
   type: array
+- name: test-resource-bucket-scanner-bucket
+  required: true
+  type: string
 depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git
