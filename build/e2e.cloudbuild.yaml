@@ -14,7 +14,7 @@
 
 timeout: 3600s
 steps:
-- id: prepare
+- id: run_e2e_tests
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/usr/local/bin/test_integration.sh']
   env:
