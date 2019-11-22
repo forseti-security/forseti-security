@@ -108,7 +108,7 @@ accordingly.
       auth:
         api_key: {Mailjet_API_KEY}
         mailjet_api_key: {Mailjet_API_KEY}
-        campaign:{Mailjet_Campaign}
+        campaign: {Mailjet_Campaign}
       sender: {SENDER EMAIL}
       recipient: {RECIPIENT EMAIL}
       data_format: csv
