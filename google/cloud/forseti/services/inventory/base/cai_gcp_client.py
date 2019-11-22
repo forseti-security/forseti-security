@@ -1148,7 +1148,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
-    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_folder_org_policies(self, folder_id):
         """Folder organization policy in a folder from Cloud Asset data.
         Args:
@@ -1157,15 +1156,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Folder organization policy.
         """
-        resource = self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.engine)
-        if resource:
-            return resource
+        for folder in resources:
+            yield folder
 
-    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_organization_access_policies(self, org_id):
         """Organization access policy from Cloud Asset data.
         Args:
@@ -1174,15 +1172,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Access organization policy.
         """
-        resource = self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        if resource:
-            return resource
+        for org in resources:
+            yield org
 
-    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_organization_org_policies(self, org_id):
         """Organization organization policy from Cloud Asset data.
         Args:
@@ -1191,15 +1188,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Organization organization policy.
         """
-        resource = self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        if resource:
-            return resource
+        for org in resources:
+            yield org
 
-    # pylint: disable=inconsistent-return-statements, using-constant-test
     def iter_crm_project_org_policies(self, project_number):
         """Project organization policy from Cloud Asset data.
         Args:
@@ -1207,14 +1203,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Project organization Policy.
         """
-        resource = self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
             'cloudresourcemanager.googleapis.com/Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.engine)
-        if resource:
-            return resource
+        for org in resources:
+            yield org
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
