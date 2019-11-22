@@ -14,8 +14,8 @@
 
 """Tests the pipeline builder."""
 
+import os
 import unittest.mock as mock
-import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner import scanner_builder
@@ -116,7 +116,8 @@ class ScannerBuilderTest(ForsetiTestCase):
                 autospec=True)
     def testCanBuildOneSpecificScanner(self, mock_rules_engine):
         builder = scanner_builder.ScannerBuilder(
-            FAKE_GLOBAL_CONFIGS, {},
+            FAKE_GLOBAL_CONFIGS,
+            fake_runnable_scanners.EXTERNAL_PROJECT_ACCESS_ENABLED,
             mock.MagicMock(),
             '',
             FAKE_TIMESTAMP,
@@ -126,3 +127,23 @@ class ScannerBuilderTest(ForsetiTestCase):
         expected_scanner_name = 'ExternalProjectAccessScanner'
         actual_scanner_name = type(runnable_pipelines[0]).__name__
         self.assertEqual(expected_scanner_name, actual_scanner_name)
+
+    @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
+                autospec=True)
+    def testNonExistentScannerRulesIsHandled(self, mock_logger):
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS,
+            fake_runnable_scanners.NONEXISTENT_RULES_ENABLED,
+            mock.MagicMock(),
+            '',
+            FAKE_TIMESTAMP)
+
+        runnable_scanners = builder.build()
+
+        rules_path = os.path.join(fake_runnable_scanners.test_rules_path,
+                                  'firewall_rules.yaml')
+        mock_logger.error.assert_called_with(
+            f'Rules file for Scanner firewall_rule does not '
+            f'exist. Rules path: {rules_path}')
+
+        self.assertEqual(0, len(runnable_scanners))
