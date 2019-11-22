@@ -107,7 +107,7 @@ accordingly.
       name: sendgrid
       auth:
         api_key: {Mailjet_API_KEY}
-        mailjet_api_key: {Mailjet_API_KEY}
+        api_secret: {Mailjet_API_secret}
         campaign: {Mailjet_Campaign}
       sender: {SENDER EMAIL}
       recipient: {RECIPIENT EMAIL}
