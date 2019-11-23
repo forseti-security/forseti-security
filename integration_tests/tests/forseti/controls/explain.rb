@@ -16,6 +16,7 @@ require 'securerandom'
 require 'json'
 
 forseti_server_service_account = attribute('forseti-server-service-account')
+forseti_client_service_account = attribute('forseti-client-service-account')
 project_id = attribute('project_id')
 org_id = attribute('org_id')
 
@@ -28,10 +29,44 @@ control "explain" do
     its('exit_status') { should eq 0 }
   end
 
+  # access_by_member
+  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/browser"/) }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/iam.securityReviewer"/) }
+    its('stdout') { should match (/"resources": \[\n    "project\/#{Regexp.quote(project_id)}"\n  \],\n  "role": "roles\/cloudsql.client"/) }
+  end
+
+  # access_by_member storage.buckets.lists
+  describe command("forseti explainer access_by_member serviceaccount/#{forseti_server_service_account} storage.buckets.list") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/iam.securityReviewer"/) }
+  end
+
   # access_by_authz
   describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/roles\/editor/) }
+    its('stdout') { should match (/"resource": "project\/#{project_id}"/) }
+    its('stdout') { should match (/"role": "roles\/editor"/) }
+  end
+
+  # access_by_authz
+  describe command("forseti explainer access_by_authz --role roles/storage.objectCreator") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/#{project_id}/) }
+    its('stdout') { should match (/serviceaccount\/#{forseti_server_service_account}/) }
+  end
+
+  # access_by_resource organization
+  describe command("forseti explainer access_by_resource organization/#{org_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/10/) }
+  end
+
+  # access_by_resource project
+  describe command("forseti explainer access_by_resource project/#{project_id} | grep -c #{forseti_server_service_account}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/5/) }
   end
 
   # get_policy for org
@@ -44,6 +79,21 @@ control "explain" do
   describe command("forseti explainer get_policy project/#{project_id} | grep -c #{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/5/) }
+  end
+
+  # list_members
+  describe command("forseti explainer list_members") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_client_service_account)}/) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_server_service_account)}/) }
+    its('stdout') { should match (/projectowner\/#{Regexp.quote(project_id)}/) }
+  end
+
+  # list_members --prefix forseti
+  describe command("forseti explainer list_members --prefix forseti") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_client_service_account)}/) }
+    its('stdout') { should match (/serviceaccount\/#{Regexp.quote(forseti_server_service_account)}/) }
   end
 
   # list_permissions roles/iam.roleAdmin
@@ -151,6 +201,24 @@ control "explain" do
     its('stdout') { should match (/roles\/storagetransfer.viewer/) }
   end
 
+  # why_denied permission for org
+  describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} organization/#{org_id} --role roles/resourcemanager.organizationAdmin") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (forseti_server_service_account) }
+    its('stdout') { should match (forseti_server_service_account) }
+    its('stdout') { should match (/organization\/#{Regexp.quote(org_id)}/) }
+    its('stdout') { should match (/roles\/resourcemanager.organizationAdmin/) }
+    its('stdout') { should match (/"overgranting": 0/) }
+  end
+
+  # why_denied permission for project
+  describe command("forseti explainer why_denied serviceaccount/#{forseti_server_service_account} project/#{project_id} --permission storage.buckets.delete") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/roles\/cloudmigration.inframanager/) }
+    its('stdout') { should match (/roles\/owner/) }
+    its('stdout') { should match (/roles\/storage.admin/) }
+  end
+
   # why_granted permission for org
   describe command("forseti explainer why_granted serviceaccount/#{forseti_server_service_account} organization/#{org_id} --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
@@ -180,7 +248,7 @@ control "explain" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/\"result\": true/)}
   end
-  
+
   # cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
