@@ -24,7 +24,7 @@ end
 kms_resources_names = attribute('kms_resources_names')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "inventory - create" do
+control "inventory-create" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
   describe command("forseti model use #{random_string}") do

@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,11 +34,41 @@ suites:
         - chmod go-rwx integration_tests/fixtures/bastion/tls_private_key
     verifier:
       systems:
-        - name: inventory-module
+        - name: forseti-client
           backend: ssh
+          controls:
+            - explain
+            - inventory-cai-gcs-export
+            - model-list
+            - model-use
+            - notifier-inventory-summary-export
+            - scanner-external-project-access-scanner
           hosts_output: forseti-server-vm-ip
           user: ubuntu
           key_files:
             - integration_tests/fixtures/forseti/sshkey
           proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          shell: true
+          shell_options: "--login"
+          show_progress: true
+        - name: forseti-server
+          backend: ssh
+          controls:
+            - inventory-create
+            - inventory-delete
+            - inventory-get-list
+            - inventory-purge
+            - model-create-get
+            - model-delete
+            - notifier-temp-file-deletion
+            - scanner-bucket-acl-scanner
+            - scanner-enable-audit-logging-scanner
+            - scanner-run
+          hosts_output: forseti-server-vm-ip
+          user: ubuntu
+          key_files:
+            - integration_tests/fixtures/forseti/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          shell: true
+          shell_options: "--login"
           show_progress: true

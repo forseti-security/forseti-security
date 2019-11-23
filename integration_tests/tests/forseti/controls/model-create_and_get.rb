@@ -22,7 +22,7 @@ if db_password.strip != ""
 end
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "model - create and get" do
+control "model-create-get" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
   describe command("forseti model use #{random_string}") do
