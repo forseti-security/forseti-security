@@ -1180,6 +1180,38 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for org in resources:
             yield org
 
+    def iter_crm_organization_access_level(self, access_policy_id):
+        """Organization access policy from Cloud Asset data.
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Returns:
+            dict: Access organization policy.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for org in resources:
+            yield org
+
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Organization access policy from Cloud Asset data.
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Returns:
+            dict: Access organization policy.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for org in resources:
+            yield org
+
     def iter_crm_organization_org_policies(self, org_id):
         """Organization organization policy from Cloud Asset data.
         Args:
