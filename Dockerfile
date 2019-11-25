@@ -76,8 +76,8 @@ COPY --from=build --chown=forseti:forseti \
     /home/forseti/.local
 
 COPY --from=build --chown=forseti:forseti \
-    /home/forseti/forseti-security/.eggs/ \
-    /home/forseti/.local/lib/python3.6/site-packages/
+    /home/forseti/forseti-security/.eggs \
+    /home/forseti/forseti-security/.eggs
 
 COPY --from=build --chown=forseti:forseti \
     /home/forseti/forseti-security/install/scripts/docker_entrypoint.sh \
