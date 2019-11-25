@@ -18,18 +18,22 @@ require 'json'
 project_id = attribute('project_id')
 firewall_rule_name = attribute('test-resource-forseti-server-allow-icmp')
 
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
-
-control "enforcer - remediate firewall rule" do
+control "enforcer-remediate-firewall-rule" do
   # Get the latest firewall rules
-  fw_rules = JSON.parse(command("gcloud compute firewall-rules list --format=json").stdout)
+  fw_rules_cmd = command("gcloud compute firewall-rules list --format=json")
 
+  describe fw_rules_cmd do
+    its('exit_status') { should eq 0 }
+  end
+
+  fw_rules = JSON.parse(fw_rules_cmd.stdout)
   filtered_rules = []
   fw_rules.each { |rule|
-    if  /forseti-test-allow-icmp-deleteme-/.match(rule["name"])
+    if  /#{firewall_rule_name}/.match(rule["name"])
       # mark all rules generated for this test for deletion
       next
     end
+
     # Remove all the attributes enforcer does not like
     rule.delete("kind")
     rule.delete("selfLink")
