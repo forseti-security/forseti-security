@@ -43,7 +43,7 @@ suites:
             - model-use
             - notifier-inventory-summary-export
             - scanner-external-project-access-scanner
-          hosts_output: forseti-server-vm-ip
+          hosts_output: forseti-client-vm-ip
           user: ubuntu
           key_files:
             - integration_tests/fixtures/forseti/sshkey
