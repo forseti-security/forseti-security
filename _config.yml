@@ -42,7 +42,7 @@ plugins:
   - jekyll-include-cache
 google_analytics: UA-98416450-1
 highlighter: rouge
-markdown: CommonMark
+markdown: kramdown
 destination: _www/www/
 
 # Needed for local builds and using {{ site.github }}.
