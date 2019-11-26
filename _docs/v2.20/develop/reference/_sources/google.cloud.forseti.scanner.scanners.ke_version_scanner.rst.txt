@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.ke\_version\_scanner module
-=================================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.ke_version_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:

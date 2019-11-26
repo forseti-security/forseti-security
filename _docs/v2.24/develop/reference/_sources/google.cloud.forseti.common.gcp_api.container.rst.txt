@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.container module
-=====================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.container
-    :members:
-    :undoc-members:
-    :show-inheritance:

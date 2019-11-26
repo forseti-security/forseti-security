@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.location\_scanner module
-==============================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.location_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:

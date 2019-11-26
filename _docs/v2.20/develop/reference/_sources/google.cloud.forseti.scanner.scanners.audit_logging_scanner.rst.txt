@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.audit\_logging\_scanner module
-====================================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.audit_logging_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:
