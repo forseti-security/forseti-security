@@ -58,6 +58,7 @@ suites:
             - inventory-delete
             - inventory-get-list
             - inventory-purge
+            - logs-debug-level
             - model-create-get
             - model-delete
             - notifier-temp-file-deletion
