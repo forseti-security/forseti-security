@@ -177,9 +177,8 @@ any combination of notifiers for each resource.
 
 * `name`
   * **Description**: The name of the notifier you want for each resource.
-  * **Valid values**: The name must match the actual module name for each notifier in
-  [forseti-security/google/cloud/forseti/notifier/notifiers]({% link _docs/_latest/develop/reference/google.cloud.forseti.notifier.notifiers.html %}),
-  such as `email_violations`, or `slack_webhook`.
+  * **Valid values**: One of `email_violations`, `gcs_violations` or 
+  `slack_violations`.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`

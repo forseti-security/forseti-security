@@ -26,12 +26,12 @@ which adds Compute Engine Image data to Inventory and a data model.
 To check if the API client to retrieve the data already exists, look at the
 `SUPPORTED_APIS` map in [_supported_apis.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/_supported_apis.py).
 If the API client isn't there, you will have to add it. For a self-contained example,
-see [cloud_sql.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}).
+see [cloud_sql.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/cloudsql.py).
 
 ## Step 2: Create an iterator
 
 Edit
-[google/cloud/forseti/services/inventory/base/gcp.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/inventory/base/gcp.html %})
+[google/cloud/forseti/services/inventory/base/gcp.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/inventory/base/gcp.py)
 to create `iter_foo()` that will call the API client to retrieve the data.
 
 ```python
@@ -47,7 +47,7 @@ to create `iter_foo()` that will call the API client to retrieve the data.
 ```
 
 Edit
-[google/cloud/forseti/services/inventory/base/resources.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/inventory/base/resources.html %})
+[google/cloud/forseti/services/inventory/base/resources.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/inventory/base/resources.py)
 to create `FooIterator` to call the `iter_foo()`, and cast the result for storage
 in Inventory.
 
@@ -63,7 +63,7 @@ in Inventory.
 ```
 
 To complete the casting, edit
-[google/cloud/forseti/services/inventory/base/resources.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/inventory/base/resources.html %})
+[google/cloud/forseti/services/inventory/base/resources.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/inventory/base/resources.py)
 to create a resource class for foo. This allows you to access the `id` and `type`.
 If the resource doesn't have a provided `id`, you'll have to synthesize one. For
 details to create a synthetic key, see an existing `key()` in `resources.py`
@@ -82,7 +82,7 @@ where other existing resource attributes are hashed.
 ## Step 3: Add the iterator to Inventory factories
 
 Edit
-[google/cloud/forseti/services/inventory/base/resources.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/inventory/base/resources.html %})
+[google/cloud/forseti/services/inventory/base/resources.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/inventory/base/resources.py)
 to create `ResourceFactory` for `foo`, and link the `FooIterator` to the parent resource.
 
 ```python
@@ -113,7 +113,7 @@ the Inventory data into a more complicated data model, email
 help.
 
 1. Edit
-[google/cloud/forseti/services/model/importer/importer.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/model/importer/importer.html %})
+[google/cloud/forseti/services/model/importer/importer.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/model/importer/importer.py)
 to add `foo` into `gcp_type_list`.
     ```python
         def run(self):
@@ -131,7 +131,7 @@ to add `foo` into `gcp_type_list`.
             ]
     ```
 1. Edit
-[google/cloud/forseti/services/model/importer/importer.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/model/importer/importer.html %})
+[google/cloud/forseti/services/model/importer/importer.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/model/importer/importer.py)
 to create `_convert_foo()` to store the Inventory data in a data model.
     ```python
         def _convert_image(self, image):
@@ -155,7 +155,7 @@ to create `_convert_foo()` to store the Inventory data in a data model.
                     parent=parent))
     ```
 1. Edit
-[google/cloud/forseti/services/model/importer/importer.py]({% link _docs/v2.15/develop/reference/_modules/google/cloud/forseti/services/model/importer/importer.html %})
+[google/cloud/forseti/services/model/importer/importer.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/services/model/importer/importer.py)
 to connect `foo` with the `_convert_foo()` in the `handlers` map in
 `_store_resource()`.
     ```python

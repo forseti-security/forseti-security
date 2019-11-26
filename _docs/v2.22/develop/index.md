@@ -30,7 +30,3 @@ Install, build, edit, and run the Forseti website locally.
 **[Get Help Developing on Forseti]({% link _docs/v2.22/use/get-help.md %})**
 
 Find the best way to get help with development.
-
-**[Learn the Forseti API]({% link _docs/v2.22/develop/reference/index.html %})**
-
-Review the generated pydoc to understand the internal APIs.

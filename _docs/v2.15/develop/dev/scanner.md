@@ -54,7 +54,3 @@ To design a rules engine, follow the guidelines below:
     *   The `find_policy_violations()` method searches the rule book and
         compares the policy against the rule in the book, if found.
 1. Create a new scanner and add the necessary scanner mappings and configurations.
-
-## What's next
-
-* Learn about [Forseti's APIs]({% link _docs/v2.15/develop/reference/index.html %}).

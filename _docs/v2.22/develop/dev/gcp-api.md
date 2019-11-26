@@ -25,7 +25,7 @@ Instead of writing redundant methods for each API client, you can write them
 once as Mixin classes, and then re-use them in each API client.
 
 * Learn more about [Mixin patterns](https://www.ianlewis.org/en/mixins-and-python).
-* View the currently available [Mixins in Forseti]({% link _docs/v2.22/develop/reference/google.cloud.forseti.common.gcp_api.html %}).
+* View the currently available [Mixins in Forseti](https://github.com/forseti-security/forseti-security/tree/master/google/cloud/forseti/common/gcp_api).
 
 ## Overview
 
@@ -42,7 +42,7 @@ contains `_FooBarRepository`.
 functionalities (building requests, authentication, Mixin classes).
 1. Use the new API client.
 
-For a self-contained example, see [cloudsql.py]({% link _docs/v2.22/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}).
+For a self-contained example, see [cloudsql.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/cloudsql.py).
 The example below provides a code walkthrough of this file.
 
 ### Step 1: Define the API name & versions
@@ -76,12 +76,12 @@ SUPPORTED_APIS = {
 ### Step 2: Create a new API client file
 
 Create a new foo API client file called `foo.py` in
-[google/cloud/forseti/common/gcp_api]({% link _docs/v2.22/develop/reference/google.cloud.forseti.common.gcp_api.html %})
+[google/cloud/forseti/common/gcp_api](https://github.com/forseti-security/forseti-security/tree/master/google/cloud/forseti/common/gcp_api)
 package.
 
 ### Step 3: Create a new class for the GCP API method
 
-In this step, you'll edit [google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/v2.22/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %})
+In this step, you'll edit [google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/cloudsql.py)
 to create a new class to provide the entry point to the GCP API method.
 
 1. Create `FooClient` class in `foo.py`.
@@ -132,7 +132,7 @@ class CloudsqlClient(object):
 
 ### Step 4: Create a new class and define the property method
 
-Edit [google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/v2.22/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %})
+Edit [google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/cloudsql.py)
 to create a new class and define the property method:
 
 1. Create a `FooRepositoryClient` class in `foo.py`.
@@ -184,7 +184,7 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
 
 ### Step 5: Create a new class for GCP API functionalities
 
-In this step, you'll edit [google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/v2.22/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}) to create a new class to install the GCP API functionalities.
+In this step, you'll edit [google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/common/gcp_api/cloudsql.py) to create a new class to install the GCP API functionalities.
 
 1. Create a `\_FooBarRepository` class in `foo.py`.
 1. Make it inherit the base `GCPRepository` and the appropriate GCP API method
