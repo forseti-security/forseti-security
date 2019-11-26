@@ -17,6 +17,7 @@
 from builtins import object
 import importlib
 import inspect
+import os
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
@@ -120,6 +121,11 @@ class ScannerBuilder(object):
             rules_path = scanner_path.split('/google/cloud/forseti')[0]
             rules_path += '/rules'
         rules = '{}/{}'.format(rules_path, rules_filename)
+
+        if not os.path.isfile(rules):
+            LOGGER.error(f'Rules file for Scanner {scanner_name} does not '
+                         f'exist. Rules path: {rules}')
+            return None
 
         LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
                     rules)

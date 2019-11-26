@@ -16,7 +16,6 @@
 
 # pylint: disable=line-too-long
 import argparse
-import os
 import sys
 import time
 
@@ -24,6 +23,7 @@ from concurrent import futures
 import grpc
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import file_loader
 
 from google.cloud.forseti.services.base.config import ServiceConfig
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
@@ -140,10 +140,10 @@ def check_args(args):
     if not args['config_file_path']:
         return (2, 'ERROR: please specify the Forseti config file.')
 
-    if not os.path.isfile(args['config_file_path']):
+    if not file_loader.isfile(args['config_file_path']):
         return (3, 'ERROR: "%s" is not a file.' % args['config_file_path'])
 
-    if not os.access(args['config_file_path'], os.R_OK):
+    if not file_loader.access(args['config_file_path']):
         return(4, 'ERROR: "%s" is not readable.' % args['config_file_path'])
 
     if not args['forseti_db']:

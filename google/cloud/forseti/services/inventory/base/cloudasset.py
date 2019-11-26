@@ -17,7 +17,6 @@ import codecs
 from collections import deque
 import os
 import threading
-import time
 
 import concurrent.futures
 from googleapiclient import errors
@@ -95,6 +94,7 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Node',
     'k8s.io/Pod',
     'iam.googleapis.com/ServiceAccount',
+    'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
     'pubsub.googleapis.com/Topic',
     'rbac.authorization.k8s.io/ClusterRole',
@@ -112,11 +112,12 @@ class StreamError(Exception):
     """Raised for errors streaming results from GCS to local DB."""
 
 
-def _download_cloudasset_data(config):
+def _download_cloudasset_data(config, inventory_index_id):
     """Download cloud asset data.
 
     Args:
         config (InventoryConfig): Inventory config.
+        inventory_index_id (int): The inventory index ID for this export.
 
     Yields:
         str: GCS path of the cloud asset file.
@@ -136,18 +137,20 @@ def _download_cloudasset_data(config):
                                                cloudasset_client,
                                                config,
                                                root_id,
-                                               content_type))
+                                               content_type,
+                                               inventory_index_id))
 
         for future in concurrent.futures.as_completed(futures):
             yield future.result()
 
 
-def load_cloudasset_data(engine, config):
+def load_cloudasset_data(engine, config, inventory_index_id):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
         engine (object): Database engine.
         config (InventoryConfig): Inventory configuration on server.
+        inventory_index_id (int): The inventory index ID for this export.
 
     Returns:
         int: The count of assets imported into the database, or None if there
@@ -160,7 +163,9 @@ def load_cloudasset_data(engine, config):
 
     if not cai_gcs_dump_paths:
         # Dump file paths not specified, download the dump files instead.
-        cai_gcs_dump_paths = _download_cloudasset_data(config)
+        cai_gcs_dump_paths = _download_cloudasset_data(
+            config,
+            inventory_index_id)
 
     for gcs_path in cai_gcs_dump_paths:
         try:
@@ -259,7 +264,8 @@ def _stream_gcs_to_database(gcs_object, engine, storage_client):
     return imported_rows.popleft()
 
 
-def _export_assets(cloudasset_client, config, root_id, content_type):
+def _export_assets(
+        cloudasset_client, config, root_id, content_type, inventory_index_id):
     """Worker function for exporting assets and downloading dump from GCS.
 
     Args:
@@ -267,6 +273,7 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         config (object): Inventory configuration on server.
         root_id (str): The name of the parent resource to export assests under.
         content_type (ContentTypes): The content type to export.
+        inventory_index_id (int): The inventory index ID for this export.
 
     Returns:
         str: The path to the GCS object created by the CloudAsset API.
@@ -280,11 +287,10 @@ def _export_assets(cloudasset_client, config, root_id, content_type):
         asset_types = DEFAULT_ASSET_TYPES
     timeout = config.get_cai_timeout()
 
-    timestamp = int(time.time())
     export_path = _get_gcs_path(config.get_cai_gcs_path(),
                                 content_type,
                                 root_id,
-                                timestamp)
+                                inventory_index_id)
 
     try:
         LOGGER.info('Starting Cloud Asset export for %s under %s to GCS object '
@@ -351,14 +357,14 @@ def _clear_cai_data(engine):
     return None
 
 
-def _get_gcs_path(base_path, content_type, root_id, timestamp):
+def _get_gcs_path(base_path, content_type, root_id, inventory_index_id):
     """Generate a GCS object path for CAI dump.
 
     Args:
         base_path (str): The GCS bucket, starting with 'gs://'.
         content_type (str): The Cloud Asset content type for this export.
         root_id (str): The root resource ID for this export.
-        timestamp (int): The timestamp for this export.
+        inventory_index_id (int): The inventory index ID for this export.
 
     Returns:
         str: The full path to a GCS object to store export the data to.
@@ -366,4 +372,4 @@ def _get_gcs_path(base_path, content_type, root_id, timestamp):
     return '{}/{}-{}-{}.dump'.format(base_path,
                                      root_id.replace('/', '-'),
                                      content_type.lower(),
-                                     timestamp)
+                                     inventory_index_id)

@@ -67,7 +67,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                               'authorized_networks': (
                                   violation.authorized_networks),
                               'require_ssl': violation.require_ssl,
-                              'project_id': violation.resource_id}
+                              'project_id': violation.project_id}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,

@@ -742,6 +742,15 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_iam_serviceaccount_keys(self, project_id, serviceaccount_id):
+        """Iterate Service Account Keys in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            serviceaccount_id (str): id of the service account to query.
+        """
+
+    @abc.abstractmethod
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from GCP API.
 
@@ -2401,6 +2410,19 @@ class ApiClientImpl(ApiClient):
         del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount, None
+
+    def iter_iam_serviceaccount_keys(self, project_id, serviceaccount_id):
+        """Iterate Service Account Keys in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            serviceaccount_id (str): id of the service account to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Service Account Keys are not supported by '
+                                   'this API client.')
 
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from GCP API.
