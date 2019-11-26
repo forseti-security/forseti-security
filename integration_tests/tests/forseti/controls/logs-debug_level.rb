@@ -47,7 +47,6 @@ control "logs-debug-level" do
   describe command("sleep 60") do
     its('exit_status') { should eq 0 }
   end
-  # sleep(60)
 
   # Get all debug logs for the instance after the noted timestamp
   gcloud_log_read_cmd = command("gcloud logging read 'resource.type=gce_instance AND resource.labels.instance_id=#{instance_id} AND logName=projects/#{project_id}/logs/forseti AND severity=DEBUG AND timestamp>=\"#{timestamp}\"' --limit=10 | grep -c \"severity: DEBUG\"")
@@ -61,7 +60,13 @@ control "logs-debug-level" do
     its('exit_status') { should eq 0 }
   end
 
+  # Delete the inventory
   describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Delete the model
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end
