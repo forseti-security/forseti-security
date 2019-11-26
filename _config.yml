@@ -28,7 +28,11 @@ exclude: ["Gemfile",
           "scripts/",
           ".gitignore",
           ".sass-cache/",
-          ".idea/"]
+          ".idea/",
+          "README.md",
+          ".ruby-version",
+          "_includes/site",
+          "_sass"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
