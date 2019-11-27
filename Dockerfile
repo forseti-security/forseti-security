@@ -91,8 +91,6 @@ ENTRYPOINT ["docker_entrypoint.sh"]
 FROM runtime AS forseti-server
 
 ENV SERVER_HOST 0.0.0.0
-ENV SQL_DATABASE_NAME "forseti_security"
-ENV SQL_USER root
 ENV SERVICES "scanner model inventory explain notifier"
 ENV CONFIG_FILE_PATH /forseti-security/forseti_conf_server.yaml
 ENV LOG_LEVEL info
@@ -101,7 +99,8 @@ EXPOSE $PORT
 
 ENTRYPOINT forseti_server \
            --endpoint $SERVER_HOST:$PORT \
-           --forseti_db "mysql+pymysql://${SQL_USER}@/${SQL_DATABASE_NAME}?unix_socket=/cloudsql/${CLOUD_SQL_INSTANCE_NAME}" \
+           # The SQL_DB_CONNECTION_STRING connection string should be set in Kubernetes
+           --forseti_db $SQL_DB_CONNECTION_STRING \
            --services $SERVICES \
            --config_file_path $CONFIG_FILE_PATH \
            --log_level=$LOG_LEVEL \
