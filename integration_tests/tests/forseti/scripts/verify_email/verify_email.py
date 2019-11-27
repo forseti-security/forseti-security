@@ -13,6 +13,7 @@ from google.auth.transport.requests import Request
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
+
 def get_service():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -34,6 +35,7 @@ def get_service():
 
     service = build('gmail', 'v1', credentials=creds)
     return service
+
 
 def verify_email(sender=None, subject=None, after_timestamp=None, before_timestamp=None, filename=None, importance=None, retries=3):
     """

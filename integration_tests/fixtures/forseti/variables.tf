@@ -22,8 +22,28 @@ variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
 
+variable "forseti_version" {
+  description = "The version of Forseti to deploy"
+  default = "master"
+}
+
+variable "forseti_email_recipient" {
+  description = "Email address that receives Forseti notifications"
+  default     = ""
+}
+
+variable "forseti_email_sender" {
+  description = "Email address that sends the Forseti notifications"
+  default     = ""
+}
+
 variable "gsuite_admin_email" {
   description = "The email of a GSuite super admin, used for pulling user directory information *and* sending notifications."
+}
+
+variable "inventory_email_summary_enabled" {
+  description = "Email summary for inventory enabled"
+  default = false
 }
 
 variable "org_id" {
@@ -34,7 +54,7 @@ variable "project_id" {
   description = "The ID of an existing Google project where Forseti will be installed"
 }
 
-variable "forseti_version" {
-  description = "The version of Forseti to deploy"
-  default = "master"
+variable "sendgrid_api_key" {
+  description = "Sendgrid.com API key to enable email notifications"
+  default     = ""
 }
