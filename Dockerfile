@@ -86,3 +86,25 @@ COPY --from=build --chown=forseti:forseti \
 RUN chmod u+x /home/forseti/.local/bin/docker_entrypoint.sh
 
 ENTRYPOINT ["docker_entrypoint.sh"]
+
+##### BEGIN Forseti Server IMAGE #####
+FROM runtime AS forseti-server
+
+ENV SERVER_HOST 0.0.0.0
+ENV SQL_DATABASE_NAME "forseti_security"
+ENV SQL_USER root
+ENV SERVICES "scanner model inventory explain notifier"
+ENV CONFIG_FILE_PATH /forseti-security/forseti_conf_server.yaml
+ENV LOG_LEVEL info
+
+EXPOSE $PORT
+
+ENTRYPOINT forseti_server \
+           --endpoint $SERVER_HOST:$PORT \
+           --forseti_db "mysql+pymysql://${SQL_USER}@/${SQL_DATABASE_NAME}?unix_socket=/cloudsql/${CLOUD_SQL_INSTANCE_NAME}" \
+           --services $SERVICES \
+           --config_file_path $CONFIG_FILE_PATH \
+           --log_level=$LOG_LEVEL \
+           --enable_console_log
+
+##### END Forseti Server IMAGE #####
