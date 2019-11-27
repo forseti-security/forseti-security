@@ -17,7 +17,7 @@ require 'json'
 
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "inventory - temp file deletion" do
+control "notifier-temp-file-deletion" do
   # Run the command that will generate the inventory
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as gsc-test#{random_string}").stdout)[1]
 

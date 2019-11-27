@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ forseti_cai_storage_bucket = attribute('forseti-cai-storage-bucket')
 
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "inventory - cai gcs export file" do
+control "inventory-cai-gcs-export" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
   gs_file = "gs://#{forseti_cai_storage_bucket}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
 
