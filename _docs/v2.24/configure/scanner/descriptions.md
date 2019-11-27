@@ -19,7 +19,7 @@ The BigQuery scanner supports blacklist and whitelist modes to ensure unauthoriz
 don't gain access to your datasets, and only authorized users can gain access.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
-[`bigquery_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/bigquery_rules.yaml)
+[`bigquery_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/bigquery_rules.yaml)
 rule file.
 
 ## Blacklist scanner
@@ -32,7 +32,7 @@ all of the VM instances in your environment and determines if any VMs
 with external IP addresses are on a specific blacklist you've configured.
 
 For examples of how to define scanner rules, see the
-[`blacklist_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/blacklist_rules.yaml) rule file.
+[`blacklist_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/blacklist_rules.yaml) rule file.
 
 ## Bucket ACL scanner
 
@@ -41,7 +41,7 @@ Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your Cloud Storage bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
-[`bucket_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/bucket_rules.yaml) rule file.
+[`bucket_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/bucket_rules.yaml) rule file.
 
 ## Cloud Audit Logging scanner
 
@@ -52,7 +52,7 @@ are exempted from having their accesses logged. The audit logging scanner detect
 if any projects are missing a required audit log, or have extra exempted members.
 
 For examples of how to define scanner rules for Cloud Audit Logging, see the
-[`audit_logging_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/audit_logging_rules.yaml)
+[`audit_logging_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/audit_logging_rules.yaml)
 rule file.
 
 ## Cloud SQL networks scanner
@@ -63,17 +63,17 @@ gain access to your Cloud SQL instances.
 
 For examples of how to define scanner rules for your Cloud SQL instances, see
 the
-[`cloudsql_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/cloudsql_rules.yaml)
+[`cloudsql_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/cloudsql_rules.yaml)
 rule file.
 
 ## Config Validator scanner
 
-The Config Validator scanner uses the [Forseti Config Validator](https://github.com/forseti-security/config-validator) 
-service to evaluate violations with policies written in Rego. With this scanner 
-in place, users are now able to define customized policies easily without writing 
+The Config Validator scanner uses the [Forseti Config Validator](https://github.com/forseti-security/config-validator)
+service to evaluate violations with policies written in Rego. With this scanner
+in place, users are now able to define customized policies easily without writing
 a new scanner.
 
-Read more about the Forseti Config Validator efforts and how to define customized 
+Read more about the Forseti Config Validator efforts and how to define customized
 policies for the Config Validator scanner [here](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md).
 
 ## Enabled APIs scanner
@@ -83,7 +83,7 @@ supports whitelisting supported APIs, blacklisting unsupported APIs, and
 specifying required APIs that must be enabled.
 
 For examples of how to define scanner rules for Enabled APIs, see the
-[`enabled_apis_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/enabled_apis_rules.yaml)
+[`enabled_apis_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/enabled_apis_rules.yaml)
 rule file.
 
 ## External Project Access Scanner
@@ -97,7 +97,7 @@ This scanner is not part of the regular cron job, because it might take a long t
     forseti scanner run --scanner external_project_access_scanner
 ```
 
-Before running this scanner, please 
+Before running this scanner, please
 [enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/v2.24/configure/inventory/gsuite.md %}).
 
 ## Firewall rules scanner
@@ -107,7 +107,7 @@ desired traffic into and out of your network. The firewall rules scanner can
 ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
-[`firewall_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/firewall_rules.yaml)
+[`firewall_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/firewall_rules.yaml)
 rule file.
 
 ## Groups scanner
@@ -118,22 +118,22 @@ supports a whitelist mode, to make sure that only authorized users are members
 of your G Suite group.
 
 For examples of how to define scanner rules for your G Suite groups, see the
-[`group_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/group_rules.yaml)
+[`group_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/group_rules.yaml)
 rule file.
 
 ## Groups Settings scanner
 
 Groups Settings scanner detects if the actual groups settings do not match
 with the configured G Suite group settings in order to prevent anomalies.
-For example, a user from outside of the organization can never get into the 
+For example, a user from outside of the organization can never get into the
 group as  long as `allowExternalMembers: False` is in the group’s settings.
-Supported group settings are whoCanAdd, whoCanJoin, whoCanViewMembership, 
+Supported group settings are whoCanAdd, whoCanJoin, whoCanViewMembership,
 whoCanViewGroup, whoCanInvite, allowExternalMembers, and whoCanLeaveGroup.
-The Groups Settings scanner supports a whitelist and blacklist mode, to prevent such 
+The Groups Settings scanner supports a whitelist and blacklist mode, to prevent such
 events from ever happening.
 
-For examples of how to define scanner rules for your G Suite Settings scanner, 
-see the [`groups_settings_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/groups_settings_rules.yaml)
+For examples of how to define scanner rules for your G Suite Settings scanner,
+see the [`groups_settings_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/groups_settings_rules.yaml)
 rule file.
 
 ## IAM policy scanner (organization resources)
@@ -145,10 +145,10 @@ supports the following:
 * Whitelist, blacklist, and required modes.
 * Define if the scope of the rule inherits from parents or just self.
 * Access to specific organization, billing account, folder, project, bucket and
-  dataset resource types. 
+  dataset resource types.
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
-[`iam_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/iam_rules.yaml)
+[`iam_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/iam_rules.yaml)
 rule file.
 
 ## IAP scanner
@@ -160,7 +160,7 @@ rules are properly configured and prevents the introduction of other network
 paths that bypass the normal load balancer to instance flow.
 
 For examples of how to define scanner rules for Cloud IAP, see the
-[`iap_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/iap_rules.yaml)
+[`iap_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/iap_rules.yaml)
 rule file.
 
 ## Instance network interface scanner
@@ -171,20 +171,20 @@ all of your VM instances in your environment, and determines if any VMs with
 external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the
-[`instance_network_interface_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/instance_network_interface_rules.yaml)
+[`instance_network_interface_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/instance_network_interface_rules.yaml)
 rule file.
 
 ## KMS scanner
 
-Regularly rotating keys is a security best practice as it ensures your system is 
-prepared if a key is leaked and to prevent use of key version that is 
+Regularly rotating keys is a security best practice as it ensures your system is
+prepared if a key is leaked and to prevent use of key version that is
 compromised. You can configure the KMS scanner to alert if the enabled
-cryptographic keys in the organization are not rotated within the 
-time specified. You can also check if the algorithm, protection level 
+cryptographic keys in the organization are not rotated within the
+time specified. You can also check if the algorithm, protection level
 and purpose of the cryptographic key is correctly configured.
 
 For examples of how to define scanner rules for your crypto keys, see the
-[`kms_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/kms_rules.yaml)
+[`kms_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/kms_rules.yaml)
 rule file.
 
 ## Kubernetes Engine scanner
@@ -202,7 +202,7 @@ features:
 * Rules can be whitelists or a blacklists.
 
 You can find example rules in the
-[`ke_scanner_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/ke_scanner_rules.yaml)
+[`ke_scanner_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/ke_scanner_rules.yaml)
 file.  The only rule enabled by default checks that logging is
 enabled.  Check out some of the commented-out rules for more
 advanced ideas.
@@ -217,15 +217,15 @@ vulnerabilities, or lack of support. The KE version scanner can ensure your
 Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
-[`ke_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/ke_rules.yaml)
+[`ke_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/ke_rules.yaml)
 file.
 
 ## Lien scanner
-Allow customers to ensure projects do not get deleted, by ensuring Liens 
+Allow customers to ensure projects do not get deleted, by ensuring Liens
 for their projects exist and are configured correctly.
 
 For examples of how to define scanner rules for lien, see the
-[`lien_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/lien_rules.yaml)
+[`lien_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/lien_rules.yaml)
 rule file.
 
 ## Load balancer forwarding rules scanner
@@ -236,30 +236,30 @@ whitelist mode, to ensure each forwarding rule only directs to the intended
 target instances.
 
 For examples of how to define scanner rules for your forwarding rules, see the
-[`forwarding_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/forwarding_rules.yaml)
+[`forwarding_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/forwarding_rules.yaml)
 rule file.
 
 ## Location scanner
-Allow customers to ensure their resources are located only in the intended 
+Allow customers to ensure their resources are located only in the intended
 locations. Set guards around locations as part of automated project deployment.
 
 For examples of how to define scanner rules for location, see the
-[`location_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/location_rules.yaml)
+[`location_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/location_rules.yaml)
 rule file.
 
 ## Log sink scanner
-Alert or notify if a project does not have required log sinks. This scanner will also 
+Alert or notify if a project does not have required log sinks. This scanner will also
 be able to check if the sink destination is correctly configured.
 
 For examples of how to define scanner rules for log sink, see the
-[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/log_sink_rules.yaml)
+[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/log_sink_rules.yaml)
 rule file.
 
 ## Retention scanner
 
 Allow customers to ensure the retention policies on their resources are set as intended.
 
-For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/forseti-security/forseti-security/blob/master/rules/retention_rules.yaml) rule file.
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/retention_rules.yaml) rule file.
 
 ## Service Account Key scanner
 
@@ -270,6 +270,5 @@ account keys should be rotated. The scanner will then find any key that is older
 than the max age.
 
 For examples of how to define scanner rules for your service account keys, see the
-[`service_account_key_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/rules/service_account_key_rules.yaml)
+[`service_account_key_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/service_account_key_rules.yaml)
 file.
-
