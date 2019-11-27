@@ -25,18 +25,22 @@ project_id = attribute('project_id')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control 'scanner-bucket-acl-scanner' do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match /"id": "([0-9]*)"/}
+  end
+  @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
   describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
   scanner_run = command("forseti scanner run")
-
   describe scanner_run do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match /Scanner Index ID: ([0-9]*) is created/}
   end
-
   @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
 
   describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do

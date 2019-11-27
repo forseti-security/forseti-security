@@ -19,16 +19,26 @@ db_password = attribute('db_password')
 if db_password.strip != ""
   db_password = "-p#{db_password}"
 end
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "scanner-run" do
-  @inventory_id = /"id": "([0-9]*)"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match /"id": "([0-9]*)"/}
+  end
+  @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
-  describe command("forseti model use #{random_string}") do
+  describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
-  @scanner_index_id = /Scanner Index ID: ([0-9]*) is created/.match(command("forseti scanner run").stdout)[1]
+  scanner_run = command("forseti scanner run")
+  describe scanner_run do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match /Scanner Index ID: ([0-9]*) is created/}
+  end
+  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
 
   describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT SI.* FROM scanner_index SI WHERE id = #{@scanner_index_id};\"") do
     its('exit_status') { should eq 0 }
@@ -39,7 +49,7 @@ control "scanner-run" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{random_string}") do
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 end
