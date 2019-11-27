@@ -25,7 +25,7 @@ steps:
   args: ['tag', 'gcr.io/$PROJECT_ID/forseti:$TAG_NAME', 'gcr.io/$PROJECT_ID/forseti:latest']
 - name: 'gcr.io/cloud-builders/docker'
   id: Build forseti-server container iamage
-  args: ['build', '--target', 'forseti-server', '-t', 'gcr.io/$PROJECT_ID/forseti:$TAG_NAME', '.']
+  args: ['build', '--target', 'forseti-server', '-t', 'gcr.io/$PROJECT_ID/forseti-server:$TAG_NAME', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Tag forseti-server image as latest
   args: ['tag', 'gcr.io/$PROJECT_ID/forseti-server:$TAG_NAME', 'gcr.io/$PROJECT_ID/forseti-server:latest']
