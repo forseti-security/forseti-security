@@ -17,11 +17,6 @@ provider "google-beta" {
   version     = "~> 2.10"
 }
 
-provider "gsuite" {
-  version                 = "~> 0.1"
-  impersonated_user_email = var.gsuite_admin_email
-}
-
 provider "tls" {
   version = "~> 2.0"
 }
@@ -52,7 +47,7 @@ module "bastion" {
 # Forseti
 #-------------------------#
 module "forseti" {
-  source = "github.com/forseti-security/terraform-google-forseti?ref=modulerelease510"
+  source = "git::github.com/forseti-security/terraform-google-forseti"
 
   project_id         = var.project_id
   org_id             = var.org_id
@@ -88,27 +83,6 @@ resource "null_resource" "wait_for_server" {
   }
 }
 
-resource "null_resource" "wait_for_client" {
-  triggers = {
-    always_run = uuid()
-  }
-
-  provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
-
-    connection {
-      type                = "ssh"
-      user                = "ubuntu"
-      host                = module.forseti.forseti-client-vm-ip
-      private_key         = tls_private_key.main.private_key_pem
-      bastion_host        = module.bastion.host
-      bastion_port        = module.bastion.port
-      bastion_private_key = module.bastion.private_key
-      bastion_user        = module.bastion.user
-    }
-  }
-}
-
 resource "null_resource" "install-mysql-client" {
   triggers = {
     always_run = uuid()
@@ -116,8 +90,8 @@ resource "null_resource" "install-mysql-client" {
 
   provisioner "remote-exec" {
     inline = [
-       "sudo apt-get -y install mysql-client"
-       ]
+       "sudo apt-get update && sudo apt-get -y install mysql-client-5.7"
+    ]
 
     connection {
       type                = "ssh"
@@ -130,6 +104,8 @@ resource "null_resource" "install-mysql-client" {
       bastion_user        = module.bastion.user
     }
   }
+
+  depends_on = [null_resource.wait_for_server]
 }
 
 #-------------------------#
@@ -163,10 +139,4 @@ resource "google_storage_bucket_access_control" "test_resource_bucket_scanner_bu
   entity = "allAuthenticatedUsers"
 
   depends_on = [google_storage_bucket.test_resource_bucket_scanner_bucket]
-}
-
-resource "gsuite_group" "test-gsuite-group" {
-  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
-  name        = "gsuite-${random_pet.random_name_generator.id}"
-  description = "G Suite Group Automated Creation Testing"
 }

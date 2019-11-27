@@ -17,7 +17,7 @@ require 'securerandom'
 
 model_name = SecureRandom.uuid.gsub!('-', '')
 
-control 'scanner - enable audit logging scanner' do
+control 'scanner-enable-audit-logging-scanner' do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
   describe command("forseti model use #{model_name}") do

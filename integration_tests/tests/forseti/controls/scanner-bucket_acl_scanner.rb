@@ -24,7 +24,7 @@ end
 project_id = attribute('project_id')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control 'scanner - iam policy scanner' do
+control 'scanner-bucket-acl-scanner' do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
   describe command("forseti model use #{model_name}") do
