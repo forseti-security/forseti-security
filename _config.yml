@@ -40,6 +40,7 @@ plugins:
   - jekyll-redirect-from
   - jekyll-responsive-image
   - jekyll-include-cache
+  - jekyll-minifier
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
