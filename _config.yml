@@ -80,6 +80,7 @@ responsive_image:
   default_quality: 95
   strip: true
 
+# Compress Sass
 sass:
   style: compressed
 
