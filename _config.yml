@@ -80,6 +80,9 @@ responsive_image:
   default_quality: 95
   strip: true
 
+sass:
+  style: compressed
+
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
 defaults:
