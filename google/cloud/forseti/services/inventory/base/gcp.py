@@ -77,10 +77,24 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     """The gcp api client interface"""
 
     @abc.abstractmethod
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate Access Policies from GCP API.
+        Args:
+            access_policy_id (str): id of the access policy.
+        """
+
+    @abc.abstractmethod
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
         Args:
             org_id (str): id of the organization to get policy.
+        """
+
+    @abc.abstractmethod
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Iterate Access Policies from GCP API.
+        Args:
+            access_policy_id (str): id of the access policy.
         """
 
     @abc.abstractmethod
@@ -1523,6 +1537,30 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute Addresses are not supported by '
                                    'this API client')
+
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate Access Policies  from GCP API.
+
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Access levels are not supported '
+                                   'by this API client')
+
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Iterate Access Policies from GCP API.
+
+        Args:
+            access_policy_id (str): id of the organization to get policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Service Perimeters are not supported '
+                                   'by this API client')
 
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate Access Policies  from GCP API.
