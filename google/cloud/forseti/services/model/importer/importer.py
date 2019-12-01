@@ -37,6 +37,7 @@ standard_library.install_aliases()
 LOGGER = logger.get_logger(__name__)
 
 GCP_TYPE_LIST = [
+    'access_level',
     'appengine_app',
     'appengine_instance',
     'appengine_service',
@@ -66,6 +67,7 @@ GCP_TYPE_LIST = [
     'compute_urlmap',
     'compute_vpntunnel',
     'crm_org_policy',
+    'crm_access_policy',
     'dataproc_cluster',
     'dataset',
     'disk',
@@ -98,6 +100,7 @@ GCP_TYPE_LIST = [
     'pubsub_topic',
     'serviceaccount',
     'serviceaccount_key',
+    'service_perimeter',
     'sink',
     'snapshot',
     'spanner_database',
@@ -613,6 +616,7 @@ class InventoryImporter(object):
             resource (object): Resource object to convert from.
         """
         handlers = {
+            'access_level': self._convert_access_level,
             'appengine_app': self._convert_gae_resource,
             'appengine_instance': self._convert_gae_instance_resource,
             'appengine_service': self._convert_gae_resource,
@@ -642,6 +646,7 @@ class InventoryImporter(object):
             'compute_urlmap': self._convert_computeengine_resource,
             'compute_vpntunnel': self._convert_computeengine_resource,
             'crm_org_policy': self._convert_crm_org_policy,
+            'crm_access_policy': self._convert_crm_access_policy,
             'dataproc_cluster': self._convert_dataproc_cluster,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,
@@ -674,6 +679,7 @@ class InventoryImporter(object):
             'pubsub_topic': self._convert_pubsub_resource,
             'serviceaccount': self._convert_serviceaccount,
             'serviceaccount_key': self._convert_serviceaccount_key,
+            'service_perimeter': self._convert_service_perimeter,
             'sink': self._convert_sink,
             'snapshot': self._convert_computeengine_resource,
             'spanner_database': self._convert_spanner_db_resource,
@@ -725,6 +731,15 @@ class InventoryImporter(object):
         if cached:
             self._add_to_cache(row, resource.id)
 
+    def _convert_access_level(self, access_level):
+        """Convert an access level resource to a database object.
+
+        Args:
+            access level (object): access level resource.
+        """
+        self._convert_resource(access_level, cached=False,
+                               display_key='AccessLevel')
+
     def _convert_billing_account(self, billing_account):
         """Convert a billing account to a database object.
 
@@ -773,6 +788,15 @@ class InventoryImporter(object):
             org_policy (object): org policy to store.
         """
         self._convert_resource(org_policy, cached=False,
+                               display_key='name')
+
+    def _convert_crm_access_policy(self, access_policy):
+        """Convert an access policy to a database object.
+
+        Args:
+            access_policy (object): access policy to store.
+        """
+        self._convert_resource(access_policy, cached=False,
                                display_key='constraint')
 
     def _convert_dataproc_cluster(self, cluster):
@@ -969,6 +993,17 @@ class InventoryImporter(object):
             service_account_key (object): Service account key to store.
         """
         self._convert_resource(service_account_key, cached=False)
+
+    def _convert_service_perimeter(self, service_perimeter):
+        """Convert a Kubernetes ClusterRole resource to a database object.
+
+        Args:
+            service_perimeter (dict): A Service Perimeter resource to
+            store.
+        """
+        self._convert_resource(service_perimeter,
+                               cached=False,
+                               display_key='ServicePerimeter')
 
     def _convert_sink(self, sink):
         """Convert a log sink to a database object.
