@@ -31,15 +31,14 @@ control "notifier-inventory-summary-export" do
   notifier_run = command("forseti notifier run")
   describe notifier_run do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/Notification completed!/)}
-    its('stdout') { should match(/file saved to GCS path: (gs:\/\/[a-z-0-9\/_.TZ]*)"\n}/)}
+    its('stdout') { should match(/Notification completed!/) }
+    its('stdout') { should match(/file saved to GCS path: (gs:\/\/[a-z\-0-9\/_.TZ]*)"\n}/) }
   end
   
   # Verify csv file
   gs_csv_file_path = /file saved to GCS path: (gs:\/\/[a-z\-0-9\/_.TZ]*)"\n}/.match(notifier_run.stdout)[1]
-  describe command("gsutil ls #{gs_csv_file_path}|grep #{@inventory_id}") do
+  describe command("gsutil ls #{gs_csv_file_path}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(gs_csv_file_path)}
   end
 
   # Delete the inventory
