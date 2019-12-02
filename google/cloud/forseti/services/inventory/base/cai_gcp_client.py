@@ -1153,8 +1153,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Args:
             folder_id (str): id of the folder to get policy.
 
-        Returns:
-            dict: Folder organization policy.
+        Yields:
+            dict: Generator of Folder organization policy.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
@@ -1169,8 +1169,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Args:
             org_id (str): id of the organization to get policy.
 
-        Returns:
-            dict: Access organization policy.
+        Yields:
+            dict: Generator of Access organization policy.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
@@ -1185,8 +1185,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Args:
             org_id (str): id of the organization to get policy.
 
-        Returns:
-            dict: Organization organization policy.
+        Yields:
+            dict: Generator of Organization organization policy.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
@@ -1200,8 +1200,9 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Project organization policy from Cloud Asset data.
         Args:
             project_number (str): number of the project to query.
-        Returns:
-            dict: Project organization Policy.
+
+        Yields:
+            dict: Generator of Project organization Policy.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
