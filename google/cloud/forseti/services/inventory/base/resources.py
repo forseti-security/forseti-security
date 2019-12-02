@@ -622,40 +622,40 @@ def k8_resource_class_factory(resource_type):
 
     return ResourceSubclass
 
-def access_policy_resource_class_factory(resource_type):
-    """Factory function to generate Kubernetes Resource subclasses.
-
-    Args:
-        resource_type (str): The static Kubernetes resource type for this
-        subclass.
-
-    Returns:
-        class: A new class object.
-    """
-
-    class ResourceSubclass(Resource):
-        """Subclass of Resource."""
-
-        @staticmethod
-        def type():
-            """Get type of this resource.
-
-            Returns:
-                str: The static resource type for this subclass.
-            """
-            return resource_type
-
-        def key(self):
-            """Get key of this resource.
-
-            Returns:
-                str: key of this resource.
-            """
-            # Resource does not have a globally unique ID, use size_t hash
-            # of uid under metadata key.
-            return self['name']
-
-    return ResourceSubclass
+# def access_policy_resource_class_factory(resource_type):
+#     """Factory function to generate Kubernetes Resource subclasses.
+#
+#     Args:
+#         resource_type (str): The static Kubernetes resource type for this
+#         subclass.
+#
+#     Returns:
+#         class: A new class object.
+#     """
+#
+#     class ResourceSubclass(Resource):
+#         """Subclass of Resource."""
+#
+#         @staticmethod
+#         def type():
+#             """Get type of this resource.
+#
+#             Returns:
+#                 str: The static resource type for this subclass.
+#             """
+#             return resource_type
+#
+#         def key(self):
+#             """Get key of this resource.
+#
+#             Returns:
+#                 str: key of this resource.
+#             """
+#             # Resource does not have a globally unique ID, use size_t hash
+#             # of uid under metadata key.
+#             return self['name']
+#
+#     return ResourceSubclass
 
 
 # Fake composite resource class
@@ -770,16 +770,12 @@ class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
         return self['name']
 
 
-class AccessLevel(access_policy_resource_class_factory('access_level')):
+class AccessLevel(resource_class_factory('access_level', 'name')):
     """The Resource implementation for Access Level."""
 
-class ServicePerimeter(access_policy_resource_class_factory('service_perimeter')):
+class ServicePerimeter(resource_class_factory('service_perimeter',
+                                              'name')):
     """The Resource implementation for Service Permeter."""
-
-class AccessLevelIterator(resource_class_factory(''))
-
-class ServicePerimeterIterator(resource_class_factory((''))
-
 
 class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
     """The Resource implementation for Resource Manager Organization Policy."""
@@ -1944,12 +1940,23 @@ def resource_iter_class_factory(api_method_name,
 
     return ResourceIteratorSubclass
 
+class AccessLevelIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_organization_access_levels',
+        resource_name='access_level',
+        api_method_arg_key='name')):
+    """ The Resource iterator implementation for Access Level."""
+
+class ServicePerimeterIterator(resource_iter_class_factory(
+        api_method_name='fetch_crm_organization_service_perimeter',
+        resource_name='service_perimeter',
+        api_method_arg_key='name')):
+    """ The Resource iterator implementation for Service Perimeter."""
 
 class ResourceManagerFolderIterator(resource_iter_class_factory(
-        api_method_name='iter_crm_folders', resource_name='folder',
+        api_method_name='iter_crm_folders',
+        resource_name='folder',
         api_method_arg_key='name')):
     """The Resource iterator implementation for Resource Manager Folder."""
-
 
 class ResourceManagerFolderOrgPolicyIterator(resource_iter_class_factory(
         api_method_name='iter_crm_folder_org_policies',

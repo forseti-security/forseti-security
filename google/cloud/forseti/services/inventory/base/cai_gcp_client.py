@@ -1183,10 +1183,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
     def iter_crm_organization_access_levels(self, policy_id):
         """Organization access policy from Cloud Asset data.
         Args:
-            org_id (str): id of the organization to get policy.
+            policy_id (str): id of the policy.
 
         Returns:
-            dict: Access organization policy.
+            dict: Access organization levels.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
@@ -1199,10 +1199,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
     def fetch_crm_organization_service_perimeter(self, policy_id):
         """Organization access policy from Cloud Asset data.
         Args:
-            org_id (str): id of the organization to get policy.
+            policy_id (str): id of the policy.
 
         Returns:
-            dict: Access organization policy.
+            dict: Access service perimeter.
         """
         resource = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
