@@ -78,7 +78,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def iter_crm_organization_access_levels(self, access_policy_id):
-        """Iterate Access Policies from GCP API.
+        """Iterate Access Levels from GCP API.
         Args:
             access_policy_id (str): id of the access policy.
         """
@@ -87,12 +87,12 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
         Args:
-            org_id (str): id of the organization to get policy.
+            org_id (str): id of the organization.
         """
 
     @abc.abstractmethod
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
-        """Iterate Access Policies from GCP API.
+        """Gets Service Perimeter from GCP API.
         Args:
             access_policy_id (str): id of the access policy.
         """
@@ -1542,36 +1542,36 @@ class ApiClientImpl(ApiClient):
         """Iterate Access Policies  from GCP API.
 
         Args:
-            org_id (str): id of the organization to get policy.
+            access_policy_id (str): id of the policy.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute Access levels are not supported '
+        raise ResourceNotSupported('Compute AccessLevels are not supported '
                                    'by this API client')
 
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
         """Iterate Access Policies from GCP API.
 
         Args:
-            access_policy_id (str): id of the organization to get policy.
+            access_policy_id (str): id of the policy.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute Service Perimeters are not supported '
-                                   'by this API client')
+        raise ResourceNotSupported('Compute ServicePerimeters are not '
+                                   'supported by this API client')
 
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate Access Policies  from GCP API.
 
         Args:
-            org_id (str): id of the organization to get policy.
+            org_id (str): id of the organization.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute Access Policies are not supported '
+        raise ResourceNotSupported('Compute AccessPolicies are not supported '
                                    'by this API client')
 
     def iter_compute_autoscalers(self, project_number):
@@ -2150,10 +2150,10 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def iter_crm_organization_org_policies(self, org_id):
-        """Organization organization policies from gcp API call.
+        """Iterates org policies from gcp API call.
 
         Args:
-            org_id (str): id of the organization to get policy.
+            org_id (str): id of the organization.
 
         Yields:
             Tuple[dict, AssetMetadata]: Generator of org policies and asset

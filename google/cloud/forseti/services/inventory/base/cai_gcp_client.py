@@ -1149,12 +1149,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield project
 
     def iter_crm_folder_org_policies(self, folder_id):
-        """Folder organization policy in a folder from Cloud Asset data.
+        """Iterate Organization Policy in a folder from Cloud Asset data.
         Args:
-            folder_id (str): id of the folder to get policy.
+            folder_id (str): id of the folder to get the Policy.
 
         Yields:
-            dict: Generator of Folder organization policy.
+            dict: Generator of Organization policies for a folder.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
@@ -1165,12 +1165,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield folder
 
     def iter_crm_organization_access_policies(self, org_id):
-        """Organization access policy from Cloud Asset data.
+        """Iterate access policies in an Organization from Cloud Asset data.
         Args:
-            org_id (str): id of the organization to get policy.
+            org_id (str): id of the Organization to get the Policy.
 
         Yields:
-            dict: Generator of Access organization policy.
+            dict: Generator of access policies for an organization.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
@@ -1180,34 +1180,34 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for org in resources:
             yield org
 
-    def iter_crm_organization_access_levels(self, policy_id):
-        """Organization access policy from Cloud Asset data.
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate access policies from Cloud Asset data.
         Args:
-            policy_id (str): id of the policy.
+            access_policy_id (str): id of the policy.
 
-        Returns:
-            dict: Access organization levels.
+        Yields:
+            dict: Generator of access levels.
         """
         resources = self.dao.iter_cai_assets(
-            ContentTypes.access_policy,
+            ContentTypes.access_level,
             'cloudresourcemanager.googleapis.com/Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(policy_id),
+            access_policy_id,
             self.engine)
         for org in resources:
             yield org
 
-    def fetch_crm_organization_service_perimeter(self, policy_id):
-        """Organization access policy from Cloud Asset data.
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Gets service perimeter from Cloud Asset data.
         Args:
-            policy_id (str): id of the policy.
+            access_policy_id (str): id of the policy.
 
         Returns:
-            dict: Access service perimeter.
+            dict: Service Perimeter resource.
         """
         resource = self.dao.iter_cai_assets(
-            ContentTypes.access_policy,
+            ContentTypes.service_perimeter,
             'cloudresourcemanager.googleapis.com/Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(policy_id),
+            access_policy_id,
             self.engine)
         if resource:
             return resource
@@ -1218,7 +1218,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             org_id (str): id of the organization to get policy.
 
         Yields:
-            dict: Generator of Organization organization policy.
+            dict: Generator of organization policies for an organization.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
@@ -1234,7 +1234,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             project_number (str): number of the project to query.
 
         Yields:
-            dict: Generator of Project organization Policy.
+            dict: Generator of organization policies for a project.
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.org_policy,
