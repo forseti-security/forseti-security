@@ -16,4 +16,5 @@ group :jekyll_plugins do
   gem 'jekyll-redirect-from'
   gem 'jekyll-responsive-image'
   gem 'jekyll-include-cache'
+  gem 'guard-jekyll-plus'
 end

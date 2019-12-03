@@ -26,9 +26,10 @@ exclude: ["Gemfile",
           ".travis.yml",
           "travis/",
           "scripts/",
-          ".gitignore",
+          ".git:ignore",
           ".sass-cache/",
-          ".idea/"]
+          ".idea/",
+          "Guardfile"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
