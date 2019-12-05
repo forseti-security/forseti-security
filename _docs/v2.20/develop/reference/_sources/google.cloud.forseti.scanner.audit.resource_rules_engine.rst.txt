@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.audit.resource\_rules\_engine module
-=================================================================
-
-.. automodule:: google.cloud.forseti.scanner.audit.resource_rules_engine
-    :members:
-    :undoc-members:
-    :show-inheritance:

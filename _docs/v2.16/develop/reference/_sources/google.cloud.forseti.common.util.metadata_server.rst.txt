@@ -1,7 +1,0 @@
-google.cloud.forseti.common.util.metadata\_server module
-========================================================
-
-.. automodule:: google.cloud.forseti.common.util.metadata_server
-    :members:
-    :undoc-members:
-    :show-inheritance:

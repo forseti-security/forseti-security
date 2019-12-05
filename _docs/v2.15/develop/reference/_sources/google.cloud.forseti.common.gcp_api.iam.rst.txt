@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.iam module
-===============================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.iam
-    :members:
-    :undoc-members:
-    :show-inheritance:

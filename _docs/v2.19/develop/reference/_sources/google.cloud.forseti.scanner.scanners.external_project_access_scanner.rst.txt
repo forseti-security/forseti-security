@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.scanners.external\_project\_access\_scanner module
-===============================================================================
-
-.. automodule:: google.cloud.forseti.scanner.scanners.external_project_access_scanner
-    :members:
-    :undoc-members:
-    :show-inheritance:
