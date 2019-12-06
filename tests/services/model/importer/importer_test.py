@@ -100,6 +100,22 @@ class ImporterTest(ForsetiTestCase):
                 self.assertFalse(
                         len([_f for _f in policy.full_name.split('/') if _f]) % 2)
 
+            for policy in self.data_access.scanner_iter(session,
+                                                        'crm_org_policy'):
+                self.assertFalse(
+                    len([_f for _f in policy.full_name.split('/') if _f]) % 2)
+
+            for policy in self.data_access.scanner_iter(session,
+                                                        'crm_access_policy'):
+                self.assertFalse(
+                    len([_f for _f in policy.full_name.split('/') if _f]) % 2)
+
+            org_policies = list(
+                self.data_access.scanner_iter(session, 'crm_org_policy'))
+            # From tests/services/inventory/crawling_test.py
+            expected_org_policies = 5
+            self.assertEqual(expected_org_policies, len(org_policies))
+
             gcs_policies = list(
                 self.data_access.scanner_iter(session, 'gcs_policy'))
             # From tests/services/inventory/crawling_test.py
@@ -236,7 +252,6 @@ class ImporterTest(ForsetiTestCase):
                                                    post,
                                                    flush_count)
 
-
         action.assert_called_once_with(1, 2)
         self.assertEqual(1, count)
 
@@ -348,6 +363,7 @@ class ImporterTest(ForsetiTestCase):
         # flush count is 1, flush should be called twice since there are 2 items
         session.flush.assert_called()
         self.assertEqual(session.flush.call_count, 2)
+
 
 if __name__ == '__main__':
     unittest.main()
