@@ -746,7 +746,7 @@ class InventoryImporter(object):
         Args:
             crm_access_policy (object): access policy to store.
         """
-        self._convert_resource(crm_access_policy, cached=False,
+        self._convert_resource(crm_access_policy, cached=True,
                                display_key='name')
 
     def _convert_crm_org_policy(self, crm_org_policy):
