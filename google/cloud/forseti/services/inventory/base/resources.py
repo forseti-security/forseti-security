@@ -1104,6 +1104,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     @cached('org_policy')
     def get_org_policy(self, client=None):
         """Gets Organization policy for this organization.
+
         Args:
             client (object): GCP API client.
 
@@ -1121,6 +1122,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     @cached('access_policy')
     def get_access_policy(self, client=None):
         """Gets access policy for this organization.
+
         Args:
             client (object): GCP API client.
 

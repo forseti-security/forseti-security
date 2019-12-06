@@ -1150,6 +1150,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate access policies in an organization from Cloud Asset data.
+
         Args:
             org_id (str): id of the organization to get the Policy.
 
@@ -1166,6 +1167,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
     def iter_crm_organization_access_levels(self, access_policy_id):
         """Iterate access levels from Cloud Asset data.
+
         Args:
             access_policy_id (str): id of the policy.
 
@@ -1183,6 +1185,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
     # pylint: disable=using-constant-test,inconsistent-return-statements
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
         """Gets service perimeter from Cloud Asset data.
+
         Args:
             access_policy_id (str): id of the policy.
 
@@ -1199,6 +1202,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
     def iter_crm_organization_org_policies(self, org_id):
         """Iterates organization policies from Cloud Asset data in an org.
+
         Args:
             org_id (str): id of the organization to get the policy.
 
@@ -1215,6 +1219,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
     def iter_crm_project_org_policies(self, project_number):
         """Iterates organization policies from Cloud Asset data in a project.
+
         Args:
             project_number (str): number of the project to query.
 
@@ -1232,6 +1237,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
     def iter_crm_folder_org_policies(self, folder_id):
         """Iterate organization policies in a folder from Cloud Asset data.
+
         Args:
             folder_id (str): id of the folder to get the policy.
 

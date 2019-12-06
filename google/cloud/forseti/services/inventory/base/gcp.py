@@ -79,6 +79,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def iter_crm_organization_access_levels(self, access_policy_id):
         """Iterate Access Levels from GCP API.
+
         Args:
             access_policy_id (str): id of the access policy.
         """
@@ -86,6 +87,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def iter_crm_organization_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
+
         Args:
             org_id (str): id of the organization.
         """
@@ -93,6 +95,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
         """Gets Service Perimeter from GCP API.
+
         Args:
             access_policy_id (str): id of the access policy.
         """
@@ -1539,7 +1542,7 @@ class ApiClientImpl(ApiClient):
                                    'this API client')
 
     def iter_crm_organization_access_levels(self, access_policy_id):
-        """Iterate Access Policies  from GCP API.
+        """Iterate Access Policies from GCP API.
 
         Args:
             access_policy_id (str): id of the policy.
@@ -1563,7 +1566,7 @@ class ApiClientImpl(ApiClient):
                                    'supported by this API client')
 
     def iter_crm_organization_access_policies(self, org_id):
-        """Iterate Access Policies  from GCP API.
+        """Iterate Access Policies from GCP API.
 
         Args:
             org_id (str): id of the organization.
