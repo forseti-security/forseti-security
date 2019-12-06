@@ -1196,6 +1196,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for org in resources:
             yield org
 
+    # pylint: disable=using-constant-test,inconsistent-return-statements
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
         """Gets service perimeter from Cloud Asset data.
         Args:

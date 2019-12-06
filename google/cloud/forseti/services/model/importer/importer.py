@@ -738,7 +738,7 @@ class InventoryImporter(object):
             crm_access_level (object): access level to store.
         """
         self._convert_resource(crm_access_level, cached=False,
-                               display_key='AccessLevel')
+                               display_key='name')
 
     def _convert_crm_access_policy(self, crm_access_policy):
         """Convert an access policy to a database object.
@@ -766,7 +766,7 @@ class InventoryImporter(object):
         """
         self._convert_resource(crm_service_perimeter,
                                cached=False,
-                               display_key='ServicePerimeter')
+                               display_key='name')
 
     def _convert_billing_account(self, billing_account):
         """Convert a billing account to a database object.
