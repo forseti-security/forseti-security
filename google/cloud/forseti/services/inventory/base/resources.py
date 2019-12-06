@@ -400,7 +400,7 @@ class Resource(object):
 
     @cached('org_policy')
     def get_org_policy(self, client=None):
-        """Get org policy template.
+        """Gets org policy template.
 
         Args:
             client (object): GCP API client.
@@ -410,7 +410,7 @@ class Resource(object):
 
     @cached('access_policy')
     def get_access_policy(self, client=None):
-        """Get access policy template.
+        """Gets access policy template.
 
         Args:
             client (object): GCP API client.
@@ -727,7 +727,7 @@ class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
     """The Resource implementation for Resource Manager Access Policy."""
 
     def key(self):
-        """Get key of this resource.
+        """Gets key of this resource.
 
         Returns:
             str: key of this resource
@@ -1103,17 +1103,15 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
     @cached('org_policy')
     def get_org_policy(self, client=None):
-        """Get Org policy.
+        """Gets Organization policy for this organization.
         Args:
             client (object): GCP API client.
 
         Returns:
-            dict: Org Policy.
+            dict: Organization Policy.
         """
         try:
             data, _ = client.iter_crm_organization_org_policies(self['name'])
-            LOGGER.info('data:', data)
-            LOGGER.info('data1:', data)
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Org policy: %s', e)
@@ -1122,7 +1120,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
     @cached('access_policy')
     def get_access_policy(self, client=None):
-        """Get access policy for this organization.
+        """Gets access policy for this organization.
         Args:
             client (object): GCP API client.
 

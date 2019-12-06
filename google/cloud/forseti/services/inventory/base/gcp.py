@@ -2121,36 +2121,8 @@ class ApiClientImpl(ApiClient):
         return self.crm.get_project_iam_policies(project_number), None
 
     @create_lazy('crm', _create_crm)
-    def iter_crm_folder_org_policies(self, folder_id):
-        """Folder organization policies from gcp API call.
-
-        Args:
-            folder_id (str): id of the folder to get policy.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of org policies and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for org_policy in self.crm.get_folder_org_policies(folder_id):
-            yield org_policy, None
-
-    @create_lazy('crm', _create_crm)
-    def iter_crm_folders(self, parent_id):
-        """Iterate Folders from GCP API.
-
-        Args:
-            parent_id (str): id of the parent of the folder.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of folders and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for folder in self.crm.get_folders(parent_id):
-            yield folder, None
-
-    @create_lazy('crm', _create_crm)
     def iter_crm_organization_org_policies(self, org_id):
-        """Iterates org policies from gcp API call.
+        """Iterate org policies in an org from gcp API call.
 
         Args:
             org_id (str): id of the organization.
@@ -2160,6 +2132,34 @@ class ApiClientImpl(ApiClient):
                 metadata that defaults to None for all GCP clients.
         """
         for org_policy in self.crm.get_org_org_policies(org_id):
+            yield org_policy, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_project_org_policies(self, project_number):
+        """Iterate organization policies in a project from gcp API call.
+
+        Args:
+            project_number (str): number of the parent project of the policy.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of org policies in a project
+            and asset metadata that defaults to None for all GCP clients.
+        """
+        for org_policy in self.crm.get_project_org_policies(project_number):
+            yield org_policy, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Iterate organization policies in a folder from gcp API call.
+
+        Args:
+            folder_id (str): id of the folder to get the policy.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of org policies in a folder
+            and asset metadata that defaults to None for all GCP clients.
+        """
+        for org_policy in self.crm.get_folder_org_policies(folder_id):
             yield org_policy, None
 
     @create_lazy('crm', _create_crm)
@@ -2177,20 +2177,6 @@ class ApiClientImpl(ApiClient):
             yield lien, None
 
     @create_lazy('crm', _create_crm)
-    def iter_crm_project_org_policies(self, project_number):
-        """Project organization policies from gcp API call.
-
-        Args:
-            project_number (str): number of the parent project of the policy.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of org policies and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for org_policy in self.crm.get_project_org_policies(project_number):
-            yield org_policy, None
-
-    @create_lazy('crm', _create_crm)
     def iter_crm_projects(self, parent_type, parent_id):
         """Iterate Projects from GCP API.
 
@@ -2206,6 +2192,20 @@ class ApiClientImpl(ApiClient):
                                           parent_type=parent_type):
             for project in page.get('projects', []):
                 yield project, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_folders(self, parent_id):
+        """Iterate folders from GCP API.
+
+        Args:
+            parent_id (str): id of the parent of the folder.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of folders and asset
+                metadata that defaults to None for all GCP clients.
+        """
+        for folder in self.crm.get_folders(parent_id):
+            yield folder, None
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from GCP API.

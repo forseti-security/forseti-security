@@ -707,6 +707,7 @@ class InventoryImporter(object):
                 get the display name for the resource.
             email_key (str): The key in the resource dictionary to lookup to get
                 the email associated with the resource.
+            display_name (str): Display name of the resource.
         """
         data = resource.get_resource_data()
         if self._is_root(resource):
