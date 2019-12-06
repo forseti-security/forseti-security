@@ -1550,7 +1550,7 @@ class ApiClientImpl(ApiClient):
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute AccessLevels are not supported '
+        raise ResourceNotSupported('AccessLevels are not supported '
                                    'by this API client')
 
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
@@ -1562,7 +1562,7 @@ class ApiClientImpl(ApiClient):
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute ServicePerimeters are not '
+        raise ResourceNotSupported('ServicePerimeters are not '
                                    'supported by this API client')
 
     def iter_crm_organization_access_policies(self, org_id):
@@ -1574,7 +1574,7 @@ class ApiClientImpl(ApiClient):
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('Compute AccessPolicies are not supported '
+        raise ResourceNotSupported('AccessPolicies are not supported '
                                    'by this API client')
 
     def iter_compute_autoscalers(self, project_number):

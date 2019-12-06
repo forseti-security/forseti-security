@@ -46,13 +46,6 @@ ADDITIONAL_RESOURCES_FILE = os.path.join(MODULE_DIR,
 ADDITIONAL_IAM_POLCIIES_FILE = os.path.join(MODULE_DIR,
                                             'test_data',
                                             'additional_cai_iam_policies.dump')
-ADDITIONAL_ORG_POLCIIES_FILE = os.path.join(MODULE_DIR,
-                                            'test_data',
-                                            'additional_cai_org_policies.dump')
-ADDITIONAL_ACCESS_POLCIIES_FILE = os.path.join(
-    MODULE_DIR,
-    'test_data',
-    'additional_cai_access_policies.dump')
 
 
 class TestServiceConfig(object):

@@ -727,12 +727,30 @@ class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
     """The Resource implementation for Resource Manager Access Policy."""
 
     def key(self):
-        """Gets key of this resource.
+        """Gets key of thisf resource.
 
         Returns:
             str: key of this resource
         """
         return self['name']
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Gets access policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Access Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_access_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Access Policy: %s', e)
+            self.add_warning(e)
+            return None
 
 
 class ResourceManagerAccessLevel(resource_class_factory('crm_access_level',
@@ -763,6 +781,24 @@ class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
                                    self.parent().key(),
                                    self['constraint']])
         return '%u' % ctypes.c_size_t(hash(unique_key)).value
+
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets Organization policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Organization Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_org_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
 
 
 class ResourceManagerFolder(resource_class_factory('folder', None)):
@@ -1099,42 +1135,6 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
                        '%s' % (self.key(), self.parent().key(), e))
             LOGGER.warning(err_msg)
             self.add_warning(err_msg)
-            return None
-
-    @cached('org_policy')
-    def get_org_policy(self, client=None):
-        """Gets Organization policy for this organization.
-
-        Args:
-            client (object): GCP API client.
-
-        Returns:
-            dict: Organization Policy.
-        """
-        try:
-            data, _ = client.iter_crm_organization_org_policies(self['name'])
-            return data
-        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warning('Could not get Org policy: %s', e)
-            self.add_warning(e)
-            return None
-
-    @cached('access_policy')
-    def get_access_policy(self, client=None):
-        """Gets access policy for this organization.
-
-        Args:
-            client (object): GCP API client.
-
-        Returns:
-            dict: Access Policy.
-        """
-        try:
-            data, _ = client.iter_crm_organization_access_policies(self['name'])
-            return data
-        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warning('Could not get Access Policy: %s', e)
-            self.add_warning(e)
             return None
 
     @cached('dataset_policy')
@@ -1905,8 +1905,8 @@ def resource_iter_class_factory(api_method_name,
                 except ResourceNotSupported as e:
                     # API client doesn't support this resource, ignore.
                     LOGGER.debug(e)
-                except Exception as e:  # pylint: disable=broad-except
-                    LOGGER.exception(e)
+                # except Exception as e:  # pylint: disable=broad-except
+                #     LOGGER.exception(e)
 
     return ResourceIteratorSubclass
 

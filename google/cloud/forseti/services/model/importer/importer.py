@@ -723,7 +723,11 @@ class InventoryImporter(object):
             type_name=type_name,
             name=resource.get_resource_id(),
             type=resource.get_resource_type(),
+            # display_key key is not present for org policy and display_name is
+            # needed. So it is specifically passed in.
             display_name=display_name or data.get(display_key, ''),
+            # email_key key is not always present and it can be empty in
+            # certain cases such as for org policy.
             email=data.get(email_key, '') if isinstance(data, dict) else '',
             data=resource.get_resource_data_raw(),
             parent=parent)

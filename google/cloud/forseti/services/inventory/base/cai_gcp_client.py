@@ -1162,8 +1162,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        for org in resources:
-            yield org
+        for access_policy in resources:
+            yield access_policy
 
     def iter_crm_organization_access_levels(self, access_policy_id):
         """Iterate access levels from Cloud Asset data.
@@ -1179,8 +1179,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Organization',
             access_policy_id,
             self.engine)
-        for org in resources:
-            yield org
+        for access_level in resources:
+            yield access_level
 
     # pylint: disable=using-constant-test,inconsistent-return-statements
     def fetch_crm_organization_service_perimeter(self, access_policy_id):
@@ -1214,8 +1214,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        for org in resources:
-            yield org
+        for org_policy in resources:
+            yield org_policy
 
     def iter_crm_project_org_policies(self, project_number):
         """Iterates organization policies from Cloud Asset data in a project.
@@ -1232,8 +1232,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.engine)
-        for org in resources:
-            yield org
+        for org_policy in resources:
+            yield org_policy
 
     def iter_crm_folder_org_policies(self, folder_id):
         """Iterate organization policies in a folder from Cloud Asset data.
@@ -1249,8 +1249,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             'cloudresourcemanager.googleapis.com/Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.engine)
-        for folder in resources:
-            yield folder
+        for org_policy in resources:
+            yield org_policy
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
