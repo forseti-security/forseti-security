@@ -756,7 +756,8 @@ class InventoryImporter(object):
             crm_org_policy (object): org policy to store.
         """
         self._convert_resource(crm_org_policy, cached=False,
-                               display_key='name')
+                               display_key='name',
+                               display_name=crm_org_policy.get_resource_id())
 
     def _convert_crm_service_perimeter(self, crm_service_perimeter):
         """Convert a service perimeter to a database object.
