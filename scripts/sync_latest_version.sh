@@ -40,7 +40,7 @@ function main() {
     all_major_minor_release_tags="$(uniq_major_minor_filter "${all_release_tags}")"
 
     # sed trims this list to 10.
-    releases="$(echo "${all_major_minor_release_tags}" | sort -Vr | cut -d "." -f1-2 | sed '1,10!d')"
+    releases="$(echo "${all_major_minor_release_tags}" | sort -Vr | cut -d "." -f1-2 | sed '1,2!d')"
     doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
     if [ -z "${doc_versions}" ]; then
