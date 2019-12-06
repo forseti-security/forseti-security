@@ -44,10 +44,10 @@ add-apt-repository -y ppa:gift/stable
 
 # Install dependencies.
 apt-get update
-apt-get install -y nginx python-pip gunicorn python-psycopg2 python-plaso plaso-tools
+apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 
 # Install Timesketch from PyPi.
-pip install timesketch
+pip3 install timesketch
 
 # Create default config.
 cp /usr/local/share/timesketch/timesketch.conf /etc/
