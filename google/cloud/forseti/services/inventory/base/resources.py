@@ -759,7 +759,7 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
 
 
 class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
-                                                         'name')):
+                                                         None)):
     """The Resource implementation for Resource Manager Access Policy."""
 
     def key(self):
