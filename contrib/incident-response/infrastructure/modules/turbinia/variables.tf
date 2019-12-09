@@ -49,7 +49,7 @@ variable "turbinia_server_machine_type" {
 
 variable "turbinia_worker_machine_type" {
   description = "Machine type for Turbinia worker."
-  default     = "n1-standard-2"
+  default     = "n1-standard-16"
 }
 
 variable "turbinia_server_disk_size_gb" {

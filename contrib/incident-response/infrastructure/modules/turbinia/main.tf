@@ -214,7 +214,7 @@ resource "google_compute_instance" "turbinia-worker" {
   }
 
   service_account {
-    scopes = ["compute-rw", "storage-rw", "pubsub", "datastore"]
+    scopes = ["compute-rw", "storage-rw", "pubsub", "datastore", "cloud-platform"]
   }
 
   lifecycle {
