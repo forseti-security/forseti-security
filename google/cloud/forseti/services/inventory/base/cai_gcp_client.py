@@ -1148,6 +1148,110 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
+    def iter_crm_organization_access_policies(self, org_id):
+        """Iterate access policies in an organization from Cloud Asset data.
+
+        Args:
+            org_id (str): id of the organization to get the Policy.
+
+        Yields:
+            dict: Generator of access policies for an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for access_policy in resources:
+            yield access_policy
+
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate access levels from Cloud Asset data.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Yields:
+            dict: Generator of access levels in an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_level,
+            'cloudresourcemanager.googleapis.com/Organization',
+            access_policy_id,
+            self.engine)
+        for access_level in resources:
+            yield access_level
+
+    # pylint: disable=using-constant-test,inconsistent-return-statements
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Gets service perimeter from Cloud Asset data.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Returns:
+            dict: Service Perimeter resource.
+        """
+        resource = self.dao.iter_cai_assets(
+            ContentTypes.service_perimeter,
+            'cloudresourcemanager.googleapis.com/Organization',
+            access_policy_id,
+            self.engine)
+        if resource:
+            return resource
+
+    def iter_crm_organization_org_policies(self, org_id):
+        """Iterates organization policies from Cloud Asset data in an org.
+
+        Args:
+            org_id (str): id of the organization to get the policy.
+
+        Yields:
+            dict: Generator of organization policies for an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
+    def iter_crm_project_org_policies(self, project_number):
+        """Iterates organization policies from Cloud Asset data in a project.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of organization policies for a project.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Project',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Iterate organization policies in a folder from Cloud Asset data.
+
+        Args:
+            folder_id (str): id of the folder to get the policy.
+
+        Yields:
+            dict: Generator of organization policies for a folder.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Folder',
+            '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
 
