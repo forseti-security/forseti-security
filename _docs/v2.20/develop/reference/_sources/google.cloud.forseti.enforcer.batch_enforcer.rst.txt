@@ -1,7 +1,0 @@
-google.cloud.forseti.enforcer.batch\_enforcer module
-====================================================
-
-.. automodule:: google.cloud.forseti.enforcer.batch_enforcer
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.resource\_util module
-===========================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.resource_util
-    :members:
-    :undoc-members:
-    :show-inheritance:

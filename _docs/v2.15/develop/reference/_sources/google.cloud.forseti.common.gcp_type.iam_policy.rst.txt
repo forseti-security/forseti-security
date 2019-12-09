@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.iam\_policy module
-========================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.iam_policy
-    :members:
-    :undoc-members:
-    :show-inheritance:
