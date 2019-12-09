@@ -120,7 +120,7 @@ server {
   ssl_certificate /etc/nginx/ssl/nginx.crt;
   ssl_certificate_key /etc/nginx/ssl/nginx.key;
 
-  client_max_body_size 100m;
+  client_max_body_size 0;
 
   location / {
     proxy_pass http://unix:/run/gunicorn/socket;
