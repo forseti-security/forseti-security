@@ -33,8 +33,8 @@ _RESOURCE = 'resource'
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
 
 CAI_RESOURCE_TYPE_MAPPING = {
-    # TODO: Support non cai resource type by creating a fake cai resource type.
-    # e.g. 'lien' -> 'google.SOME_RESOURCE_TYPE.Lien'
+    'lien': 'cloudresourcemanager.googleapis.com/Lien',
+    'sink': 'logging.googleapis.com/LogSink'
 }
 
 
@@ -57,6 +57,27 @@ def generate_ancestry_path(full_name):
         else:
             continue
     return ancestry_path
+
+
+def convert_data_to_cai_asset(primary_key, resource, resource_type):
+    """Convert data to CAI formatted fields to be used by Config Validator.
+
+    Args:
+        primary_key (str): The unique identifier of the resource object.
+        resource (json): The resource object that will be converted.
+        resource_type (str): The resource type (e.g. lien, sink, etc.).
+
+    Returns:
+        json: converted resource object.
+
+    """
+    resource.cai_resource_type = CAI_RESOURCE_TYPE_MAPPING.get(resource_type)
+    resource.cai_resource_name = '//{}/{}'.format(resource.cai_resource_type,
+                                                  primary_key)
+    if not resource.full_name:
+        resource.full_name = '{}/{}'.format(resource.cai_resource_type,
+                                            primary_key)
+    return resource
 
 
 def convert_data_to_cv_asset(resource, data_type):
