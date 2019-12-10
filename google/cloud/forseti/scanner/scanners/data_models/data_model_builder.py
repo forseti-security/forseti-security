@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Builds the scanners to run."""
+"""Builds the data models."""
 
 from builtins import object
 import importlib
