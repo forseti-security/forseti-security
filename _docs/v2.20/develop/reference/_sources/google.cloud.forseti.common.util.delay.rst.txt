@@ -1,7 +1,0 @@
-google.cloud.forseti.common.util.delay module
-=============================================
-
-.. automodule:: google.cloud.forseti.common.util.delay
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-google.cloud.forseti.scanner.audit.external\_project\_access\_rules\_engine module
-==================================================================================
-
-.. automodule:: google.cloud.forseti.scanner.audit.external_project_access_rules_engine
-    :members:
-    :undoc-members:
-    :show-inheritance:

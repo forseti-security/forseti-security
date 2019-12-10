@@ -46,17 +46,27 @@ provide the corresponding values for all the fields mentioned below.
 
 * `name`
   * **Description**: The connector you want to use to receive emails.
-  SendGrid is the only email connector supported at the moment.
-  * **Valid values**: sendgrid
+  SendGrid and Mailjet are the only email connector supported at the moment.
+  * **Valid values**: sendgrid or mailjet
   
 * `auth`
-  * **Description**: The authentication/authorization key used to authorize requests to SendGrid.
+  * **Description**: The authentication/authorization key used to authorize requests to SendGrid or Mailjet.
   * **Valid values**: String
   
 * `api_key`
-  * **Description**: The key used to authorize requests to SendGrid.
+  * **Description**: The key used to authorize requests to SendGrid or Mailjet.
   * **Valid values**: String
-
+  
+* `api_secret`
+  * **Description**: The secret used to authorize requests to Mailjet. This 
+  field is required for Mailjet connector only.
+  * **Valid values**: String
+  
+* `campaign`
+  * **Description**: Campaign tag specific for Mailjet. This field is required 
+  for Mailjet connector only.
+  * **Valid values**: String  
+  
 * `sender`
   * **Description**: The email address of the sender.
   * **Valid values**: String
@@ -72,7 +82,7 @@ provide the corresponding values for all the fields mentioned below.
   inventory summary.
   * **Valid values**: one of valid `csv` or `json`.
   
-YAML below shows the email connector config for SendGrid.
+#### YAML below shows the email connector config for SendGrid.
 
 To configure other email connector, `name` and `auth` fields should be modified
 accordingly.
@@ -88,6 +98,23 @@ accordingly.
       data_format: csv
   ```
 
+#### YAML below shows the email connector config for Mailjet.
+
+To configure other email connector, `name` and `auth` fields should be modified
+accordingly.
+
+  ```yaml
+  notifier:
+    email_connector:
+      name: mailjet
+      auth:
+        api_key: {Mailjet_API_KEY}
+        api_secret: {Mailjet_API_secret}
+        campaign: {Mailjet_Campaign}
+      sender: {SENDER EMAIL}
+      recipient: {RECIPIENT EMAIL}
+      data_format: csv
+  ```
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
@@ -274,7 +301,7 @@ and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
 
 ### Email notifications
 
-Forseti Security can send email notifications using the SendGrid API. 
+Forseti Security can send email notifications using the SendGrid or Mailjet API. 
 SendGrid is the suggested free email service provider for GCP. For information
 about how to get 12,000 free emails every month, see
 [Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
@@ -292,6 +319,8 @@ Note that SendGrid automatically includes an invisible tracking pixel in your
 emails. This may cause email warnings about opening images. To disable this,
 disable SendGrid
 [Open Tracking](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
+
+To use Mailjet, you should have a contract with mailjet then collect an API Key, an API secret and optionnaly a campaign name if you want to be able to use a specific campaign tag for foresti.
 
 ### Adding a new email connector
 
