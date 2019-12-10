@@ -124,8 +124,6 @@ class MockServerConfig(AbstractServiceConfig):
         raise NotImplementedError()
 
 
-
-
 class ResourceMock(Resource):
 
     def __init__(self, key, data, res_type, category, parent=None, warning=[]):

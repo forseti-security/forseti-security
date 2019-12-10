@@ -61,6 +61,17 @@ class ScannerBuilderTest(ForsetiTestCase):
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
+    def testConfigValidator(self):
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.CONFIG_VALIDATOR_ENABLED,
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
+        runnable_pipelines = builder.build()
+
+        self.assertEqual(1, len(runnable_pipelines))
+        expected_pipelines = ['ConfigValidatorScanner']
+        for pipeline in runnable_pipelines:
+            self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+
     def testAllDisabled(self):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_DISABLED,

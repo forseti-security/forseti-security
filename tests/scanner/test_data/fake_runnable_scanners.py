@@ -31,6 +31,13 @@ ALL_ENABLED = {
 
 ALL_DISABLED = {'scanners': []}
 
+
+CONFIG_VALIDATOR_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'config_validator', 'enabled': True}
+    ]}
+
 ONE_ENABLED = {
     'rules_path': test_rules_path,
     'scanners': [
