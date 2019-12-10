@@ -1,0 +1,152 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.forwarding_rule"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.forwarding_rule</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Compute Forwarding Rule.</span>
+
+<span class="sd">See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<span class="c1"># pylint: disable=too-many-arguments</span>
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<span class="c1"># pylint: disable=too-many-locals</span>
+<div class="viewcode-block" id="ForwardingRule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.forwarding_rule.html#google.cloud.forseti.common.gcp_type.forwarding_rule.ForwardingRule">[docs]</a><span class="k">class</span> <span class="nc">ForwardingRule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents ForwardRule resource.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">creation_timestamp</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">ip_protocol</span><span class="p">,</span> <span class="n">port_range</span><span class="p">,</span>
+                 <span class="n">ports</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">self_link</span><span class="p">,</span> <span class="n">load_balancing_scheme</span><span class="p">,</span>
+                 <span class="n">subnetwork</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">backend_service</span><span class="p">,</span> <span class="n">raw_json</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forwarding rule resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project containing the forwarding rule.</span>
+<span class="sd">            resource_id (str): The id of the forwarding rule.</span>
+<span class="sd">            full_name (str): The full resource name and ancestory.</span>
+<span class="sd">            creation_timestamp (str): Timestampe when the forwarding rule was</span>
+<span class="sd">                created.</span>
+<span class="sd">            name (str): The name of the forwarding rule.</span>
+<span class="sd">            description (str): Description of the forwarding rule.</span>
+<span class="sd">            region (str): The region where this forwarding rule resides.</span>
+<span class="sd">            ip_address (str): The IP address to match.</span>
+<span class="sd">            ip_protocol (strin): The IP protocol to match.</span>
+<span class="sd">            port_range (str): Port range, ranging from low to high,</span>
+<span class="sd">                for which this forwarding rule matches.</span>
+<span class="sd">            ports (list): List of ports for which this forwarding rule matches.</span>
+<span class="sd">            target (str): The target for which this forwarding rule matches.</span>
+<span class="sd">            self_link (str): self link</span>
+<span class="sd">            load_balancing_scheme (str): load balancing scheme</span>
+<span class="sd">            subnetwork (str): subnetwork</span>
+<span class="sd">            network (str): network</span>
+<span class="sd">            backend_service (str): backend service</span>
+<span class="sd">            raw_json (str): The raw json string for the forwarding rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">project_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">resource_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="n">full_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creation_timestamp</span> <span class="o">=</span> <span class="n">creation_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_address</span> <span class="o">=</span> <span class="n">ip_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_protocol</span> <span class="o">=</span> <span class="n">ip_protocol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port_range</span> <span class="o">=</span> <span class="n">port_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ports</span> <span class="o">=</span> <span class="n">ports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">self_link</span> <span class="o">=</span> <span class="n">self_link</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_balancing_scheme</span> <span class="o">=</span> <span class="n">load_balancing_scheme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subnetwork</span> <span class="o">=</span> <span class="n">subnetwork</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend_service</span> <span class="o">=</span> <span class="n">backend_service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json</span> <span class="o">=</span> <span class="n">raw_json</span>
+
+<div class="viewcode-block" id="ForwardingRule.from_dict"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.forwarding_rule.html#google.cloud.forseti.common.gcp_type.forwarding_rule.ForwardingRule.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">forwarding_rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new ForwardingRule object from dict.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project id.</span>
+<span class="sd">            full_name (str): The full resource name and ancestory.</span>
+<span class="sd">            forwarding_rule (dict): The forwarding rule.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ForwardingRule: A new ForwardingRule object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+            <span class="n">full_name</span><span class="o">=</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="n">creation_timestamp</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creationTimestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">ip_address</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IPAddress&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">ip_protocol</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IPProtocol&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">port_range</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;portRange&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">ports</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ports&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">self_link</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;selfLink&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">load_balancing_scheme</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;loadBalancingScheme&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">subnetwork</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subnetwork&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">network</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">backend_service</span><span class="o">=</span><span class="n">forwarding_rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;backend_service&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="n">raw_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">forwarding_rule</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ForwardingRule.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.forwarding_rule.html#google.cloud.forseti.common.gcp_type.forwarding_rule.ForwardingRule.from_json">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">forwarding_rule_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new ForwardingRule object from json data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): the project id.</span>
+<span class="sd">            full_name (str): The full resource name and ancestory.</span>
+<span class="sd">            forwarding_rule_data (str): The json data representing</span>
+<span class="sd">                the forwarding rule.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           ForwardingRule: A new ForwardingRule object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">forwarding_rule</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">forwarding_rule_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ForwardingRule</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">forwarding_rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ForwardingRule.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.forwarding_rule.html#google.cloud.forseti.common.gcp_type.forwarding_rule.ForwardingRule.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Json string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span></div>
+
+<div class="viewcode-block" id="ForwardingRule.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.forwarding_rule.html#google.cloud.forseti.common.gcp_type.forwarding_rule.ForwardingRule.__hash__">[docs]</a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return hash of properties.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            hash: The hash of the class properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">)</span></div></div>
+</pre></div>

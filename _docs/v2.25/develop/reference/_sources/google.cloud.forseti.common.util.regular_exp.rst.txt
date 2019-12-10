@@ -1,0 +1,7 @@
+google.cloud.forseti.common.util.regular\_exp module
+====================================================
+
+.. automodule:: google.cloud.forseti.common.util.regular_exp
+    :members:
+    :undoc-members:
+    :show-inheritance:

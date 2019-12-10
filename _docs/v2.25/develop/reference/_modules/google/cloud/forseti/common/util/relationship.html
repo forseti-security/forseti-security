@@ -1,0 +1,65 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.relationship"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.relationship</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Util for finding resource entity relationships.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<div class="viewcode-block" id="find_ancestors"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.relationship.html#google.cloud.forseti.common.util.relationship.find_ancestors">[docs]</a><span class="k">def</span> <span class="nf">find_ancestors</span><span class="p">(</span><span class="n">starting_resource</span><span class="p">,</span> <span class="n">full_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the ancestors for a given resource.</span>
+
+<span class="sd">    Take advantage of the full name from the data model which has</span>
+<span class="sd">    the entire hierarchy.</span>
+
+<span class="sd">    Keeping this outside of the class, because the class is mocked out during</span>
+<span class="sd">    testing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        starting_resource (Resource): The GCP resource associated with the</span>
+<span class="sd">            policy binding.  This is where we move up the resource</span>
+<span class="sd">            hierarchy.</span>
+<span class="sd">        full_name (str): Full name of the resource in hierarchical format.</span>
+<span class="sd">            Example of a full_name:</span>
+<span class="sd">            organization/88888/project/myproject/firewall/99999/</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of GCP resources in ascending order in the resource</span>
+<span class="sd">        hierarchy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ancestor_resources</span> <span class="o">=</span> <span class="p">[</span><span class="n">starting_resource</span><span class="p">]</span>
+
+    <span class="n">resources</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_resources_from_full_name</span><span class="p">(</span><span class="n">full_name</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_id</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">resource_type</span> <span class="o">==</span> <span class="n">starting_resource</span><span class="o">.</span><span class="n">type</span> <span class="ow">and</span>
+                <span class="n">resource_id</span> <span class="o">==</span> <span class="n">starting_resource</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">new_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_resource</span><span class="p">:</span>
+            <span class="n">ancestor_resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_resource</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ancestor_resources</span></div>
+</pre></div>
