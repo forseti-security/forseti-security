@@ -15,11 +15,8 @@
 require 'securerandom'
 require 'json'
 
-db_user_name = attribute('db_user_name')
-db_password = attribute('db_password')
-if db_password.strip != ""
-  db_password = "-p#{db_password}"
-end
+db_user_name = attribute('forseti-cloudsql-user')
+db_password = attribute('forseti-cloudsql-password')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "model-delete" do
@@ -34,7 +31,7 @@ control "model-delete" do
     its('stdout') { should match (/#{random_string}/)}
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = '#{random_string}';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = '#{random_string}';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
@@ -44,7 +41,7 @@ control "model-delete" do
     its('stdout') { should match (/SUCCESS/)}
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = '#{random_string}';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select count(*) from model where name = '#{random_string}';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/0/)}
   end

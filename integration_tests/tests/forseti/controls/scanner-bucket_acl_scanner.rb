@@ -16,11 +16,8 @@ require 'json'
 require 'securerandom'
 
 bucket_name = attribute('test-resource-bucket-scanner-bucket')
-db_user_name = attribute('db_user_name')
-db_password = attribute('db_password')
-if db_password.strip != ""
-  db_password = "-p#{db_password}"
-end
+db_user_name = attribute('forseti-cloudsql-user')
+db_password = attribute('forseti-cloudsql-password')
 project_id = attribute('project_id')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
@@ -39,7 +36,7 @@ control 'scanner-bucket-acl-scanner' do
 
   @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
