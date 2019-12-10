@@ -14,57 +14,57 @@
 
 name: forseti_integration_testing
 attributes:
-- name: project_id
+- name: forseti-cai-storage-bucket
   required: true
   type: string
-- name: network_project
-  required: false
-  type: string
-  default: ''
-- name: org_id
-  required: true
-  type: string
-- name: suffix
-  required: true
-  type: string
-- name: db_user_name
-  required: true
-  type: string
-  value: root
-- name: db_password
-  required: true
-  type: string
-  value: ''
 - name: forseti-client-vm-name
-  required: true
-  type: string
-- name: forseti-client-vm-ip
-  required: true
-  type: string
-- name: forseti-server-vm-name
-  required: true
-  type: string
-- name: forseti-server-vm-ip
-  required: true
-  type: string
-- name: forseti-client-storage-bucket
-  required: true
-  type: string
-- name: forseti-server-storage-bucket
   required: true
   type: string
 - name: forseti-client-service-account
   required: true
   type: string
+- name: forseti-client-storage-bucket
+  required: true
+  type: string
+- name: forseti-client-vm-ip
+  required: true
+  type: string
+- name: forseti-cloudsql-password
+  required: true
+  type: string
+  value: ''
+- name: forseti-cloudsql-user
+  required: true
+  type: string
+  value: root
+- name: forseti-server-vm-name
+  required: true
+  type: string
 - name: forseti-server-service-account
   required: true
   type: string
-- name: forseti-cai-storage-bucket
+- name: forseti-server-storage-bucket
+  required: true
+  type: string
+- name: forseti-server-vm-ip
   required: true
   type: string
 - name: kms_resources_names
   required: true
   type: array
+- name: network_project
+  required: false
+  type: string
+- name: org_id
+  required: true
+  type: string
+- name: project_id
+  required: true
+  type: string
+  default: ''
+- name: suffix
+  required: true
+  type: string
 - name: test-resource-bucket-scanner-bucket
   required: true
   type: string

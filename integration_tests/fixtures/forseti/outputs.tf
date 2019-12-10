@@ -43,6 +43,17 @@ output "forseti-client-storage-bucket" {
   value       = module.forseti.forseti-client-storage-bucket
 }
 
+output "forseti-cloudsql-password" {
+  description = "CloudSQL password"
+  value       = module.forseti.forseti-cloudsql-password
+  sensitive   = true
+}
+
+output "forseti-cloudsql-user" {
+  description = "CloudSQL user"
+  value       = module.forseti.forseti-cloudsql-user
+}
+
 output "forseti-server-vm-ip" {
   description = "Forseti Server VM private IP address"
   value       = module.forseti.forseti-server-vm-ip
