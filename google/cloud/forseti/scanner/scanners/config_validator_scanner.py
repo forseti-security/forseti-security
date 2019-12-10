@@ -134,8 +134,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                         primary_key, resource, resource_type)
 
                 elif (not resource.cai_resource_name and
-                        resource_type not in
-                        cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+                      resource_type not in
+                      cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
                     LOGGER.debug('Resource type %s is not currently '
                                  'supported in Config Validator scanner.',
                                  resource.type)

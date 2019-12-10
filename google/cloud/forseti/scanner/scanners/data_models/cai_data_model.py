@@ -38,7 +38,9 @@ class CaiDataModel(base_data_model.BaseDataModel):
             model_name (str): name of the data model
         """
         super(CaiDataModel, self).__init__(
-            global_configs, service_config, model_name)
+            global_configs=global_configs,
+            service_config=service_config,
+            model_name=model_name)
 
     def retrieve(self, iam_policy=False):
         """Retrieves the data.

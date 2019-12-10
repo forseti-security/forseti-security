@@ -40,6 +40,10 @@ class BaseDataModel(with_metaclass(abc.ABCMeta, object)):
         self.model_name = model_name
 
     @abc.abstractmethod
-    def retrieve(self):
-        """Retrieves the data."""
+    def retrieve(self, iam_policy=False):
+        """Retrieves the data.
+
+        Args:
+            iam_policy (bool): Retrieve iam policies only if set to true.
+        """
         pass

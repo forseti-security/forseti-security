@@ -26,11 +26,10 @@ LOGGER = logger.get_logger(__name__)
 
 class DataModelBuilder(object):
     """Data Model Builder."""
-    
-    def __init__(self, global_configs, service_config, 
+    def __init__(self, global_configs, service_config,
                  model_name):
         """Initialize the data model builder.
-        
+
         Args:
             global_configs (dict): Global configurations.
             service_config (ServiceConfig): Service configuration.
@@ -39,58 +38,58 @@ class DataModelBuilder(object):
         self.global_configs = global_configs
         self.service_config = service_config
         self.model_name = model_name
-        
+
     def build(self):
         """Build the data models.
-       
+
         Returns:
             list: data model instances that will be created.
         """
         data_models = []
-        for data_model in data_model_requirements_map.REQUIREMENTS_MAP.keys():
+        for data_model in data_model_requirements_map.REQUIREMENTS_MAP:
             data_model = self._instantiate_data_model(data_model)
             if data_model:
                 data_models.append(data_model)
         return data_models
-        
+
     def _instantiate_data_model(self, data_model_name):
         """Make individual data models based on the data model name.
-        
+
         Args:
-            data_model_name (str): the name of the data model in the 
+            data_model_name (str): the name of the data model in the
             requirements_map.
-            
+
         Returns:
             data_model: the individual data model instance.
         """
         module_path = 'google.cloud.forseti.scanner.scanners.data_models.{}'
-        
+
         requirements_map = data_model_requirements_map.REQUIREMENTS_MAP
-        
+
         LOGGER.info(requirements_map.get(
             data_model_name))
-        
+
         module_name = module_path.format(
             requirements_map.get(
                 data_model_name).get('module_name'))
-        
+
         try:
             module = importlib.import_module(module_name)
         except (ImportError, TypeError, ValueError):
             LOGGER.exception('Unable to import %s\n', module_name)
             return None
-        
+
         class_name = requirements_map.get(
             data_model_name).get('class_name')
-        
+
         try:
             data_model_class = getattr(module, class_name)
         except AttributeError:
             LOGGER.exception('Unable to instantiate %s', class_name)
             return None
-        
+
         LOGGER.info('Initializing the data model.')
-        
+
         data_model = data_model_class(self.global_configs,
                                       self.service_config,
                                       self.model_name)
