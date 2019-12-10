@@ -80,8 +80,9 @@ responsive_image:
   default_quality: 95
   strip: true
 
-# Compress Sass
+# Sass/SCSS
 sass:
+  sass_dir: _sass
   style: compressed
 
 # Custom site directives.
