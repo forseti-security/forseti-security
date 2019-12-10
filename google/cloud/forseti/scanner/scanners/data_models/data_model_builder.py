@@ -66,8 +66,7 @@ class DataModelBuilder(object):
 
         requirements_map = data_model_requirements_map.REQUIREMENTS_MAP
 
-        LOGGER.info(requirements_map.get(
-            data_model_name))
+        LOGGER.info(requirements_map.get(data_model_name))
 
         module_name = module_path.format(
             requirements_map.get(
