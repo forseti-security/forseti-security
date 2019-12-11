@@ -1186,7 +1186,8 @@ def main(args=None,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n'
                   'If the server was just deployed, you may need to wait a few '
-                  'more minutes before running Forseti.\n')
+                  'more minutes before running Forseti. You can check the '
+                  'Stackdriver logs for more detailed status.\n')
         else:
             print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:
