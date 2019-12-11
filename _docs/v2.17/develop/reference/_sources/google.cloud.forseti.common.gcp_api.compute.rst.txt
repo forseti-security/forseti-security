@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.compute module
-===================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.compute
-    :members:
-    :undoc-members:
-    :show-inheritance:

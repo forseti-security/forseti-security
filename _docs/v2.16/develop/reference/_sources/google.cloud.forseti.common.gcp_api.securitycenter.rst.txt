@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.securitycenter module
-==========================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.securitycenter
-    :members:
-    :undoc-members:
-    :show-inheritance:

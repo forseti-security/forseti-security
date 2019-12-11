@@ -11,6 +11,8 @@
 | [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
 | [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) |
+| [Cloud Access Levels](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.accessLevels) |
+| [Cloud Access Policies](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies) |
 | [Cloud APIs Configuration](https://cloud.google.com/apis/) |
 | [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
 | [Cloud Dataproc Clusters](https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters) |
@@ -60,6 +62,7 @@
 | [Compute Engine Target VPN Gateways](https://cloud.google.com/compute/docs/reference/rest/v1/targetVpnGateways) |
 | [Compute Engine URLMap](https://cloud.google.com/compute/docs/reference/rest/v1/urlMaps) |
 | [Compute Engine VPN Tunnels](https://cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels) |
+| [Compute Service Perimeters](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters) |
 | [DNS Managed Zones](https://cloud.google.com/dns/docs/reference/v1/managedZones) |
 | [DNS Policies](https://cloud.google.com/dns/docs/reference/v1/) |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |
