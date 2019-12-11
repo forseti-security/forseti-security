@@ -15,12 +15,8 @@
 require 'securerandom'
 require 'json'
 
-db_user_name = attribute('db_user_name')
-db_password = attribute('db_password')
-if db_password.strip != ""
-  db_password = "-p#{db_password}"
-end
-
+db_user_name = attribute('forseti-cloudsql-user')
+db_password = attribute('forseti-cloudsql-password')
 kms_resources_names = attribute('kms_resources_names')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
@@ -31,17 +27,17 @@ control "inventory-create" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select COUNT(DISTINCT gcp_inventory.inventory_index_id) from gcp_inventory join inventory_index ON inventory_index.id = gcp_inventory.inventory_index_id where inventory_index.id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/#{kms_resources_names.count}/)}
   end
