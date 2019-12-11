@@ -657,13 +657,13 @@ A Cloud Shell walkthrough is provided to assist with upgrading Forseti previousl
 
 {% capture upgrading_2_23_0_to_2_24_0 %}
 
-### Forseti on-GCE
+### Forseti on-GCE {#forseti-on-gce-223-to-224}
 1. Update the `version` inside `main.tf` file to `5.1.0`.
 1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 
-### Forseti on-GKE
+### Forseti on-GKE {#forseti-on-gke-223-to-224}
 1. Update the `version` inside `main.tf` file to `5.1.0`.
 2. Run command `terraform init` to initialize terraform.
 3. If you previously configured Config Validator in your module by setting the following values:
@@ -681,6 +681,23 @@ You will need to specify an additional value in your `main.tf` to maintain the p
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.23.0 to 2.24.0" content=upgrading_2_23_0_to_2_24_0 uid=25 %}
+
+{% capture upgrading_2_24_0_to_2_25_0 %}
+
+### Forseti on-GCE {#forseti-on-gce-224-to-225}
+1. Update the `version` inside `main.tf` file to `5.2.0`.
+1. Run command `terraform init` to initialize terraform.
+1. Run command `terraform plan` to see the infrastructure plan.
+1. Run command `terraform apply` to apply the infrastructure build.
+
+### Forseti on-GKE {#forseti-on-gke-224-to-225}
+1. Update the `version` inside `main.tf` file to `5.2.0`.
+2. Run command `terraform init` to initialize terraform.
+4. Run command `terraform plan` to see the infrastructure plan.
+5. Run command `terraform apply` to apply the infrastructure build.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.24.0 to 2.25.0" content=upgrading_2_24_0_to_2_25_0 uid=26 %}
 
 {% capture deployment_manager_error %}
 

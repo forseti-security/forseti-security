@@ -1,0 +1,675 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.firewall_rules_engine module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.audit.firewall_rules_engine">
+<span id="google-cloud-forseti-scanner-audit-firewall-rules-engine-module"></span><h1>google.cloud.forseti.scanner.audit.firewall_rules_engine module<a class="headerlink" href="#module-google.cloud.forseti.scanner.audit.firewall_rules_engine" title="Permalink to this headline">¶</a></h1>
+<p>Rules engine for firewall rules.</p>
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallGroupError">
+<em class="property">exception </em><code class="descname">DuplicateFirewallGroupError</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#DuplicateFirewallGroupError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallGroupError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if group id is reused in the group definitions, must be unique.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallRuleError">
+<em class="property">exception </em><code class="descname">DuplicateFirewallRuleError</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#DuplicateFirewallRuleError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallRuleError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if a rule id is reused in the rule definitions, must be unique.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error">
+<em class="property">exception </em><code class="descname">Error</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base error class for the module.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine">
+<em class="property">class </em><code class="descname">FirewallRulesEngine</code><span class="sig-paren">(</span><em>rules_file_path</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#FirewallRulesEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine</span></code></a></p>
+<p>Rules engine for firewall resources.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine.build_rule_book">
+<code class="descname">build_rule_book</code><span class="sig-paren">(</span><em>global_configs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#FirewallRulesEngine.build_rule_book"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine.build_rule_book" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build RuleBook from the rule definition file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>global_configs</strong> (<em>dict</em>) – Global configurations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>resource</em>, <em>policy</em>, <em>force_rebuild=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#FirewallRulesEngine.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.FirewallRulesEngine.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether policy violates rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The resource that the policy belongs to.</li>
+<li><strong>policy</strong> (<em>dict</em>) – The policy to compare against the rules.</li>
+<li><strong>force_rebuild</strong> (<em>bool</em>) – If True, rebuilds the rule book.
+This will reload the rules definition file and add the rules to the
+book.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of the rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.GroupDoesntExistError">
+<em class="property">exception </em><code class="descname">GroupDoesntExistError</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#GroupDoesntExistError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.GroupDoesntExistError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if an org policy tries to add a group that doesn’t exist.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidGroupDefinition">
+<em class="property">exception </em><code class="descname">InvalidGroupDefinition</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#InvalidGroupDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidGroupDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if a group definition is invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidOrgDefinition">
+<em class="property">exception </em><code class="descname">InvalidOrgDefinition</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#InvalidOrgDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidOrgDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if a org definition is invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition">
+<em class="property">exception </em><code class="descname">InvalidRuleDefinition</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#InvalidRuleDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if a rule definition is invalid.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule">
+<em class="property">class </em><code class="descname">Rule</code><span class="sig-paren">(</span><em>rule_id=None</em>, <em>match_policies=None</em>, <em>verify_policies=None</em>, <em>mode='whitelist'</em>, <em>exact_match=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Rule properties from the firewall rules definitions file.
+Also finds violations.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.VALID_RULE_MODES">
+<code class="descname">VALID_RULE_MODES</code><em class="property"> = frozenset({'required', 'whitelist', 'matches', 'blacklist'})</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.VALID_RULE_MODES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a hash of the rule id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hash of the rule id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._create_violation">
+<code class="descname">_create_violation</code><span class="sig-paren">(</span><em>policies</em>, <em>violation_type</em>, <em>recommended_actions=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule._create_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._create_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a RuleViolation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>policies</strong> (<em>list</em>) – A list of FirewallRule that violate the policy.</li>
+<li><strong>violation_type</strong> (<em>str</em>) – The type of violation.</li>
+<li><strong>recommended_actions</strong> (<em>list</em>) – The list of actions to take.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A RuleViolation for the given policies.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation">RuleViolation</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If no policies are passed in.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_blacklist_violations">
+<code class="descname">_yield_blacklist_violations</code><span class="sig-paren">(</span><em>firewall_policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule._yield_blacklist_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_blacklist_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds blacklisted policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>firewall_policies</strong> (<em>list</em>) – A list of FirewallRules to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>iterable</em> – A generator of RuleViolations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_match_violations">
+<code class="descname">_yield_match_violations</code><span class="sig-paren">(</span><em>firewall_policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule._yield_match_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_match_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds policies that don’t match the required policy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>firewall_policies</strong> (<em>list</em>) – A list of FirewallRules to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>iterable</em> – A generator of RuleViolations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_required_violations">
+<code class="descname">_yield_required_violations</code><span class="sig-paren">(</span><em>firewall_policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule._yield_required_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_required_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds missing policies that are required.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>firewall_policies</strong> (<em>list</em>) – A list of FirewallRules to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>iterable</em> – A generator of RuleViolations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_whitelist_violations">
+<code class="descname">_yield_whitelist_violations</code><span class="sig-paren">(</span><em>firewall_policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule._yield_whitelist_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule._yield_whitelist_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds policies that aren’t whitelisted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>firewall_policies</strong> (<em>list</em>) – A list of FirewallRules to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>iterable</em> – A generator of RuleViolations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.create_rules">
+<em class="property">static </em><code class="descname">create_rules</code><span class="sig-paren">(</span><em>policies</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule.create_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.create_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates FirewallRules from policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>policies</strong> (<em>list</em>) – A list of policy dictionaries.</li>
+<li><strong>validate</strong> (<em>bool</em>) – Whether to validate that this is a valid firewall
+rule (one that can be passed to the API).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of FirewallRule.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>firewall_policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds policy violations in a list of firewall policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>firewall_policies</strong> (<em>list</em>) – A list of FirewallRule.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A generator of RuleViolations.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">iterable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.from_config">
+<em class="property">classmethod </em><code class="descname">from_config</code><span class="sig-paren">(</span><em>rule_def</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#Rule.from_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.from_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Rule from a config file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule_def</strong> (<em>dict</em>) – A dictionary rule definition parsed from YAML config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A rule created from the rule definition.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule">Rule</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidRuleDefinition</span></code></a> – If rule is missing required fields.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.match_rules">
+<code class="descname">match_rules</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.match_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FirewallRules used to filter policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of FirewallRule.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.verify_rules">
+<code class="descname">verify_rules</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Rule.verify_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FirewallRules used to check policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of FirewallRule.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook">
+<em class="property">class </em><code class="descname">RuleBook</code><span class="sig-paren">(</span><em>rule_defs=None</em>, <em>snapshot_timestamp=None</em>, <em>group_defs=None</em>, <em>org_policy=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook</span></code></a></p>
+<p>The RuleBook for firewall auditing.</p>
+<p>Rules from the rules definition file are parsed and then the hierarchy and
+enforcement points are parsed. Rules then are assessed at the first
+applicable point in the ancestory tree that has rules.</p>
+<p>Sample org structure:</p>
+<blockquote>
+<div><blockquote>
+<div><blockquote>
+<div>org 1234</div></blockquote>
+<p>/                  f-1       p-c</p>
+</div></blockquote>
+<p>/         p-a  p-b</p>
+</div></blockquote>
+<p>Rules can be applied at any node above. When a policy is being audited,
+it the rulebook will start at the lowest level (the project) and will
+walk up the hierarchy until it reaches the first instance with rules and
+these are the only rules that are checked.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_org_policy">
+<code class="descname">add_org_policy</code><span class="sig-paren">(</span><em>org_def</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook.add_org_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_org_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates org policy and rule mapping.</p>
+<p>Sample org structure:</p>
+<blockquote>
+<div><blockquote>
+<div><blockquote>
+<div>org 1234</div></blockquote>
+<p>/                      f-1       p-c</p>
+</div></blockquote>
+<p>/             p-a  p-b</p>
+</div></blockquote>
+<p>Rules can be applied at any node above. When a policy is being audited,
+it the rulebook will start at the lowest level (the project) and will
+walk up the hierarchy until it reaches the first instance with rules and
+these are the only rules that are checked.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>org_def</strong> (<em>dict</em>) – A dictionary of resource ids and enforced rules.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">RuleDoesntExistError</span></code></a> – Raised if a rule included in the group does not
+exist.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.GroupDoesntExistError" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.GroupDoesntExistError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">GroupDoesntExistError</span></code></a> – Raised if a group included in an org policy
+does not exist.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidOrgDefinition" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidOrgDefinition"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidOrgDefinition</span></code></a> – Raised if org policy doesn’t have resources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rule">
+<code class="descname">add_rule</code><span class="sig-paren">(</span><em>rule_def</em>, <em>rule_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook.add_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a rule to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rule_def</strong> (<a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule"><em>Rule</em></a>) – A Rule used to check for violations.</li>
+<li><strong>rule_index</strong> (<em>int</em>) – Used for logs.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallRuleError" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallRuleError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallRuleError</span></code></a> – When the rule by the same name exists.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rule_groups">
+<code class="descname">add_rule_groups</code><span class="sig-paren">(</span><em>group_defs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook.add_rule_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rule_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates group to rule matching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>group_defs</strong> (<em>dict</em>) – A dictionary with a group id and a list of rule ids
+that will be included by including this group in a policy.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallGroupError" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.DuplicateFirewallGroupError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DuplicateFirewallGroupError</span></code></a> – Raised if the group id already exists.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">RuleDoesntExistError</span></code></a> – Raised if a rule included in the group does not
+exist.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidGroupDefinition" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidGroupDefinition"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidGroupDefinition</span></code></a> – Raised if a group definition is invalid.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rule_defs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds rules to rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule_defs</strong> (<em>list</em>) – Rule definition dictionaries from yaml config file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.InvalidRuleDefinition"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidRuleDefinition</span></code></a> – If the rule is missing required fields or the
+fields have invalid values.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>resource</em>, <em>policies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleBook.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleBook.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find policy binding violations in the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The GCP resource associated with the
+policy binding.
+This is where we start looking for rule violations and
+we move up the resource hierarchy (if permitted by the
+resource’s “inherit_from_parents” property).</li>
+<li><strong>policies</strong> (<em>list</em>) – A list of FirewallRule policies.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of the rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError">
+<em class="property">exception </em><code class="descname">RuleDoesntExistError</code><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#RuleDoesntExistError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleDoesntExistError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.Error" title="google.cloud.forseti.scanner.audit.firewall_rules_engine.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.firewall_rules_engine.Error</span></code></a></p>
+<p>Raised if a rule group tries to add a rule that doesn’t exist.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation">
+<em class="property">class </em><code class="descname">RuleViolation</code><span class="sig-paren">(</span><em>resource_type</em>, <em>resource_id</em>, <em>full_name</em>, <em>rule_id</em>, <em>violation_type</em>, <em>policy_names</em>, <em>recommended_actions</em>, <em>resource_data</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__getnewargs__">
+<code class="descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__getnewargs__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__new__">
+<em class="property">static </em><code class="descname">__new__</code><span class="sig-paren">(</span><em>_cls</em>, <em>resource_type</em>, <em>resource_id</em>, <em>full_name</em>, <em>rule_id</em>, <em>violation_type</em>, <em>policy_names</em>, <em>recommended_actions</em>, <em>resource_data</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__new__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of RuleViolation(resource_type, resource_id, full_name, rule_id, violation_type, policy_names, recommended_actions, resource_data, resource_name)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a nicely formatted representation string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._asdict">
+<code class="descname">_asdict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._asdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new OrderedDict which maps field names to their values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._fields">
+<code class="descname">_fields</code><em class="property"> = ('resource_type', 'resource_id', 'full_name', 'rule_id', 'violation_type', 'policy_names', 'recommended_actions', 'resource_data', 'resource_name')</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._make">
+<em class="property">classmethod </em><code class="descname">_make</code><span class="sig-paren">(</span><em>iterable</em>, <em>new=&lt;built-in method __new__ of type object&gt;</em>, <em>len=&lt;built-in function len&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new RuleViolation object from a sequence or iterable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._replace">
+<code class="descname">_replace</code><span class="sig-paren">(</span><em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new RuleViolation object replacing specified fields with new values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._source">
+<code class="descname">_source</code><em class="property"> = &quot;from builtins import property as _property, tuple as _tuple\nfrom operator import itemgetter as _itemgetter\nfrom collections import OrderedDict\n\nclass RuleViolation(tuple):\n    'RuleViolation(resource_type, resource_id, full_name, rule_id, violation_type, policy_names, recommended_actions, resource_data, resource_name)'\n\n    __slots__ = ()\n\n    _fields = ('resource_type', 'resource_id', 'full_name', 'rule_id', 'violation_type', 'policy_names', 'recommended_actions', 'resource_data', 'resource_name')\n\n    def __new__(_cls, resource_type, resource_id, full_name, rule_id, violation_type, policy_names, recommended_actions, resource_data, resource_name):\n        'Create new instance of RuleViolation(resource_type, resource_id, full_name, rule_id, violation_type, policy_names, recommended_actions, resource_data, resource_name)'\n        return _tuple.__new__(_cls, (resource_type, resource_id, full_name, rule_id, violation_type, policy_names, recommended_actions, resource_data, resource_name))\n\n    &#64;classmethod\n    def _make(cls, iterable, new=tuple.__new__, len=len):\n        'Make a new RuleViolation object from a sequence or iterable'\n        result = new(cls, iterable)\n        if len(result) != 9:\n            raise TypeError('Expected 9 arguments, got %d' % len(result))\n        return result\n\n    def _replace(_self, **kwds):\n        'Return a new RuleViolation object replacing specified fields with new values'\n        result = _self._make(map(kwds.pop, ('resource_type', 'resource_id', 'full_name', 'rule_id', 'violation_type', 'policy_names', 'recommended_actions', 'resource_data', 'resource_name'), _self))\n        if kwds:\n            raise ValueError('Got unexpected field names: %r' % list(kwds))\n        return result\n\n    def __repr__(self):\n        'Return a nicely formatted representation string'\n        return self.__class__.__name__ + '(resource_type=%r, resource_id=%r, full_name=%r, rule_id=%r, violation_type=%r, policy_names=%r, recommended_actions=%r, resource_data=%r, resource_name=%r)' % self\n\n    def _asdict(self):\n        'Return a new OrderedDict which maps field names to their values.'\n        return OrderedDict(zip(self._fields, self))\n\n    def __getnewargs__(self):\n        'Return self as a plain tuple.  Used by copy and pickle.'\n        return tuple(self)\n\n    resource_type = _property(_itemgetter(0), doc='Alias for field number 0')\n\n    resource_id = _property(_itemgetter(1), doc='Alias for field number 1')\n\n    full_name = _property(_itemgetter(2), doc='Alias for field number 2')\n\n    rule_id = _property(_itemgetter(3), doc='Alias for field number 3')\n\n    violation_type = _property(_itemgetter(4), doc='Alias for field number 4')\n\n    policy_names = _property(_itemgetter(5), doc='Alias for field number 5')\n\n    recommended_actions = _property(_itemgetter(6), doc='Alias for field number 6')\n\n    resource_data = _property(_itemgetter(7), doc='Alias for field number 7')\n\n    resource_name = _property(_itemgetter(8), doc='Alias for field number 8')\n\n&quot;</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation._source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.full_name">
+<code class="descname">full_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.full_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.policy_names">
+<code class="descname">policy_names</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.policy_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.recommended_actions">
+<code class="descname">recommended_actions</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.recommended_actions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_data">
+<code class="descname">resource_data</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_id">
+<code class="descname">resource_id</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_name">
+<code class="descname">resource_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_type">
+<code class="descname">resource_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.resource_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.rule_id">
+<code class="descname">rule_id</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.rule_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.violation_type">
+<code class="descname">violation_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.RuleViolation.violation_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.is_blacklist_violation">
+<code class="descname">is_blacklist_violation</code><span class="sig-paren">(</span><em>rules</em>, <em>policy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#is_blacklist_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.is_blacklist_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the policy is a superset of any not allowed by the rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rules</strong> (<em>list</em>) – A list of FirewallRule that the policy must be a subset of.</li>
+<li><strong>policy</strong> (<em>FirweallRule</em>) – A FirewallRule.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If the policy is a superset of one of the blacklisted rules or not.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.is_rule_exists_violation">
+<code class="descname">is_rule_exists_violation</code><span class="sig-paren">(</span><em>rule</em>, <em>policies</em>, <em>exact_match=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#is_rule_exists_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.is_rule_exists_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the rule is the same as one of the policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rule</strong> (<em>FirweallRule</em>) – A FirewallRule.</li>
+<li><strong>policies</strong> (<em>list</em>) – A list of FirewallRule that must have the rule.</li>
+<li><strong>exact_match</strong> (<em>bool</em>) – Whether to match the rule exactly.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If the required rule is in the policies.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.scanner.audit.firewall_rules_engine.is_whitelist_violation">
+<code class="descname">is_whitelist_violation</code><span class="sig-paren">(</span><em>rules</em>, <em>policy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/firewall_rules_engine.html#is_whitelist_violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.firewall_rules_engine.is_whitelist_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the policy is not a subset of those allowed by the rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rules</strong> (<em>list</em>) – A list of FirewallRule that the policy must be a subset of.</li>
+<li><strong>policy</strong> (<em>FirweallRule</em>) – A FirewallRule.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If the policy is a subset of one of the allowed rules or not.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
