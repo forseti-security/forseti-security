@@ -1,0 +1,115 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.crypto_key"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.crypto_key</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A CryptoKey object.</span>
+
+<span class="sd">See:</span>
+<span class="sd">https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys#CryptoKey</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">resource</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CryptoKey"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.crypto_key.html#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey">[docs]</a><span class="k">class</span> <span class="nc">CryptoKey</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents the CryptoKey resource.&quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-instance-attributes, too-many-arguments</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">crypto_key_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crypto_key_full_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">crypto_key_parent_type_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crypto_key_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">primary_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">create_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">next_rotation_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version_template</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">rotation_period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            crypto_key_name (str): The unique Cryptokey id.</span>
+<span class="sd">            crypto_key_full_name (str): The Cryptokey full name.</span>
+<span class="sd">            crypto_key_parent_type_name (Resource): Resource this Cryptokey</span>
+<span class="sd">            belongs to.</span>
+<span class="sd">            crypto_key_type (str): The Cryptokey type name.</span>
+<span class="sd">            primary_version (dict): Primary Cryptokey version.</span>
+<span class="sd">            purpose (enum): Immutable purpose of this Cryptokey.</span>
+<span class="sd">            create_time (str): The time at which this Cryptokey was created.</span>
+<span class="sd">            next_rotation_time (str): Time when the Cryptokey rotates.</span>
+<span class="sd">            version_template (dict): Cryptokey version setting details.</span>
+<span class="sd">            labels (dict): User-defined metadata.</span>
+<span class="sd">            rotation_period (str): Scheduled rotation period of CryptoKey.</span>
+<span class="sd">            data (Resource): Cryptokey resource data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CryptoKey</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="n">crypto_key_name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">crypto_key_name</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">crypto_key_parent_type_name</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">CRYPTO_KEY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crypto_key_full_name</span> <span class="o">=</span> <span class="n">crypto_key_full_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crypto_key_type</span> <span class="o">=</span> <span class="n">crypto_key_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_version</span> <span class="o">=</span> <span class="n">primary_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span> <span class="o">=</span> <span class="n">purpose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_time</span> <span class="o">=</span> <span class="n">create_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_rotation_time</span> <span class="o">=</span> <span class="n">next_rotation_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_template</span> <span class="o">=</span> <span class="n">version_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_period</span> <span class="o">=</span> <span class="n">rotation_period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+<div class="viewcode-block" id="CryptoKey.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.crypto_key.html#google.cloud.forseti.common.gcp_type.crypto_key.CryptoKey.from_json">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">crypto_key_name</span><span class="p">,</span> <span class="n">crypto_key_full_name</span><span class="p">,</span>
+                  <span class="n">crypto_key_parent_type_name</span><span class="p">,</span> <span class="n">crypto_key_type</span><span class="p">,</span> <span class="n">json_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new CryptoKey object from a JSON object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            crypto_key_name (str): The unique Cryptokey id.</span>
+<span class="sd">            crypto_key_full_name (str): The Cryptokey full name.</span>
+<span class="sd">            crypto_key_parent_type_name (str): The Cryptokey parent type name.</span>
+<span class="sd">            crypto_key_type (str): The Cryptokey type name.</span>
+<span class="sd">            json_string(str): JSON string of a Cryptokey GCP API response.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           CryptoKey: A new CryptoKey object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">crypto_key_name</span><span class="o">=</span><span class="n">crypto_key_name</span><span class="p">,</span>
+            <span class="n">crypto_key_full_name</span><span class="o">=</span><span class="n">crypto_key_full_name</span><span class="p">,</span>
+            <span class="n">crypto_key_parent_type_name</span><span class="o">=</span><span class="n">crypto_key_parent_type_name</span><span class="p">,</span>
+            <span class="n">crypto_key_type</span><span class="o">=</span><span class="n">crypto_key_type</span><span class="p">,</span>
+            <span class="n">primary_version</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;primary&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">purpose</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;purpose&#39;</span><span class="p">),</span>
+            <span class="n">create_time</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;createTime&#39;</span><span class="p">),</span>
+            <span class="n">next_rotation_time</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nextRotationTime&#39;</span><span class="p">),</span>
+            <span class="n">version_template</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;versionTemplate&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">rotation_period</span><span class="o">=</span><span class="n">key_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rotationPeriod&#39;</span><span class="p">),</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">key_dict</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+</pre></div>

@@ -1,0 +1,498 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.iam_policy module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.iam_policy">
+<span id="google-cloud-forseti-common-gcp-type-iam-policy-module"></span><h1>google.cloud.forseti.common.gcp_type.iam_policy module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.iam_policy" title="Permalink to this headline">¶</a></h1>
+<p>GCP IAM Policy.</p>
+<p>See: <a class="reference external" href="https://cloud.google.com/iam/reference/rest/v1/Policy">https://cloud.google.com/iam/reference/rest/v1/Policy</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig">
+<em class="property">class </em><code class="descname">IamAuditConfig</code><span class="sig-paren">(</span><em>service_configs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>IAM Audit Config.</p>
+<p>Captures the mapping from service to log type to exempted members for a
+project, folder or organization.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.ALL_SERVICES">
+<code class="descname">ALL_SERVICES</code><em class="property"> = 'allServices'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.ALL_SERVICES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.VALID_LOG_TYPES">
+<code class="descname">VALID_LOG_TYPES</code><em class="property"> = frozenset({'DATA_WRITE', 'DATA_READ', 'AUDIT_READ'})</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.VALID_LOG_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests equality of IamAuditConfig.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether objects are equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests inequality of IamAuditConfig.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether objects are not equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of IamAuditConfig.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The representation of IamAuditConfig.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.create_from">
+<em class="property">classmethod </em><code class="descname">create_from</code><span class="sig-paren">(</span><em>audit_configs_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig.create_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.create_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an IamAuditConfig from a list of auditConfig dicts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audit_configs_list</strong> (<em>list</em>) – A list of auditConfigs for each service.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A new IamAuditConfig created with the service audit</dt>
+<dd>configs.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig" title="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig">IamAuditConfig</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.merge_configs">
+<code class="descname">merge_configs</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamAuditConfig.merge_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.merge_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds <cite>other</cite> audit configs to mine, combining exempted member.</p>
+<p>Use case: merging audit configs from ancestor IAM policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig" title="google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig"><em>IamAuditConfig</em></a>) – the other IAM audit configs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy">
+<em class="property">class </em><code class="descname">IamPolicy</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>GCP IAM Policy.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests equality of IamPolicy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if equals, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests inequality of IamPolicy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if not equals, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of IamPolicy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Representation of IamPolicy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.create_from">
+<em class="property">classmethod </em><code class="descname">create_from</code><span class="sig-paren">(</span><em>policy_json</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy.create_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.create_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an IamPolicy object from json representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>policy_json</strong> (<em>dict</em>) – The json representing the IAM policy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An IamPolicy.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy" title="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy">IamPolicy</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.is_empty">
+<code class="descname">is_empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicy.is_empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests whether this policy’s bindings are empty.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if bindings are empty; False otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding">
+<em class="property">class </em><code class="descname">IamPolicyBinding</code><span class="sig-paren">(</span><em>role_name</em>, <em>members=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>IAM Policy Binding.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests equality of IamPolicyBinding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether objects are equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests inequality of IamPolicyBinding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – Object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether objects are not equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of IamPolicyBinding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The representation of IamPolicyBinding.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.create_from">
+<em class="property">classmethod </em><code class="descname">create_from</code><span class="sig-paren">(</span><em>binding</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding.create_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.create_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an IamPolicyBinding from a binding dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>binding</strong> (<em>dict</em>) – The binding (role mapped to members).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A new IamPolicyBinding created with the</dt>
+<dd>role and members.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding" title="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding">IamPolicyBinding</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.merge_members">
+<code class="descname">merge_members</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyBinding.merge_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.merge_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <cite>other</cite> members to mine if the role names are the same.</p>
+<p>Use case: merging members from ancestor bindings with the same role
+name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding" title="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding"><em>IamPolicyBinding</em></a>) – the other IAM policy binding</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember">
+<em class="property">class </em><code class="descname">IamPolicyMember</code><span class="sig-paren">(</span><em>member_type</em>, <em>member_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>IAM Policy Member.</p>
+<p>See <a class="reference external" href="https://cloud.google.com/iam/reference/rest/v1/Policy#Binding">https://cloud.google.com/iam/reference/rest/v1/Policy#Binding</a>.</p>
+<p>Parse an identity from a policy binding.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.ALL_AUTH_USERS">
+<code class="descname">ALL_AUTH_USERS</code><em class="property"> = 'allAuthenticatedUsers'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.ALL_AUTH_USERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.ALL_USERS">
+<code class="descname">ALL_USERS</code><em class="property"> = 'allUsers'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.ALL_USERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests equality of IamPolicyMember.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – The object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether the objects are equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash function for IamPolicyMember.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hashed object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">hash</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests inequality of IamPolicyMember.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – The object to compare.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether the objects are not equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of IamPolicyMember.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The representation of IamPolicyMember.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._is_matching_domain">
+<code class="descname">_is_matching_domain</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember._is_matching_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._is_matching_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether IAM policy member belongs to domain.</p>
+<p>This applies to a situation where a rule has a <cite>domain</cite> style <cite>members</cite>
+specification and the policy to check specifies users.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember" title="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember"><em>IamPolicyMember</em></a>) – The policy binding member to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if <cite>other</cite> is a member of the domain, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._member_type_exists">
+<code class="descname">_member_type_exists</code><span class="sig-paren">(</span><em>member_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember._member_type_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._member_type_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the member type exists in valid member types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>member_type</strong> (<em>str</em>) – Member type.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If member type is valid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.create_from">
+<em class="property">classmethod </em><code class="descname">create_from</code><span class="sig-paren">(</span><em>member</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.create_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.create_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an IamPolicyMember from the member identity string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>member</strong> (<em>str</em>) – The IAM policy binding member.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Created from the member string.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember" title="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember">IamPolicyMember</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.matches">
+<code class="descname">matches</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#IamPolicyMember.matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if another member matches.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>str</em>) – The policy binding member name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the member matches this member, otherwise False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.member_types">
+<code class="descname">member_types</code><em class="property"> = {'serviceAccount', 'allUsers', 'user', 'domain', 'allAuthenticatedUsers', 'group'}</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.member_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_type.iam_policy._get_iam_members">
+<code class="descname">_get_iam_members</code><span class="sig-paren">(</span><em>members</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/iam_policy.html#_get_iam_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.iam_policy._get_iam_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of this binding’s members as IamPolicyMembers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>members</strong> (<em>list</em>) – A list of members (strings).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of IamPolicyMembers.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
