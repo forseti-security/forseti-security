@@ -18,8 +18,6 @@ from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
-from google.cloud.forseti.scanner.scanners.data_models.cai_data_model import (
-    CaiDataModel)
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     cv_data_converter)
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
@@ -28,10 +26,6 @@ from google.cloud.forseti.scanner.scanners.data_models import data_model_builder
 
 
 LOGGER = logger.get_logger(__name__)
-
-DATA_MODELS = {
-    'cai_resources': CaiDataModel
-}
 
 
 class ConfigValidatorScanner(base_scanner.BaseScanner):
