@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.log\_sink module
-======================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.log_sink
-    :members:
-    :undoc-members:
-    :show-inheritance:

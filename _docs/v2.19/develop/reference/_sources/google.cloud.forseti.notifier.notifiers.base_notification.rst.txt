@@ -1,7 +1,0 @@
-google.cloud.forseti.notifier.notifiers.base\_notification module
-=================================================================
-
-.. automodule:: google.cloud.forseti.notifier.notifiers.base_notification
-    :members:
-    :undoc-members:
-    :show-inheritance:
