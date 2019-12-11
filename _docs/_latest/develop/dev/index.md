@@ -32,7 +32,3 @@ make sure it's securely configured.
 **[Testing Your Changes]({% link _docs/latest/develop/dev/testing.md %})**
 
 Learn how to build protos and run unit tests for your Forseti contributions.
-
-**[Learn the Forseti API]({% link _docs/latest/develop/reference/index.html %})**
-
-Review the generated pydoc to understand the internal APIs.
