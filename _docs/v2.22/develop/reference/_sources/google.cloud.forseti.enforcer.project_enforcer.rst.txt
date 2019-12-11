@@ -1,7 +1,0 @@
-google.cloud.forseti.enforcer.project\_enforcer module
-======================================================
-
-.. automodule:: google.cloud.forseti.enforcer.project_enforcer
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.admin\_directory module
-============================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.admin_directory
-    :members:
-    :undoc-members:
-    :show-inheritance:

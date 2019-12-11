@@ -1,7 +1,0 @@
-google.cloud.forseti.notifier.notifiers.slack\_webhook module
-=============================================================
-
-.. automodule:: google.cloud.forseti.notifier.notifiers.slack_webhook
-    :members:
-    :undoc-members:
-    :show-inheritance:

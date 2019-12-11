@@ -1,7 +1,0 @@
-google.cloud.forseti.enforcer.gce\_firewall\_enforcer module
-============================================================
-
-.. automodule:: google.cloud.forseti.enforcer.gce_firewall_enforcer
-    :members:
-    :undoc-members:
-    :show-inheritance:

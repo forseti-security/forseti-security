@@ -1,7 +1,0 @@
-google.cloud.forseti.services.inventory.base.iam\_helpers module
-================================================================
-
-.. automodule:: google.cloud.forseti.services.inventory.base.iam_helpers
-    :members:
-    :undoc-members:
-    :show-inheritance:
