@@ -32,7 +32,7 @@ _RESOURCE = 'resource'
 
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
 
-CAI_RESOURCE_TYPE_MAPPING = {
+MOCK_CAI_RESOURCE_TYPE_MAPPING = {
     'lien': 'cloudresourcemanager.googleapis.com/Lien',
     'sink': 'logging.googleapis.com/LogSink'
 }
@@ -60,7 +60,11 @@ def generate_ancestry_path(full_name):
 
 
 def convert_data_to_cai_asset(primary_key, resource, resource_type):
-    """Convert data to CAI formatted fields to be used by Config Validator.
+    """Convert non-CAI data to CAI formatted fields to be used by
+    Config Validator.
+
+    This conversion is necessary because Config Validator can only
+    process data in CAI data structure.
 
     Args:
         primary_key (str): The unique identifier of the resource object.
@@ -68,10 +72,10 @@ def convert_data_to_cai_asset(primary_key, resource, resource_type):
         resource_type (str): The resource type (e.g. lien, sink, etc.).
 
     Returns:
-        json: converted resource object.
+        json: converted resource object in CAI data structure.
 
     """
-    resource.cai_resource_type = CAI_RESOURCE_TYPE_MAPPING.get(resource_type)
+    resource.cai_resource_type = MOCK_CAI_RESOURCE_TYPE_MAPPING.get(resource_type)
     resource.cai_resource_name = '//{}/{}'.format(resource.cai_resource_type,
                                                   primary_key)
     if not resource.full_name:
@@ -98,7 +102,7 @@ def convert_data_to_cv_asset(resource, data_type):
         raise ValueError('Data type {} not supported.'.format(data_type))
 
     if (not resource.cai_resource_name and
-            resource.type not in CAI_RESOURCE_TYPE_MAPPING):
+            resource.type not in MOCK_CAI_RESOURCE_TYPE_MAPPING):
         raise ValueError('Resource {} not supported to use Config'
                          ' Validator scanner.'.format(resource.type))
 

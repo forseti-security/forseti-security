@@ -66,7 +66,8 @@ class DataModelBuilder(object):
 
         requirements_map = data_model_requirements_map.REQUIREMENTS_MAP
 
-        LOGGER.info(requirements_map.get(data_model_name))
+        LOGGER.debug('Initializing Config Validator data model: {} - {}'.format(
+            data_model_name, requirements_map.get(data_model_name)))
 
         module_name = module_path.format(
             requirements_map.get(
@@ -75,7 +76,9 @@ class DataModelBuilder(object):
         try:
             module = importlib.import_module(module_name)
         except (ImportError, TypeError, ValueError):
-            LOGGER.exception('Unable to import %s\n', module_name)
+            LOGGER.exception('Unable to import {} for building '
+                             'Config Validator data model.\n'
+                             .format(module_name))
             return None
 
         class_name = requirements_map.get(
@@ -84,10 +87,10 @@ class DataModelBuilder(object):
         try:
             data_model_class = getattr(module, class_name)
         except AttributeError:
-            LOGGER.exception('Unable to instantiate %s', class_name)
+            LOGGER.exception('Unable to instantiate {} for building '
+                             'Config Validator data model.\n'
+                             .format(class_name))
             return None
-
-        LOGGER.info('Initializing the data model.')
 
         data_model = data_model_class(self.global_configs,
                                       self.service_config,

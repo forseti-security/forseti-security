@@ -108,10 +108,13 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
             ValueError: if resources have an unexpected type.
         """
         self.resource_lookup_table = {}
-        data_models = data_model_builder.DataModelBuilder(self.global_configs,
-                                                          self.service_config,
-                                                          self.model_name)\
+        data_models = (
+            data_model_builder
+            .DataModelBuilder(self.global_configs,
+                              self.service_config,
+                              self.model_name)
             .build()
+        )
 
         for data_model in data_models:
             data = data_model.retrieve(iam_policy)
@@ -123,13 +126,13 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
                 if (not resource.cai_resource_name and
                         resource_type in
-                        cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+                        cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
                     resource = cv_data_converter.convert_data_to_cai_asset(
                         primary_key, resource, resource_type)
 
                 elif (not resource.cai_resource_name and
                       resource_type not in
-                      cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+                      cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
                     LOGGER.debug('Resource type %s is not currently '
                                  'supported in Config Validator scanner.',
                                  resource.type)

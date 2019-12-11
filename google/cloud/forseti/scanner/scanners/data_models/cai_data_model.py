@@ -20,11 +20,6 @@ from google.cloud.forseti.services.model.importer import importer
 
 LOGGER = logger.get_logger(__name__)
 
-CAI_RESOURCE_TYPE_MAPPING = {
-    'lien': 'cloudresourcemanager.googleapis.com/Lien',
-    'sink': 'logging.googleapis.com/LogSink'
-}
-
 
 class CaiDataModel(base_data_model.BaseDataModel):
     """Cloud Asset Inventory (CAI) Data Model."""
