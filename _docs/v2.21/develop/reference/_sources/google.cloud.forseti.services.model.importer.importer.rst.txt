@@ -1,7 +1,0 @@
-google.cloud.forseti.services.model.importer.importer module
-============================================================
-
-.. automodule:: google.cloud.forseti.services.model.importer.importer
-    :members:
-    :undoc-members:
-    :show-inheritance:

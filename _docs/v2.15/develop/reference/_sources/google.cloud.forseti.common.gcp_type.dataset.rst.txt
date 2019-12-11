@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.dataset module
-====================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.dataset
-    :members:
-    :undoc-members:
-    :show-inheritance:

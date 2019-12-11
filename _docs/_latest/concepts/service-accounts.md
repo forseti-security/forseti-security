@@ -11,9 +11,9 @@ practice of privilege separation and least privilege.
 
 Following are the service accounts Forseti creates on your behalf.
 
+ * **[Deployer service account](#the-deployer-service-account) (Terraform)**
  * **[Server service account](#the-server-service-account)**
  * **[Client service account](#the-client-service-account)**
- * **[Cloud Foundation service account](#the-cloud-foundation-service-account) (Terraform)**
  * **[Real-Time Enforcer service account](#the-real-time-enforcer-service-account) (optional)**
 
 ---
@@ -22,6 +22,17 @@ Following are the service accounts Forseti creates on your behalf.
 by Forseti are used.**
 
 {% responsive_image path: images/docs/concepts/service-account-architecture.png alt: "service account architecture diagram" %}
+
+## The Deployer Service Account
+
+The Deployer service account, named the `cloud-foundation-forseti` service account in IAM, is used to install Forseti through Terraform.
+
+### Permissions
+
+In order to install Forseti using Terraform, the `cloud-foundation-forseti` service account
+requires the following permissions:
+
+{% include docs/latest/cloud-foundation-forseti-required-roles.md %}
 
 ## The Server Service Account
 
@@ -64,17 +75,6 @@ For Forseti to work properly, the `forseti-client-gcp` service account
 requires the following permissions:
 
 {% include docs/latest/forseti-client-gcp-required-roles.md %}
-
-## The Cloud Foundation Service Account
-
-The `cloud-foundation-forseti` service account is used to install Forseti through Terraform.
-
-### Permissions
-
-In order to install Forseti using Terraform, the `cloud-foundation-forseti` service account
-requires the following permissions:
-
-{% include docs/latest/cloud-foundation-forseti-required-roles.md %}
 
 ## The Real-Time Enforcer Service Account
 

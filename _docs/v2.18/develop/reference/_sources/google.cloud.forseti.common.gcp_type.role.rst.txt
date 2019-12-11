@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.role module
-=================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.role
-    :members:
-    :undoc-members:
-    :show-inheritance:
