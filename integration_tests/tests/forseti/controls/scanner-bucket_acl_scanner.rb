@@ -15,37 +15,37 @@
 require 'json'
 require 'securerandom'
 
-bucket_name = attribute('test-resource-bucket-scanner-bucket')
+bucket_name = attribute('bucket_acl_scanner_bucket_name')
 db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
-project_id = attribute('project_id')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control 'scanner-bucket-acl-scanner' do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
+  # Arrange
+  describe command("forseti inventory create --import_as #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
 
   describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
+  # Act
   scanner_run = command("forseti scanner run")
-
+  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
   describe scanner_run do
     its('exit_status') { should eq 0 }
   end
 
-  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
-
+  # Assert AllAuth violation found
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
   end
 
-  describe command("forseti inventory delete #{@inventory_id}") do
+  # Assert AllUsers violation found
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for public buckets';\"") do
     its('exit_status') { should eq 0 }
-  end
-
-  describe command("forseti model delete #{model_name}") do
-    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/1/)}
   end
 end

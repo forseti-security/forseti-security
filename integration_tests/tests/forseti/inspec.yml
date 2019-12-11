@@ -14,10 +14,10 @@
 
 name: forseti_integration_testing
 attributes:
-- name: forseti-cai-storage-bucket
+- name: bucket_acl_scanner_bucket_name
   required: true
   type: string
-- name: forseti-client-vm-name
+- name: forseti-cai-storage-bucket
   required: true
   type: string
 - name: forseti-client-service-account
@@ -26,24 +26,25 @@ attributes:
 - name: forseti-client-storage-bucket
   required: true
   type: string
+- name: forseti-client-vm-name
+  required: true
+  type: string
 - name: forseti-client-vm-ip
   required: true
   type: string
 - name: forseti-cloudsql-password
   required: true
   type: string
-  value: ''
 - name: forseti-cloudsql-user
-  required: true
-  type: string
-  value: root
-- name: forseti-server-vm-name
   required: true
   type: string
 - name: forseti-server-service-account
   required: true
   type: string
 - name: forseti-server-storage-bucket
+  required: true
+  type: string
+- name: forseti-server-vm-name
   required: true
   type: string
 - name: forseti-server-vm-ip
@@ -62,10 +63,13 @@ attributes:
   required: true
   type: string
   default: ''
-- name: suffix
+- name: random_test_id
   required: true
   type: string
-- name: test-resource-bucket-scanner-bucket
+- name: scanner_test_model_name
+  required: true
+  type: string
+- name: suffix
   required: true
   type: string
 depends:
