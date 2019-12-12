@@ -1,0 +1,18 @@
+google.cloud.forseti.services.explain package
+=============================================
+
+.. automodule:: google.cloud.forseti.services.explain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.services.explain.explain_pb2
+   google.cloud.forseti.services.explain.explain_pb2_grpc
+   google.cloud.forseti.services.explain.explainer
+   google.cloud.forseti.services.explain.service
+

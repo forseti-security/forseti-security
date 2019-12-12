@@ -1,0 +1,237 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.inventory.service"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.services.inventory.service</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot; Inventory gRPC service. &quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">google.protobuf.timestamp_pb2</span> <span class="k">as</span> <span class="nn">timestamp</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory</span> <span class="kn">import</span> <span class="n">inventory_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory</span> <span class="kn">import</span> <span class="n">inventory_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.inventory</span> <span class="kn">import</span> <span class="n">inventory</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.services.utils</span> <span class="kn">import</span> <span class="n">autoclose_stream</span>
+
+<span class="c1"># pylint: disable=no-member</span>
+<span class="n">SUPPRESS_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;Your inventory contains </span><span class="si">{message_type}</span><span class="s1"> message(s), please run command &#39;</span>
+    <span class="s1">&#39;`forseti inventory get </span><span class="si">{inventory_index_id}</span><span class="s1">` for more information.&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="inventory_pb_from_object"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.inventory_pb_from_object">[docs]</a><span class="k">def</span> <span class="nf">inventory_pb_from_object</span><span class="p">(</span><span class="n">inventory_index</span><span class="p">,</span>
+                             <span class="n">warning_messages</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert internal inventory data structure to protobuf.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        inventory_index (InventoryIndex): InventoryIndex class in</span>
+<span class="sd">            inventory storage.</span>
+<span class="sd">        warning_messages (list): Warning message(s) from the inventory</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        object: proto message of InventoryIndex</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># complete_timestamp is None before the inventory finished.</span>
+    <span class="n">complete_timestamp</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">completed_at_datetime</span><span class="p">:</span>
+        <span class="n">complete_timestamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">()</span>
+        <span class="n">complete_timestamp</span><span class="o">.</span><span class="n">FromDatetime</span><span class="p">(</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">completed_at_datetime</span><span class="p">)</span>
+
+    <span class="n">start_timestamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">()</span>
+    <span class="n">start_timestamp</span><span class="o">.</span><span class="n">FromDatetime</span><span class="p">(</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">created_at_datetime</span><span class="p">)</span>
+
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_index_errors</span>
+
+    <span class="k">return</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">InventoryIndex</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">start_timestamp</span><span class="o">=</span><span class="n">start_timestamp</span><span class="p">,</span>
+        <span class="n">complete_timestamp</span><span class="o">=</span><span class="n">complete_timestamp</span><span class="p">,</span>
+        <span class="n">schema_version</span><span class="o">=</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">schema_version</span><span class="p">,</span>
+        <span class="n">count_objects</span><span class="o">=</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">counter</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_status</span><span class="p">,</span>
+        <span class="n">warnings</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">warning_messages</span><span class="p">),</span>
+        <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GrpcInventory"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventory">[docs]</a><span class="k">class</span> <span class="nc">GrpcInventory</span><span class="p">(</span><span class="n">inventory_pb2_grpc</span><span class="o">.</span><span class="n">InventoryServicer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Inventory gRPC handler.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inventory_api</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inventory_api (object): inventory library</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GrpcInventory</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">inventory_api</span>
+
+<div class="viewcode-block" id="GrpcInventory.Ping"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventory.Ping">[docs]</a>    <span class="k">def</span> <span class="nf">Ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ping implemented to check service availability.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: PingReply containing echo of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">PingReply</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Inventory progress updates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">progress</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">background</span><span class="p">,</span>
+                                              <span class="n">request</span><span class="o">.</span><span class="n">model_name</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">enable_debug</span><span class="p">:</span>
+                <span class="n">last_warning</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">progress</span><span class="o">.</span><span class="n">last_warning</span><span class="p">)</span>
+                <span class="n">last_error</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">progress</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">last_warning</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">last_error</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">yield</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">Progress</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">progress</span><span class="o">.</span><span class="n">inventory_index_id</span><span class="p">,</span>
+                <span class="n">final_message</span><span class="o">=</span><span class="n">progress</span><span class="o">.</span><span class="n">final_message</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">progress</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">progress</span><span class="o">.</span><span class="n">warnings</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="n">progress</span><span class="o">.</span><span class="n">errors</span><span class="p">,</span>
+                <span class="n">last_warning</span><span class="o">=</span><span class="n">last_warning</span><span class="p">,</span>
+                <span class="n">last_error</span><span class="o">=</span><span class="n">last_error</span><span class="p">)</span>
+
+    <span class="nd">@autoclose_stream</span>
+    <span class="k">def</span> <span class="nf">List</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lists existing inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            object: Each Inventory API object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">inventory_index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">list</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">warning_count</span> <span class="ow">or</span>
+                    <span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_index_warnings</span><span class="p">):</span>
+                <span class="n">inventory_warnings</span> <span class="o">=</span> <span class="p">[</span><span class="n">SUPPRESS_MESSAGE_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">message_type</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span>
+                    <span class="n">inventory_index_id</span><span class="o">=</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">id</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inventory_warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">yield</span> <span class="n">inventory_pb_from_object</span><span class="p">(</span><span class="n">inventory_index</span><span class="p">,</span>
+                                           <span class="n">inventory_warnings</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GrpcInventory.Get"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventory.Get">[docs]</a>    <span class="k">def</span> <span class="nf">Get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets existing inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Inventory API object that is requested.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">inventory_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">inventory_warnings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">warning_count</span><span class="p">:</span>
+            <span class="n">inventory_warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">resource_full_name</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">warning_message</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">warning_messages</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_index_warnings</span><span class="p">:</span>
+            <span class="n">inventory_warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inventory_index</span><span class="o">.</span><span class="n">inventory_index_warnings</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">GetReply</span><span class="p">(</span>
+            <span class="n">inventory</span><span class="o">=</span><span class="n">inventory_pb_from_object</span><span class="p">(</span><span class="n">inventory_index</span><span class="p">,</span>
+                                               <span class="n">inventory_warnings</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="GrpcInventory.Delete"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventory.Delete">[docs]</a>    <span class="k">def</span> <span class="nf">Delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Deletes existing inventory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: Inventory API object that is deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">inventory_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">DeleteReply</span><span class="p">(</span>
+            <span class="n">inventory</span><span class="o">=</span><span class="n">inventory_pb_from_object</span><span class="p">(</span><span class="n">inventory_index</span><span class="p">,</span> <span class="p">[]))</span></div>
+
+<div class="viewcode-block" id="GrpcInventory.Purge"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventory.Purge">[docs]</a>    <span class="k">def</span> <span class="nf">Purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Purge desired inventory data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (object): gRPC request object.</span>
+<span class="sd">            _ (object): Unused</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: gRPC reply object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">retention_days</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inventory_pb2</span><span class="o">.</span><span class="n">PurgeReply</span><span class="p">(</span>
+            <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GrpcInventoryFactory"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventoryFactory">[docs]</a><span class="k">class</span> <span class="nc">GrpcInventoryFactory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Factory class for Inventory service gRPC interface&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (object): ServiceConfig in server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+
+<div class="viewcode-block" id="GrpcInventoryFactory.create_and_register_service"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.services.inventory.service.html#google.cloud.forseti.services.inventory.service.GrpcInventoryFactory.create_and_register_service">[docs]</a>    <span class="k">def</span> <span class="nf">create_and_register_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an inventory service and registers it in the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            server (object): Server to register service to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: The instantiated gRPC service for inventory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">service</span> <span class="o">=</span> <span class="n">GrpcInventory</span><span class="p">(</span>
+            <span class="n">inventory_api</span><span class="o">=</span><span class="n">inventory</span><span class="o">.</span><span class="n">Inventory</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">))</span>
+        <span class="n">inventory_pb2_grpc</span><span class="o">.</span><span class="n">add_InventoryServicer_to_server</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">service</span></div></div>
+</pre></div>

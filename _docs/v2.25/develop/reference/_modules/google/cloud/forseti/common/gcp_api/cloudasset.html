@@ -1,0 +1,346 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloudasset"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_api.cloudasset</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper for Cloud Asset API client.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="kn">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">httplib2</span> <span class="kn">import</span> <span class="n">HttpLib2Error</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">_base_repository</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">api_helpers</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">repository_mixins</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">API_NAME</span> <span class="o">=</span> <span class="s1">&#39;cloudasset&#39;</span>
+
+
+<div class="viewcode-block" id="CloudAssetRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">CloudAssetRepositoryClient</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Asset API Respository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">quota_max_calls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_period</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>
+                 <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            quota_max_calls (int): Allowed requests per &lt;quota_period&gt; for the</span>
+<span class="sd">                API.</span>
+<span class="sd">            quota_period (float): The time period to track requests over.</span>
+<span class="sd">            use_rate_limiter (bool): Set to false to disable the use of a rate</span>
+<span class="sd">                limiter for this service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
+            <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_top_level</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operations</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CloudAssetRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">API_NAME</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1&#39;</span><span class="p">],</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">top_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetV1Repository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_top_level</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_top_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetV1Repository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_top_level</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _CloudAssetOperationsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_operations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_CloudAssetOperationsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operations</span></div>
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+
+<div class="viewcode-block" id="_CloudAssetV1Repository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetV1Repository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetV1Repository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ExportAssetsQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset V1 repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The top level API methods are rooted under the v1 component in the</span>
+        <span class="c1"># discovery doc.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetV1Repository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_CloudAssetOperationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset._CloudAssetOperationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_CloudAssetOperationsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Asset Operations repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CloudAssetOperationsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;operations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CloudAssetClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient">[docs]</a><span class="k">class</span> <span class="nc">CloudAssetClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Asset Client.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Estimation of how long to wait for an async API to complete.</span>
+    <span class="n">OPERATION_DELAY_IN_SEC</span> <span class="o">=</span> <span class="mf">5.0</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            **kwargs (dict): The kwargs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_calls</span><span class="p">,</span> <span class="n">quota_period</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_ratelimiter_config</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span> <span class="n">API_NAME</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">CloudAssetRepositoryClient</span><span class="p">(</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_rate_limiter&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CloudAssetClient.build_gcs_object_output"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_object_output">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_gcs_object_output</span><span class="p">(</span><span class="n">destination_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an OutputConfig message for output to GCS object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            destination_object (str): The GCS path and file name to store the</span>
+<span class="sd">                results in. The bucket must be in the same project that has the</span>
+<span class="sd">                Cloud Asset API enabled and the object must not exist.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: an OutputConfig message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;gcsDestination&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="n">destination_object</span><span class="p">}}</span></div>
+
+<div class="viewcode-block" id="CloudAssetClient.build_gcs_prefix_output"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_gcs_prefix_output">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_gcs_prefix_output</span><span class="p">(</span><span class="n">destination_prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an OutputConfig message for sharding output to a GCS prefix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            destination_prefix (str): The GCS bucket and folder path to store</span>
+<span class="sd">                the results in. The bucket must be in the same project that has</span>
+<span class="sd">                the Cloud Asset API enabled and the folder must not exist.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: an OutputConfig message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;gcsDestination&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;uriPrefix&#39;</span><span class="p">:</span> <span class="n">destination_prefix</span><span class="p">}}</span></div>
+
+<div class="viewcode-block" id="CloudAssetClient.build_bigquery_table_output"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.build_bigquery_table_output">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_bigquery_table_output</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an OutputConfig message for output to a BigQuery table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project that hosts the dataset.</span>
+<span class="sd">            dataset (str): The dataset name to output into.</span>
+<span class="sd">            table (str): The table name to create for the export, the table must</span>
+<span class="sd">                not exist.</span>
+<span class="sd">            force (bool): If true, force write rows even on error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Uncomment the below code and remove the exception when the</span>
+        <span class="c1"># bigquery support is live in the v1 API.</span>
+        <span class="c1">#</span>
+        <span class="c1"># dataset_full_name = &#39;projects/{}/datasets/{}&#39;.format(project_id,</span>
+        <span class="c1">#                                                      dataset)</span>
+        <span class="c1"># return {&#39;bigqueryDestination&#39;: {&#39;dataset&#39;: dataset_full_name,</span>
+        <span class="c1">#                                 &#39;table&#39;: table,</span>
+        <span class="c1">#                                 &quot;force&quot;: force}}</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The v1 API does not support this &#39;</span>
+                                  <span class="s1">&#39;destination, it will be enabled in a future &#39;</span>
+                                  <span class="s1">&#39;release.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudAssetClient.export_assets"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.export_assets">[docs]</a>    <span class="k">def</span> <span class="nf">export_assets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">destination_object</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">content_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">asset_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">read_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export assets under a parent resource to the destination GCS object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The name of the parent resource to export assests</span>
+<span class="sd">                under.</span>
+<span class="sd">            destination_object (str): The GCS path and file name to store the</span>
+<span class="sd">                results in. The bucket must be in the same project that has the</span>
+<span class="sd">                Cloud Asset API enabled.</span>
+<span class="sd">            output_config (dict): The full outputConfig message to pass to the</span>
+<span class="sd">                export assets API. Should be built using one of the</span>
+<span class="sd">                build_*_output_config methods.</span>
+<span class="sd">            content_type (str): The specific content type to export, currently</span>
+<span class="sd">                supports &quot;RESOURCE&quot; and &quot;IAM_POLICY&quot;. If not specified only the</span>
+<span class="sd">                CAI metadata for assets are included.</span>
+<span class="sd">            asset_types (list): The list of asset types to filter the results</span>
+<span class="sd">                to, if not specified, exports all assets known to CAI.</span>
+<span class="sd">            read_time (str): A timestamp to take an asset snapshot in RFC3339</span>
+<span class="sd">                UTC &quot;Zulu&quot; format, accurate to nanoseconds.</span>
+<span class="sd">                Example: &quot;2014-10-02T15:01:23.045123456Z&quot;</span>
+<span class="sd">            blocking (bool): If true, don&#39;t return until the async operation</span>
+<span class="sd">                completes on the backend or timeout seconds pass.</span>
+<span class="sd">            timeout (float): If greater than 0 and blocking is True, then raise</span>
+<span class="sd">                an exception if timeout seconds pass before the operation</span>
+<span class="sd">                completes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Operation status and info.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: Returns if there is an error in the API response.</span>
+<span class="sd">            OperationTimeoutError: Raised if the operation times out.</span>
+<span class="sd">            ValueError: Raised on invalid parent resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;parent must start with folders/, projects/, or &#39;</span>
+                             <span class="s1">&#39;organizations/&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">destination_object</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">output_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either destination_object or output_config must &#39;</span>
+                             <span class="s1">&#39;be set.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">destination_object</span> <span class="ow">and</span> <span class="n">output_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;destination_object and output_config must be not &#39;</span>
+                             <span class="s1">&#39;both be specified.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">destination_object</span><span class="p">:</span>
+            <span class="c1"># Explicitly continue to support the original use of this method,</span>
+            <span class="c1"># which was output to a specific GCS object. There may be usage of</span>
+            <span class="c1"># this method from outside of Forseti, and thus backwards</span>
+            <span class="c1"># compatibility is required.</span>
+            <span class="n">output_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_gcs_object_output</span><span class="p">(</span><span class="n">destination_object</span><span class="p">)</span>
+
+        <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">top_level</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="n">export_assets</span><span class="p">(</span>
+                <span class="n">parent</span><span class="p">,</span> <span class="n">output_config</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+                <span class="n">asset_types</span><span class="o">=</span><span class="n">asset_types</span><span class="p">,</span> <span class="n">read_time</span><span class="o">=</span><span class="n">read_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">blocking</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_completion</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span>
+                                                   <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error exporting assets for parent </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">OperationTimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Timeout exporting assets for parent </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                           <span class="n">parent</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Exporting assets for parent </span><span class="si">%s</span><span class="s1">. Result: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">parent</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="CloudAssetClient.get_operation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.get_operation">[docs]</a>    <span class="k">def</span> <span class="nf">get_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the Operations Status.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            operation_name (str): The name of the operation to get.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Operation status and info.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: Returns if there is an error in the API response.</span>
+<span class="sd">            ValueError: Raised on invalid parent resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">operation_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;operation_name must start with folders/, &#39;</span>
+                             <span class="s1">&#39;projects/, or organizations/&#39;</span><span class="p">)</span>
+
+        <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">operations</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">operation_name</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the operation status, operation_name = </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                         <span class="s1">&#39;results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">operation_name</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">operation_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="CloudAssetClient.wait_for_completion"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloudasset.html#google.cloud.forseti.common.gcp_api.cloudasset.CloudAssetClient.wait_for_completion">[docs]</a>    <span class="k">def</span> <span class="nf">wait_for_completion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">initial_delay</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wait for the operation to complete.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): The name of the parent resource to export assests</span>
+<span class="sd">                under.</span>
+<span class="sd">            operation (dict): The operation response from an API call.</span>
+<span class="sd">            timeout (float): The maximum time to wait for the operation to</span>
+<span class="sd">                complete.</span>
+<span class="sd">            initial_delay (float): The time to wait before first checking if the</span>
+<span class="sd">                API has completed. If None then the default value, configured as</span>
+<span class="sd">                CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</span>
+<span class="sd">            retry_delay (float): The time to wait between checking if the</span>
+<span class="sd">                API has completed. If None then the default value, configured as</span>
+<span class="sd">                CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Operation status and info.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            OperationTimeoutError: Raised if the operation times out.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">operation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">operation</span>
+
+        <span class="k">if</span> <span class="n">initial_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">initial_delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OPERATION_DELAY_IN_SEC</span>
+
+        <span class="k">if</span> <span class="n">retry_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">retry_delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OPERATION_DELAY_IN_SEC</span>
+
+        <span class="n">started_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">initial_delay</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">operation_name</span> <span class="o">=</span> <span class="n">operation</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">operation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_operation</span><span class="p">(</span><span class="n">operation_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">operation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">operation</span>
+
+            <span class="k">if</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started_timestamp</span> <span class="o">&gt;</span> <span class="n">timeout</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">OperationTimeoutError</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span>
+
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">retry_delay</span><span class="p">)</span></div></div>
+</pre></div>
