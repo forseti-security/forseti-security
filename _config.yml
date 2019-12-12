@@ -29,7 +29,6 @@ exclude: ["Gemfile",
           ".gitignore",
           ".sass-cache/",
           ".ruby-version",
-          "_includes/site",
           "_sass",
           "third_party/sphinx-doc/"]
 exclude_from_watch: ["_docs/latest/",
