@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM forseti/build
+FROM debian
+
+ENV HOME=/home/forseti \
+    WORKDIR=/home/forseti/forseti-security \
+    PATH=/home/forseti/.local/bin:$PATH
 
 USER root
+COPY . ${WORK_DIR}
+RUN set -xe \
+    && apt-get update \
+    && apt-get install python-pip -y
 RUN pip install sphinx==1.7.7
 RUN sphinx-apidoc -P -F -M -e -o . google *.eggs/
 COPY data/conf.py data/index.rst ./
