@@ -1,0 +1,184 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.config_validator_util.validator_client module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.scanners.config_validator_util.validator_client">
+<span id="google-cloud-forseti-scanner-scanners-config-validator-util-validator-client-module"></span><h1>google.cloud.forseti.scanner.scanners.config_validator_util.validator_client module<a class="headerlink" href="#module-google.cloud.forseti.scanner.scanners.config_validator_util.validator_client" title="Permalink to this headline">¶</a></h1>
+<p>Config Validator Validator Client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender">
+<em class="property">class </em><code class="descname">BufferedCVDataSender</code><span class="sig-paren">(</span><em>validator_client</em>, <em>max_size=1024</em>, <em>max_packet_size=4000000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#BufferedCVDataSender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Buffered Config Validator data sender.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.MAX_ALLOWED_PACKET">
+<code class="descname">MAX_ALLOWED_PACKET</code><em class="property"> = 4000000</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.MAX_ALLOWED_PACKET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>asset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#BufferedCVDataSender.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an Asset to the buffer to send to Config Validator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asset</strong> (<em>Asset</em>) – Asset to send to Config Validator.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#BufferedCVDataSender.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.BufferedCVDataSender.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flush all pending objects to the database.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient">
+<em class="property">class </em><code class="descname">ValidatorClient</code><span class="sig-paren">(</span><em>endpoint='localhost:50052'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Validator client.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.DEFAULT_ENDPOINT">
+<code class="descname">DEFAULT_ENDPOINT</code><em class="property"> = 'localhost:50052'</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.DEFAULT_ENDPOINT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data">
+<code class="descname">add_data</code><span class="sig-paren">(</span><em>assets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add asset data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets</strong> (<em>list</em>) – A list of asset data.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorAddDataError</span></code> – Config Validator Add Data Error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorServerUnavailableError</span></code> – Config Validator
+Server Unavailable Error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data_in_bulk">
+<code class="descname">add_data_in_bulk</code><span class="sig-paren">(</span><em>assets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.add_data_in_bulk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.add_data_in_bulk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add asset data to buffer, intended to manage sending data in bulk.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets</strong> (<em>list</em>) – A list of asset data.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.audit">
+<code class="descname">audit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.audit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.audit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Audit existing data in Config Validator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of violations.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorAuditError</span></code> – Config Validator Audit Error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorServerUnavailableError</span></code> – Config Validator Server
+Unavailable Error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.paged_review">
+<code class="descname">paged_review</code><span class="sig-paren">(</span><em>assets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.paged_review"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.paged_review" title="Permalink to this definition">¶</a></dt>
+<dd><p>Review in a paged manner to avoid memory problem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets</strong> (<em>Generator</em>) – A list of asset data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>list</em> – A list of violations of the paged assets.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears previously added data from Config Validator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorResetError</span></code> – Config Validator Reset Error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorServerUnavailableError</span></code> – Config Validator Server
+Unavailable Error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.review">
+<code class="descname">review</code><span class="sig-paren">(</span><em>assets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_util/validator_client.html#ValidatorClient.review"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_util.validator_client.ValidatorClient.review" title="Permalink to this definition">¶</a></dt>
+<dd><p>Review existing data in Config Validator (Audit in parallel
+per policy).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets</strong> (<em>list</em>) – A list of assets to review.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorAuditError</span></code> – Config Validator Audit Error.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigValidatorServerUnavailableError</span></code> – Config Validator Server
+Unavailable Error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
