@@ -15,7 +15,7 @@
 """Map of the requirements needed by the data models."""
 
 REQUIREMENTS_MAP = {
-    'cai_data_model':
+    'config_validator':
         {'module_name': 'cai_data_model',
          'class_name': 'CaiDataModel'}
 }

@@ -111,6 +111,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         data_models = (
             data_model_builder
             .DataModelBuilder(self.global_configs,
+                              self.scanner_configs,
                               self.service_config,
                               self.model_name)
             .build()
