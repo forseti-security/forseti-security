@@ -1,0 +1,486 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.groups_settings_rules_engine"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.audit.groups_settings_rules_engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;Rules engine for checking gsuite groups settings configuration.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">resource</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">resource_util</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="kn">import</span> <span class="n">base_rules_engine</span> <span class="k">as</span> <span class="n">bre</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="kn">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">audit_errors</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">VIOLATION_TYPE</span> <span class="o">=</span> <span class="s1">&#39;GSUITE_GROUPS_SETTINGS_VIOLATION&#39;</span>
+
+<span class="c1"># Rule Modes.</span>
+<span class="n">WHITELIST</span> <span class="o">=</span> <span class="s1">&#39;whitelist&#39;</span>
+<span class="n">BLACKLIST</span> <span class="o">=</span> <span class="s1">&#39;blacklist&#39;</span>
+<span class="n">RULE_MODES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="n">BLACKLIST</span><span class="p">,</span> <span class="n">WHITELIST</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="GroupsSettingsRulesEngine"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine">[docs]</a><span class="k">class</span> <span class="nc">GroupsSettingsRulesEngine</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRulesEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rules engine for Groups Settings scanner.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules_file_path</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules_file_path (str): file location of rules</span>
+<span class="sd">            snapshot_timestamp (str): snapshot timestamp. Defaults to None.</span>
+<span class="sd">                If set, this will be the snapshot timestamp</span>
+<span class="sd">                used in the engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GroupsSettingsRulesEngine</span><span class="p">,</span>
+              <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules_file_path</span><span class="o">=</span><span class="n">rules_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span> <span class="o">=</span> <span class="n">snapshot_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GroupsSettingsRulesEngine.build_rule_book"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.build_rule_book">[docs]</a>    <span class="k">def</span> <span class="nf">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build GroupsSettingsRuleBook from the rules definition file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="o">=</span> <span class="n">GroupsSettingsRuleBook</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_rule_definitions</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRulesEngine.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">,</span> <span class="n">force_rebuild</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether Groups Settings violates rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): A GroupsSettings resource to check.</span>
+<span class="sd">            iam_only (bool): IAM only.</span>
+<span class="sd">            force_rebuild (bool): If True, rebuilds the rule book. This will</span>
+<span class="sd">                reload the rules definition file and add the rules to the book.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             generator: A generator of rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_rebuild</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">()</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRulesEngine.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRulesEngine.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (list): The list of rules to add to the book.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_book</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook">[docs]</a><span class="k">class</span> <span class="nc">GroupsSettingsRuleBook</span><span class="p">(</span><span class="n">bre</span><span class="o">.</span><span class="n">BaseRuleBook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The RuleBook for GroupsSettings rules.&quot;&quot;&quot;</span>
+
+    <span class="n">supported_settings</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
+        <span class="s1">&#39;whoCanAdd&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanJoin&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanViewMembership&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanViewGroup&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;whoCanInvite&#39;</span><span class="p">,</span> <span class="s1">&#39;allowExternalMembers&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanLeaveGroup&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (list): GroupsSettings rule definition dicts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GroupsSettingsRuleBook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rule_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rule_defs</span> <span class="o">=</span> <span class="n">rule_defs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rule_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Equals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True or False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">resource_rules_map</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Equals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True or False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The object representation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;GroupsSettingsRuleBook &lt;</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.add_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add rules to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_defs (dict): rule definitions dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rule_defs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rules&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.add_rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_def</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a rule to the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_def (dict): A dictionary containing rule definition</span>
+<span class="sd">                properties.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">                Assigned automatically when the rule book is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;settings&#39;</span><span class="p">)</span>
+        <span class="n">groups_emails</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;groups_emails&#39;</span><span class="p">)</span>
+        <span class="n">only_iam_groups</span> <span class="o">=</span> <span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;only_iam_groups&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">settings</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">only_iam_groups</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                <span class="ow">not</span> <span class="n">groups_emails</span> <span class="ow">or</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">RULE_MODES</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span><span class="s1">&#39;Faulty rule </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">rule_setting</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rule_setting</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_settings</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">audit_errors</span><span class="o">.</span><span class="n">InvalidRulesSchemaError</span><span class="p">(</span>
+                    <span class="s1">&#39;Faulty rule </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_index</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">group_email</span> <span class="ow">in</span> <span class="n">groups_emails</span><span class="p">:</span>
+            <span class="c1"># For each resource id associated with the rule, create a</span>
+            <span class="c1"># mapping of resource =&gt; rules.</span>
+            <span class="n">gcp_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="o">=</span><span class="n">group_email</span><span class="p">,</span>
+                <span class="n">resource_type</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">ResourceType</span><span class="o">.</span><span class="n">GROUPS_SETTINGS</span><span class="p">)</span>
+
+            <span class="n">rule_def_resource</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;settings&#39;</span><span class="p">:</span> <span class="n">settings</span><span class="p">,</span>
+                <span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+                <span class="s1">&#39;only_iam_groups&#39;</span><span class="p">:</span> <span class="n">only_iam_groups</span>
+            <span class="p">}</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">rule_name</span><span class="o">=</span><span class="n">rule_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                        <span class="n">rule_index</span><span class="o">=</span><span class="n">rule_index</span><span class="p">,</span>
+                        <span class="n">rule</span><span class="o">=</span><span class="n">rule_def_resource</span><span class="p">)</span>
+
+            <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">gcp_resource</span><span class="p">,</span> <span class="n">ResourceRules</span><span class="p">(</span><span class="n">_resource</span><span class="o">=</span><span class="n">gcp_resource</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">only_iam_groups</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resource_rules</span><span class="o">.</span><span class="n">iam_only_rules</span><span class="p">:</span>
+                    <span class="n">resource_rules</span><span class="o">.</span><span class="n">iam_only_rules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resource_rules</span><span class="o">.</span><span class="n">not_iam_only_rules</span><span class="p">:</span>
+                <span class="n">resource_rules</span><span class="o">.</span><span class="n">not_iam_only_rules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.get_resource_rules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.get_resource_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the resource rules for resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _resource (Resource): The gcp_type Resource find in the map.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResourceRules: A ResourceRules object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_rules_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_resource</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupsSettingsRuleBook.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.GroupsSettingsRuleBook.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find groups settings violations in the rule book.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): The GCP resource to check for violations.</span>
+<span class="sd">            iam_only (bool): IAM only.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RuleViolation: resource groups settings rule violations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Looking for groups settings violations: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">settings</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
+            <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">))</span>
+
+        <span class="n">wildcard_resource</span> <span class="o">=</span> <span class="n">resource_util</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span>
+            <span class="n">resource_id</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+
+        <span class="n">resource_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_rules</span><span class="p">(</span><span class="n">wildcard_resource</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource_rules</span><span class="p">:</span>
+            <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">resource_rules</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">))</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Returning violations: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div></div>
+
+
+<div class="viewcode-block" id="ResourceRules"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules">[docs]</a><span class="k">class</span> <span class="nc">ResourceRules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An association of a resource to rules.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">_resource</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">iam_only_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">not_iam_only_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _resource (Resource): The resource to associate with the rule.</span>
+<span class="sd">            iam_only_rules (set): rules to associate with the resource,</span>
+<span class="sd">                iam only.</span>
+<span class="sd">            not_iam_only_rules (set): rules to associate with the resource.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iam_only_rules</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="n">iam_only_rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">not_iam_only_rules</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="n">not_iam_only_rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">_resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iam_only_rules</span> <span class="o">=</span> <span class="n">iam_only_rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">not_iam_only_rules</span> <span class="o">=</span> <span class="n">not_iam_only_rules</span>
+
+<div class="viewcode-block" id="ResourceRules.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">iam_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if the policy binding matches this rule&#39;s criteria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): groups settings resource.</span>
+<span class="sd">            iam_only (bool): IAM only.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: RuleViolation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iam_only_rules</span> <span class="k">if</span> <span class="n">iam_only</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">not_iam_only_rules</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="n">rule_violations</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rule_violations</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rule_violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare == with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (ResourceRules): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">resource</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iam_only_rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">iam_only_rules</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">not_iam_only_rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">not_iam_only_rules</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare != with another object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="ResourceRules.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.ResourceRules.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of this node.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: debug string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;GroupsSettingsResourceRules&lt;resource=</span><span class="si">{}</span><span class="s1">, iam_only_rules=</span><span class="si">{}</span><span class="s1">, &#39;</span>
+                <span class="s1">&#39;not_iam_only_rules=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iam_only_rules</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">not_iam_only_rules</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rule properties from the rule definition file, also finds violations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule_index</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule_name (str): Name of the loaded rule.</span>
+<span class="sd">            rule_index (int): The index of the rule from the rule definitions.</span>
+<span class="sd">            rule (dict): The rule definition from the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">=</span> <span class="n">rule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">=</span> <span class="n">rule_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span>
+
+<div class="viewcode-block" id="Rule.rule_requirements"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.rule_requirements">[docs]</a>    <span class="k">def</span> <span class="nf">rule_requirements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Used to create violation reason.</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">           str: value couples specified in rule, joined by AND.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rule_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">rule_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rule_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.find_blacklist_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_blacklist_violation">[docs]</a>    <span class="k">def</span> <span class="nf">find_blacklist_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds violations in case that rule is blacklist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): Groups Settings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             list: List of group settings in violation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violation_settings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">violation_settings</span>
+
+        <span class="k">for</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="n">violation_settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">violation_settings</span></div>
+
+<div class="viewcode-block" id="Rule.find_whitelist_violation"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_whitelist_violation">[docs]</a>    <span class="k">def</span> <span class="nf">find_whitelist_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds violations in case that rule is whitelist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): Groups settings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             list: List of group settings in violation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violation_settings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">violation_settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">violation_settings</span></div>
+
+<div class="viewcode-block" id="Rule.find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find GroupsSettings violations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (GroupsSettings): The resource to check for violations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Returns a list of RuleViolation named tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">violation_settings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">BLACKLIST</span><span class="p">:</span>
+            <span class="n">violation_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_blacklist_violation</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">WHITELIST</span><span class="p">:</span>
+            <span class="n">violation_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_whitelist_violation</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">violation_settings</span><span class="p">:</span>
+            <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RuleViolation</span><span class="p">(</span>
+                <span class="n">group_email</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">resource_type</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                <span class="n">rule_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                <span class="n">rule_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                <span class="n">violation_type</span><span class="o">=</span><span class="n">VIOLATION_TYPE</span><span class="p">,</span>
+                <span class="n">violation_settings</span><span class="o">=</span><span class="n">violation_settings</span><span class="p">,</span>
+                <span class="n">whoCanAdd</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanAdd</span><span class="p">,</span>
+                <span class="n">whoCanJoin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanJoin</span><span class="p">,</span>
+                <span class="n">whoCanViewMembership</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanViewMembership</span><span class="p">,</span>
+                <span class="n">whoCanViewGroup</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanViewGroup</span><span class="p">,</span>
+                <span class="n">whoCanInvite</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanInvite</span><span class="p">,</span>
+                <span class="n">allowExternalMembers</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">allowExternalMembers</span><span class="p">,</span>
+                <span class="n">whoCanLeaveGroup</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">whoCanLeaveGroup</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">violations</span></div>
+
+<div class="viewcode-block" id="Rule.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule equals other Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Rule): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_name</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rule_index</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rule.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether Rule is not equal to another Rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): object to compare to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="Rule.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.audit.groups_settings_rules_engine.html#google.cloud.forseti.scanner.audit.groups_settings_rules_engine.Rule.__hash__">[docs]</a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a hash of the rule index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The hash of the rule index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_index</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># pylint: enable=inconsistent-return-statements</span>
+
+<span class="c1"># Rule violation.</span>
+<span class="c1"># group_email: string</span>
+<span class="c1"># resource_type: string</span>
+<span class="c1"># rule_index: int</span>
+<span class="c1"># rule_name: string</span>
+<span class="c1"># violation_type: string</span>
+<span class="c1"># violation_settings: list</span>
+<span class="c1"># whoCanAdd: string</span>
+<span class="c1"># whoCanJoin: string</span>
+<span class="c1"># whoCanViewMembership: string</span>
+<span class="c1"># whoCanViewGroup: string</span>
+<span class="c1"># whoCanInvite: string</span>
+<span class="c1"># allowExternalMembers: bool</span>
+<span class="c1"># whoCanLeaveGroup: string</span>
+<span class="n">RuleViolation</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RuleViolation&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;group_email&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;rule_index&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;rule_name&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_type&#39;</span><span class="p">,</span> <span class="s1">&#39;violation_settings&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;whoCanAdd&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanJoin&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanViewMembership&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;whoCanViewGroup&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanInvite&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;allowExternalMembers&#39;</span><span class="p">,</span> <span class="s1">&#39;whoCanLeaveGroup&#39;</span><span class="p">])</span>
+</pre></div>

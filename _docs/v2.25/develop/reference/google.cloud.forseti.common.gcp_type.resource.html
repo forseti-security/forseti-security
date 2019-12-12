@@ -1,0 +1,418 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.resource module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.resource">
+<span id="google-cloud-forseti-common-gcp-type-resource-module"></span><h1>google.cloud.forseti.common.gcp_type.resource module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.resource" title="Permalink to this headline">¶</a></h1>
+<p>GCP Resource.</p>
+<p>For now, this only represents Organization resources. In the future, we may
+need to separate the classes depending on implementation.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.resource.LifecycleState">
+<em class="property">class </em><code class="descname">LifecycleState</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#LifecycleState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.LifecycleState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Resource lifecycle state.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.LifecycleState.ACTIVE">
+<code class="descname">ACTIVE</code><em class="property"> = 'ACTIVE'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.LifecycleState.ACTIVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.LifecycleState.DELETED">
+<code class="descname">DELETED</code><em class="property"> = 'DELETED'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.LifecycleState.DELETED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.LifecycleState.UNSPECIFIED">
+<code class="descname">UNSPECIFIED</code><em class="property"> = 'LIFECYCLE_STATE_UNSPECIFIED'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.LifecycleState.UNSPECIFIED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource">
+<em class="property">class </em><code class="descname">Resource</code><span class="sig-paren">(</span><em>resource_id</em>, <em>resource_type</em>, <em>name=None</em>, <em>display_name=None</em>, <em>parent=None</em>, <em>locations=None</em>, <em>lifecycle_state='LIFECYCLE_STATE_UNSPECIFIED'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#Resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a GCP resource.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.__eq__">
+<code class="descname">__eq__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#Resource.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test equality of Resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – The other object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether the objects are equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#Resource.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a hash on the resource type and id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hash of the object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">hash</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.__ne__">
+<code class="descname">__ne__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#Resource.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test inequality of Resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) – The other object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether the objects are equal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#Resource.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation of the Resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The representation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 208</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.display_name">
+<code class="descname">display_name</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.display_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The display name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.id">
+<code class="descname">id</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.lifecycle_state">
+<code class="descname">lifecycle_state</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.lifecycle_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lifecycle state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The LifecycleState.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.resource.LifecycleState" title="google.cloud.forseti.common.gcp_type.resource.LifecycleState">LifecycleState</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.locations">
+<code class="descname">locations</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locations the resource resides in.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Locations the resource resides in.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[str]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.name">
+<code class="descname">name</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>GCP name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.parent">
+<code class="descname">parent</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource parent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The parent.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource">Resource</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.Resource.type">
+<code class="descname">type</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.Resource.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The type.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType">
+<em class="property">class </em><code class="descname">ResourceType</code><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#ResourceType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Resource types.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_APP">
+<code class="descname">APPENGINE_APP</code><em class="property"> = 'appengine_app'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_APP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_INSTANCE">
+<code class="descname">APPENGINE_INSTANCE</code><em class="property"> = 'appengine_instance'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_INSTANCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_VERSION">
+<code class="descname">APPENGINE_VERSION</code><em class="property"> = 'appengine_version'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.APPENGINE_VERSION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.BACKEND_SERVICE">
+<code class="descname">BACKEND_SERVICE</code><em class="property"> = 'backendservice'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.BACKEND_SERVICE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.BILLING_ACCOUNT">
+<code class="descname">BILLING_ACCOUNT</code><em class="property"> = 'billing_account'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.BILLING_ACCOUNT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.BUCKET">
+<code class="descname">BUCKET</code><em class="property"> = 'bucket'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.BUCKET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUD_SQL_INSTANCE">
+<code class="descname">CLOUD_SQL_INSTANCE</code><em class="property"> = 'cloudsqlinstance'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.CLOUD_SQL_INSTANCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.CRYPTO_KEY">
+<code class="descname">CRYPTO_KEY</code><em class="property"> = 'kms_cryptokey'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.CRYPTO_KEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.DATASET">
+<code class="descname">DATASET</code><em class="property"> = 'dataset'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.DATASET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.FIREWALL_RULE">
+<code class="descname">FIREWALL_RULE</code><em class="property"> = 'firewall'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.FIREWALL_RULE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.FOLDER">
+<code class="descname">FOLDER</code><em class="property"> = 'folder'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.FOLDER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.FORWARDING_RULE">
+<code class="descname">FORWARDING_RULE</code><em class="property"> = 'forwardingrule'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.FORWARDING_RULE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.GROUP">
+<code class="descname">GROUP</code><em class="property"> = 'gsuite_group'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.GROUP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.GROUPS_SETTINGS">
+<code class="descname">GROUPS_SETTINGS</code><em class="property"> = 'gsuite_groups_settings'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.GROUPS_SETTINGS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE">
+<code class="descname">INSTANCE</code><em class="property"> = 'instance'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_GROUP">
+<code class="descname">INSTANCE_GROUP</code><em class="property"> = 'instancegroup'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_GROUP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_GROUP_MANAGER">
+<code class="descname">INSTANCE_GROUP_MANAGER</code><em class="property"> = 'instancegroupmanager'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_GROUP_MANAGER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_TEMPLATE">
+<code class="descname">INSTANCE_TEMPLATE</code><em class="property"> = 'instancetemplate'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.INSTANCE_TEMPLATE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.KEY_RING">
+<code class="descname">KEY_RING</code><em class="property"> = 'kms_keyring'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.KEY_RING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.KE_CLUSTER">
+<code class="descname">KE_CLUSTER</code><em class="property"> = 'kubernetes_cluster'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.KE_CLUSTER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.LIEN">
+<code class="descname">LIEN</code><em class="property"> = 'lien'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.LIEN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.LOG_SINK">
+<code class="descname">LOG_SINK</code><em class="property"> = 'sink'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.LOG_SINK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.ORGANIZATION">
+<code class="descname">ORGANIZATION</code><em class="property"> = 'organization'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.ORGANIZATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.PROJECT">
+<code class="descname">PROJECT</code><em class="property"> = 'project'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.PROJECT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.ROLE">
+<code class="descname">ROLE</code><em class="property"> = 'role'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.ROLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.SERVICE_ACCOUNT">
+<code class="descname">SERVICE_ACCOUNT</code><em class="property"> = 'serviceaccount'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.SERVICE_ACCOUNT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.SERVICE_ACCOUNT_KEY">
+<code class="descname">SERVICE_ACCOUNT_KEY</code><em class="property"> = 'serviceaccount_key'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.SERVICE_ACCOUNT_KEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.TABLE">
+<code class="descname">TABLE</code><em class="property"> = 'bigquery_table'</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.TABLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.resource_types">
+<code class="descname">resource_types</code><em class="property"> = frozenset({'billing_account', 'bucket', 'forwardingrule', 'organization', 'kms_keyring', 'project', 'sink', 'dataset', 'lien', 'gsuite_group', 'kms_cryptokey', 'folder'})</em><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.resource_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.resource.ResourceType.verify">
+<em class="property">classmethod </em><code class="descname">verify</code><span class="sig-paren">(</span><em>resource_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource.html#ResourceType.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource.ResourceType.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify if the resource type is recognized.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_type</strong> (<em>str</em>) – The resource type.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The resource type if it is recognized in the resource_types.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidResourceTypeError</span></code> – If resource type is not recognized.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

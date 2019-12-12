@@ -1,0 +1,103 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.network"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.network</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Compute Network.</span>
+
+<span class="sd">See: https://cloud.google.com/compute/docs/reference/beta/networks</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">key</span>
+
+
+<span class="n">KEY_OBJECT_KIND</span> <span class="o">=</span> <span class="s1">&#39;Network&#39;</span>
+
+
+<div class="viewcode-block" id="Key"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.network.html#google.cloud.forseti.common.gcp_type.network.Key">[docs]</a><span class="k">class</span> <span class="nc">Key</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">Key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An identifier for a specific network.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Key.from_args"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.network.html#google.cloud.forseti.common.gcp_type.network.Key.from_args">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_args</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a Key from specific values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): project_id</span>
+<span class="sd">            name (str): name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: the key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Key</span><span class="p">(</span><span class="n">KEY_OBJECT_KIND</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="Key.from_url"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.network.html#google.cloud.forseti.common.gcp_type.network.Key.from_url">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a Key from a URL.</span>
+
+<span class="sd">           Accepts relative network &#39;URLs&#39; as seen in firewall rule resources.</span>
+<span class="sd">           xref:</span>
+<span class="sd">           https://cloud.google.com/compute/docs/reference/latest/firewalls</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): Object reference URL</span>
+<span class="sd">            project_id (str): Default project ID if, in the case of a relative</span>
+<span class="sd">                              URL, none is present</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: the key</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Required parameters are missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;://&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">url</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.googleapis.com/compute/v1/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">url</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">Key</span><span class="o">.</span><span class="n">_from_url</span><span class="p">(</span><span class="n">KEY_OBJECT_KIND</span><span class="p">,</span>
+                            <span class="p">{</span><span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;networks&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">},</span>
+                            <span class="n">url</span><span class="p">,</span>
+                            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">project_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Missing fields in URL </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: project_id</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: project_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span></div>
+</pre></div>

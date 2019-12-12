@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.cloudsql\_instance module
+===============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.cloudsql_instance
+    :members:
+    :undoc-members:
+    :show-inheritance:
