@@ -1,0 +1,486 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.iam_policy"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.iam_policy</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;GCP IAM Policy.</span>
+
+<span class="sd">See: https://cloud.google.com/iam/reference/rest/v1/Policy</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util.regular_exp</span> <span class="kn">import</span> <span class="n">escape_and_globify</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_get_iam_members"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy._get_iam_members">[docs]</a><span class="k">def</span> <span class="nf">_get_iam_members</span><span class="p">(</span><span class="n">members</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a list of this binding&#39;s members as IamPolicyMembers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        members (list): A list of members (strings).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of IamPolicyMembers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">member_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">member_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IamPolicyMember</span><span class="o">.</span><span class="n">create_from</span><span class="p">(</span><span class="n">member</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamPolicyMemberError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Invalid IAM policy member: </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">member_list</span></div>
+
+
+<div class="viewcode-block" id="IamPolicy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy">[docs]</a><span class="k">class</span> <span class="nc">IamPolicy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;GCP IAM Policy.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">audit_configs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="IamPolicy.create_from"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.create_from">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">policy_json</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an IamPolicy object from json representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            policy_json (dict): The json representing the IAM policy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IamPolicy: An IamPolicy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">policy_json</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamPolicyError</span><span class="p">(</span>
+                <span class="s1">&#39;Invalid policy </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_json</span><span class="p">))</span>
+
+        <span class="n">policy</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[</span><span class="n">IamPolicyBinding</span><span class="o">.</span><span class="n">create_from</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">policy_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bindings&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+        <span class="k">if</span> <span class="s1">&#39;auditConfigs&#39;</span> <span class="ow">in</span> <span class="n">policy_json</span><span class="p">:</span>
+            <span class="n">policy</span><span class="o">.</span><span class="n">audit_configs</span> <span class="o">=</span> <span class="n">IamAuditConfig</span><span class="o">.</span><span class="n">create_from</span><span class="p">(</span>
+                <span class="n">policy_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;auditConfigs&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">policy</span></div>
+
+<div class="viewcode-block" id="IamPolicy.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests equality of IamPolicy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if equals, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">bindings</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">audit_configs</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">audit_configs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicy.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests inequality of IamPolicy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if not equals, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="IamPolicy.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of IamPolicy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Representation of IamPolicy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">audit_configs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;IamPolicy: &lt;bindings=</span><span class="si">{}</span><span class="s1">, audit_configs=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">audit_configs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;IamPolicy: &lt;bindings=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicy.is_empty"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicy.is_empty">[docs]</a>    <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests whether this policy&#39;s bindings are empty.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if bindings are empty; False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IamPolicyBinding"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding">[docs]</a><span class="k">class</span> <span class="nc">IamPolicyBinding</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;IAM Policy Binding.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_name</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            role_name (str): The string name of the role.</span>
+<span class="sd">            members (list): The role members of the policy binding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">role_name</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">members</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamPolicyBindingError</span><span class="p">(</span>
+                <span class="p">(</span><span class="s1">&#39;Invalid IAM policy binding: &#39;</span>
+                 <span class="s1">&#39;role_name=</span><span class="si">{}</span><span class="s1">, members=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role_name</span><span class="p">,</span> <span class="n">members</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role_name</span> <span class="o">=</span> <span class="n">role_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="n">_get_iam_members</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="n">role_name</span><span class="p">),</span>
+                                       <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IamPolicyBinding.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests equality of IamPolicyBinding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether objects are equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role_name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">role_name</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">members</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicyBinding.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests inequality of IamPolicyBinding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether objects are not equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="IamPolicyBinding.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of IamPolicyBinding.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The representation of IamPolicyBinding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;IamBinding: &lt;role_name=</span><span class="si">{}</span><span class="s1">, members=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">role_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicyBinding.create_from"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.create_from">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an IamPolicyBinding from a binding dict.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            binding (dict): The binding (role mapped to members).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IamPolicyBinding: A new IamPolicyBinding created with the</span>
+<span class="sd">                role and members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">binding</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">binding</span>
+
+        <span class="n">iam_policy_binding</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;role&#39;</span><span class="p">),</span> <span class="n">binding</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;members&#39;</span><span class="p">))</span>
+
+        <span class="c1"># The IamPolicyBinding.members attribute will be [] if the member types</span>
+        <span class="c1"># for all the members are invalid.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">iam_policy_binding</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">iam_policy_binding</span></div>
+
+<div class="viewcode-block" id="IamPolicyBinding.merge_members"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyBinding.merge_members">[docs]</a>    <span class="k">def</span> <span class="nf">merge_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add `other` members to mine if the role names are the same.</span>
+
+<span class="sd">        Use case: merging members from ancestor bindings with the same role</span>
+<span class="sd">        name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (IamPolicyBinding): the other IAM policy binding</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamPolicyBindingError</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot merge, other is not of type </span><span class="se">\&#39;</span><span class="s1">IamPolicyBinding</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">role_name</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">role_name</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">member</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IamPolicyMember"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember">[docs]</a><span class="k">class</span> <span class="nc">IamPolicyMember</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;IAM Policy Member.</span>
+
+<span class="sd">    See https://cloud.google.com/iam/reference/rest/v1/Policy#Binding.</span>
+
+<span class="sd">    Parse an identity from a policy binding.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ALL_USERS</span> <span class="o">=</span> <span class="s1">&#39;allUsers&#39;</span>
+    <span class="n">ALL_AUTH_USERS</span> <span class="o">=</span> <span class="s1">&#39;allAuthenticatedUsers&#39;</span>
+    <span class="n">member_types</span> <span class="o">=</span> <span class="p">{</span><span class="n">ALL_USERS</span><span class="p">,</span> <span class="n">ALL_AUTH_USERS</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;serviceAccount&#39;</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_type</span><span class="p">,</span> <span class="n">member_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_type (str): The string member type (see `member_types`).</span>
+<span class="sd">            member_name (str): The string member name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">member_type</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_type_exists</span><span class="p">(</span><span class="n">member_type</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamPolicyMemberError</span><span class="p">(</span>
+                <span class="s1">&#39;Invalid policy member: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">member_type</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">member_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">member_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_pattern</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">member_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">escape_and_globify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                                           <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IamPolicyMember.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests equality of IamPolicyMember.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): The object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether the objects are equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">type</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests inequality of IamPolicyMember.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): The object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether the objects are not equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember.__hash__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__hash__">[docs]</a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hash function for IamPolicyMember.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            hash: The hashed object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of IamPolicyMember.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The representation of IamPolicyMember.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember._member_type_exists"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._member_type_exists">[docs]</a>    <span class="k">def</span> <span class="nf">_member_type_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if the member type exists in valid member types.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_type (str): Member type.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: If member type is valid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">member_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">member_types</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember.create_from"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.create_from">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">member</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an IamPolicyMember from the member identity string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member (str): The IAM policy binding member.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IamPolicyMember: Created from the member string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">identity_parts</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">member_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">identity_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">member_name</span> <span class="o">=</span> <span class="n">identity_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">identity_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">member_name</span><span class="o">=</span><span class="n">member_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember._is_matching_domain"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember._is_matching_domain">[docs]</a>    <span class="k">def</span> <span class="nf">_is_matching_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether IAM policy member belongs to domain.</span>
+
+<span class="sd">        This applies to a situation where a rule has a `domain` style `members`</span>
+<span class="sd">        specification and the policy to check specifies users.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (IamPolicyMember): The policy binding member to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if `other` is a member of the domain, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s1">&#39;domain&#39;</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s1">&#39;user&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">domain</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">domain</span></div>
+
+<div class="viewcode-block" id="IamPolicyMember.matches"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamPolicyMember.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if another member matches.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (str): The policy binding member name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the member matches this member, otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">other_member</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="n">other_member</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">other_member</span> <span class="o">=</span> <span class="n">IamPolicyMember</span><span class="o">.</span><span class="n">create_from</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="c1"># Bucket IAM supports a special &quot;allUsers&quot; and &quot;allAuthenticatedUsers&quot;</span>
+        <span class="c1"># members, whose value is simply &quot;allUsers&quot; and &quot;allAuthenticatedUsers&quot;,</span>
+        <span class="c1"># without a colon separator and a second fragment.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_USERS</span> <span class="ow">and</span>
+                <span class="n">other_member</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_USERS</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_AUTH_USERS</span> <span class="ow">and</span>
+                <span class="n">other_member</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_AUTH_USERS</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="c1"># Match if:</span>
+        <span class="c1"># {member_type}:{member_name} regex-matches self&#39;s</span>
+        <span class="c1"># {member_type}:{member_name} .</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">other_member</span><span class="o">.</span><span class="n">type</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">other_member</span><span class="o">.</span><span class="n">name</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_matching_domain</span><span class="p">(</span><span class="n">other_member</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<div class="viewcode-block" id="IamAuditConfig"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig">[docs]</a><span class="k">class</span> <span class="nc">IamAuditConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;IAM Audit Config.</span>
+
+<span class="sd">    Captures the mapping from service to log type to exempted members for a</span>
+<span class="sd">    project, folder or organization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ALL_SERVICES</span> <span class="o">=</span> <span class="s1">&#39;allServices&#39;</span>
+    <span class="n">VALID_LOG_TYPES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="s1">&#39;AUDIT_READ&#39;</span><span class="p">,</span> <span class="s1">&#39;DATA_READ&#39;</span><span class="p">,</span> <span class="s1">&#39;DATA_WRITE&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_configs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            service_configs (dict): A dictionary mapping service names to</span>
+<span class="sd">                dictionaries mapping log types to sets of exempeted members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span> <span class="o">=</span> <span class="n">service_configs</span>
+
+<div class="viewcode-block" id="IamAuditConfig.__eq__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests equality of IamAuditConfig.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether objects are equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">service_configs</span></div>
+
+<div class="viewcode-block" id="IamAuditConfig.__ne__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests inequality of IamAuditConfig.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (object): Object to compare.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether objects are not equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+
+<div class="viewcode-block" id="IamAuditConfig.__repr__"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of IamAuditConfig.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The representation of IamAuditConfig.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;IamAuditConfig: &lt;service_configs=</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamAuditConfig.create_from"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.create_from">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">audit_configs_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an IamAuditConfig from a list of auditConfig dicts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            audit_configs_list (list): A list of auditConfigs for each service.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IamAuditConfig: A new IamAuditConfig created with the service audit</span>
+<span class="sd">                configs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">service_configs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">audit_config</span> <span class="ow">in</span> <span class="n">audit_configs_list</span><span class="p">:</span>
+            <span class="n">service_name</span> <span class="o">=</span> <span class="n">audit_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;service&#39;</span><span class="p">)</span>
+            <span class="n">log_configs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log_config</span> <span class="ow">in</span> <span class="n">audit_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;auditLogConfigs&#39;</span><span class="p">):</span>
+                <span class="n">log_configs</span><span class="p">[</span><span class="n">log_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logType&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                    <span class="n">log_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;exemptedMembers&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">service_name</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">log_configs</span> <span class="ow">or</span> <span class="kc">None</span> <span class="ow">in</span> <span class="n">log_configs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamAuditConfigError</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid IAM audit config: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">audit_config</span><span class="p">))</span>
+            <span class="n">service_configs</span><span class="p">[</span><span class="n">service_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_configs</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">service_configs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IamAuditConfig.merge_configs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.iam_policy.html#google.cloud.forseti.common.gcp_type.iam_policy.IamAuditConfig.merge_configs">[docs]</a>    <span class="k">def</span> <span class="nf">merge_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds `other` audit configs to mine, combining exempted member.</span>
+
+<span class="sd">        Use case: merging audit configs from ancestor IAM policies.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (IamAuditConfig): the other IAM audit configs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidIamAuditConfigError</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot merge, other is not of type </span><span class="se">\&#39;</span><span class="s1">IamAuditConfig</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">log_configs</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">service_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">service_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span><span class="p">[</span><span class="n">service_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">service_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_configs</span><span class="p">[</span><span class="n">service_name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">log_type</span><span class="p">,</span> <span class="n">exemptions</span> <span class="ow">in</span> <span class="n">log_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">service_config</span><span class="p">[</span><span class="n">log_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">exemptions</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">service_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="n">log_type</span><span class="p">,</span> <span class="nb">set</span><span class="p">()))</span></div></div>
+</pre></div>

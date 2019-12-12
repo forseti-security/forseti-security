@@ -1,0 +1,1108 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.enforcer.gce_firewall_enforcer"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.enforcer.gce_firewall_enforcer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;Core classes for firewall policy enforcement.</span>
+
+<span class="sd">Simplifies the interface with the compute API for managing firewall policies.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">http.client</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">ssl</span>
+
+<span class="kn">from</span> <span class="nn">future</span> <span class="kn">import</span> <span class="n">standard_library</span>
+<span class="kn">import</span> <span class="nn">httplib2</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+
+<span class="c1"># The name of the GCE API.</span>
+<span class="n">API_NAME</span> <span class="o">=</span> <span class="s1">&#39;compute&#39;</span>
+
+<span class="c1"># The root of the GCE API.</span>
+<span class="n">API_ROOT</span> <span class="o">=</span> <span class="s1">&#39;https://www.googleapis.com/&#39;</span>
+
+<span class="c1"># The version of the GCE API to use.</span>
+<span class="n">API_VERSION</span> <span class="o">=</span> <span class="s1">&#39;v1&#39;</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># What transient exceptions should be retried.</span>
+<span class="n">RETRY_EXCEPTIONS</span> <span class="o">=</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ResponseNotReady</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">IncompleteRead</span><span class="p">,</span>
+                    <span class="n">httplib2</span><span class="o">.</span><span class="n">ServerNotFoundError</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">ssl</span><span class="o">.</span><span class="n">SSLError</span><span class="p">,)</span>
+
+<span class="c1"># Allowed items in a firewall rule.</span>
+<span class="n">ALLOWED_RULE_ITEMS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">((</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="s1">&#39;denied&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;direction&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;disabled&#39;</span><span class="p">,</span> <span class="s1">&#39;logConfig&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span> <span class="s1">&#39;destinationRanges&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span> <span class="s1">&#39;targetTags&#39;</span><span class="p">))</span>
+
+<span class="c1"># Maximum time to allow an active API operation to wait for status=Done</span>
+<span class="n">OPERATION_TIMEOUT</span> <span class="o">=</span> <span class="mf">120.0</span>
+
+<span class="c1"># The number of times to retry an operation if it times out before completion.</span>
+<span class="n">OPERATION_RETRY_COUNT</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1"># Name restrictions described at</span>
+<span class="c1"># https://cloud.google.com/compute/docs/reference/rest/v1/firewalls</span>
+<span class="n">VALID_RESOURCE_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$)&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base error class for the module.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="InvalidFirewallRuleError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.InvalidFirewallRuleError">[docs]</a><span class="k">class</span> <span class="nc">InvalidFirewallRuleError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a firewall rule doesn&#39;t look like a firewall rule should.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallRuleValidationError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRuleValidationError">[docs]</a><span class="k">class</span> <span class="nc">FirewallRuleValidationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a firewall rule fails validation.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DuplicateFirewallRuleNameError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.DuplicateFirewallRuleNameError">[docs]</a><span class="k">class</span> <span class="nc">DuplicateFirewallRuleNameError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a rule name is reused in a policy, names must be unique.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallEnforcementFailedError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementFailedError">[docs]</a><span class="k">class</span> <span class="nc">FirewallEnforcementFailedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Updating firewall for project failed.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallEnforcementInsertFailedError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementInsertFailedError">[docs]</a><span class="k">class</span> <span class="nc">FirewallEnforcementInsertFailedError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insertion of a firewall rule failed.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallEnforcementUpdateFailedError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementUpdateFailedError">[docs]</a><span class="k">class</span> <span class="nc">FirewallEnforcementUpdateFailedError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update of a firewall rule failed.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallEnforcementDeleteFailedError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcementDeleteFailedError">[docs]</a><span class="k">class</span> <span class="nc">FirewallEnforcementDeleteFailedError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Deletion of a firewall rule failed.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NetworkImpactValidationError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.NetworkImpactValidationError">[docs]</a><span class="k">class</span> <span class="nc">NetworkImpactValidationError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a firewall rule is to be applied to a disallowed network.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="EmptyProposedFirewallRuleSetError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.EmptyProposedFirewallRuleSetError">[docs]</a><span class="k">class</span> <span class="nc">EmptyProposedFirewallRuleSetError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if the proposed firewall rule set is empty.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FirewallQuotaExceededError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallQuotaExceededError">[docs]</a><span class="k">class</span> <span class="nc">FirewallQuotaExceededError</span><span class="p">(</span><span class="n">FirewallEnforcementFailedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if the proposed changes would exceed firewall quota.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="get_network_name_from_url"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.get_network_name_from_url">[docs]</a><span class="k">def</span> <span class="nf">get_network_name_from_url</span><span class="p">(</span><span class="n">network_url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a network URL, return the name of the network.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        network_url (str): The fully qualified network url, such as</span>
+<span class="sd">            (&#39;&lt;root&gt;/compute/v1/projects/my-proj/global/networks/my-network&#39;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The network name, my-network in the previous example</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">network_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="build_network_url"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.build_network_url">[docs]</a><span class="k">def</span> <span class="nf">build_network_url</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Render the network url from project and network names.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (str): The name of the GCE project to operate upon.</span>
+<span class="sd">        network (str): The name of the network to operate upon.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The fully qualified network url for the given project/network.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="sa">u</span><span class="s1">&#39;</span><span class="si">%(root)s%(api_name)s</span><span class="s1">/</span><span class="si">%(version)s</span><span class="s1">/projects/</span><span class="si">%(project)s</span><span class="s1">/global/&#39;</span>
+            <span class="s1">&#39;networks/</span><span class="si">%(network)s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;api_name&#39;</span><span class="p">:</span> <span class="n">API_NAME</span><span class="p">,</span>
+                                       <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span>
+                                       <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">project</span><span class="p">,</span>
+                                       <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="n">API_ROOT</span><span class="p">,</span>
+                                       <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">API_VERSION</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="_is_successful"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer._is_successful">[docs]</a><span class="k">def</span> <span class="nf">_is_successful</span><span class="p">(</span><span class="n">operation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks if the operation finished with no errors.</span>
+
+<span class="sd">    If the operation response contains an &#39;error&#39; key, then the error code</span>
+<span class="sd">    is checked. Any error code that is not ignored causes this to return</span>
+<span class="sd">    False.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        operation (dict): A Compute GlobalOperations response object from an API</span>
+<span class="sd">            call.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if there were no errors, or all errors are ignored, otherwise</span>
+<span class="sd">            False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="s1">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">operation</span><span class="p">:</span>
+        <span class="c1"># &#39;error&#39; should always contains an &#39;errors&#39; list:</span>
+        <span class="k">if</span> <span class="s1">&#39;errors&#39;</span> <span class="ow">in</span> <span class="n">operation</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">err</span> <span class="ow">in</span> <span class="n">operation</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">][</span><span class="s1">&#39;errors&#39;</span><span class="p">]:</span>
+                <span class="c1"># We ignore the following errors:</span>
+                <span class="c1"># RESOURCE_ALREADY_EXISTS: Because another program somewhere</span>
+                <span class="c1">#     else could have already added the rule.</span>
+                <span class="c1"># INVALID_FIELD_VALUE: Because the network probably</span>
+                <span class="c1">#     disappeared out from under us.</span>
+                <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RESOURCE_ALREADY_EXISTS&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;INVALID_FIELD_VALUE&#39;</span><span class="p">]:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Ignoring error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Operation has error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unknown error response: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">operation</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">])</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">success</span></div>
+
+
+<div class="viewcode-block" id="filter_rules_by_network"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.filter_rules_by_network">[docs]</a><span class="k">def</span> <span class="nf">filter_rules_by_network</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the subset of rules that apply to the specified network(s).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rules (list): A list of rule dicts to filter.</span>
+<span class="sd">        network (str): The network name to restrict rules to. If no network</span>
+<span class="sd">            specified then all rules are returned.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of rules that apply to the filtered networks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">network</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rules</span>
+
+    <span class="n">filtered_rules</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_network_name_from_url</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
+            <span class="n">filtered_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filtered_rules</span></div>
+
+
+<div class="viewcode-block" id="FirewallRules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules">[docs]</a><span class="k">class</span> <span class="nc">FirewallRules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A collection of validated firewall rules.&quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_PRIORITY</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">DEFAULT_DIRECTION</span> <span class="o">=</span> <span class="s1">&#39;INGRESS&#39;</span>
+    <span class="n">DEFAULT_DISABLED</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">DEFAULT_LOGCONFIG</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;enable&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_rule_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (str): The GCE project id the rules apply to.</span>
+<span class="sd">            rules (list): A list of rule dicts to add to the object.</span>
+<span class="sd">            add_rule_callback (function): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_rule_callback</span> <span class="o">=</span> <span class="n">add_rule_callback</span>
+        <span class="k">if</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FirewallRules.__eq__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Equality.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (FirewallRules): The other object to compare with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if equal, else false.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rules</span></div>
+
+<div class="viewcode-block" id="FirewallRules.__ne__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not Equal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (FirewallRules): The other object to compare with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if not equal, else false.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">rules</span></div>
+
+<div class="viewcode-block" id="FirewallRules.add_rules_from_api"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_api">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules_from_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compute_client</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads rules from compute.firewalls().list().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          compute_client (object): A ComputeClient instance for interfacing with</span>
+<span class="sd">              GCE API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;Can not import rules from the API into a FirewallRules &#39;</span>
+                <span class="s1">&#39;object with rules already added&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">firewall_rules</span> <span class="o">=</span> <span class="n">compute_client</span><span class="o">.</span><span class="n">get_firewall_rules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">firewall_rules</span><span class="p">:</span>
+            <span class="c1"># Only include keys in the ALLOWED_RULE_ITEMS set.</span>
+            <span class="n">scrubbed_rule</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">k</span>
+                 <span class="ow">in</span> <span class="n">ALLOWED_RULE_ITEMS</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">scrubbed_rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRules.add_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">network_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds rules from a list of rule dicts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rules (list): A list of rule dicts to add to the object</span>
+<span class="sd">            network_name (str): If set, rules which have no network currently</span>
+<span class="sd">                defined will have their network set to network_name, and</span>
+<span class="sd">                network_name will be prepended to the rule name.</span>
+
+<span class="sd">                Rules that do have a network defined have their network matched</span>
+<span class="sd">                against network_name, and if they differ the rule is not added.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">network_name</span><span class="o">=</span><span class="n">network_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRules.add_rule"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">network_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds rule to the self.rules dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule (dict): A valid dict representing a GCE firewall rule</span>
+<span class="sd">            network_name (str): If set, rules which have no network currently</span>
+<span class="sd">                defined will have their network set to network_name, and</span>
+<span class="sd">                network_name will be prepended to the rule name.</span>
+
+<span class="sd">                Rules that do have a network defined have their network matched</span>
+<span class="sd">                against network_name, and if they differ the rule is not added.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Invalid rule type. Found </span><span class="si">%s</span><span class="s1"> expected dict&#39;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+
+        <span class="n">new_rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_lists_in_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">network_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;network&#39;</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+                <span class="n">rule_network</span> <span class="o">=</span> <span class="n">get_network_name_from_url</span><span class="p">(</span><span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">rule_network</span> <span class="o">!=</span> <span class="n">network_name</span><span class="p">:</span>
+                    <span class="c1"># Don&#39;t add the rule if it&#39;s network does not match</span>
+                    <span class="c1"># network_name</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Firewall rule does not apply to network </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                                <span class="s1">&#39;skipping: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">network_name</span><span class="p">,</span>
+                                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">new_rule</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                    <span class="k">return</span>
+
+                <span class="c1"># Normalize network value to full network URL for rules that</span>
+                <span class="c1"># already include a network name, so comparison with a rule</span>
+                <span class="c1"># from the API will return True</span>
+                <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_network_url</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project</span><span class="p">,</span>
+                                                        <span class="n">network_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_network_url</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project</span><span class="p">,</span>
+                                                        <span class="n">network_name</span><span class="p">)</span>
+
+                <span class="c1"># Update the rule name by prepending the network, so it is</span>
+                <span class="c1"># unique. If the new rule does not have a name defined it will</span>
+                <span class="c1"># fail the _check_rule_before_adding validation and an</span>
+                <span class="c1"># InvalidFirewallRuleError exception will be raised.</span>
+                <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+                    <span class="c1"># Truncate network name if too long. This may result in</span>
+                    <span class="c1"># duplicate rule names, which will cause the network name</span>
+                    <span class="c1"># to be changed to a md5 hash representation.</span>
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">network_name</span><span class="p">[:(</span><span class="mi">62</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))],</span>
+                        <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+                    <span class="k">while</span> <span class="n">new_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                        <span class="c1"># Firewall rule names must start with [a-z], hashes</span>
+                        <span class="c1"># could start with a number, so we prepend hn-</span>
+                        <span class="c1"># (hashed network) to the name.</span>
+                        <span class="n">network_name</span> <span class="o">=</span> <span class="s1">&#39;hn-&#39;</span> <span class="o">+</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span>
+                            <span class="n">network_name</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+                        <span class="n">new_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                            <span class="n">network_name</span><span class="p">[:(</span><span class="mi">62</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))],</span>
+                            <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+                    <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_name</span>
+
+        <span class="k">if</span> <span class="s1">&#39;priority&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+            <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_PRIORITY</span>
+
+        <span class="k">if</span> <span class="s1">&#39;direction&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+            <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_DIRECTION</span>
+
+        <span class="k">if</span> <span class="s1">&#39;logConfig&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+            <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;logConfig&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_LOGCONFIG</span>
+
+        <span class="k">if</span> <span class="s1">&#39;disabled&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rule</span><span class="p">:</span>
+            <span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;disabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_DISABLED</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_rule_before_adding</span><span class="p">(</span><span class="n">new_rule</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">new_rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">new_rule</span></div>
+
+<div class="viewcode-block" id="FirewallRules.filtered_by_networks"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.filtered_by_networks">[docs]</a>    <span class="k">def</span> <span class="nf">filtered_by_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networks</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the subset of rules that apply to the specified network(s).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            networks (list): A list of one or more network names to fetch rules</span>
+<span class="sd">                for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary of rules that apply to the filtered networks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">networks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span>
+
+        <span class="n">filtered_rules</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">rule_name</span><span class="p">,</span> <span class="n">rule</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">get_network_name_from_url</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">])</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">filtered_rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rule</span>
+
+        <span class="k">return</span> <span class="n">filtered_rules</span></div>
+
+<div class="viewcode-block" id="FirewallRules.as_json"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.as_json">[docs]</a>    <span class="k">def</span> <span class="nf">as_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export rules to a json string.</span>
+
+<span class="sd">        The JSON string should be an array of Firewall resource objects, see</span>
+<span class="sd">        https://cloud.google.com/compute/docs/reference/latest/firewalls</span>
+<span class="sd">        for details. Only the fields in ALLOWED_RULE_ITEMS are permitted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A JSON string with an array of rules sorted by network and</span>
+<span class="sd">                name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">,</span>
+                                                               <span class="s1">&#39;name&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRules.add_rules_from_json"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules.add_rules_from_json">[docs]</a>    <span class="k">def</span> <span class="nf">add_rules_from_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import rules from a json string as exported by as_json.</span>
+
+<span class="sd">        The JSON string should be an array of Firewall resource objects, see</span>
+<span class="sd">        https://cloud.google.com/compute/docs/reference/latest/firewalls</span>
+<span class="sd">        for details. Only the fields in ALLOWED_RULE_ITEMS are permitted.</span>
+
+<span class="sd">        The legacy format from older versions of GCE Enforcer is also supported.</span>
+<span class="sd">        This format wraps the array of Firewall resources in a dictionary under</span>
+<span class="sd">        the key &#39;items&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          json_rules (str): The JSON formatted string containing the rules to</span>
+<span class="sd">              import.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Can not import from JSON into a FirewallRules &#39;</span>
+                           <span class="s1">&#39;object with rules already added&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">rules</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_rules</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;items&#39;</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">]:</span>
+                    <span class="n">rule</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">key</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ALLOWED_RULE_ITEMS</span>
+                                 <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">item</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallRules._order_lists_in_rule"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._order_lists_in_rule">[docs]</a>    <span class="k">def</span> <span class="nf">_order_lists_in_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unsorted_rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Recursively iterates a rule dictionary and sorts any lists.</span>
+
+<span class="sd">        This ensures that two rule with the same polices, but with unordered</span>
+<span class="sd">        lists will compare equal when tested.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            unsorted_rule (dict): A rule dictionary that has not been sorted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A new rule dictionary with the lists sorted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sorted_rule</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">value_key</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">unsorted_rule</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>  <span class="c1"># List of dictionaries</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                        <span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_lists_in_rule</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+                    <span class="n">value_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[</span><span class="n">value_key</span><span class="p">])</span>
+
+                <span class="n">sorted_rule</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">sorted</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">sorted_rule</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_lists_in_rule</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sorted_rule</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">sorted_rule</span></div>
+
+    <span class="c1"># TODO: clean up break up into additional methods</span>
+    <span class="c1"># pylint: disable=too-many-branches</span>
+<div class="viewcode-block" id="FirewallRules._check_rule_before_adding"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallRules._check_rule_before_adding">[docs]</a>    <span class="k">def</span> <span class="nf">_check_rule_before_adding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates that a rule is valid and not a duplicate.</span>
+
+<span class="sd">        Validation is based on reference:</span>
+<span class="sd">        https://cloud.google.com/compute/docs/reference/beta/firewalls and</span>
+<span class="sd">        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table</span>
+<span class="sd">        If add_rule_callback is set, this will also confirm that</span>
+<span class="sd">        add_rule_callback returns True for the rule, otherwise it will not add</span>
+<span class="sd">        the rule.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rule (dict): The rule to validate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if rule is valid, False if the add_rule_callback returns</span>
+<span class="sd">                False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DuplicateFirewallRuleNameError: Two or more rules have the same</span>
+<span class="sd">                name.</span>
+<span class="sd">            InvalidFirewallRuleError: One or more rules failed validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">unknown_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="n">ALLOWED_RULE_ITEMS</span>
+        <span class="k">if</span> <span class="n">unknown_keys</span><span class="p">:</span>
+            <span class="c1"># This is probably the result of a API version upgrade that didn&#39;t</span>
+            <span class="c1"># properly update this function (or a broken binary).</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;An unexpected entry exists in a firewall rule dict: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span>
+                <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">unknown_keys</span><span class="p">)))</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule missing required field &quot;</span><span class="si">%s</span><span class="s1">&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">rule</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s1">&#39;direction&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule</span> <span class="ow">or</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;INGRESS&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;destinationRanges&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Ingress rules cannot include &quot;destinationRanges&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                    <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;EGRESS&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;sourceRanges&#39;</span> <span class="ow">in</span> <span class="n">rule</span> <span class="ow">or</span> <span class="s1">&#39;sourceTags&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Egress rules cannot include &quot;sourceRanges&quot;, &quot;sourceTags&quot;:&#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule &quot;direction&quot; must be either &quot;INGRESS&quot; or &quot;EGRESS&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+
+        <span class="n">max_256_value_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sourceRanges&#39;</span><span class="p">,</span> <span class="s1">&#39;sourceTags&#39;</span><span class="p">,</span> <span class="s1">&#39;targetTags&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;destinationRanges&#39;</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">max_256_value_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rule</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">256</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule entry &quot;</span><span class="si">%s</span><span class="s1">&quot; must contain 256 or fewer values: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">rule</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="s1">&#39;allowed&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule</span> <span class="ow">and</span> <span class="s1">&#39;denied&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="s1">&#39;allowed&#39;</span> <span class="ow">in</span> <span class="n">rule</span> <span class="ow">and</span> <span class="s1">&#39;denied&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule must contain oneof &quot;allowed&quot; or &quot;denied&quot; entries: &#39;</span>
+                <span class="s1">&#39; &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;allowed&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">allow</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;allowed&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;IPProtocol&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allow</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                        <span class="s1">&#39;Allow rule in </span><span class="si">%s</span><span class="s1"> missing required field &#39;</span>
+                        <span class="s1">&#39;&quot;IPProtocol&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">allow</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="s1">&#39;denied&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">deny</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;denied&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;IPProtocol&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deny</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                        <span class="s1">&#39;Deny rule in </span><span class="si">%s</span><span class="s1"> missing required field &#39;</span>
+                        <span class="s1">&#39;&quot;IPProtocol&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">deny</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s1">&#39;priority&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">priority</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule &quot;priority&quot; could not be converted to an integer: &#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">priority</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">priority</span> <span class="o">&gt;</span> <span class="mi">65535</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                    <span class="s1">&#39;Rule &quot;priority&quot; out of range 0-65535: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">63</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule name exceeds length limit of 63 chars: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span>
+                <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">VALID_RESOURCE_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidFirewallRuleError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule name does not match valid GCP resource name regex &quot;&#39;</span>
+                <span class="s1">&#39;(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?)&quot;: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DuplicateFirewallRuleNameError</span><span class="p">(</span>
+                <span class="s1">&#39;Rule </span><span class="si">%s</span><span class="s1"> already defined in rules: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">keys</span><span class="p">()))))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_rule_callback</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_rule_callback</span><span class="p">(</span><span class="n">rule</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div></div>
+    <span class="c1"># pylint: enable=too-many-branches</span>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<span class="c1"># TODO: Investigate improving so we can avoid the pylint disable.</span>
+<div class="viewcode-block" id="FirewallEnforcer"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer">[docs]</a><span class="k">class</span> <span class="nc">FirewallEnforcer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Enforce a set of firewall rules for use with GCE projects.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">project</span><span class="p">,</span>
+                 <span class="n">compute_client</span><span class="p">,</span>
+                 <span class="n">expected_rules</span><span class="p">,</span>
+                 <span class="n">current_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">project_sema</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">operation_sema</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">add_rule_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (str): The id of the cloud project to enforce the firewall</span>
+<span class="sd">                on.</span>
+<span class="sd">            compute_client (object): A ComputeClient instance for interfacing</span>
+<span class="sd">                with GCE API.</span>
+<span class="sd">            expected_rules (object): A FirewallRules object with the expected</span>
+<span class="sd">                rules to be enforced on the project.</span>
+<span class="sd">            current_rules (object): A FirewallRules object with the current</span>
+<span class="sd">                rules for the project. If not defined, the API will be queried</span>
+<span class="sd">                and the existing rules imported into current_rules when</span>
+<span class="sd">                apply_firewall is called for the project.</span>
+<span class="sd">            project_sema (object): An optional semaphore object, used to limit</span>
+<span class="sd">                the number of concurrent projects getting written to.</span>
+<span class="sd">            operation_sema (object): [DEPRECATED] An optional semaphore object,</span>
+<span class="sd">                used to limit the number of concurrent write operations on</span>
+<span class="sd">                project firewalls.</span>
+<span class="sd">            add_rule_callback (function): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span> <span class="o">=</span> <span class="n">compute_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span> <span class="o">=</span> <span class="n">expected_rules</span>
+
+        <span class="k">if</span> <span class="n">current_rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span> <span class="o">=</span> <span class="n">current_rules</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_sema</span> <span class="o">=</span> <span class="n">project_sema</span>
+        <span class="k">if</span> <span class="n">operation_sema</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;Operation semaphore is deprecated. Argument ignored.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operation_sema</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_rule_callback</span> <span class="o">=</span> <span class="n">add_rule_callback</span>
+
+        <span class="c1"># Initialize private parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deleted_rules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inserted_rules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_rules</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="FirewallEnforcer.apply_firewall"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.apply_firewall">[docs]</a>    <span class="k">def</span> <span class="nf">apply_firewall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">prechange_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">networks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">allow_empty_ruleset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enforce the expected firewall rules on the project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prechange_callback (function): An optional callback function that</span>
+<span class="sd">                will get called if the firewall policy for a project does not</span>
+<span class="sd">                match the expected policy, before any changes are actually</span>
+<span class="sd">                applied. If the callback returns False then no changes will be</span>
+<span class="sd">                made to the project. If it returns True then the changes will be</span>
+<span class="sd">                pushed. If prechange_callback is set to None then the callback</span>
+<span class="sd">                will be skipped and enforcement will continue as though it had</span>
+<span class="sd">                returned True.</span>
+
+<span class="sd">                The callback template is callback_func(project,</span>
+<span class="sd">                                                       rules_to_delete,</span>
+<span class="sd">                                                       rules_to_insert,</span>
+<span class="sd">                                                       rules_to_update)</span>
+
+<span class="sd">                The callback may be used to limit the kinds of firewall changes</span>
+<span class="sd">                that are allowed to be pushed for a project, limit the number of</span>
+<span class="sd">                rules that can get changed, to check if the project should have</span>
+<span class="sd">                rules changed, etc.</span>
+
+<span class="sd">                The callback may also raise FirewallEnforcementFailedError if it</span>
+<span class="sd">                determines that the set of changes to the policy could result in</span>
+<span class="sd">                an outage for an underlying service, or otherwise are</span>
+<span class="sd">                inconsistent with business rules. This will cause the</span>
+<span class="sd">                enforcement to fail.</span>
+
+<span class="sd">            networks (list): A list of networks to limit rule changes to. Rules</span>
+<span class="sd">                on networks not in the list will not be changed.</span>
+
+<span class="sd">                Note- This can lead to duplicate rule name collisions since all</span>
+<span class="sd">                      rules are not included when building the change set. The</span>
+<span class="sd">                      change set will be validated before getting enforced and</span>
+<span class="sd">                      any errors will cause a FirewallEnforcementFailedError</span>
+<span class="sd">                      exception to be raised.</span>
+
+<span class="sd">            allow_empty_ruleset (booL): If set to true and expected_rules has no</span>
+<span class="sd">                rules, all current firewall rules will be deleted from the</span>
+<span class="sd">                project.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The total number of firewall rules deleted, inserted and</span>
+<span class="sd">                updated.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EmptyProposedFirewallRuleSetError: An error occurred while updating</span>
+<span class="sd">                the firewall. The calling code should validate the current state</span>
+<span class="sd">                of the project firewall, and potentially revert to the old</span>
+<span class="sd">                firewall rules.</span>
+
+<span class="sd">                Any rules changed before the error occurred can be retrieved by</span>
+<span class="sd">                calling the Get(Deleted|Inserted|Updated)Rules methods.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Reset change sets to empty lists</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_current_rules</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">rules</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_empty_ruleset</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EmptyProposedFirewallRuleSetError</span><span class="p">(</span>
+                <span class="s1">&#39;No rules defined in the expected rules.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">filtered_by_networks</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span> <span class="o">==</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">filtered_by_networks</span><span class="p">(</span><span class="n">networks</span><span class="p">)):</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;Current and expected rules match for project </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_change_set</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_change_set</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prechange_callback</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prechange_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;The Prechange Callback returned False for project </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                    <span class="s1">&#39;changes will not be applied.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_sema</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project_sema</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">delete_before_insert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_change_operation_order</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="p">))</span>
+            <span class="n">changed_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">networks</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>  <span class="c1"># Default to all networks</span>
+            <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">changed_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_change_set</span><span class="p">(</span>
+                    <span class="n">delete_before_insert</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_sema</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project_sema</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">changed_count</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer.refresh_current_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.refresh_current_rules">[docs]</a>    <span class="k">def</span> <span class="nf">refresh_current_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates the current rules for the project using the compute API.&quot;&quot;&quot;</span>
+        <span class="n">current_rules</span> <span class="o">=</span> <span class="n">FirewallRules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                                      <span class="n">add_rule_callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_add_rule_callback</span><span class="p">)</span>
+        <span class="n">current_rules</span><span class="o">.</span><span class="n">add_rules_from_api</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span> <span class="o">=</span> <span class="n">current_rules</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer.get_deleted_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_deleted_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_deleted_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the list of deleted rules.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The list of deleted rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deleted_rules</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer.get_inserted_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_inserted_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_inserted_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the list of inserted rules.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The list of inserted rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inserted_rules</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer.get_updated_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer.get_updated_rules">[docs]</a>    <span class="k">def</span> <span class="nf">get_updated_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the list of updated rules.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The list of updated rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updated_rules</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._build_change_set"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._build_change_set">[docs]</a>    <span class="k">def</span> <span class="nf">_build_change_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enumerate changes between the current and expected firewall rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            networks (list): The network names to restrict rules to. If no</span>
+<span class="sd">                networks specified then all rules are returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">networks</span><span class="p">:</span>
+            <span class="c1"># Build new firewall rules objects from the subset of rules for</span>
+            <span class="c1"># networks</span>
+            <span class="n">current_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">filtered_by_networks</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span>
+            <span class="n">expected_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">filtered_by_networks</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">rules</span>
+            <span class="n">expected_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">rules</span>
+
+        <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="n">current_rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rule_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expected_rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule_name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="n">expected_rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rule_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule_name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="n">expected_rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="n">current_rules</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">expected_rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]</span> <span class="o">!=</span> <span class="n">current_rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._validate_change_set"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._validate_change_set">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_change_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate the changeset will not leave the project in a bad state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            networks (list): The network names to restrict rules to. If no</span>
+<span class="sd">                networks specified then all rules are returned.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FirewallRuleValidationError: Raised if a rule name to be inserted</span>
+<span class="sd">                already exists on the project.</span>
+
+<span class="sd">            NetworkImpactValidationError: Raised if a rule to be changed exists</span>
+<span class="sd">                on a network not in the networks list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">rules</span> <span class="ow">and</span>
+                    <span class="n">rule_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">FirewallRuleValidationError</span><span class="p">(</span>
+                    <span class="s1">&#39;The rule </span><span class="si">%s</span><span class="s1"> is in the rules to insert set, but the same &#39;</span>
+                    <span class="s1">&#39;rule name already exists on project </span><span class="si">%s</span><span class="s1">. It may be used on &#39;</span>
+                    <span class="s1">&#39;a different network.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rule_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">networks</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span><span class="p">:</span>
+                <span class="n">impacted_network</span> <span class="o">=</span> <span class="n">get_network_name_from_url</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">][</span><span class="s1">&#39;network&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">impacted_network</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">NetworkImpactValidationError</span><span class="p">(</span>
+                        <span class="s1">&#39;The rule </span><span class="si">%s</span><span class="s1"> is in the rules to update set, but it is &#39;</span>
+                        <span class="s1">&#39;currently on a network, &quot;</span><span class="si">%s</span><span class="s1">&quot;, that is not in the &#39;</span>
+                        <span class="s1">&#39;allowed networks list for project </span><span class="si">%s</span><span class="s1">: &quot;</span><span class="si">%s</span><span class="s1">&quot;. Updating &#39;</span>
+                        <span class="s1">&#39;the rule to </span><span class="si">%s</span><span class="s1"> would impact the wrong network.&#39;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="n">rule_name</span><span class="p">,</span> <span class="n">impacted_network</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                         <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">networks</span><span class="p">),</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._check_change_operation_order"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._check_change_operation_order">[docs]</a>    <span class="k">def</span> <span class="nf">_check_change_operation_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">insert_count</span><span class="p">,</span> <span class="n">delete_count</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if enough quota to do the firewall changes insert first.</span>
+
+<span class="sd">        If current usage is near the limit, check if deleting current rules</span>
+<span class="sd">        before adding the new rules would allow the project to stay below quota.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            insert_count (int): The number of rules that will be inserted.</span>
+<span class="sd">            delete_count (int): The number of rules that will be deleted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if existing rules should be deleted before new rules are</span>
+<span class="sd">              inserted, otherwise false.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FirewallQuotaExceededError: Raised if there is not enough quota for</span>
+<span class="sd">                the required policy to be applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">delete_before_insert</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">firewall_quota</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="o">.</span><span class="n">get_firewall_quota</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error getting quota for project </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                         <span class="n">e</span><span class="p">)</span>
+            <span class="n">firewall_quota</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">firewall_quota</span><span class="p">:</span>
+            <span class="n">usage</span> <span class="o">=</span> <span class="n">firewall_quota</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;usage&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">firewall_quota</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;limit&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">usage</span> <span class="o">+</span> <span class="n">insert_count</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">usage</span> <span class="o">-</span> <span class="n">delete_count</span> <span class="o">+</span> <span class="n">insert_count</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">FirewallQuotaExceededError</span><span class="p">(</span>
+                        <span class="s1">&#39;Firewall enforcement cannot update the policy for &#39;</span>
+                        <span class="s1">&#39;project </span><span class="si">%s</span><span class="s1"> without exceed the current firewalls &#39;</span>
+                        <span class="s1">&#39;quota: </span><span class="si">%u</span><span class="s1">,&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">limit</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching to &quot;delete first&quot; rule update order &#39;</span>
+                                <span class="s1">&#39;for project </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+                    <span class="n">delete_before_insert</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Unknown firewall quota, switching to &quot;delete &#39;</span>
+                           <span class="s1">&#39;first&quot; rule update order for project </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+            <span class="n">delete_before_insert</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">delete_before_insert</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._apply_change_set"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change_set">[docs]</a>    <span class="k">def</span> <span class="nf">_apply_change_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delete_before_insert</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates project firewall rules based on the generated changeset.</span>
+
+<span class="sd">        Extends self._(deleted|inserted|updated)_rules with the rules changed by</span>
+<span class="sd">        these operations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            delete_before_insert (bool): If true, delete operations are</span>
+<span class="sd">                completed before inserts. Otherwise insert operations are</span>
+<span class="sd">                completed first.</span>
+<span class="sd">            network (str): The network to limit rule changes to. Rules on</span>
+<span class="sd">                other networks will not be changed. If not set, then all rules</span>
+<span class="sd">                are in the change set are applied.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The total number of firewall rules deleted, inserted and</span>
+<span class="sd">                updated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">change_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">delete_before_insert</span><span class="p">:</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_rules</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insert_rules</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insert_rules</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_rules</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+
+        <span class="n">change_count</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_rules</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">change_count</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._insert_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._insert_rules">[docs]</a>    <span class="k">def</span> <span class="nf">_insert_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Insert new rules into the project firewall.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            network (str): The network name to restrict rules to. If no network</span>
+<span class="sd">                specified then all new rules are inserted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The count of rules inserted.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FirewallEnforcementInsertFailedError: Raised if one or more changes</span>
+<span class="sd">                fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">change_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Inserting rules: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span><span class="p">))</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="n">filter_rules_by_network</span><span class="p">([</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_insert</span>
+            <span class="p">],</span> <span class="n">network</span><span class="p">)</span>
+            <span class="n">insert_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="o">.</span><span class="n">insert_firewall_rule</span>
+            <span class="p">(</span><span class="n">successes</span><span class="p">,</span> <span class="n">failures</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_change</span><span class="p">(</span>
+                <span class="n">insert_function</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inserted_rules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">failures</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FirewallEnforcementInsertFailedError</span><span class="p">(</span>
+                    <span class="s1">&#39;Firewall enforcement failed while inserting rules for &#39;</span>
+                    <span class="s1">&#39;project </span><span class="si">{}</span><span class="s1">. The following errors were encountered: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">change_count</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._delete_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._delete_rules">[docs]</a>    <span class="k">def</span> <span class="nf">_delete_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete old rules from the project firewall.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            network (str): The network name to restrict rules to. If no network</span>
+<span class="sd">                specified then all unexpected rules are deleted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The count of rules deleted.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FirewallEnforcementDeleteFailedError: Raised if one or more changes</span>
+<span class="sd">                fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">change_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Deleting rules: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span><span class="p">))</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="n">filter_rules_by_network</span><span class="p">([</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_delete</span>
+            <span class="p">],</span> <span class="n">network</span><span class="p">)</span>
+            <span class="n">delete_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="o">.</span><span class="n">delete_firewall_rule</span>
+            <span class="p">(</span><span class="n">successes</span><span class="p">,</span> <span class="n">failures</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_change</span><span class="p">(</span>
+                <span class="n">delete_function</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deleted_rules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">failures</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FirewallEnforcementDeleteFailedError</span><span class="p">(</span>
+                    <span class="s1">&#39;Firewall enforcement failed while deleting rules for &#39;</span>
+                    <span class="s1">&#39;project </span><span class="si">{}</span><span class="s1">. The following errors were encountered: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">change_count</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._update_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._update_rules">[docs]</a>    <span class="k">def</span> <span class="nf">_update_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update existing rules in the project firewall using patch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            network (str): The network name to restrict rules to. If no network</span>
+<span class="sd">                specified then all changed rules are updated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The count of rules updated.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FirewallEnforcementUpdateFailedError: Raised if one or more changes</span>
+<span class="sd">                fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">change_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Updating rules: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span><span class="p">))</span>
+            <span class="n">rules</span> <span class="o">=</span> <span class="n">filter_rules_by_network</span><span class="p">([</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">expected_rules</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_name</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">rule_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rules_to_update</span>
+            <span class="p">],</span> <span class="n">network</span><span class="p">)</span>
+            <span class="n">patch_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="o">.</span><span class="n">patch_firewall_rule</span>
+            <span class="p">(</span><span class="n">successes</span><span class="p">,</span> <span class="n">failures</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_change</span><span class="p">(</span>
+                <span class="n">patch_function</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_updated_rules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="n">change_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">successes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">failures</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FirewallEnforcementUpdateFailedError</span><span class="p">(</span>
+                    <span class="s1">&#39;Firewall enforcement failed while deleting rules for &#39;</span>
+                    <span class="s1">&#39;project </span><span class="si">{}</span><span class="s1">. The following errors were encountered: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">change_errors</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">change_count</span></div>
+
+<div class="viewcode-block" id="FirewallEnforcer._apply_change"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.gce_firewall_enforcer.html#google.cloud.forseti.enforcer.gce_firewall_enforcer.FirewallEnforcer._apply_change">[docs]</a>    <span class="k">def</span> <span class="nf">_apply_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">firewall_function</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Modify the firewall using the passed in function and rules.</span>
+
+<span class="sd">        If self.operation_sema is defined, then the number of outstanding</span>
+<span class="sd">        changes is limited to the number of semaphore locks that can be</span>
+<span class="sd">        acquired.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            firewall_function (function): The delete|insert|update function to</span>
+<span class="sd">                call for this set of rules</span>
+<span class="sd">            rules (list): A list of rules to pass to the firewall_function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple with the rules successfully changed by this function</span>
+<span class="sd">                and the rules that failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">applied_rules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">failed_rules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">change_errors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">applied_rules</span><span class="p">,</span> <span class="n">failed_rules</span><span class="p">,</span> <span class="n">change_errors</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">firewall_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                                             <span class="n">rule</span><span class="p">,</span>
+                                             <span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                             <span class="n">retry_count</span><span class="o">=</span><span class="n">OPERATION_RETRY_COUNT</span><span class="p">,</span>
+                                             <span class="n">timeout</span><span class="o">=</span><span class="n">OPERATION_TIMEOUT</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">api_errors</span><span class="o">.</span><span class="n">ApiNotEnabledError</span><span class="p">,</span>
+                    <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Error changing firewall rule </span><span class="si">%s</span><span class="s1"> for project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+                <span class="n">error_str</span> <span class="o">=</span> <span class="s1">&#39;Rule: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">Error: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">change_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_str</span><span class="p">)</span>
+                <span class="n">failed_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">OperationTimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Timeout changing firewall rule </span><span class="si">%s</span><span class="s1"> for project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">error_str</span> <span class="o">=</span> <span class="s1">&#39;Rule: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">Error: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">change_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_str</span><span class="p">)</span>
+                <span class="n">failed_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">_is_successful</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+                <span class="n">applied_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">failed_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">applied_rules</span><span class="p">,</span> <span class="n">failed_rules</span><span class="p">,</span> <span class="n">change_errors</span></div></div>
+</pre></div>

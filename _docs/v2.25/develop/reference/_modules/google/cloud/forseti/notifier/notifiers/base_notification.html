@@ -1,0 +1,117 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.notifier.notifiers.base_notification"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.notifier.notifiers.base_notification</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Base notifier to perform notifications&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">object</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">from</span> <span class="nn">future.utils</span> <span class="kn">import</span> <span class="n">with_metaclass</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">date_time</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">string_formats</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="InvalidDataFormatError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.base_notification.html#google.cloud.forseti.notifier.notifiers.base_notification.InvalidDataFormatError">[docs]</a><span class="k">class</span> <span class="nc">InvalidDataFormatError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised in case of an invalid notifier data format.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notifier</span><span class="p">,</span> <span class="n">invalid_data_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor for the base notifier.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            notifier (str): the notifier module/name</span>
+<span class="sd">            invalid_data_format (str): the invalid data format in question.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InvalidDataFormatError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: invalid data format: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">notifier</span><span class="p">,</span> <span class="n">invalid_data_format</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="BaseNotification"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.base_notification.html#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification">[docs]</a><span class="k">class</span> <span class="nc">BaseNotification</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Base notifier to perform notifications&quot;&quot;&quot;</span>
+    <span class="n">supported_data_formats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">inventory_index_id</span><span class="p">,</span>
+                 <span class="n">violations</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">notifier_config</span><span class="p">,</span>
+                 <span class="n">notification_config</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Constructor for the base notifier.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (str): Violation resource name.</span>
+<span class="sd">            inventory_index_id (int64): Inventory index id.</span>
+<span class="sd">            violations (dict): Violations.</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            notifier_config (dict): Notifier configurations.</span>
+<span class="sd">            notification_config (dict): notifier configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory_index_id</span> <span class="o">=</span> <span class="n">inventory_index_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_configs</span> <span class="o">=</span> <span class="n">global_configs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notifier_config</span> <span class="o">=</span> <span class="n">notifier_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notification_config</span> <span class="o">=</span> <span class="n">notification_config</span>
+        <span class="c1"># TODO: import api_client</span>
+        <span class="c1"># self.api_client = api_client</span>
+
+        <span class="c1"># Get violations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">violations</span> <span class="o">=</span> <span class="n">violations</span>
+
+<div class="viewcode-block" id="BaseNotification.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.base_notification.html#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.run">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the notifier.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseNotification._get_output_filename"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.base_notification.html#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification._get_output_filename">[docs]</a>    <span class="k">def</span> <span class="nf">_get_output_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the output filename.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename_template (string): template to use for the output filename</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The output filename for the violations CSV file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">utc_now_datetime</span> <span class="o">=</span> <span class="n">date_time</span><span class="o">.</span><span class="n">get_utc_now_datetime</span><span class="p">()</span>
+        <span class="n">output_timestamp</span> <span class="o">=</span> <span class="n">utc_now_datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+            <span class="n">string_formats</span><span class="o">.</span><span class="n">TIMESTAMP_TIMEZONE_FILES</span><span class="p">)</span>
+
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">filename_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inventory_index_id</span><span class="p">),</span> <span class="n">output_timestamp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_filename</span></div>
+
+<div class="viewcode-block" id="BaseNotification.check_data_format"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.notifier.notifiers.base_notification.html#google.cloud.forseti.notifier.notifiers.base_notification.BaseNotification.check_data_format">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_data_format</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Raise `InvalidDataFormatError` unless `data_format` is supported.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_format (string): should be either &#39;csv&#39; or &#39;json&#39;</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            InvalidDataFormatError: if not valid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">data_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">supported_data_formats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidDataFormatError</span><span class="p">(</span><span class="s1">&#39;Notifier&#39;</span><span class="p">,</span> <span class="n">data_format</span><span class="p">)</span></div></div>
+</pre></div>
