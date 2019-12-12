@@ -1,0 +1,194 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.date_time module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.util.date_time">
+<span id="google-cloud-forseti-common-util-date-time-module"></span><h1>google.cloud.forseti.common.util.date_time module<a class="headerlink" href="#module-google.cloud.forseti.common.util.date_time" title="Permalink to this headline">¶</a></h1>
+<p>Common utility functions regarding date and time.</p>
+<dl class="exception">
+<dt id="google.cloud.forseti.common.util.date_time.DateTimeTypeConversionError">
+<em class="property">exception </em><code class="descname">DateTimeTypeConversionError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#DateTimeTypeConversionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.DateTimeTypeConversionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.util.date_time.Error" title="google.cloud.forseti.common.util.date_time.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.util.date_time.Error</span></code></a></p>
+<p>Type Error for a given Request.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.util.date_time.DateTimeValueConversionError">
+<em class="property">exception </em><code class="descname">DateTimeValueConversionError</code><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#DateTimeValueConversionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.DateTimeValueConversionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.common.util.date_time.Error" title="google.cloud.forseti.common.util.date_time.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.util.date_time.Error</span></code></a></p>
+<p>Invalid Value Given for a Request.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.common.util.date_time.Error">
+<em class="property">exception </em><code class="descname">Error</code><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>A Base UtilDateTime Exception.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_date_from_microtimestamp">
+<code class="descname">get_date_from_microtimestamp</code><span class="sig-paren">(</span><em>microtimestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_date_from_microtimestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_date_from_microtimestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a datetime object from a 64bit timestamp.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>microtimestamp</strong> (<em>int</em>) – A timestamp to be converted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The converted datetime object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">datetime</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_datetime_from_string">
+<code class="descname">get_datetime_from_string</code><span class="sig-paren">(</span><em>string</em>, <em>string_format</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_datetime_from_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_datetime_from_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a datetime object from a string in the requested string_format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>string</strong> (<em>str</em>) – The timestamp in the form of a string.</li>
+<li><strong>string_format</strong> (<em>str</em>) – A string used for formatting.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#google.cloud.forseti.common.util.date_time.DateTimeTypeConversionError" title="google.cloud.forseti.common.util.date_time.DateTimeTypeConversionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DateTimeTypeConversionError</span></code></a> – When datetime.strptime() raises a
+TypeError.</li>
+<li><a class="reference internal" href="#google.cloud.forseti.common.util.date_time.DateTimeValueConversionError" title="google.cloud.forseti.common.util.date_time.DateTimeValueConversionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">DateTimeValueConversionError</span></code></a> – When datetime.strptime() raises a
+ValueError.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A datetime object as requested.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">datetime</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_unix_timestamp_from_string">
+<code class="descname">get_unix_timestamp_from_string</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_unix_timestamp_from_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_unix_timestamp_from_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse string to a unix timestamp, as seconds since epoch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>string</strong> (<em>str</em>) – The time string to parse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The timestamp in seconds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Raised for unknown string formats.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_utc_now_datetime">
+<code class="descname">get_utc_now_datetime</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_utc_now_datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_utc_now_datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a datetime object for utcnow()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A datetime object representing utcnow().</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">datetime</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_utc_now_microtimestamp">
+<code class="descname">get_utc_now_microtimestamp</code><span class="sig-paren">(</span><em>date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_utc_now_microtimestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_utc_now_microtimestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a 64bit int representing the current time to the millisecond.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> (<em>datetime</em>) – A datetime object representing current time in UTC.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A epoch timestamp including microseconds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_utc_now_timestamp">
+<code class="descname">get_utc_now_timestamp</code><span class="sig-paren">(</span><em>date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_utc_now_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_utc_now_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a formatted str representing utcnow()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> (<em>datetime</em>) – A datetime object representing current time in UTC.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A timestamp in the classes default timestamp format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_utc_now_timestamp_human">
+<code class="descname">get_utc_now_timestamp_human</code><span class="sig-paren">(</span><em>date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_utc_now_timestamp_human"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_utc_now_timestamp_human" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a human formatted str representing utcnow()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> (<em>datetime</em>) – A datetime object representing current time in UTC.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A timestamp in the classes default timestamp format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.date_time.get_utc_now_unix_timestamp">
+<code class="descname">get_utc_now_unix_timestamp</code><span class="sig-paren">(</span><em>date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/date_time.html#get_utc_now_unix_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.date_time.get_utc_now_unix_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a 64bit int representing the current time to the millisecond.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> (<em>datetime</em>) – A datetime object representing current time in UTC.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A epoch timestamp including microseconds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

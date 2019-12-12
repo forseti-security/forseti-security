@@ -1,0 +1,261 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.file_loader"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.file_loader</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Utility functions for reading and parsing files in a variety of formats.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">googleapiclient.errors</span> <span class="kn">import</span> <span class="n">HttpError</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="kn">import</span> <span class="n">storage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">util_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="read_and_parse_file"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader.read_and_parse_file">[docs]</a><span class="k">def</span> <span class="nf">read_and_parse_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse a json or yaml formatted file from a local path or GCS.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path (str): The full path to the file to read and parse.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The results of parsing the file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_read_file_from_gcs</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_read_file_from_local</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="copy_file_from_gcs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader.copy_file_from_gcs">[docs]</a><span class="k">def</span> <span class="nf">copy_file_from_gcs</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">storage_client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy file from GCS to local file.</span>
+
+<span class="sd">     Args:</span>
+<span class="sd">        file_path (str): The full GCS path to the file.</span>
+<span class="sd">        output_path (str): The local file to copy to, if not set creates a</span>
+<span class="sd">            temporary file.</span>
+<span class="sd">        storage_client (storage.StorageClient): The Storage API Client to use</span>
+<span class="sd">            for downloading the file using the API.</span>
+
+<span class="sd">     Returns:</span>
+<span class="sd">        str: The output_path the file was copied to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">storage_client</span><span class="p">:</span>
+        <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">StorageClient</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">output_path</span><span class="p">:</span>
+        <span class="n">tmp_file</span><span class="p">,</span> <span class="n">output_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">()</span>
+        <span class="c1"># Ensure the handle returned by mkstemp is not leaked.</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">storage_client</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">full_bucket_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output_path</span></div>
+
+
+<div class="viewcode-block" id="isfile"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader.isfile">[docs]</a><span class="k">def</span> <span class="nf">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine if the file is an existing file.</span>
+
+<span class="sd">     Args:</span>
+<span class="sd">        file_path (str): The local path or full GCS path to the file.</span>
+
+<span class="sd">     Returns:</span>
+<span class="sd">        bool: Whether or not the file exists.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HttpError: If the response of the API is not 200 or 404.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_exists</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">read_and_parse_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">HttpError</span> <span class="k">as</span> <span class="n">http_error</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">http_error</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+                <span class="n">file_exists</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">http_error</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file_exists</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">file_exists</span></div>
+
+
+<div class="viewcode-block" id="access"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader.access">[docs]</a><span class="k">def</span> <span class="nf">access</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine if the file is accessible.</span>
+
+<span class="sd">     Args:</span>
+<span class="sd">        file_path (str): The local path or full GCS path to the file.</span>
+
+<span class="sd">     Returns:</span>
+<span class="sd">        bool: Whether or not the file is accessible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">accessible</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">read_and_parse_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">HttpError</span> <span class="k">as</span> <span class="n">http_error</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unable to read </span><span class="si">%s</span><span class="s1"> due to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">http_error</span><span class="p">)</span>
+            <span class="n">accessible</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">accessible</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">accessible</span></div>
+
+
+<div class="viewcode-block" id="_get_filetype_parser"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._get_filetype_parser">[docs]</a><span class="k">def</span> <span class="nf">_get_filetype_parser</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">parser_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a parser function for parsing the file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path (str): The file path.</span>
+<span class="sd">        parser_type (str): The file parser type.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        function: The parser function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filetype_handlers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;json&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="n">_parse_json_string</span><span class="p">,</span>
+            <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="n">_parse_json_file</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;yaml&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="n">_parse_yaml</span><span class="p">,</span>
+            <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="n">_parse_yaml</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">file_ext</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">file_ext</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filetype_handlers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">InvalidFileExtensionError</span><span class="p">(</span>
+            <span class="s1">&#39;Unsupported file type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_ext</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">parser_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filetype_handlers</span><span class="p">[</span><span class="n">file_ext</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">InvalidParserTypeError</span><span class="p">(</span>
+            <span class="s1">&#39;Unsupported parser type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parser_type</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">filetype_handlers</span><span class="p">[</span><span class="n">file_ext</span><span class="p">][</span><span class="n">parser_type</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="_read_file_from_gcs"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._read_file_from_gcs">[docs]</a><span class="k">def</span> <span class="nf">_read_file_from_gcs</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">storage_client</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load file from GCS.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path (str): The GCS path to the file.</span>
+<span class="sd">        storage_client (storage.StorageClient): The Storage API Client to use</span>
+<span class="sd">            for downloading the file using the API.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The parsed dict from the loaded file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">storage_client</span><span class="p">:</span>
+        <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">StorageClient</span><span class="p">()</span>
+
+    <span class="n">file_content</span> <span class="o">=</span> <span class="n">storage_client</span><span class="o">.</span><span class="n">get_text_file</span><span class="p">(</span><span class="n">full_bucket_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">)</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">_get_filetype_parser</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="p">(</span><span class="n">file_content</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_read_file_from_local"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._read_file_from_local">[docs]</a><span class="k">def</span> <span class="nf">_read_file_from_local</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load rules file from local path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (str): The path to the file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The parsed dict from the loaded file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rules_file</span><span class="p">:</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">_get_filetype_parser</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span><span class="p">(</span><span class="n">rules_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_parse_json_string"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._parse_json_string">[docs]</a><span class="k">def</span> <span class="nf">_parse_json_string</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the data from a string of json.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (str): String data to parse into json.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The json string successfully parsed into a dict.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If there was an error parsing the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">json_error</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">json_error</span></div>
+
+
+<div class="viewcode-block" id="_parse_json_file"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._parse_json_file">[docs]</a><span class="k">def</span> <span class="nf">_parse_json_file</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the data from a json file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (filepointer): File-like object containing a Json document,</span>
+<span class="sd">            to be parsed into json.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The file successfully parsed into a dict.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If there was an error parsing the file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">json_error</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">json_error</span></div>
+
+
+<div class="viewcode-block" id="_parse_yaml"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.file_loader.html#google.cloud.forseti.common.util.file_loader._parse_yaml">[docs]</a><span class="k">def</span> <span class="nf">_parse_yaml</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse yaml data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (stream): A yaml data stream to parse.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The stream successfully parsed into a dict.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        YAMLError: If there was an error parsing the stream.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span> <span class="k">as</span> <span class="n">yaml_error</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">yaml_error</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">yaml_error</span></div>
+</pre></div>

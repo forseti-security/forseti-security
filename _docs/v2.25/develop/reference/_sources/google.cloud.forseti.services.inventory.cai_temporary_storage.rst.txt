@@ -1,0 +1,7 @@
+google.cloud.forseti.services.inventory.cai\_temporary\_storage module
+======================================================================
+
+.. automodule:: google.cloud.forseti.services.inventory.cai_temporary_storage
+    :members:
+    :undoc-members:
+    :show-inheritance:

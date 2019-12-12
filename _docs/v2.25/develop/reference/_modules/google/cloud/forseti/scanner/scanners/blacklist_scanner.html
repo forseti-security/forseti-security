@@ -1,0 +1,165 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.blacklist_scanner"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.scanner.scanners.blacklist_scanner</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Blacklist scanner.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">project</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="kn">import</span> <span class="n">instance</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.audit</span> <span class="kn">import</span> <span class="n">blacklist_rules_engine</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.scanner.scanners</span> <span class="kn">import</span> <span class="n">base_scanner</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BlacklistScanner"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner">[docs]</a><span class="k">class</span> <span class="nc">BlacklistScanner</span><span class="p">(</span><span class="n">base_scanner</span><span class="o">.</span><span class="n">BaseScanner</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Blacklist scanner.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="n">scanner_configs</span><span class="p">,</span> <span class="n">service_config</span><span class="p">,</span>
+                 <span class="n">model_name</span><span class="p">,</span> <span class="n">snapshot_timestamp</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization.</span>
+<span class="sd">         Args:</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            scanner_configs (dict): Scanner configurations.</span>
+<span class="sd">            service_config (ServiceConfig): Forseti 2.0 service configs</span>
+<span class="sd">            model_name (str): name of the data model</span>
+<span class="sd">            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.</span>
+<span class="sd">            rules (str): Fully-qualified path and filename of the rules file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BlacklistScanner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span>
+            <span class="n">scanner_configs</span><span class="p">,</span>
+            <span class="n">service_config</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">,</span>
+            <span class="n">snapshot_timestamp</span><span class="p">,</span>
+            <span class="n">rules</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">blacklist_rules_engine</span>
+            <span class="o">.</span><span class="n">BlacklistRulesEngine</span><span class="p">(</span>
+                <span class="n">rules_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span>
+                <span class="n">snapshot_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">snapshot_timestamp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">build_rule_book</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_configs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BlacklistScanner._flatten_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner._flatten_violations">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_flatten_violations</span><span class="p">(</span><span class="n">violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flatten RuleViolations into a dict for each RuleViolation member.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            violations (list): The RuleViolations to flatten.</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: Iterator of RuleViolations as a dict per member.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">violations</span><span class="p">:</span>
+            <span class="n">violation_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                              <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                              <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;ip&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">ip</span><span class="p">}</span>
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="s1">&#39;instance_network_interface&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+                <span class="s1">&#39;resource_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span>
+                <span class="s1">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+                <span class="s1">&#39;rule_index&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_index</span><span class="p">,</span>
+                <span class="s1">&#39;rule_name&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">rule_name</span><span class="p">,</span>
+                <span class="s1">&#39;violation_type&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">violation_type</span><span class="p">,</span>
+                <span class="s1">&#39;violation_data&#39;</span><span class="p">:</span> <span class="n">violation_data</span><span class="p">,</span>
+                <span class="s1">&#39;resource_data&#39;</span><span class="p">:</span> <span class="n">violation</span><span class="o">.</span><span class="n">resource_data</span>
+            <span class="p">}</span></div>
+
+<div class="viewcode-block" id="BlacklistScanner._output_results"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner._output_results">[docs]</a>    <span class="k">def</span> <span class="nf">_output_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_violations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Output results.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            all_violations (list): All violations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_violations</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results_to_db</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div>
+
+    <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="BlacklistScanner.get_instance_networks_interfaces"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner.get_instance_networks_interfaces">[docs]</a>    <span class="k">def</span> <span class="nf">get_instance_networks_interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get network info from a particular snapshot.</span>
+
+<span class="sd">           Returns:</span>
+<span class="sd">               list: A list that contains nested lists of per-instance</span>
+<span class="sd">                   InstanceNetworksInterface objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">model_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_config</span><span class="o">.</span><span class="n">model_manager</span>
+        <span class="n">scoped_session</span><span class="p">,</span> <span class="n">data_access</span> <span class="o">=</span> <span class="n">model_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+
+        <span class="n">instance_from_data_models</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">scoped_session</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">instance_from_data_model</span> <span class="ow">in</span> <span class="n">data_access</span><span class="o">.</span><span class="n">scanner_iter</span><span class="p">(</span>
+                    <span class="n">session</span><span class="p">,</span> <span class="s1">&#39;instance&#39;</span><span class="p">):</span>
+                <span class="n">instance_from_data_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance_from_data_model</span><span class="p">)</span>
+
+        <span class="n">network_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instance_from_data_model</span> <span class="ow">in</span> <span class="n">instance_from_data_models</span><span class="p">:</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span>
+                <span class="n">project_id</span><span class="o">=</span><span class="n">instance_from_data_model</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">full_name</span><span class="o">=</span><span class="n">instance_from_data_model</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
+            <span class="n">ins</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">Instance</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span>
+                <span class="n">parent</span><span class="o">=</span><span class="n">proj</span><span class="p">,</span>
+                <span class="n">json_string</span><span class="o">=</span><span class="n">instance_from_data_model</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">network_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ins</span><span class="o">.</span><span class="n">create_network_interfaces</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">network_interfaces</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No VM network interfaces found.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">network_interfaces</span></div>
+
+<div class="viewcode-block" id="BlacklistScanner._retrieve"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner._retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run the data collection.</span>
+<span class="sd">        Return:</span>
+<span class="sd">           list: A list that contains nested lists of per-instance</span>
+<span class="sd">               InstanceNetworksInterface objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_instance_networks_interfaces</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BlacklistScanner._find_violations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner._find_violations">[docs]</a>    <span class="k">def</span> <span class="nf">_find_violations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instances_networks_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find violations in the policies.</span>
+<span class="sd">            Args:</span>
+<span class="sd">                instances_networks_data (list): instance networks data</span>
+<span class="sd">                    to find violations in</span>
+<span class="sd">            Returns:</span>
+<span class="sd">                list: A list of violations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finding blacklisted ip addresses...&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">instance_network_interface</span> <span class="ow">in</span> <span class="n">instances_networks_data</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">instance_network_interface</span><span class="p">)</span>
+            <span class="n">violations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_engine</span><span class="o">.</span><span class="n">find_violations</span><span class="p">(</span>
+                <span class="n">instance_network_interface</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+            <span class="n">all_violations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">violations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_violations</span></div>
+
+<div class="viewcode-block" id="BlacklistScanner.run"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.scanner.scanners.blacklist_scanner.html#google.cloud.forseti.scanner.scanners.blacklist_scanner.BlacklistScanner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs scanning.&quot;&quot;&quot;</span>
+        <span class="n">instances_network_interface_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve</span><span class="p">()</span>
+        <span class="n">all_violations</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_find_violations</span><span class="p">(</span><span class="n">instances_network_interface_data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_results</span><span class="p">(</span><span class="n">all_violations</span><span class="p">)</span></div></div>
+</pre></div>
