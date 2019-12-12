@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM forseti/build
+FROM python:3.6.9-buster
 
-USER root
+ARG BUILD_FROM_PYTHON_SOURCE_BRANCH=master
+ENV WORK_DIR=/opt/forseti-security/
+
+WORKDIR ${WORK_DIR}
+
+RUN git clone https://github.com/forseti-security/forseti-security.git \
+--branch $BUILD_FROM_PYTHON_SOURCE_BRANCH \
+--single-branch \
+${WORK_DIR}
+COPY . ${WORK_DIR}
 RUN pip install sphinx==1.7.7
 RUN sphinx-apidoc -P -F -M -e -o . google *.eggs/
 COPY data/conf.py data/index.rst ./
