@@ -20,9 +20,8 @@ project_id = attribute('project_id')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "logs-debug-level" do
-
   # Get the instance id
-  instance_describe_cmd = command("gcloud compute instances describe #{forseti_server_vm_name} --zone us-central1-c --format=json")
+  instance_describe_cmd = command("sudo gcloud compute instances describe #{forseti_server_vm_name} --zone us-central1-c --format=json")
   describe instance_describe_cmd do
     its('exit_status') { should eq 0 }
   end
