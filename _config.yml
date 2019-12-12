@@ -81,6 +81,8 @@ responsive_image:
     - width: 1400
   default_quality: 95
   strip: true
+  save_to_source: false
+  cache: true
 
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
