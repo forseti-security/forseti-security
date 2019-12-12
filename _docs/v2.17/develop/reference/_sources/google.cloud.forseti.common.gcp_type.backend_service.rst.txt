@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.backend\_service module
-=============================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.backend_service
-    :members:
-    :undoc-members:
-    :show-inheritance:

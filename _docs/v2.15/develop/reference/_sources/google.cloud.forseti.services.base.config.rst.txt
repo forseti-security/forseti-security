@@ -1,7 +1,0 @@
-google.cloud.forseti.services.base.config module
-================================================
-
-.. automodule:: google.cloud.forseti.services.base.config
-    :members:
-    :undoc-members:
-    :show-inheritance:

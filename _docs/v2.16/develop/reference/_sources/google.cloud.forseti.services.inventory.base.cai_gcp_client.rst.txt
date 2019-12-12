@@ -1,7 +1,0 @@
-google.cloud.forseti.services.inventory.base.cai\_gcp\_client module
-====================================================================
-
-.. automodule:: google.cloud.forseti.services.inventory.base.cai_gcp_client
-    :members:
-    :undoc-members:
-    :show-inheritance:
