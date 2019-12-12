@@ -64,3 +64,5 @@ terraform.tfstate.d/
 # SSH key
 sshkey
 
+# Git secrets
+.tools

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo: required
-jobs:
-  include:
-  - stage: Unit Tests
-    name: Unit Tests with Python 3.6
-    language: python
-    python:
-    - "3.6"
-    services:
-    - docker
-    before_install:
-    - "./install/scripts/docker_setup_forseti.sh"
-    script:
-    - "./install/scripts/git_secrets.sh"
-    - "./install/scripts/docker_run_forseti.sh"
-    - "./install/scripts/docker_unittest_forseti.sh"
-    - "./install/scripts/docker_pystyle_forseti.sh"
-    after_success:
-    - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
+set -euo pipefail
+
+mkdir -p .tools
+[[ ! -d .tools/git-secrets ]] && {
+    echo "============================================================================================="
+    echo "Downloading git-secrets..."
+    (cd .tools && git clone --depth 1 https://github.com/awslabs/git-secrets.git)
+}
+
+git rev-parse --git-dir > /dev/null 2>&1 || {
+    git init --quiet
+    git add -A .
+
+    .tools/git-secrets/git-secrets
+}
+
+.tools/git-secrets/git-secrets --scan
+echo "git-secrets scan ok"
