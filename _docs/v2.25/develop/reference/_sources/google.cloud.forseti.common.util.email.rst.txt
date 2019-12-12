@@ -1,0 +1,18 @@
+google.cloud.forseti.common.util.email package
+==============================================
+
+.. automodule:: google.cloud.forseti.common.util.email
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.common.util.email.base_email_connector
+   google.cloud.forseti.common.util.email.email_factory
+   google.cloud.forseti.common.util.email.mailjet_connector
+   google.cloud.forseti.common.util.email.sendgrid_connector
+

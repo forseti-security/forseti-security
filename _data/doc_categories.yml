@@ -39,3 +39,16 @@ v2.24:
     href: docs/$$VERSION$$/develop/
   - title: FAQ
     href: docs/$$VERSION$$/faq/
+v2.25:
+  - title: Concepts
+    href: docs/$$VERSION$$/concepts/
+  - title: Setup
+    href: docs/$$VERSION$$/setup/
+  - title: Configure
+    href: docs/$$VERSION$$/configure/
+  - title: Use
+    href: docs/$$VERSION$$/use/
+  - title: Develop
+    href: docs/$$VERSION$$/develop/
+  - title: FAQ
+    href: docs/$$VERSION$$/faq/

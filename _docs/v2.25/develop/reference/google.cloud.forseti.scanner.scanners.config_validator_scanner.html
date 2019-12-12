@@ -1,0 +1,136 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.config_validator_scanner module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.scanners.config_validator_scanner">
+<span id="google-cloud-forseti-scanner-scanners-config-validator-scanner-module"></span><h1>google.cloud.forseti.scanner.scanners.config_validator_scanner module<a class="headerlink" href="#module-google.cloud.forseti.scanner.scanners.config_validator_scanner" title="Permalink to this headline">¶</a></h1>
+<p>Config Validator Scanner.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner">
+<em class="property">class </em><code class="descname">ConfigValidatorScanner</code><span class="sig-paren">(</span><em>global_configs</em>, <em>scanner_configs</em>, <em>service_config</em>, <em>model_name</em>, <em>snapshot_timestamp</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner" title="google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner</span></code></a></p>
+<p>Config Validator Scanner.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner.VIOLATION_TYPE">
+<code class="descname">VIOLATION_TYPE</code><em class="property"> = 'CONFIG_VALIDATOR_VIOLATION'</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner.VIOLATION_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_cache">
+<code class="descname">_abc_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_negative_cache">
+<code class="descname">_abc_negative_cache</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_negative_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_negative_cache_version">
+<code class="descname">_abc_negative_cache_version</code><em class="property"> = 214</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_negative_cache_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_registry">
+<code class="descname">_abc_registry</code><em class="property"> = &lt;_weakrefset.WeakSet object&gt;</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._abc_registry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._flatten_violations">
+<code class="descname">_flatten_violations</code><span class="sig-paren">(</span><em>violations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner._flatten_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._flatten_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten Config Validator violations into a dict for each violation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>violations</strong> (<em>list</em>) – The Config Validator violations to flatten.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first"><em>dict</em> –</p>
+<dl class="last docutils">
+<dt>Iterator of Config Validator violations</dt>
+<dd><p class="first last">as a dict per violation.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._output_results">
+<code class="descname">_output_results</code><span class="sig-paren">(</span><em>all_violations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner._output_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._output_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>all_violations</strong> (<em>List</em><em>[</em><a class="reference internal" href="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.html#google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation" title="google.cloud.forseti.scanner.audit.audit_logging_rules_engine.Rule.RuleViolation"><em>RuleViolation</em></a><em>]</em>) – A list of
+flattened Config Validator violations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._retrieve">
+<code class="descname">_retrieve</code><span class="sig-paren">(</span><em>iam_policy=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner._retrieve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._retrieve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the data for scanner.</p>
+<p>If iam_policy is not set, it will retrieve all the resources
+except iam policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>iam_policy</strong> (<em>bool</em>) – Retrieve iam policies only if set to true.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>Asset</em> – Config Validator Asset.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if resources have an unexpected type.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._retrieve_flattened_violations">
+<code class="descname">_retrieve_flattened_violations</code><span class="sig-paren">(</span><em>iam_policy=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner._retrieve_flattened_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner._retrieve_flattened_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve flattened violations by flattening the config validator
+violations returned by the config validator client.</p>
+<p>If iam_policy is not set, it will retrieve violations from all resources
+except iam policies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>iam_policy</strong> (<em>bool</em>) – Retrieve flattened IAM policy violations.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>list</em> – A list of flattened violations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/config_validator_scanner.html#ConfigValidatorScanner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.config_validator_scanner.ConfigValidatorScanner.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the Config Validator Scanner.</p>
+<p>Note: Resources and iam policies audit are separated into 2 steps.
+That’s mainly because there is no good way of identifying from config
+validator validation whether a violation is an iam policy violation or
+a resource violation, the resource name for both will be the same and
+it will be hard for Forseti to retrieve the right resource_data for the
+corresponding violation types.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

@@ -1,0 +1,231 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.email.mailjet_connector"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.email.mailjet_connector</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Mailjet email connector module.&quot;&quot;&quot;</span>
+
+<span class="c1"># The pre-commit linter will complain about useless disable of no-member, but</span>
+<span class="c1"># this is needed because quiet the Sendgrid no-member error on Travis.</span>
+<span class="c1"># pylint: disable=no-member,useless-suppression</span>
+
+<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64encode</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">urllib.error</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">from</span> <span class="nn">future</span> <span class="kn">import</span> <span class="n">standard_library</span>
+<span class="kn">from</span> <span class="nn">requests</span> <span class="kn">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">retrying</span> <span class="kn">import</span> <span class="n">retry</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">util_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="kn">import</span> <span class="n">retryable_exceptions</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util.email</span> <span class="kn">import</span> <span class="n">base_email_connector</span>
+
+<span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mailjet_rest</span> <span class="kn">import</span> <span class="n">Client</span>
+    <span class="n">MAILJET_ENABLED</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Cannot enable Mailjet connector because the &#39;</span>
+                   <span class="s1">&#39;`mailjet_rest` library was not found. Run &#39;</span>
+                   <span class="s1">&#39;`sudo pip3 install mailjet_rest` to install &#39;</span>
+                   <span class="s1">&#39;Mailjet.&#39;</span><span class="p">)</span>
+    <span class="n">MAILJET_ENABLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="Attachment"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.Attachment">[docs]</a><span class="k">class</span> <span class="nc">Attachment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Mailjet attachment.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">filename</span><span class="p">,</span>
+                 <span class="n">content_type</span><span class="p">,</span>
+                 <span class="n">content</span><span class="p">,</span>
+                 <span class="n">disposition</span><span class="o">=</span><span class="s1">&#39;attachment&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a Mailjet attachment.</span>
+
+<span class="sd">        Mailjet attachments file content must be base64 encoded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            content_type (str): The content type of the attachment.</span>
+<span class="sd">            content (str): The base64 encoded content the attachment.</span>
+<span class="sd">            filename (str): The filename of attachment.</span>
+<span class="sd">            disposition (str): Content disposition, defaults to &quot;attachment&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span> <span class="o">=</span> <span class="n">content_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">content</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disposition</span> <span class="o">=</span> <span class="n">disposition</span>
+
+<div class="viewcode-block" id="Attachment.payload"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.Attachment.payload">[docs]</a>    <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns mailjet_rest API attachment payload.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: mailjet_rest API attachment payload</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;Filename&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+            <span class="s1">&#39;Content-type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="p">,</span>
+            <span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MailjetConnector"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.MailjetConnector">[docs]</a><span class="k">class</span> <span class="nc">MailjetConnector</span><span class="p">(</span><span class="n">base_email_connector</span><span class="o">.</span><span class="n">BaseEmailConnector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Utility for sending emails using Mailjet API Key.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="n">recipient</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">custom</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the email util.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sender (str): The email sender.</span>
+<span class="sd">            recipient (str): The email recipient.</span>
+<span class="sd">            auth (dict): A set of authentication attributes</span>
+<span class="sd">            corresponding to the selected connector.</span>
+<span class="sd">            custom (dict): A set of custom attributes,</span>
+<span class="sd">            only &#39;campaign&#39; attribute is used yet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sender</span> <span class="o">=</span> <span class="n">sender</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recipient</span> <span class="o">=</span> <span class="n">recipient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mailjet</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+            <span class="n">auth</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">auth</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;api_key&#39;</span><span class="p">),</span>
+                <span class="n">auth</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;api_secret&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">campaign</span> <span class="o">=</span> <span class="n">custom</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;campaign&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">custom</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MailjetConnector._execute_send"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.MailjetConnector._execute_send">[docs]</a>    <span class="nd">@retry</span><span class="p">(</span><span class="n">retry_on_exception</span><span class="o">=</span><span class="n">retryable_exceptions</span><span class="o">.</span><span class="n">is_retryable_exception</span><span class="p">,</span>
+           <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+           <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_execute_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Executes the sending of the email.</span>
+
+<span class="sd">        This needs to be a standalone method so that we can wrap it with retry,</span>
+<span class="sd">        and the final exception can be gracefully handled upstream.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (dict): Mailjet mail object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: urllib2 response object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mailjet</span><span class="o">.</span><span class="n">send</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">email</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MailjetConnector.send"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.MailjetConnector.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email_sender</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">email_recipient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">email_subject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">email_content</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">attachment</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send an email.</span>
+
+<span class="sd">        This uses the SendGrid API.</span>
+<span class="sd">        https://github.com/sendgrid/sendgrid-python</span>
+
+<span class="sd">        The minimum required info to send email are:</span>
+<span class="sd">        sender, recipient, subject, and content (the body)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email_sender (str): The email sender.</span>
+<span class="sd">            email_recipient (str): The email recipient.</span>
+<span class="sd">            email_subject (str): The email subject.</span>
+<span class="sd">            email_content (str): The email HTML content (aka, body).</span>
+<span class="sd">            content_type (str): The email content type.</span>
+<span class="sd">            attachment (Attachment): A Mailjet Attachment.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EmailSendError: An error with sending email has occurred.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">email_sender</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">email_recipient</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Unable to send email: sender=</span><span class="si">%s</span><span class="s1">, recipient=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                           <span class="n">email_sender</span><span class="p">,</span> <span class="n">email_recipient</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span>
+
+        <span class="n">email</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;FromEmail&#39;</span><span class="p">:</span> <span class="n">email_sender</span><span class="p">,</span>
+            <span class="s1">&#39;FromName&#39;</span><span class="p">:</span> <span class="n">email_sender</span><span class="p">,</span>
+            <span class="s1">&#39;Subject&#39;</span><span class="p">:</span> <span class="n">email_subject</span><span class="p">,</span>
+            <span class="s1">&#39;Html-part&#39;</span><span class="p">:</span> <span class="n">email_content</span><span class="p">,</span>
+            <span class="s1">&#39;Recipients&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;Email&#39;</span><span class="p">:</span> <span class="n">email_address</span><span class="p">}</span>
+                <span class="k">for</span> <span class="n">email_address</span> <span class="ow">in</span> <span class="n">email_recipient</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="s1">&#39;Attachments&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">attachment</span><span class="p">]</span> <span class="k">if</span> <span class="n">attachment</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">attachment</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attachment</span><span class="o">.</span><span class="n">disposition</span> <span class="o">==</span> <span class="s1">&#39;attachment&#39;</span><span class="p">:</span>
+                <span class="n">email</span><span class="p">[</span><span class="s1">&#39;Attachments&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">attachment</span><span class="o">.</span><span class="n">payload</span><span class="p">()]</span>
+            <span class="k">elif</span> <span class="n">attachment</span><span class="o">.</span><span class="n">disposition</span> <span class="o">==</span> <span class="s1">&#39;inline&#39;</span><span class="p">:</span>
+                <span class="n">email</span><span class="p">[</span><span class="s1">&#39;Inline_attachments&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">attachment</span><span class="o">.</span><span class="n">payload</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Unable to send attachment, disposition is invalid: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">attachment</span><span class="o">.</span><span class="n">disposition</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">campaign</span><span class="p">:</span>
+            <span class="n">email</span><span class="p">[</span><span class="s1">&#39;Mj-campaign&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">campaign</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_send</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">urllib</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Unable to send email: </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span>
+
+        <span class="k">if</span> <span class="mi">200</span> <span class="o">&lt;=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Email accepted for delivery:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">email_subject</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unable to send email:</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">email_subject</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+                         <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span></div>
+
+<div class="viewcode-block" id="MailjetConnector.create_attachment"><a class="viewcode-back" href="../../../../../../../google.cloud.forseti.common.util.email.mailjet_connector.html#google.cloud.forseti.common.util.email.mailjet_connector.MailjetConnector.create_attachment">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_attachment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                          <span class="n">file_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">content_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">disposition</span><span class="o">=</span><span class="s1">&#39;attachment&#39;</span><span class="p">,</span>
+                          <span class="n">content_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a Mailjet attachment.</span>
+
+<span class="sd">        Mailjet attachments file content must be base64 encoded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_location (str): The path of the file.</span>
+<span class="sd">            content_type (str): The content type of the attachment.</span>
+<span class="sd">            filename (str): The filename of attachment.</span>
+<span class="sd">            disposition (str): Content disposition, defaults to &quot;attachment&quot;.</span>
+<span class="sd">            content_id (str): The content id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Attachment: A Mailjet Attachment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_location</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Attachment</span><span class="p">(</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+                <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+                <span class="n">content</span><span class="o">=</span><span class="n">b64encode</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">),</span>
+                <span class="n">disposition</span><span class="o">=</span><span class="n">disposition</span>
+            <span class="p">)</span></div></div>
+</pre></div>
