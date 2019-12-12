@@ -1,0 +1,111 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.network module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.network">
+<span id="google-cloud-forseti-common-gcp-type-network-module"></span><h1>google.cloud.forseti.common.gcp_type.network module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.network" title="Permalink to this headline">¶</a></h1>
+<p>A Compute Network.</p>
+<p>See: <a class="reference external" href="https://cloud.google.com/compute/docs/reference/beta/networks">https://cloud.google.com/compute/docs/reference/beta/networks</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.network.Key">
+<em class="property">class </em><code class="descname">Key</code><span class="sig-paren">(</span><em>object_kind</em>, <em>object_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/network.html#Key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.network.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_type.key.html#google.cloud.forseti.common.gcp_type.key.Key" title="google.cloud.forseti.common.gcp_type.key.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_type.key.Key</span></code></a></p>
+<p>An identifier for a specific network.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_type.network.Key.from_args">
+<em class="property">static </em><code class="descname">from_args</code><span class="sig-paren">(</span><em>project_id</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/network.html#Key.from_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.network.Key.from_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a Key from specific values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – project_id</li>
+<li><strong>name</strong> (<em>str</em>) – name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the key</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="google.cloud.forseti.common.gcp_type.backend_service.html#google.cloud.forseti.common.gcp_type.backend_service.Key" title="google.cloud.forseti.common.gcp_type.backend_service.Key">Key</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_type.network.Key.from_url">
+<em class="property">static </em><code class="descname">from_url</code><span class="sig-paren">(</span><em>url</em>, <em>project_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/network.html#Key.from_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.network.Key.from_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a Key from a URL.</p>
+<blockquote>
+<div>Accepts relative network ‘URLs’ as seen in firewall rule resources.
+xref:
+<a class="reference external" href="https://cloud.google.com/compute/docs/reference/latest/firewalls">https://cloud.google.com/compute/docs/reference/latest/firewalls</a></div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> (<em>str</em>) – Object reference URL</li>
+<li><strong>project_id</strong> (<em>str</em>) – Default project ID if, in the case of a relative
+URL, none is present</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the key</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="google.cloud.forseti.common.gcp_type.backend_service.html#google.cloud.forseti.common.gcp_type.backend_service.Key" title="google.cloud.forseti.common.gcp_type.backend_service.Key">Key</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Required parameters are missing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.network.Key.name">
+<code class="descname">name</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.network.Key.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Object property</em> – name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.network.Key.project_id">
+<code class="descname">project_id</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.network.Key.project_id" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Object property</em> – project_id</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">project_id</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
