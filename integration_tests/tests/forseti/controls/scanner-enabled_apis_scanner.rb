@@ -47,19 +47,20 @@ control 'scanner-enabled-apis-scanner' do
 
   # Act
   scanner_run = command("forseti scanner run")
-  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
   describe scanner_run do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
     its('stdout') { should match (/Scan completed/) }
+    its('stdout') { should match (/Scanner Index ID: ([0-9]*) is created/) }
   end
+  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
 
   # Disable Scanner
   @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
   describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
     its('exit_status') { should eq 0 }
   end
-  describe command("forseti server configuration reload").result do
+  describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
   end
 
