@@ -8,7 +8,7 @@ Here's a handy checklist to ensure your PR goes smoothly.
 - [ ] My PR has been functionally tested.
 - [ ] All of the [tests](https://forsetisecurity.org/docs/latest/develop/dev/testing.html) pass.
 - [ ] I have submitted a corresponding PR for documentation in the `forsetisecurity.org-dev` branch (if applicable).
-- [ ] My feature has documentation that has been functionally used and tested (if applicable).
+- [ ] My documentation has been functionally tested and linked in the PR (if applicable).
 - [ ] I have submitted a corresponding PR in the [Forseti Terraform module](https://github.com/forseti-security/terraform-google-forseti) (if applicable).
 
 These guidelines and more can be found in our [contributing guidelines](https://github.com/forseti-security/forseti-security/blob/dev/.github/CONTRIBUTING.md).
