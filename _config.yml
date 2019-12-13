@@ -85,6 +85,11 @@ responsive_image:
   save_to_source: false
   cache: true
 
+# Sass/SCSS
+sass:
+  sass_dir: _sass
+  style: compressed
+
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
 defaults:

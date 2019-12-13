@@ -6,6 +6,7 @@ gem 'execjs'
 gem 'therubyracer'
 gem 'html-proofer'
 gem 'liquid-c'
+gem 'sassc'
 
 gem "jekyll", "~> 4.0"
 
