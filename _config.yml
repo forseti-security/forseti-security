@@ -28,7 +28,9 @@ exclude: ["Gemfile",
           "scripts/",
           ".gitignore",
           ".sass-cache/",
-          ".idea/"]
+          ".ruby-version",
+          "_sass",
+          "third_party/sphinx-doc/"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
@@ -79,6 +81,8 @@ responsive_image:
     - width: 1400
   default_quality: 95
   strip: true
+  save_to_source: false
+  cache: true
 
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
