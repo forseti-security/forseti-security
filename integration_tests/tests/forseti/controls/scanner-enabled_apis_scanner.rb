@@ -23,9 +23,13 @@ project_id = attribute('project_id')
 
 control 'scanner-enabled-apis-scanner' do
   # Arrange
-  describe command("forseti inventory create --import_as #{model_name}") do
+  create_cmd = command("forseti inventory create --import_as #{model_name}")
+  describe create_cmd do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match /\"id\"\: \"([0-9]*)\"/ }
+    its('stdout') { should_not match /Error communicating to the Forseti server./ }
   end
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(create_cmd.stdout)[1]
 
   describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
@@ -45,8 +49,16 @@ control 'scanner-enabled-apis-scanner' do
     its('exit_status') { should eq 0 }
   end
 
+  # describe command("forseti inventory create --import_as #{model_name}") do
+  #   its('exit_status') { should eq 0 }
+  # end
+  #
+  # describe command("forseti model use #{model_name}") do
+  #   its('exit_status') { should eq 0 }
+  # end
+
   # Act
-  scanner_run = command("forseti scanner run")
+  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
   describe scanner_run do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
