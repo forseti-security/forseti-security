@@ -111,29 +111,31 @@ class ScannerBuilder(object):
             LOGGER.exception('Unable to instantiate %s', class_name)
             return None
 
+        rules_path = ''
         rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
                           .get(scanner_name)
                           .get('rules_filename'))
 
-        rules_path = self.scanner_configs.get('rules_path')
-        if rules_path is None:
-            scanner_path = inspect.getfile(scanner_class)
-            rules_path = scanner_path.split('/google/cloud/forseti')[0]
-            rules_path += '/rules'
-        rules = '{}/{}'.format(rules_path, rules_filename)
+        if rules_filename:
+            rules_directory = self.scanner_configs.get('rules_path')
+            if rules_directory is None:
+                scanner_path = inspect.getfile(scanner_class)
+                rules_directory = scanner_path.split('/google/cloud/forseti')[0]
+                rules_directory += '/rules'
+            rules_path = '{}/{}'.format(rules_directory, rules_filename)
 
-        if not os.path.isfile(rules):
-            LOGGER.error(f'Rules file for Scanner {scanner_name} does not '
-                         f'exist. Rules path: {rules}')
-            return None
+            if not os.path.isfile(rules_path):
+                LOGGER.error(f'Rules file for Scanner {scanner_name} does not '
+                             f'exist. Rules path: {rules_path}')
+                return None
 
         LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
-                    rules)
+                    rules_path)
 
         scanner = scanner_class(self.global_configs,
                                 self.scanner_configs,
                                 self.service_config,
                                 self.model_name,
                                 self.snapshot_timestamp,
-                                rules)
+                                rules_path)
         return scanner

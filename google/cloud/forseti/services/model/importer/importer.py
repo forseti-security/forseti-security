@@ -65,7 +65,10 @@ GCP_TYPE_LIST = [
     'compute_targetvpngateway',
     'compute_urlmap',
     'compute_vpntunnel',
+    'crm_access_policy',
+    'crm_access_level',
     'crm_org_policy',
+    'crm_service_perimeter',
     'dataproc_cluster',
     'dataset',
     'disk',
@@ -641,7 +644,10 @@ class InventoryImporter(object):
             'compute_targetvpngateway': self._convert_computeengine_resource,
             'compute_urlmap': self._convert_computeengine_resource,
             'compute_vpntunnel': self._convert_computeengine_resource,
+            'crm_access_policy': self._convert_crm_access_policy,
+            'crm_access_level': self._convert_crm_access_level,
             'crm_org_policy': self._convert_crm_org_policy,
+            'crm_service_perimeter': self._convert_crm_service_perimeter,
             'dataproc_cluster': self._convert_dataproc_cluster,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,
@@ -690,7 +696,7 @@ class InventoryImporter(object):
             self.model.add_warning('No handler for type "{}"'.format(res_type))
 
     def _convert_resource(self, resource, cached=False, display_key='name',
-                          email_key='email'):
+                          email_key='email', display_name=''):
         """Convert resource to a database object.
 
         Args:
@@ -701,6 +707,7 @@ class InventoryImporter(object):
                 get the display name for the resource.
             email_key (str): The key in the resource dictionary to lookup to get
                 the email associated with the resource.
+            display_name (str): Display name of the resource.
         """
         data = resource.get_resource_data()
         if self._is_root(resource):
@@ -716,14 +723,56 @@ class InventoryImporter(object):
             type_name=type_name,
             name=resource.get_resource_id(),
             type=resource.get_resource_type(),
-            display_name=data.get(display_key, ''),
-            email=data.get(email_key, ''),
+            # display_key key is not present for org policy and display_name is
+            # needed. So it is specifically passed in.
+            display_name=display_name or data.get(display_key, ''),
+            # email_key key is not always present and it can be empty in
+            # certain cases such as for org policy.
+            email=data.get(email_key, '') if isinstance(data, dict) else '',
             data=resource.get_resource_data_raw(),
             parent=parent)
 
         self.session.add(row)
         if cached:
             self._add_to_cache(row, resource.id)
+
+    def _convert_crm_access_level(self, crm_access_level):
+        """Convert an access level to a database object.
+
+        Args:
+            crm_access_level (object): access level to store.
+        """
+        self._convert_resource(crm_access_level, cached=False,
+                               display_key='name')
+
+    def _convert_crm_access_policy(self, crm_access_policy):
+        """Convert an access policy to a database object.
+
+        Args:
+            crm_access_policy (object): access policy to store.
+        """
+        self._convert_resource(crm_access_policy, cached=True,
+                               display_key='name')
+
+    def _convert_crm_org_policy(self, crm_org_policy):
+        """Convert an org policy to a database object.
+
+        Args:
+            crm_org_policy (object): org policy to store.
+        """
+        self._convert_resource(crm_org_policy, cached=False,
+                               display_key='name',
+                               display_name=crm_org_policy.get_resource_id())
+
+    def _convert_crm_service_perimeter(self, crm_service_perimeter):
+        """Convert a service perimeter to a database object.
+
+        Args:
+            crm_service_perimeter (dict): A Service Perimeter to store.
+        """
+        self._convert_resource(crm_service_perimeter,
+                               cached=False,
+                               display_key='name')
 
     def _convert_billing_account(self, billing_account):
         """Convert a billing account to a database object.
@@ -765,15 +814,6 @@ class InventoryImporter(object):
             resource (dict): An appengine resource to store.
         """
         self._convert_resource(resource, cached=False)
-
-    def _convert_crm_org_policy(self, org_policy):
-        """Convert an org policy to a database object.
-
-        Args:
-            org_policy (object): org policy to store.
-        """
-        self._convert_resource(org_policy, cached=False,
-                               display_key='constraint')
 
     def _convert_dataproc_cluster(self, cluster):
         """Convert a dataproc cluster to a database object.

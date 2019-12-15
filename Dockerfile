@@ -86,3 +86,24 @@ COPY --from=build --chown=forseti:forseti \
 RUN chmod u+x /home/forseti/.local/bin/docker_entrypoint.sh
 
 ENTRYPOINT ["docker_entrypoint.sh"]
+
+##### BEGIN Forseti Server IMAGE #####
+FROM runtime AS forseti-server
+
+ENV SERVER_HOST 0.0.0.0
+ENV SERVICES "scanner model inventory explain notifier"
+ENV CONFIG_FILE_PATH /forseti-security/forseti_conf_server.yaml
+ENV LOG_LEVEL info
+
+EXPOSE $PORT
+
+ENTRYPOINT forseti_server \
+           --endpoint $SERVER_HOST:$PORT \
+           # The SQL_DB_CONNECTION_STRING connection string should be set in Kubernetes
+           --forseti_db $SQL_DB_CONNECTION_STRING \
+           --services $SERVICES \
+           --config_file_path $CONFIG_FILE_PATH \
+           --log_level=$LOG_LEVEL \
+           --enable_console_log
+
+##### END Forseti Server IMAGE #####
