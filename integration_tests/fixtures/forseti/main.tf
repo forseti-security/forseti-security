@@ -130,6 +130,16 @@ resource "null_resource" "install-mysql-client" {
 }
 
 #-------------------------#
+# Forseti Server Rules
+#-------------------------#
+module "forseti_server_rules" {
+  source                        = "./modules/rules"
+  domain                        = var.domain
+  forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
+  org_id                        = var.org_id
+}
+
+#-------------------------#
 # Test Resources
 #-------------------------#
 module "test_resources" {
