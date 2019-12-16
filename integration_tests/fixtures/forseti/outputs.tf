@@ -43,6 +43,17 @@ output "forseti-client-storage-bucket" {
   value       = module.forseti.forseti-client-storage-bucket
 }
 
+output "forseti-cloudsql-password" {
+  description = "CloudSQL password"
+  value       = module.forseti.forseti-cloudsql-password
+  sensitive   = true
+}
+
+output "forseti-cloudsql-user" {
+  description = "CloudSQL user"
+  value       = module.forseti.forseti-cloudsql-user
+}
+
 output "forseti-server-vm-ip" {
   description = "Forseti Server VM private IP address"
   value       = module.forseti.forseti-server-vm-ip
@@ -65,8 +76,7 @@ output "forseti-server-storage-bucket" {
 
 output "kms_resources_names" {
   description = "Forseti KMS resources"
-  value       = [
-    google_kms_key_ring.test-keyring.name, google_kms_crypto_key.test-crypto-key.name]
+  value       = module.test_resources.kms_resources_names
 }
 
 output "org_id" {
@@ -84,7 +94,13 @@ output "suffix" {
   value       = module.forseti.suffix
 }
 
-output "test-resource-bucket-scanner-bucket" {
-  description = ""
-  value = google_storage_bucket.test_resource_bucket_scanner_bucket.name
+# Test Resources
+output "bucket_acl_scanner_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner test"
+  value = module.test_resources.bucket_acl_scanner_bucket_name
+}
+
+output "random_test_id" {
+  description = "Random test id generated every time the tests are run"
+  value       = module.test_resources.random_test_id
 }

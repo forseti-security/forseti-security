@@ -24,7 +24,7 @@ resource "tls_private_key" "main" {
 }
 
 resource "local_file" "main" {
-  content  = "${tls_private_key.main.private_key_pem}"
+  content  = tls_private_key.main.private_key_pem
   filename = "${path.module}/tls_private_key"
 }
 
@@ -42,17 +42,17 @@ data "google_compute_image" "main" {
 resource "google_compute_instance" "main" {
   boot_disk {
     initialize_params {
-      image = "${data.google_compute_image.main.self_link}"
+      image = data.google_compute_image.main.self_link
     }
   }
 
   machine_type = "f1-micro"
-  name         = "${random_pet.main.id}"
-  zone         = "${var.zone}"
+  name         = random_pet.main.id
+  zone         = var.zone
 
   network_interface {
-    subnetwork         = "${var.subnetwork}"
-    subnetwork_project = "${var.project_id}"
+    subnetwork         = var.subnetwork
+    subnetwork_project = var.project_id
 
     access_config {}
   }
@@ -61,13 +61,13 @@ resource "google_compute_instance" "main" {
     sshKeys = "${local.user}:${tls_private_key.main.public_key_openssh}"
   }
 
-  project = "${var.project_id}"
+  project = var.project_id
   tags    = ["bastion"]
 }
 
 resource "google_compute_firewall" "main" {
-  name    = "${random_pet.main.id}"
-  network = "${var.network}"
+  name    = random_pet.main.id
+  network = var.network
 
   allow {
     protocol = "tcp"
@@ -76,8 +76,8 @@ resource "google_compute_firewall" "main" {
 
   direction     = "INGRESS"
   priority      = "100"
-  source_ranges = "${var.bastion_firewall_netblocks}"
+  source_ranges = var.bastion_firewall_netblocks
   target_tags   = ["bastion"]
-  project       = "${var.project_id}"
+  project       = var.project_id
 }
 
