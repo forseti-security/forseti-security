@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_api.groups\_settings module
-============================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_api.groups_settings
-    :members:
-    :undoc-members:
-    :show-inheritance:
