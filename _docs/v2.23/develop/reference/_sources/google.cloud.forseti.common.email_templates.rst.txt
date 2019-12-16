@@ -1,8 +1,0 @@
-google.cloud.forseti.common.email\_templates package
-====================================================
-
-.. automodule:: google.cloud.forseti.common.email_templates
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

@@ -1,7 +1,0 @@
-google.cloud.forseti.common.util.email.sendgrid\_connector module
-=================================================================
-
-.. automodule:: google.cloud.forseti.common.util.email.sendgrid_connector
-    :members:
-    :undoc-members:
-    :show-inheritance:
