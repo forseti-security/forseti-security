@@ -26,7 +26,7 @@ control "scanner-external-project-access-scanner" do
 
   describe command("forseti scanner run --scanner external_project_access_scanner") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Scanner Index ID: [0-9]* is created/)}
+    its('stdout') { should match (/Scanner Index ID: .*[0-9]* is created/)}
     its('stdout') { should match (/Running ExternalProjectAccessScanner.../)}
     its('stdout') { should match (/Scan completed!/)}
   end
