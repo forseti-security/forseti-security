@@ -27,6 +27,17 @@ control "notifier-inventory-summary-export" do
   end
   @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
+  describe command("forseti model use #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  scanner_run = command("forseti scanner run")
+  describe scanner_run do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
+  end
+  @scanner_id = /Scanner Index ID: .*([0-9]*) is created/.match(scanner_run.stdout)[1]
+
   # Run notifier
   notifier_run = command("forseti notifier run")
   describe notifier_run do
