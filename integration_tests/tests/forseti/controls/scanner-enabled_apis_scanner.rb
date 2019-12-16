@@ -63,9 +63,9 @@ control 'scanner-enabled-apis-scanner' do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
     its('stdout') { should match (/Scan completed/) }
-    its('stdout') { should match (/Scanner Index ID: ([0-9]*) is created/) }
+    its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
   end
-  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
+  @scanner_id = /Scanner Index ID: .*([0-9]*) is created/.match(scanner_run.stdout)[1]
 
   # Disable Scanner
   @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
