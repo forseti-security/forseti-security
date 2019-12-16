@@ -18,7 +18,7 @@ from builtins import object
 import importlib
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.scanners.data_models \
+from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
     import data_model_requirements_map
 
 LOGGER = logger.get_logger(__name__)
@@ -68,7 +68,8 @@ class DataModelBuilder(object):
         Returns:
             data_model: the individual data model instance.
         """
-        module_path = 'google.cloud.forseti.scanner.scanners.data_models.{}'
+        module_path = 'google.cloud.forseti.scanner.scanners.' \
+                      'config_validator_util.data_models.{}'
 
         requirements_map = data_model_requirements_map.REQUIREMENTS_MAP
 

@@ -15,7 +15,8 @@
 """Cloud Asset Inventory (CAI) Data Model."""
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.scanners.data_models import base_data_model
+from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
+    import base_data_model
 from google.cloud.forseti.services.model.importer import importer
 
 LOGGER = logger.get_logger(__name__)

@@ -22,7 +22,8 @@ from google.cloud.forseti.scanner.scanners.config_validator_util import (
     cv_data_converter)
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     validator_client)
-from google.cloud.forseti.scanner.scanners.data_models import data_model_builder
+from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
+    import data_model_builder
 
 
 LOGGER = logger.get_logger(__name__)
