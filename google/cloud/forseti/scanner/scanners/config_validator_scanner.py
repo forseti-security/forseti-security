@@ -125,19 +125,16 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 resource = resource_object.get('resource')
                 resource_type = resource_object.get('resource_type')
 
-                if (not resource.cai_resource_name and
-                        resource_type in
-                        cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
-                    resource = cv_data_converter.convert_data_to_cai_asset(
-                        primary_key, resource, resource_type)
-
-                elif (not resource.cai_resource_name and
-                      resource_type not in
-                      cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
-                    LOGGER.debug('Resource type %s is not currently '
-                                 'supported in Config Validator scanner.',
-                                 resource.type)
-                    continue
+                if not resource.cai_resource_name:
+                    if resource_type in (
+                            cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
+                        resource = cv_data_converter.convert_data_to_cai_asset(
+                            primary_key, resource, resource_type)
+                    else:
+                        LOGGER.debug('Resource type %s is not currently '
+                                     'supported in Config Validator scanner.',
+                                     resource.type)
+                        continue
 
                 self.resource_lookup_table[resource.cai_resource_name] = (
                     resource.full_name,
