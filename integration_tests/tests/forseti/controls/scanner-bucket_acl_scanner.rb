@@ -31,11 +31,12 @@ control 'scanner-bucket-acl-scanner' do
   end
 
   # Act
-  scanner_run = command("forseti scanner run")
-  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
-  describe scanner_run do
+  scanner_run_cmd = command("forseti scanner run")
+  describe scanner_run_cmd do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match /Scanner Index ID: (.*[0-9].*) is created/ }
   end
+  @scanner_index_id = /Scanner Index ID: (.*[0-9]*) is created/.match(scanner_run_cmd.stdout)[1]
 
   # Assert AllAuth violation found
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'BUCKET_VIOLATION' AND V.resource_id = '#{bucket_name}' AND V.rule_name = 'Bucket acls rule to search for exposed buckets';\"") do
