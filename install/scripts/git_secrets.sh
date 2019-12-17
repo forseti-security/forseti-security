@@ -26,8 +26,14 @@ git rev-parse --git-dir > /dev/null 2>&1 || {
     git init --quiet
     git add -A .
 
-    .tools/git-secrets/git-secrets
+    .tools/git-secrets/git-secrets --install
+    .tools/git-secrets/git-secrets --register-aws
+    git secrets --add --global 'PROHIBITED_PATTERN'
 }
 
+# Scan the latest git push
 .tools/git-secrets/git-secrets --scan
-echo "git-secrets scan ok"
+if [ $? -eq 0 ]; then
+    echo "git secrets --scan OK"
+else
+    echo "git secrets --scan FAIL"
