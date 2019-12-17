@@ -20,7 +20,7 @@ db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control 'scanner-bucket-acl-scanner' do
+control 'scanner-bucket-acl-scanner', :order => :defined do
   # Arrange
   describe command("forseti inventory create --import_as #{model_name}") do
     its('exit_status') { should eq 0 }
