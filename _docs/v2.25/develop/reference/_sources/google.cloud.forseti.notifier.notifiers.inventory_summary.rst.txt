@@ -1,7 +1,0 @@
-google.cloud.forseti.notifier.notifiers.inventory\_summary module
-=================================================================
-
-.. automodule:: google.cloud.forseti.notifier.notifiers.inventory_summary
-    :members:
-    :undoc-members:
-    :show-inheritance:
