@@ -15,25 +15,21 @@
 require 'json'
 require 'securerandom'
 
-db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
+db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 project_id = attribute('project_id')
 
 control 'scanner-enabled-apis-scanner' do
   # Arrange
-  create_cmd = command("forseti inventory create --import_as #{model_name}")
-  describe create_cmd do
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
     its('exit_status') { should eq 0 }
     its('stdout') { should match /\"id\"\: \"([0-9]*)\"/ }
     its('stdout') { should_not match /Error communicating to the Forseti server./ }
   end
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(create_cmd.stdout)[1]
-
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_create.stdout)[1]
 
   # Enable Scanner
   @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
@@ -44,18 +40,13 @@ control 'scanner-enabled-apis-scanner' do
   end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"isSuccess\": true/) }
   end
+
+  # Copy rules to server
   describe command("sudo gsutil cp -r gs://#{forseti_server_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
   end
-
-  # describe command("forseti inventory create --import_as #{model_name}") do
-  #   its('exit_status') { should eq 0 }
-  # end
-  #
-  # describe command("forseti model use #{model_name}") do
-  #   its('exit_status') { should eq 0 }
-  # end
 
   # Act
   scanner_run = command("forseti model use #{model_name} && forseti scanner run")
@@ -65,7 +56,7 @@ control 'scanner-enabled-apis-scanner' do
     its('stdout') { should match (/Scan completed/) }
     its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
   end
-  @scanner_id = /Scanner Index ID: .*([0-9]*) is created/.match(scanner_run.stdout)[1]
+  @scanner_id = /Scanner Index ID: (.*[0-9]*) is created/.match(scanner_run.stdout)[1]
 
   # Disable Scanner
   @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
@@ -74,6 +65,7 @@ control 'scanner-enabled-apis-scanner' do
   end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"isSuccess\": true/) }
   end
 
   # Assert Blacklist Enabled API violations found
