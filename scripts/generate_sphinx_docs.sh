@@ -55,41 +55,9 @@ function build_python_source_in_docker() {
     popd
 }
 
-#######################################
-# Generate the API reference doc from
-# Python docstrings with Sphinx; the
-# generated docs are baked into the
-# Docker image once the build is
-# finished.
-#######################################
-function generate_sphinx_docs_in_docker() {
-    docker build \
-      -t forseti/generate_sphinx_docs \
-      -f scripts/docker/generate_sphinx_docs.Dockerfile ./scripts/docker
-}
-
-function copy_sphinx_docs_into_jekyll_docs() {
-    # The docs have been baked into the image with docker-build; now we just
-    # to copy the generated docs over from a live container
-    local container_id
-    container_id="$(docker create forseti/generate_sphinx_docs)"
-
-    # Remove the old generated Sphinx docs
-    rm -rf _docs/_latest/develop/reference
-
-    # Copy generated docs from container into Jekyll
-    docker cp \
-      "${container_id}":/home/forseti/forseti-security/build/sphinx/html/. \
-      _docs/_latest/develop/reference
-
-    docker rm "${container_id}"
-}
-
 function main() {
     checkout_python_source_to_temp_directory
     build_python_source_in_docker
-    generate_sphinx_docs_in_docker
-    copy_sphinx_docs_into_jekyll_docs
 }
 
 main "$@"
