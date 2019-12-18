@@ -22,7 +22,8 @@ from google.cloud.forseti.scanner.scanners.config_validator_util import (
     cv_data_converter)
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
     validator_client)
-from google.cloud.forseti.services.model.importer import importer
+from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
+    import data_model_builder
 
 
 LOGGER = logger.get_logger(__name__)
@@ -107,40 +108,42 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        model_manager = self.service_config.model_manager
-        scoped_session, data_access = model_manager.get(self.model_name)
-
-        if not iam_policy:
-            resource_types = importer.GCP_TYPE_LIST
-            data_type = 'resource'
-        else:
-            resource_types = ['iam_policy']
-            data_type = 'iam_policy'
-
-        # Clean up the resource look up table to release memory and
-        # avoid confusion.
         self.resource_lookup_table = {}
+        data_models = (
+            data_model_builder
+            .DataModelBuilder(self.global_configs,
+                              self.scanner_configs,
+                              self.service_config,
+                              self.model_name)
+            .build()
+        )
 
-        with scoped_session as session:
-            # fetching GCP resources based on their types.
-            LOGGER.info('Retrieving GCP %s data.', data_type)
-            for resource_type in resource_types:
-                for resource in data_access.scanner_iter(session,
-                                                         resource_type,
-                                                         stream_results=False):
-                    if (not resource.cai_resource_name and
-                            resource.type not in
-                            cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+        for data_model in data_models:
+            data = data_model.retrieve(iam_policy)
+            for resource_object in data:
+                data_type = resource_object.get('data_type')
+                primary_key = resource_object.get('primary_key')
+                resource = resource_object.get('resource')
+                resource_type = resource_object.get('resource_type')
+
+                if not resource.cai_resource_name:
+                    if resource_type in (
+                            cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
+                        resource = cv_data_converter.convert_data_to_cai_asset(
+                            primary_key, resource, resource_type)
+                    else:
                         LOGGER.debug('Resource type %s is not currently '
                                      'supported in Config Validator scanner.',
                                      resource.type)
-                        break
-                    self.resource_lookup_table[resource.cai_resource_name] = (
-                        resource.full_name,
-                        resource.cai_resource_type,
-                        resource.data)
-                    yield cv_data_converter.convert_data_to_cv_asset(
-                        resource, data_type)
+                        continue
+
+                self.resource_lookup_table[resource.cai_resource_name] = (
+                    resource.full_name,
+                    resource.cai_resource_type,
+                    resource.data)
+
+                yield cv_data_converter.convert_data_to_cv_asset(
+                    resource, data_type)
 
     def _retrieve_flattened_violations(self, iam_policy=False):
         """Retrieve flattened violations by flattening the config validator
