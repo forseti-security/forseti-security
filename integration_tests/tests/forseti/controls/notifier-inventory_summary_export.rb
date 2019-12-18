@@ -19,26 +19,22 @@ model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 suffix = attribute('suffix')
 
 control "notifier-inventory-summary-export" do
-  # Run the command that will generate the inventory
+  # Arrange
   inventory_create = command("forseti inventory create --import_as #{model_name}")
   describe inventory_create do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match /"id": "([0-9]*)"/}
+    its('stdout') { should match(/"id": "([0-9]*)"/) }
   end
   @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
-
-  scanner_run = command("forseti scanner run")
+  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
   describe scanner_run do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
+    its('stdout') { should match(/Scanner Index ID: .*([0-9]*) is created/) }
   end
   @scanner_id = /Scanner Index ID: .*([0-9]*) is created/.match(scanner_run.stdout)[1]
 
-  # Run notifier
+  # Act
   notifier_run = command("forseti notifier run")
   describe notifier_run do
     its('exit_status') { should eq 0 }
@@ -46,9 +42,9 @@ control "notifier-inventory-summary-export" do
     its('stdout') { should match(/file saved to GCS path: (gs:\/\/[a-z\-0-9\/_.TZ]*)"\n}/) }
   end
   
-  # Verify csv file
+  # Assert
   gs_csv_file_path = /file saved to GCS path: (gs:\/\/[a-z\-0-9\/_.TZ]*)"\n}/.match(notifier_run.stdout)[1]
-  describe command("gsutil ls #{gs_csv_file_path}") do
+  describe command("sudo gsutil ls #{gs_csv_file_path}") do
     its('exit_status') { should eq 0 }
   end
 
