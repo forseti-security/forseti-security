@@ -50,6 +50,9 @@ attributes:
 - name: forseti-server-vm-ip
   required: true
   type: string
+- name: scanner-test-big-query-id
+  required: true
+  type: string
 - name: kms_resources_names
   required: true
   type: array

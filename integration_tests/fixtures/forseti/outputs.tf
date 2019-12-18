@@ -27,6 +27,11 @@ output "forseti-client-vm-ip" {
   description = "Forseti Client VM private IP address"
   value       = module.forseti.forseti-client-vm-ip
 }
+//
+//output "scanner-test-big-query-id" {
+//  description = "Forseti Client VM private IP address"
+//  value       = google_bigquery_dataset.scanner-test-bigquery-dataset.self_link
+//}
 
 output "forseti-client-vm-name" {
   description = "Forseti Client VM name"
