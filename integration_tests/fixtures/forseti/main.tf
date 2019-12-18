@@ -130,6 +130,15 @@ resource "null_resource" "install-mysql-client" {
 }
 
 #-------------------------#
+# Forseti IAM
+#-------------------------#
+module "forseti_iam" {
+  source                         = "./modules/forseti_iam"
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  project_id                     = var.project_id
+}
+
+#-------------------------#
 # Forseti Server Rules
 #-------------------------#
 module "forseti_server_rules" {
