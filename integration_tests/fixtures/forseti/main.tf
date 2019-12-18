@@ -148,3 +148,15 @@ module "test_resources" {
   org_id          = var.org_id
   project_id      = var.project_id
 }
+
+resource "google_bigquery_dataset" "scanner-test-bigquery-dataset" {
+  dataset_id                  = "scanner_test"
+  friendly_name               = "scanner_test"
+  description                 = "dataset for testing scanner"
+  project                     = var.project_id
+
+  access {
+    role          = "READER"
+    special_group = "allAuthenticatedUsers"
+  }
+}
