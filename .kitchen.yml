@@ -54,6 +54,7 @@ suites:
         - name: forseti-server
           backend: ssh
           controls:
+            - explain-resource-count-match
             - inventory-create
             - inventory-delete
             - inventory-get-list

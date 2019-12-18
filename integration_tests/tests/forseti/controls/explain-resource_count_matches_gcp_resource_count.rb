@@ -24,6 +24,10 @@ control "explain-resource-count-match" do
   end
   @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
+  describe command("forseti model use #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
+
   gcp_resource_count = command("gcloud projects list|grep -c -v PROJECT_NUMBER")
   describe gcp_resource_count do
     its('exit_status') { should eq 0 }
