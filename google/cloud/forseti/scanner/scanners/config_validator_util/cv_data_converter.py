@@ -75,7 +75,6 @@ def convert_data_to_cai_asset(primary_key, resource, resource_type):
         Resource: converted Resource object in CAI data structure.
 
     """
-    LOGGER.info("Type of resource: %s", type(resource))
     resource.cai_resource_type = (
         MOCK_CAI_RESOURCE_TYPE_MAPPING.get(resource_type))
     resource.cai_resource_name = '//{}/{}'.format(resource.cai_resource_type,
