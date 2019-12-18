@@ -28,7 +28,7 @@ control "explain-resource-count-match" do
     its('exit_status') { should eq 0 }
   end
 
-  gcp_resource_count = command("gcloud projects list|grep -c -v PROJECT_NUMBER")
+  gcp_resource_count = command("sudo gcloud projects list|grep -c -v PROJECT_NUMBER")
   describe gcp_resource_count do
     its('exit_status') { should eq 0 }
   end
