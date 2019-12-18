@@ -33,7 +33,7 @@ control "explain-resource-count-match" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti explainer list_resources | grep -c \"project") do
+  describe command('forseti explainer list_resources | grep -c \\"project') do
     its('exit_status') { should eq 0 }
     its('stdout') { should eq gcp_resource_count.stdout }
   end
