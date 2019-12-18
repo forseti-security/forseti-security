@@ -12,11 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-control "explain - resource count matches gcp resource count" do
-  gcp_resource_count = command("gcloud projects list|grep -c -v PROJECT_NUMBER").stdout
+
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
+
+control "explain-resource-count-match" do
+  # Arrange
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/"id": "([0-9]*)"/) }
+  end
+  @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
+
+  gcp_resource_count = command("gcloud projects list|grep -c -v PROJECT_NUMBER")
+  describe gcp_resource_count do
+    its('exit_status') { should eq 0 }
+  end
 
   describe command("forseti explainer list_resources | grep -c \"project") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should eq gcp_resource_count }
+    its('stdout') { should eq gcp_resource_count.stdout }
+  end
+
+  # Delete the inventory
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Delete the model
+  describe command("forseti model delete #{model_name}") do
+    its('exit_status') { should eq 0 }
   end
 end
