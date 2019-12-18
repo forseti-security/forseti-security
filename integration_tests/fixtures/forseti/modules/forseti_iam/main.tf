@@ -18,6 +18,7 @@ resource "google_project_iam_custom_role" "forseti-enforcer-admin" {
   title       = "Forseti Enforcer Admin"
   description = "Access to delete firewall rules and update policy."
   permissions = [
+    "compute.firewalls.create",
     "compute.firewalls.delete",
     "compute.networks.updatePolicy",
   ]
