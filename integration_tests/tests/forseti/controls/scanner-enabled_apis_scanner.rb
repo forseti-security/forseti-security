@@ -23,14 +23,7 @@ project_id = attribute('project_id')
 
 control 'scanner-enabled-apis-scanner', :order => :defined do
   # Arrange
-  inventory_create = command("forseti inventory create --import_as #{model_name}")
-  describe inventory_create do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match /\"id\"\: \"([0-9]*)\"/ }
-    its('stdout') { should_not match /Error communicating to the Forseti server./ }
-  end
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_create.stdout)[1]
-
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
   describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
@@ -56,14 +49,18 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
 
   # Act
-  scanner_run = command("forseti scanner run")
-  describe scanner_run do
+  describe command("forseti scanner run") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
     its('stdout') { should match (/Scan completed/) }
     its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
   end
-  @scanner_id = /Scanner Index ID: (.*[0-9]*) is created/.match(scanner_run.stdout)[1]
+
+  # Assert Blacklist Enabled API violations found
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'ENABLED_APIS_VIOLATION' AND V.resource_id = '#{project_id}' AND V.rule_name = 'Enabled APIs blacklist';\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/1/) }
+  end
 
   # Disable Scanner
   @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
@@ -73,11 +70,5 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/\"isSuccess\": true/) }
-  end
-
-  # Assert Blacklist Enabled API violations found
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'ENABLED_APIS_VIOLATION' AND V.resource_id = '#{project_id}' AND V.rule_name = 'Enabled APIs blacklist';\"") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/) }
   end
 end
