@@ -359,9 +359,7 @@ We process and render all of this documentation down to a set of HTML files that
 
 All of these different pieces are available and linked together properly within the site.
 
-We use Docker throughout this build process to both install the Forseti Security libraries and process the code. This reduces the amount of dependencies necessary on the host machine to *only* Docker. There's no need for Python, Sphinx, or anything else to be modified on the host machine.
-
-More details can be found in [generate_sphinx_docs.sh](scripts/generate_sphinx_docs.sh).
+We use Docker throughout this build process to both install the Forseti Security libraries and process the code. This reduces the amount of dependencies necessary on the host machine to *only* Docker. There's no need for Python or anything else to be modified on the host machine.
 
 ### Plugins
 
