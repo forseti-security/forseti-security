@@ -32,7 +32,13 @@ control "inventory-get-list" do
   # crontab -r
 
   # Act
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create").stdout)[1]
+  inventory_create = command("forseti inventory create")
+  describe(inventory_create) do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"id\"\: \"([0-9]*)\"/)}
+  end
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_create.stdout)[1]
+
 
   # Assert
   # Assert Inventory takes less than 12 minutes
@@ -41,12 +47,24 @@ control "inventory-get-list" do
 
   # Assert resource count
   # select count(*) from gcp_inventory where inventory_index_id=@inventory_id; ==== 296612
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id}\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/296612/)}
+  end
 
   # Assert bigquery_table count == 250000
   # select count(*) from gcp_inventory where inventory_index_id=@inventory_id AND resource_type = 'bigquery_table' AND category = 'resource';
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id} AND resource_type = 'bigquery_table' AND category = 'resource';\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/250000/)}
+  end
 
   # Assert project count == 1000
   # select count(*) from gcp_inventory where inventory_index_id=@inventory_id AND resource_type = 'project';
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id} AND resource_type = 'project';\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/1000/)}
+  end
 
   # Cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
