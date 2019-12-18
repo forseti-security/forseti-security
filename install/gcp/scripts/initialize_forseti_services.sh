@@ -31,8 +31,7 @@ fi
 # We had issue creating DB user through deployment template, if the issue is
 # resolved in the future, we should create a forseti db user instead of using
 # root.
-# https://github.com/forseti-security/forseti-security/issues/921
-SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://root@127.0.0.1:${SQL_PORT}"
+SQL_SERVER_LOCAL_ADDRESS="mysql+pymysql://${SQL_DB_USER}:${SQL_DB_PASSWORD}@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
@@ -53,7 +52,7 @@ if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
   POLICY_LIBRARY_SYNC_COMMAND+=" -v ${POLICY_LIBRARY_HOME}:/tmp/git"
   POLICY_LIBRARY_SYNC_COMMAND+=" -v /etc/git-secret:/etc/git-secret"
   POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYNC_TAG}"
-  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=${POLICY_LIBRARY_REPOSITORY_BRANCH:=master}"
   POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
   POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
   POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"

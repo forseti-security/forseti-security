@@ -21,6 +21,9 @@ provider "tls" {
   version = "~> 2.0"
 }
 
+#-------------------------#
+# Bastion Host
+#-------------------------#
 resource "tls_private_key" "main" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -40,40 +43,22 @@ module "bastion" {
   zone       = "us-central1-f"
 }
 
+#-------------------------#
+# Forseti
+#-------------------------#
 module "forseti" {
-  source = "github.com/forseti-security/terraform-google-forseti"
+  source = "git::github.com/forseti-security/terraform-google-forseti"
 
-  project_id         = var.project_id
-  org_id             = var.org_id
-  domain             = var.domain
-  forseti_version    = var.forseti_version
+  project_id      = var.project_id
+  org_id          = var.org_id
+  domain          = var.domain
+  forseti_version = var.forseti_version
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
   }
   server_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
-  }
-}
-
-resource "null_resource" "wait_for_server" {
-  triggers = {
-    always_run = uuid()
-  }
-
-  provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
-
-    connection {
-      type                = "ssh"
-      user                = "ubuntu"
-      host                = module.forseti.forseti-server-vm-ip
-      private_key         = tls_private_key.main.private_key_pem
-      bastion_host        = module.bastion.host
-      bastion_port        = module.bastion.port
-      bastion_private_key = module.bastion.private_key
-      bastion_user        = module.bastion.user
-    }
   }
 }
 
@@ -98,15 +83,13 @@ resource "null_resource" "wait_for_client" {
   }
 }
 
-resource "null_resource" "install-mysql-client" {
+resource "null_resource" "wait_for_server" {
   triggers = {
     always_run = uuid()
   }
 
   provisioner "remote-exec" {
-    inline = [
-       "sudo apt-get -y install mysql-client"
-       ]
+    script = "${path.module}/scripts/wait-for-forseti.sh"
 
     connection {
       type                = "ssh"
@@ -121,52 +104,47 @@ resource "null_resource" "install-mysql-client" {
   }
 }
 
-resource "random_pet" "random_name_generator" {
+resource "null_resource" "install-mysql-client" {
+  triggers = {
+    always_run = uuid()
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+       "sudo apt-get update && sudo apt-get -y install mysql-client-5.7"
+    ]
+
+    connection {
+      type                = "ssh"
+      user                = "ubuntu"
+      host                = module.forseti.forseti-server-vm-ip
+      private_key         = tls_private_key.main.private_key_pem
+      bastion_host        = module.bastion.host
+      bastion_port        = module.bastion.port
+      bastion_private_key = module.bastion.private_key
+      bastion_user        = module.bastion.user
+    }
+  }
+
+  depends_on = [null_resource.wait_for_server]
 }
 
-resource "google_kms_key_ring" "test-keyring" {
-  project  = var.project_id
-  name     = "keyring-${random_pet.random_name_generator.id}"
-  location = "global"
+#-------------------------#
+# Forseti Server Rules
+#-------------------------#
+module "forseti_server_rules" {
+  source                        = "./modules/rules"
+  domain                        = var.domain
+  forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
+  org_id                        = var.org_id
 }
 
-resource "google_kms_crypto_key" "test-crypto-key" {
-  name            = "crypto-key-${random_pet.random_name_generator.id}"
-  key_ring        = google_kms_key_ring.test-keyring.self_link
-  rotation_period = "100000s"
-}
-
-resource "google_storage_bucket" "bucket-europe-region" {
-  name               = "bucket-eu-${random_pet.random_name_generator.id}"
-  project            = "${var.project_id}"
-  location           = "EU"
-}
-
-resource "google_storage_default_object_access_control" "public_all_users_rule" {
-  bucket             = "${google_storage_bucket.bucket-europe-region.name}"
-  role               = "READER"
-  entity             = "allUsers"
-}
-
-resource "google_storage_bucket" "bucket-us-region" {
-  name               = "bucket-us-${random_pet.random_name_generator.id}"
-  project            = "${var.project_id}"
-  location           = "US"
-}
-
-resource "google_storage_default_object_access_control" "public_all_authenticated_users_rule" {
-  bucket             = "${google_storage_bucket.bucket-us-region.name}"
-  role               = "READER"
-  entity             = "allAuthenticatedUsers"
-}
-
-provider "gsuite" {
-  version                 = "~> 0.1"
-  impersonated_user_email = var.gsuite_admin_email
-}
-
-resource "gsuite_group" "test-gsuite-group" {
-  email       = "gsuite-${random_pet.random_name_generator.id}@${var.domain}"
-  name        = "gsuite-${random_pet.random_name_generator.id}"
-  description = "G Suite Group Automated Creation Testing"
+#-------------------------#
+# Test Resources
+#-------------------------#
+module "test_resources" {
+  source     = "./modules/test_resources"
+  billing_account = var.billing_account
+  org_id          = var.org_id
+  project_id      = var.project_id
 }
