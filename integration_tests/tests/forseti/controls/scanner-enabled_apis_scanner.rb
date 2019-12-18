@@ -31,10 +31,6 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_create.stdout)[1]
 
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
-
   # Copy rules to server
   describe command("sudo gsutil cp -r gs://#{forseti_server_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
@@ -53,7 +49,7 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
 
   # Act
-  scanner_run = command("forseti scanner run")
+  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
   describe scanner_run do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
@@ -75,6 +71,6 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   # Assert Blacklist Enabled API violations found
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'ENABLED_APIS_VIOLATION' AND V.resource_id = '#{project_id}' AND V.rule_name = 'Enabled APIs blacklist';\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/)}
+    its('stdout') { should match (/1/) }
   end
 end

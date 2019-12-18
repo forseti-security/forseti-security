@@ -27,11 +27,7 @@ control "scanner-run" do
   end
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(create_cmd.stdout)[1]
 
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
-
-  scanner_run_cmd = command("forseti scanner run")
+  scanner_run_cmd = command("forseti model use #{model_name} && forseti scanner run")
   describe scanner_run_cmd do
     its('exit_status') { should eq 0 }
     its('stdout') { should match /Scanner Index ID: (.*[0-9].*) is created/ }
@@ -40,7 +36,7 @@ control "scanner-run" do
 
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT SI.* FROM scanner_index SI WHERE id = #{@scanner_index_id};\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/SUCCESS/)}
+    its('stdout') { should match (/SUCCESS/) }
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
