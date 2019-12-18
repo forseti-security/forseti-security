@@ -68,13 +68,14 @@ def convert_data_to_cai_asset(primary_key, resource, resource_type):
 
     Args:
         primary_key (str): The unique identifier of the resource object.
-        resource (json): The resource object that will be converted.
+        resource (Resource): The Resource object that will be converted.
         resource_type (str): The resource type (e.g. lien, sink, etc.).
 
     Returns:
-        json: converted resource object in CAI data structure.
+        Resource: converted Resource object in CAI data structure.
 
     """
+    LOGGER.info("Type of resource: %s", type(resource))
     resource.cai_resource_type = (
         MOCK_CAI_RESOURCE_TYPE_MAPPING.get(resource_type))
     resource.cai_resource_name = '//{}/{}'.format(resource.cai_resource_type,
