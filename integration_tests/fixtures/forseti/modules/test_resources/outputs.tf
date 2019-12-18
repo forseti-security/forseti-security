@@ -19,6 +19,11 @@ output "bucket_acl_scanner_bucket_name" {
   value = google_storage_bucket.bucket_acl_scanner.name
 }
 
+output "enforcer_allow_all_icmp_rule_name" {
+  description = "Firewall rule name created for the Firewall Enforcer test"
+  value = google_compute_firewall.enforcer_allow_all_icmp_rule.name
+}
+
 output "kms_resources_names" {
   description = "KMS resources for Inventory tests"
   value       = [
