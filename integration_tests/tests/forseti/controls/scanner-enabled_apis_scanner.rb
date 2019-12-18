@@ -31,6 +31,10 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_create.stdout)[1]
 
+  describe command("forseti model use #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
+
   # Copy rules to server
   describe command("sudo gsutil cp -r gs://#{forseti_server_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
@@ -47,9 +51,12 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/\"isSuccess\": true/) }
   end
+  describe command("sleep 10") do
+    its('exit_status') { should eq 0 }
+  end
 
   # Act
-  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
+  scanner_run = command("forseti scanner run")
   describe scanner_run do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }

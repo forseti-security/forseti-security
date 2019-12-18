@@ -24,10 +24,14 @@ control 'scanner-bucket-acl-scanner', :order => :defined do
   # Arrange
   describe command("forseti inventory create --import_as #{model_name}") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"id\"\: \"([0-9]*)\"/) }
+  end
+  describe command("forseti model use #{model_name}") do
+    its('exit_status') { should eq 0 }
   end
 
   # Act
-  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
+  scanner_run = command("forseti scanner run")
   describe scanner_run do
     its('exit_status') { should eq 0 }
     its('stdout') { should match /Scanner Index ID: (.*[0-9].*) is created/ }
