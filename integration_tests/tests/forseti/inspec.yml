@@ -53,6 +53,9 @@ attributes:
 - name: forseti-server-vm-ip
   required: true
   type: string
+- name: inventory-performance-cai-dump-paths
+  required: true
+  type: string
 - name: kms_resources_names
   required: true
   type: array
