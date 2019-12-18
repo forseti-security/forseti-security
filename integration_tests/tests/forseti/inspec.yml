@@ -17,6 +17,9 @@ attributes:
 - name: bucket_acl_scanner_bucket_name
   required: true
   type: string
+- name: enforcer_allow_all_icmp_rule_name
+  required: true
+  type: string
 - name: forseti-cai-storage-bucket
   required: true
   type: string
@@ -48,6 +51,9 @@ attributes:
   required: true
   type: string
 - name: forseti-server-vm-ip
+  required: true
+  type: string
+- name: inventory-performance-cai-dump-paths
   required: true
   type: string
 - name: kms_resources_names

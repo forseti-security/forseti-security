@@ -100,6 +100,16 @@ output "bucket_acl_scanner_bucket_name" {
   value = module.test_resources.bucket_acl_scanner_bucket_name
 }
 
+output "enforcer_allow_all_icmp_rule_name" {
+  description = "Firewall rule name created for the Firewall Enforcer test"
+  value = module.test_resources.enforcer_allow_all_icmp_rule_name
+}
+
+output "inventory-performance-cai-dump-paths" {
+  description = "GCS paths of the CAI dump files to be used for the inventory performance test"
+  value = var.inventory_performance_cai_dump_paths
+}
+
 output "random_test_id" {
   description = "Random test id generated every time the tests are run"
   value       = module.test_resources.random_test_id

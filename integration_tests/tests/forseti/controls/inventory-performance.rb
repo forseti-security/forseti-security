@@ -15,6 +15,7 @@
 require 'json'
 require 'securerandom'
 
+cai_dump_file_gcs_paths = attribute('inventory-performance-cai-dump-paths')
 db_password = attribute('forseti-cloudsql-password')
 db_user_name = attribute('forseti-cloudsql-user')
 
