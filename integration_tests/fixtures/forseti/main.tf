@@ -21,6 +21,10 @@ provider "tls" {
   version = "~> 2.0"
 }
 
+resource "random_id" "random_test_id" {
+  byte_length = 8
+}
+
 #-------------------------#
 # Bastion Host
 #-------------------------#
@@ -136,6 +140,7 @@ module "forseti_iam" {
   source                         = "./modules/forseti_iam"
   forseti_server_service_account = module.forseti.forseti-server-service-account
   project_id                     = var.project_id
+  random_test_id                 = random_id.random_test_id.hex
 }
 
 #-------------------------#
@@ -156,4 +161,5 @@ module "test_resources" {
   billing_account = var.billing_account
   org_id          = var.org_id
   project_id      = var.project_id
+  random_test_id  = random_id.random_test_id.hex
 }

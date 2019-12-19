@@ -14,8 +14,8 @@
 */
 
 resource "google_project_iam_custom_role" "forseti-enforcer-admin" {
-  role_id     = "forsetiEnforcerAdmin"
-  title       = "Forseti Enforcer Admin"
+  role_id     = "forsetiEnforcerAdmin${var.random_test_id}"
+  title       = "Forseti Enforcer Admin ${var.random_test_id}"
   description = "Access to delete firewall rules and update policy."
   permissions = [
     "compute.firewalls.create",
@@ -30,4 +30,3 @@ resource "google_project_iam_member" "forseti-server-enforcer-admin-role" {
   project = var.project_id
   member  = "serviceAccount:${var.forseti_server_service_account}"
 }
-
