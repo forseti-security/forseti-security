@@ -15,23 +15,21 @@
 require 'json'
 require 'securerandom'
 
-db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
+db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 project_id = attribute('project_id')
 
-control 'scanner-enabled-apis-scanner' do
+control 'scanner-enabled-apis-scanner', :order => :defined do
   # Arrange
-  create_cmd = command("forseti inventory create --import_as #{model_name}")
-  describe create_cmd do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match /\"id\"\: \"([0-9]*)\"/ }
-    its('stdout') { should_not match /Error communicating to the Forseti server./ }
-  end
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(create_cmd.stdout)[1]
-
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
   describe command("forseti model use #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Copy rules to server
+  describe command("sudo gsutil cp -r gs://#{forseti_server_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
   end
 
@@ -44,28 +42,25 @@ control 'scanner-enabled-apis-scanner' do
   end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match (/\"isSuccess\": true/) }
   end
-  describe command("sudo gsutil cp -r gs://#{forseti_server_bucket}/rules $FORSETI_HOME/") do
+  describe command("sleep 10") do
     its('exit_status') { should eq 0 }
   end
 
-  # describe command("forseti inventory create --import_as #{model_name}") do
-  #   its('exit_status') { should eq 0 }
-  # end
-  #
-  # describe command("forseti model use #{model_name}") do
-  #   its('exit_status') { should eq 0 }
-  # end
-
   # Act
-  scanner_run = command("forseti model use #{model_name} && forseti scanner run")
-  describe scanner_run do
+  describe command("forseti scanner run") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/EnabledApisScanner/) }
     its('stdout') { should match (/Scan completed/) }
-    its('stdout') { should match (/Scanner Index ID: ([0-9]*) is created/) }
+    its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
   end
-  @scanner_id = /Scanner Index ID: ([0-9]*) is created/.match(scanner_run.stdout)[1]
+
+  # Assert Blacklist Enabled API violations found
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'ENABLED_APIS_VIOLATION' AND V.resource_id = '#{project_id}' AND V.rule_name = 'Enabled APIs blacklist';\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match (/1/) }
+  end
 
   # Disable Scanner
   @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
@@ -74,11 +69,6 @@ control 'scanner-enabled-apis-scanner' do
   end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
-  end
-
-  # Assert Blacklist Enabled API violations found
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V WHERE V.scanner_index_id = #{@scanner_id} AND V.violation_type = 'ENABLED_APIS_VIOLATION' AND V.resource_id = '#{project_id}' AND V.rule_name = 'Enabled APIs blacklist';\"") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/)}
+    its('stdout') { should match (/\"isSuccess\": true/) }
   end
 end
