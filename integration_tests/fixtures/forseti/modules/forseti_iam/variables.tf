@@ -21,3 +21,7 @@ variable "forseti_server_service_account" {
 variable "project_id" {
   description = "The ID of an existing Google project where Forseti will be installed"
 }
+
+variable "random_test_id" {
+  description = "Random test Id generated for this test run"
+}
