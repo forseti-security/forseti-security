@@ -53,10 +53,11 @@ module "bastion" {
 module "forseti" {
   source = "git::github.com/forseti-security/terraform-google-forseti"
 
-  project_id      = var.project_id
-  org_id          = var.org_id
-  domain          = var.domain
-  forseti_version = var.forseti_version
+  project_id               = var.project_id
+  org_id                   = var.org_id
+  domain                   = var.domain
+  forseti_version          = var.forseti_version
+  config_validator_enabled = var.config_validator_enabled
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
@@ -144,13 +145,21 @@ module "forseti_iam" {
 }
 
 #-------------------------#
-# Forseti Server Rules
+# Forseti Rules
 #-------------------------#
 module "forseti_server_rules" {
   source                        = "./modules/rules"
   domain                        = var.domain
   forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
   org_id                        = var.org_id
+}
+
+#-------------------------#
+# Policy Library GCS
+#-------------------------#
+module "policy_library" {
+  source                        = "./modules/policy_library"
+  forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
 }
 
 #-------------------------#
