@@ -15,16 +15,14 @@
 require 'securerandom'
 require 'json'
 
-forseti_server_service_account = attribute('forseti-server-service-account')
 forseti_client_service_account = attribute('forseti-client-service-account')
-project_id = attribute('project_id')
+forseti_server_service_account = attribute('forseti-server-service-account')
 org_id = attribute('org_id')
-
+project_id = attribute('project_id')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "explain" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-
   describe command("forseti model use #{random_string}") do
     its('exit_status') { should eq 0 }
   end
@@ -43,14 +41,14 @@ control "explain" do
     its('stdout') { should match (/"resources": \[\n    "organization\/#{Regexp.quote(org_id)}"\n  \],\n  "role": "roles\/iam.securityReviewer"/) }
   end
 
-  # access_by_authz
+  # access_by_authz by permission
   describe command("forseti explainer access_by_authz --permission iam.serviceAccounts.get") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/"resource": "project\/#{project_id}"/) }
     its('stdout') { should match (/"role": "roles\/editor"/) }
   end
 
-  # access_by_authz
+  # access_by_authz by role
   describe command("forseti explainer access_by_authz --role roles/storage.objectCreator") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/#{project_id}/) }
@@ -66,7 +64,7 @@ control "explain" do
   # access_by_resource project
   describe command("forseti explainer access_by_resource project/#{project_id} | grep -c #{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/5/) }
+    its('stdout') { should match (/16/) }
   end
 
   # get_policy for org
@@ -78,7 +76,7 @@ control "explain" do
   # get_policy for project
   describe command("forseti explainer get_policy project/#{project_id} | grep -c #{forseti_server_service_account}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/5/) }
+    its('stdout') { should match (/6/) }
   end
 
   # list_members
