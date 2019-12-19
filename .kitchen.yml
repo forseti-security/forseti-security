@@ -55,6 +55,7 @@ suites:
           backend: ssh
           controls:
             - enforcer-remediates-firewall-rule
+            - explain-resource-count-match
             - inventory-create
             - inventory-delete
             - inventory-get-list
