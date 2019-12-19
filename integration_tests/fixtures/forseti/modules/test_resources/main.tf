@@ -21,6 +21,21 @@ resource "random_pet" "random_name_generator" {
 }
 
 #-------------------------#
+# enforcer-remediates_non_compliant_rule.rb: Create a firewall rule to test it gets removed
+#-------------------------#
+resource "google_compute_firewall" "enforcer_allow_all_icmp_rule" {
+  name                    = "forseti-server-allow-icmp-${random_id.random_test_id.hex}"
+  project                 = var.project_id
+  network                 = "default"
+  priority                = "100"
+  source_ranges           = ["10.0.0.0/32"]
+
+  allow {
+    protocol = "icmp"
+  }
+}
+
+#-------------------------#
 # inventory-create.rb: Create KMS resources for inventory testing
 #-------------------------#
 resource "google_kms_key_ring" "test-keyring" {
