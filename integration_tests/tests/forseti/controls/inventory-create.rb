@@ -37,11 +37,6 @@ control "inventory-create" do
     its('stdout') { should match (/1/)}
   end
 
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{kms_resources_names.count}/)}
-  end
-
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
