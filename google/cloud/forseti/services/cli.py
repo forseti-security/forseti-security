@@ -233,6 +233,11 @@ def define_server_parser(parent):
               'the server vm or a gcs path starts with gs://).')
     )
 
+    action_subparser.add_parser(
+        'run',
+        help='Run the Forseti process, end-to-end.'
+    )
+
 
 def define_model_parser(parent):
     """Define the model service parser.
@@ -707,6 +712,8 @@ def run_server(client, config, output, _):
             config (object): argparser namespace to use.
             output (Output): output writer to use.
             _ (object): Configuration environment.
+        Raises:
+            AttributeError: If action is not 'run' and the subaction is missing.
     """
 
     client = client.server_config
@@ -728,6 +735,13 @@ def run_server(client, config, output, _):
         """Get the configuration of the server."""
         output.write(client.get_server_configuration())
 
+    def do_server_run():
+        """Run the Forseti server, end-to-end"""
+        # for message in client.server_run():
+        #     output.write(message)
+        message = client.server_run()
+        output.write(message)
+
     actions = {
         'log_level': {
             'get': do_get_log_level,
@@ -736,10 +750,16 @@ def run_server(client, config, output, _):
         'configuration': {
             'get': do_get_configuration,
             'reload': do_reload_configuration
-        }
+        },
+        'run': do_server_run
     }
 
-    actions[config.action][config.subaction]()
+    try:
+        actions[config.action][config.subaction]()
+    except AttributeError:
+        if config.action != 'run':
+            raise AttributeError
+        actions[config.action]()
 
 
 def run_notifier(client, config, output, _):
