@@ -56,7 +56,7 @@ control "scanner-config_validator_gcs_policy" do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/Running ConfigValidatorScanner.../) }
     its('stdout') { should match (/Scan completed/) }
-    its('stdout') { should match (/Scanner Index ID: .*([0-9]*) is created/) }
+    its('stdout') { should match (/Scanner Index ID: (.*[0-9]*) is created/) }
   end
 
   # Assert violations exist for Cloud SQL Location policy
