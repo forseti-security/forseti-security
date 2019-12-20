@@ -13,6 +13,7 @@
 # limitations under the License.
 
 require 'json'
+require 'yaml'
 require 'securerandom'
 
 cai_dump_file_gcs_paths = attribute('inventory-performance-cai-dump-paths')
@@ -23,14 +24,34 @@ control "inventory-get-list" do
   # Arrange
   # Update forseti config: disable api polling, fake org id, gcs paths
   # Make backup of server config
+  describe command("cp /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml /tmp/forseti_conf_server_backup.yaml") do
+    its('exit_status') { should eq 0 }
+  end
+
+  @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
+  # fake org id
+  @modified_yaml["inventory"]["root_resource_id"] = "organizations/5456546415"
   # disable_polling: set to True for all found
-  # root_resource_id: organizations/5456546415
+  @modified_yaml["inventory"]["api_quota"].keys.each do |key|
+    @modified_yaml["inventory"]["api_quota"][key]["disable_polling"] = true
+  end
   # under cai: section: cai_dump_file_gcs_paths: ['gs://forseti-server-XXXXX/testing-iam-policy.dump','gs://forseti-server-XXXX/testing-resource.dump']
+  @modified_yaml["cai"]["section"]["cai_dump_file_gcs_paths"] = cai_dump_file_gcs_paths
+
+  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+    its('exit_status') { should eq 0 }
+  end
+  describe command("forseti server configuration reload") do
+    its('exit_status') { should eq 0 }
+  end
 
   # Disable the cronjob
-  # sudo su ubuntu
-  # crontab -l > my_cron_backup.txt
-  # crontab -r
+  describe command("crontab -l > /tmp/crontab_backup.txt") do
+    its('exit_status') { should eq 0 }
+  end
+  describe command("crontab -r") do
+    its('exit_status') { should eq 0 }
+  end
 
   # Act
   inventory_create = command("forseti inventory create")
@@ -43,8 +64,11 @@ control "inventory-get-list" do
 
   # Assert
   # Assert Inventory takes less than 12 minutes
-  # select * from invnetory_index where id = @inventory_id
+  # select * from inventory_index where id = @inventory_id
   # Compare completeTimestamp and startTimestamp, it should not be more than 12 mins apart
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM inventory_index where id=#{@inventory_id}\"") do
+    its('exit_status') { should eq 0 }
+  end
 
   # Assert resource count
   # select count(*) from gcp_inventory where inventory_index_id=@inventory_id; ==== 296612
@@ -67,13 +91,26 @@ control "inventory-get-list" do
     its('stdout') { should match (/1000/)}
   end
 
+  # Restore server config backup
+  describe command("cp /tmp/forseti_conf_server_backup.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+    its('exit_status') { should eq 0 }
+  end
+  describe command("forseti server configuration reload") do
+    its('exit_status') { should eq 0 }
+  end
+
+
+  # Restore cron job
+  describe command("crontab /tmp/crontab_backup.txt && crontab -l") do
+    its('exit_status') { should eq 0 }
+  end
+
   # Cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  # Restore server config backup
-  
-  # Restore cron job
-  #crontab my_cron_backup.txt
+  describe command("forseti model delete #{model_name}") do
+    its('exit_status') { should eq 0 }
+  end
 end
