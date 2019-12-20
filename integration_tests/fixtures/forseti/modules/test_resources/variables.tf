@@ -19,9 +19,13 @@ variable "billing_account" {
 }
 
 variable "org_id" {
-  description = "GCP Organization ID that Forseti will have purview over"
+  description = "GCP Organization Id that Forseti will have purview over"
 }
 
 variable "project_id" {
-  description = "The ID of an existing Google project where Forseti will be installed"
+  description = "The Id of an existing Google project where Forseti will be installed"
+}
+
+variable "random_test_id" {
+  description = "Random test Id generated for this test run"
 }

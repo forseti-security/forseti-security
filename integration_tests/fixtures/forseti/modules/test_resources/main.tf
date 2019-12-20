@@ -13,18 +13,11 @@
 * limitations under the License.
 */
 
-resource "random_id" "random_test_id" {
-  byte_length = 8
-}
-
-resource "random_pet" "random_name_generator" {
-}
-
 #-------------------------#
 # enforcer-remediates_non_compliant_rule.rb: Create a firewall rule to test it gets removed
 #-------------------------#
 resource "google_compute_firewall" "enforcer_allow_all_icmp_rule" {
-  name                    = "forseti-server-allow-icmp-${random_id.random_test_id.hex}"
+  name                    = "forseti-server-allow-icmp-${var.random_test_id}"
   project                 = var.project_id
   network                 = "default"
   priority                = "100"
@@ -36,25 +29,10 @@ resource "google_compute_firewall" "enforcer_allow_all_icmp_rule" {
 }
 
 #-------------------------#
-# inventory-create.rb: Create KMS resources for inventory testing
-#-------------------------#
-resource "google_kms_key_ring" "test-keyring" {
-  project  = var.project_id
-  name     = "keyring-${random_pet.random_name_generator.id}"
-  location = "global"
-}
-
-resource "google_kms_crypto_key" "test-crypto-key" {
-  name            = "crypto-key-${random_pet.random_name_generator.id}"
-  key_ring        = google_kms_key_ring.test-keyring.self_link
-  rotation_period = "100000s"
-}
-
-#-------------------------#
 # scanner-bucket_acl_scanner.rb: Create a bucket with AllAuth + All Users Reader ACL
 #-------------------------#
 resource "google_storage_bucket" "bucket_acl_scanner" {
-  name     = "foresti-test-bucket-${random_id.random_test_id.hex}"
+  name     = "foresti-test-bucket-${var.random_test_id}"
   project  = var.project_id
   location = "US"
 }
