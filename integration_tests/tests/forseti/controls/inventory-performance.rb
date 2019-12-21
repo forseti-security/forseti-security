@@ -19,6 +19,7 @@ require 'securerandom'
 cai_dump_file_gcs_paths = attribute('inventory-performance-cai-dump-paths')
 db_password = attribute('forseti-cloudsql-password')
 db_user_name = attribute('forseti-cloudsql-user')
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 conf_path = "/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml"
 
@@ -51,17 +52,18 @@ control "inventory-performance" do
   end
 
   # Disable the cronjob
-  describe command("crontab -l > /tmp/crontab_backup.txt") do
+  describe command("sudo su - ubuntu -c 'crontab -l > /tmp/crontab_backup.txt'") do
     its('exit_status') { should eq 0 }
   end
-  describe command("crontab -r") do
+  describe command("sudo su - ubuntu -c 'crontab -r'") do
     its('exit_status') { should eq 0 }
   end
 
   # Act
-  describe command("forseti inventory create") do
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
+
+  describe command("forseti inventory create --import_as #{model_name}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/\"id\"\: \"([0-9]*)\"/)}
   end
 
   # Assert
@@ -104,7 +106,7 @@ control "inventory-performance" do
 
 
   # Restore cron job
-  describe command("crontab /tmp/crontab_backup.txt && crontab -l") do
+  describe command("sudo su - ubuntu -c 'crontab /tmp/crontab_backup.txt && crontab -l'") do
     its('exit_status') { should eq 0 }
   end
 
