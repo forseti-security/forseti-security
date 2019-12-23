@@ -62,10 +62,6 @@ control "inventory-performance" do
   # Act
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
-  describe command("forseti inventory create --import_as #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
-
   # Assert
   # Assert Inventory takes less than 12 minutes
   # select * from inventory_index where id = @inventory_id
