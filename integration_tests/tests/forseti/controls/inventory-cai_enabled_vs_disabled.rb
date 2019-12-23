@@ -45,21 +45,9 @@ control 'inventory-cai-enabled-vs-disabled' do
   end
 
   # Disable CAI
-#   @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
-#   @modified_yaml["inventory"]["cai"]["enabled"] = false
-#   describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
-#     its('exit_status') { should eq 0 }
-#   end
-  describe command("python3 integration_tests/tests/forseti/scripts/update_server_config.py set_cai_enabled false") do
+  describe command("sudo python3 /home/ubuntu/forseti-security/integration_tests/tests/forseti/scripts/update_server_config.py set_cai_enabled false") do
     its('exit_status') { should eq 0 }
   end
-#   describe command("forseti server configuration reload") do
-#     its('exit_status') { should eq 0 }
-#     its('stdout') { should match(/\"isSuccess\": true/) }
-#   end
-#   describe command("sleep 10") do
-#     its('exit_status') { should eq 0 }
-#   end
 
   # Create inventory with CAI disabled
   @inventory_id_disabled = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name_disabled}").stdout)[1]
@@ -84,17 +72,9 @@ control 'inventory-cai-enabled-vs-disabled' do
   end
 
   # Re-enable CAI
-  describe command("python3 integration_tests/tests/forseti/scripts/update_server_config.py set_cai_enabled true") do
+  describe command("sudo python3 /home/ubuntu/forseti-security/integration_tests/tests/forseti/scripts/update_server_config.py set_cai_enabled true") do
     its('exit_status') { should eq 0 }
   end
-#   @modified_yaml["inventory"]["cai"]["enabled"] = true
-#   describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
-#     its('exit_status') { should eq 0 }
-#   end
-#   describe command("forseti server configuration reload") do
-#     its('exit_status') { should eq 0 }
-#     its('stdout') { should match(/\"isSuccess\": true/) }
-#   end
 
   # Cleanup
   describe command("forseti inventory delete #{@inventory_id_enabled}") do
