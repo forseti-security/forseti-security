@@ -105,7 +105,7 @@ output "enforcer_allow_all_icmp_rule_name" {
   value = module.test_resources.enforcer_allow_all_icmp_rule_name
 }
 
-output "random_test_id" {
-  description = "Random test id generated every time the tests are run"
-  value       = module.test_resources.random_test_id
+output "inventory-cai-eu-bucket-name" {
+  description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
+  value = module.test_resources.inventory-cai-eu-bucket-name
 }

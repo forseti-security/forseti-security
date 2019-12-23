@@ -17,6 +17,7 @@
 locals {
   files = [
     "rules/enabled_apis_rules.yaml",
+    "rules/location_rules.yaml",
   ]
 }
 
@@ -27,8 +28,10 @@ data "template_file" "main" {
   )
 
   vars = {
-    org_id = var.org_id
-    domain = var.domain
+    domain                         = var.domain
+    forseti_server_service_account = var.forseti_server_service_account
+    org_id                         = var.org_id
+    project_id                     = var.project_id
   }
 }
 
