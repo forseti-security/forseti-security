@@ -25,25 +25,23 @@ conf_path = "/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml"
 
 control "inventory-performance" do
   # Arrange
-  # Update forseti config: disable api polling, fake org id, gcs paths
+
   # Make backup of server config
   describe command("cp #{conf_path} /tmp/forseti_conf_server_backup.yaml") do
     its('exit_status') { should eq 0 }
   end
-
   @modified_yaml = yaml(conf_path).params
-  # fake org id
+
+  # Set fake org id
   @modified_yaml["inventory"]["root_resource_id"] = "organizations/5456546415"
-  # disable_polling: set to True for all found
+
+  # Disable all API polling
   @modified_yaml["inventory"]["api_quota"].keys.each do |key|
     @modified_yaml["inventory"]["api_quota"][key]["disable_polling"] = true
   end
-  # under cai: section: cai_dump_file_gcs_paths: ['gs://forseti-server-XXXXX/testing-iam-policy.dump','gs://forseti-server-XXXX/testing-resource.dump']
-  # @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = JSON.parse(cai_dump_file_gcs_paths)
-  @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = [
-      "gs://forseti-test-data-orange/inventory_performance/mock_cai_iam_policy.dump",
-      "gs://forseti-test-data-orange/inventory_performance/mock_cai_resource.dump"
-  ]
+
+  # Set path to mock CAI dumps
+  @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = cai_dump_file_gcs_paths
   describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee #{conf_path}") do
     its('exit_status') { should eq 0 }
   end
@@ -62,44 +60,41 @@ control "inventory-performance" do
   # Act
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
-  # Assert
-  # Assert Inventory takes less than 12 minutes
-  # select * from inventory_index where id = @inventory_id
-  # Compare completeTimestamp and startTimestamp, it should not be more than 12 mins apart
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM inventory_index where id=#{@inventory_id}\"") do
+  # Assert Inventory is successful and takes less than 12 minutes
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT I.inventory_status FROM inventory_index I where I.id=#{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/lets_see_what_it_says/)}
+    its('stdout') { should match(/SUCCESS/) }
+  end
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT CASE WHEN TIMESTAMPDIFF(MINUTE, I.created_at_datetime, I.completed_at_datetime) <= 12 THEN 'Pass' ELSE 'Fail' END AS Status FROM inventory_index I where I.id=#{@inventory_id};\"") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/Pass/) }
   end
 
-  # Assert resource count
-  # select count(*) from gcp_inventory where inventory_index_id=@inventory_id; ==== 296612
+  # Assert resource count == 296612
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id}\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/296612/)}
+    its('stdout') { should match(/296612/) }
   end
 
   # Assert bigquery_table count == 250000
-  # select count(*) from gcp_inventory where inventory_index_id=@inventory_id AND resource_type = 'bigquery_table' AND category = 'resource';
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id} AND resource_type = 'bigquery_table' AND category = 'resource';\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/250000/)}
+    its('stdout') { should match(/250000/) }
   end
 
   # Assert project count == 1000
-  # select count(*) from gcp_inventory where inventory_index_id=@inventory_id AND resource_type = 'project';
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM gcp_inventory where inventory_index_id=#{@inventory_id} AND resource_type = 'project';\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1000/)}
+    its('stdout') { should match(/1000/) }
   end
 
   # Restore server config backup
-  describe command("sudo cp /tmp/forseti_conf_server_backup.yaml #{conf_path}") do
-    its('exit_status') { should eq 0 }
-  end
+#   describe command("sudo cp /tmp/forseti_conf_server_backup.yaml #{conf_path}") do
+#     its('exit_status') { should eq 0 }
+#   end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
   end
-
 
   # Restore cron job
   describe command("sudo su - ubuntu -c 'crontab /tmp/crontab_backup.txt && crontab -l'") do
@@ -107,7 +102,7 @@ control "inventory-performance" do
   end
 
   # Cleanup
-  describe command("forseti inventory delete #{@inventory_id}") do
-    its('exit_status') { should eq 0 }
-  end
+#   describe command("forseti inventory delete #{@inventory_id}") do
+#     its('exit_status') { should eq 0 }
+#   end
 end
