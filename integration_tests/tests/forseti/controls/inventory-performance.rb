@@ -39,7 +39,7 @@ control "inventory-performance" do
     @modified_yaml["inventory"]["api_quota"][key]["disable_polling"] = true
   end
   # under cai: section: cai_dump_file_gcs_paths: ['gs://forseti-server-XXXXX/testing-iam-policy.dump','gs://forseti-server-XXXX/testing-resource.dump']
-  # @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = cai_dump_file_gcs_paths
+  # @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = JSON.parse(cai_dump_file_gcs_paths)
   @modified_yaml["inventory"]["cai"]["cai_dump_file_gcs_paths"] = [
       "gs://forseti-test-data-orange/inventory_performance/mock_cai_iam_policy.dump",
       "gs://forseti-test-data-orange/inventory_performance/mock_cai_resource.dump"
