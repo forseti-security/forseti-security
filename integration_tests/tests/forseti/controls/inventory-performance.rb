@@ -32,9 +32,6 @@ control "inventory-performance" do
   end
 
   @modified_yaml = yaml(conf_path).params
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\"") do
-    its('exit_status') { should eq 0 }
-  end
   # fake org id
   @modified_yaml["inventory"]["root_resource_id"] = "organizations/5456546415"
   # disable_polling: set to True for all found
