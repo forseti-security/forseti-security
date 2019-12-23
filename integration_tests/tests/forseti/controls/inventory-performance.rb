@@ -89,9 +89,9 @@ control "inventory-performance" do
   end
 
   # Restore server config backup
-#   describe command("sudo cp /tmp/forseti_conf_server_backup.yaml #{conf_path}") do
-#     its('exit_status') { should eq 0 }
-#   end
+  describe command("sudo cp /tmp/forseti_conf_server_backup.yaml #{conf_path}") do
+    its('exit_status') { should eq 0 }
+  end
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
   end
@@ -102,7 +102,7 @@ control "inventory-performance" do
   end
 
   # Cleanup
-#   describe command("forseti inventory delete #{@inventory_id}") do
-#     its('exit_status') { should eq 0 }
-#   end
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
 end
