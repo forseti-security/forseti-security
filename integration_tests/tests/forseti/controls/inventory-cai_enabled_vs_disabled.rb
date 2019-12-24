@@ -18,11 +18,9 @@ require 'securerandom'
 db_password = attribute('forseti-cloudsql-password')
 db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
-inventory_cai_eu_bucket_name = attribute('inventory-cai-eu-bucket-name')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 model_name_enabled = "CaiEnabled#{model_name}"
 model_name_disabled = "CaiDisabled#{model_name}"
-project_id = attribute('project_id')
 
 control 'inventory-cai-enabled-vs-disabled' do
   # Copy rules to server

@@ -24,7 +24,7 @@ forseti_cloudsql_instance_name = "forseti-server-db-#{forseti_suffix}"
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 policy_library_path = '/home/ubuntu/policy-library/policy-library'
 
-control "scanner-config_validator_gcs_policy" do
+control "scanner-config-validator-gcs-policy" do
   # Arrange
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
   describe command("forseti model use #{model_name}") do

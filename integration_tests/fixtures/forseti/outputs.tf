@@ -74,9 +74,9 @@ output "forseti-server-storage-bucket" {
   value       = module.forseti.forseti-server-storage-bucket
 }
 
-output "kms_resources_names" {
-  description = "Forseti KMS resources"
-  value       = module.test_resources.kms_resources_names
+output "forseti-version" {
+  description = "Forseti Server storage bucket"
+  value       = var.forseti_version
 }
 
 output "org_id" {
