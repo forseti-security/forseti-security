@@ -234,11 +234,8 @@ class CsccNotifier(object):
                     finding_data = findings_in_page.get('finding')
                     name = finding_data.get('name')
                     finding_id = name[-32:]
-                    if finding_data.get('state') != "INACTIVE":
-                        formatted_cscc_findings.append([finding_id,
-                                                        finding_data])
-                    else:
-                        LOGGER.error('Inactive finding was retrieved.')
+                    formatted_cscc_findings.append([finding_id,
+                                                    finding_data])
 
             inactive_findings = self.find_inactive_findings(
                 new_findings,
