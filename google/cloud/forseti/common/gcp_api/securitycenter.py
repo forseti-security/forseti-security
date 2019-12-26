@@ -155,6 +155,7 @@ class SecurityCenterClient(object):
                     finding.get('source_properties').get('violation_data'))
                 raise api_errors.ApiExecutionError(violation_data, e)
 
+    # pylint: disable=logging-too-many-args
     def list_findings(self, source_id):
         """Lists all the findings in CSCC.
 
@@ -170,7 +171,7 @@ class SecurityCenterClient(object):
             LOGGER.debug('Listing findings.')
 
             response = self.repository.findings.list(parent=source_id,
-                                                     filter="state=\"ACTIVE\"",
+                                                     filter='state="ACTIVE"',
                                                      pageSize=100)
             LOGGER.debug('Successfully retrieved active findings.')
 
