@@ -165,8 +165,18 @@ class SecurityCenterClient(object):
           Returns:
               object: An API response containing all the CSCC findings.
         """
-        response = self.repository.findings.list(parent=source_id)
-        return response
+
+        try:
+            LOGGER.debug('Listing findings.')
+
+            response = self.repository.findings.list(parent=source_id,
+                                                     filter="state=\"ACTIVE\"",
+                                                     pageSize=100)
+            LOGGER.debug('Successfully retrieved active findings.')
+
+            return response
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.exception('Unable to list findings:', e)
 
     def update_finding(self, finding, finding_id, source_id=None):
         """Updates a finding in CSCC.
