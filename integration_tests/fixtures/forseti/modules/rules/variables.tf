@@ -18,10 +18,18 @@ variable "domain" {
   description = "The domain associated with the GCP Organization ID"
 }
 
+variable "forseti_server_service_account" {
+  description = "Forseti Server service account"
+}
+
 variable "forseti_server_storage_bucket" {
   description = "The Forseti Server GCS bucket name"
 }
 
 variable "org_id" {
+  description = "The organization ID"
+}
+
+variable "project_id" {
   description = "The organization ID"
 }

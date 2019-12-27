@@ -56,6 +56,7 @@ suites:
           controls:
             - enforcer-remediates-firewall-rule
             - explain-resource-count-match
+            - inventory-cai-enabled-vs-disabled
             - inventory-create
             - inventory-delete
             - inventory-get-list
@@ -66,7 +67,7 @@ suites:
             - model-delete
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
-            - scanner-config_validator_gcs_policy
+            - scanner-config-validator-gcs-policy
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
             - scanner-run

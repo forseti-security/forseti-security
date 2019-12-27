@@ -74,9 +74,9 @@ output "forseti-server-storage-bucket" {
   value       = module.forseti.forseti-server-storage-bucket
 }
 
-output "kms_resources_names" {
-  description = "Forseti KMS resources"
-  value       = module.test_resources.kms_resources_names
+output "forseti-version" {
+  description = "Forseti Server storage bucket"
+  value       = var.forseti_version
 }
 
 output "org_id" {
@@ -110,7 +110,7 @@ output "inventory-performance-cai-dump-paths" {
   value       = var.inventory_performance_cai_dump_paths
 }
 
-output "random_test_id" {
-  description = "Random test id generated every time the tests are run"
-  value       = module.test_resources.random_test_id
+output "inventory-cai-eu-bucket-name" {
+  description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
+  value = module.test_resources.inventory-cai-eu-bucket-name
 }
