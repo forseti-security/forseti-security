@@ -49,8 +49,8 @@ control "notifier-inventory-summary-email" do
   end
 
   # Verify the email is received
-  describe command("python3 #{forseti_tests_path}/scripts/verify_email.py --pickle_path #{pickle_plaintext} --sender #{forseti_email_sender}  --subject \"Inventory Summary: #{@inventory_id}\"") do
-    its('exit_status') { should be > 0 }
+  describe command("sudo python3 #{forseti_tests_path}/scripts/verify_email.py --pickle_path #{pickle_plaintext} --retries 5 --sender #{forseti_email_sender}  --subject \"Inventory Summary: #{@inventory_id}\"") do
+    its('exit_status') { should eq 0 }
     its('stdout') { should match(/Emails found: 1/) }
   end
 
