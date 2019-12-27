@@ -13,11 +13,17 @@
 * limitations under the License.
 */
 
+
+#-------------------------#
+# cloudkms.cryptoKeyVersions.useToDecrypt: Used by notifier-inventory_summary_email.rb
+# compute.firewalls.create: Used by enforcer-remediates_non_compliant_rule.rb
+#-------------------------#
 resource "google_project_iam_custom_role" "forseti-enforcer-admin" {
   role_id     = "forsetiEnforcerAdmin${var.random_test_id}"
   title       = "Forseti Enforcer Admin ${var.random_test_id}"
   description = "Access to delete firewall rules and update policy."
   permissions = [
+    "cloudkms.cryptoKeyVersions.useToDecrypt",
     "compute.firewalls.create",
     "compute.firewalls.delete",
     "compute.networks.updatePolicy",

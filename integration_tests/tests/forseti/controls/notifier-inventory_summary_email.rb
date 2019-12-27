@@ -30,7 +30,7 @@ control "notifier-inventory-summary-email" do
   end
 
   # Enable notifier inventory summary email
-  describe command("python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled true") do
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled true") do
     its('exit_status') { should eq 0 }
   end
 
@@ -59,7 +59,7 @@ control "notifier-inventory-summary-email" do
   end
 
   # Disable notifier inventory summary email
-    describe command("python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled false") do
+    describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled false") do
     its('exit_status') { should eq 0 }
   end
 
