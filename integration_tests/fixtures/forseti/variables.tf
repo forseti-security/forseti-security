@@ -18,6 +18,11 @@ variable "billing_account" {
   description = "GCP Organization billing account details"
 }
 
+variable "config_validator_enabled" {
+  description = "Enable Config Validator scanner"
+  default     = false
+}
+
 variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
@@ -48,6 +53,14 @@ variable "inventory_email_summary_enabled" {
 
 variable "inventory_performance_cai_dump_paths" {
   description = "GCS paths of the CAI dump files to be used for the inventory performance test"
+}
+
+variable "kms_key" {
+  description = "KMS key to be used for encrypting/decrypting test resources"
+}
+
+variable "kms_keyring" {
+  description = "KMS keyring to be used for encrypting/decrypting test resources"
 }
 
 variable "org_id" {

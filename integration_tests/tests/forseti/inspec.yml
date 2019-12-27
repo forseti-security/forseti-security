@@ -41,6 +41,9 @@ attributes:
 - name: forseti-client-vm-ip
   required: true
   type: string
+- name: forseti_email_sender
+  required: true
+  type: string
 - name: forseti-server-vm-name
   required: true
   type: string
@@ -62,6 +65,12 @@ attributes:
 - name: inventory-cai-eu-bucket-name
   required: true
   type: string
+- name: kms-key
+  required: true
+  type: string
+- name: kms-keyring
+  required: true
+  type: string
 - name: inventory-performance-cai-dump-paths
   required: true
   type: string
@@ -81,4 +90,3 @@ depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git
     tag: v0.10.0
-

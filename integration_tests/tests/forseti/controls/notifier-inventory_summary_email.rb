@@ -12,60 +12,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
 require 'json'
+require 'securerandom'
 
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
-suffix = attribute('suffix')
+email_sender = attribute('forseti_email_sender')
+forseti_tests_path = "/home/ubuntu/forseti-security/integration_tests/tests/forseti"
+kms_key = attribute('kms-key')
+kms_keyring = attribute('kms-keyring')
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
+pickle_plaintext="#{forseti_tests_path}/scripts/gmail_token.pickle"
+pickle_ciphertext="#{forseti_tests_path}/scripts/gmail_token.pickle.enc"
 
-control "notifier - inventory summary email" do
-
-  # Back up the configuration file.
-  describe command("sudo cp /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server_backup.yaml") do
+control "notifier-inventory-summary-email" do
+  # Install python requirements
+  describe command("sudo pip3 install -r #{forseti_tests_path}/requirements.txt") do
     its('exit_status') { should eq 0 }
   end
 
-  # Enable notifier email.
-  @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
-  @modified_yaml["notifier"]["inventory"]["email_summary"]["enabled"] = true
-
-  # Save the modification.
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server_outcome.yaml") do
+  # Enable notifier inventory summary email
+  describe command("python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled true") do
     its('exit_status') { should eq 0 }
   end
 
-  # Reload the forseti server configuration.
-  describe command("forseti server configuration reload") do
+  # Decrypt token
+  describe command("sudo gcloud kms decrypt --ciphertext-file=#{pickle_ciphertext} --plaintext-file=#{pickle_plaintext} --key=#{kms_key} --keyring=#{kms_keyring} --location=global") do
     its('exit_status') { should eq 0 }
   end
 
-  # Run the command that will generate the inventory.
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  # Create inventory/model
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
-  # Run notifier.
+  # Run notifier
   describe command("forseti notifier run") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/Notification completed!/)}
+    its('stdout') { should match(/Notification completed!/) }
   end
 
-  # Verify the email.
-  # describe command("") do
-  #   its('exit_status') { should eq 0 }
-  # its('stdout') { should match(/True/)}
-  # end
+  # Verify the email is received
+  describe command("python3 integration_tests/tests/forseti/verify_email.py --pickle_path #{pickle_plaintext} --sender #{email_sender}  --subject \"Inventory Summary: #{@inventory_id}\"") do
+    its('exit_status') { should be > 0 }
+  end
 
-  # Delete the inventory.
+  # Delete plaintext token
+  describe command ("sudo rm -rf #{pickle_plaintext}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Disable notifier inventory summary email
+    describe command("python3 #{forseti_tests_path}/scripts/update_server_config.py set_inventory_summary_email_enabled false") do
+    its('exit_status') { should eq 0 }
+  end
+
+  # Delete the inventory
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  # Delete the model.
-  describe command("forseti model delete #{random_string}") do
-    its('exit_status') { should eq 0 }
-  end
-
-  # Recover the backup file.
-  describe command("sudo mv /home/ubuntu/forseti-security/configs/forseti_conf_server_backup.yaml /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+  # Delete the model
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 end
