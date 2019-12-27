@@ -36,6 +36,10 @@ variable "gsuite_admin_email" {
   description = "The email of a GSuite super admin, used for pulling user directory information *and* sending notifications."
 }
 
+variable "inventory_performance_cai_dump_paths" {
+  description = "GCS paths of the CAI dump files to be used for the inventory performance test"
+}
+
 variable "org_id" {
   description = "GCP Organization ID that Forseti will have purview over"
 }
