@@ -15,7 +15,7 @@
 require 'json'
 require 'securerandom'
 
-email_sender = attribute('forseti_email_sender')
+forseti_email_sender = attribute('forseti-email-sender')
 forseti_tests_path = "/home/ubuntu/forseti-security/integration_tests/tests/forseti"
 kms_key = attribute('kms-key')
 kms_keyring = attribute('kms-keyring')
@@ -49,8 +49,9 @@ control "notifier-inventory-summary-email" do
   end
 
   # Verify the email is received
-  describe command("python3 integration_tests/tests/forseti/verify_email.py --pickle_path #{pickle_plaintext} --sender #{email_sender}  --subject \"Inventory Summary: #{@inventory_id}\"") do
+  describe command("python3 #{forseti_tests_path}/scripts/verify_email.py --pickle_path #{pickle_plaintext} --sender #{forseti_email_sender}  --subject \"Inventory Summary: #{@inventory_id}\"") do
     its('exit_status') { should be > 0 }
+    its('stdout') { should match(/Emails found: 1/) }
   end
 
   # Delete plaintext token

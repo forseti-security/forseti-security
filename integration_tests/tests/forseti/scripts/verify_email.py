@@ -1,7 +1,6 @@
 import argparse
 import pickle
 import os.path
-import sys
 import time
 
 from googleapiclient.discovery import build
@@ -28,7 +27,7 @@ def get_service(pickle_path):
     # time.
     if os.path.exists(pickle_path):
         with open(pickle_path, 'rb') as token:
-            credentials = pickle_path.load(token)
+            credentials = pickle.load(token)
 
     # If there are no (valid) credentials available, let the user log in.
     if not credentials or not credentials.valid:
@@ -96,9 +95,9 @@ if __name__ == '__main__':
     parser.add_argument('--subject', default='', help='subject', type=str)
     args = parser.parse_args()
 
-    emails = verify_email(args.after_timestamp,
-                          args.pickle_path,
-                          args.retries,
-                          args.sender,
-                          args.subject)
-    sys.exit(emails)
+    email_count = verify_email(args.after_timestamp,
+                               args.pickle_path,
+                               args.retries,
+                               args.sender,
+                               args.subject)
+    print(f'Emails found: {email_count}')

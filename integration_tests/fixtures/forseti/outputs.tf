@@ -54,7 +54,7 @@ output "forseti-cloudsql-user" {
   value       = module.forseti.forseti-cloudsql-user
 }
 
-output "forseti_email_sender" {
+output "forseti-email-sender" {
   description = "Email address that sends the Forseti notifications"
   value       = var.forseti_email_sender
 }

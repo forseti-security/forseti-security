@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,34 +14,40 @@
 
 name: forseti_integration_testing
 attributes:
-- name: project_id
+- name: bucket_acl_scanner_bucket_name
   required: true
   type: string
-- name: network_project
-  required: false
-  type: string
-  default: ''
-- name: org_id
+- name: enforcer_allow_all_icmp_rule_name
   required: true
   type: string
-- name: suffix
+- name: forseti-cai-storage-bucket
   required: true
   type: string
-- name: db_user_name
+- name: forseti-client-service-account
   required: true
   type: string
-  value: root
-- name: db_password
+- name: forseti-client-storage-bucket
   required: true
   type: string
-  value: ''
 - name: forseti-client-vm-name
   required: true
   type: string
 - name: forseti-client-vm-ip
   required: true
   type: string
-- name: forseti_email_sender
+- name: forseti-cloudsql-password
+  required: true
+  type: string
+- name: forseti-cloudsql-user
+  required: true
+  type: string
+- name: forseti-email-sender
+  required: true
+  type: string
+- name: forseti-server-service-account
+  required: true
+  type: string
+- name: forseti-server-storage-bucket
   required: true
   type: string
 - name: forseti-server-vm-name
@@ -50,16 +56,10 @@ attributes:
 - name: forseti-server-vm-ip
   required: true
   type: string
-- name: forseti-client-storage-bucket
+- name: inventory-cai-eu-bucket-name
   required: true
   type: string
-- name: forseti-server-storage-bucket
-  required: true
-  type: string
-- name: forseti-client-service-account
-  required: true
-  type: string
-- name: forseti-server-service-account
+- name: inventory-performance-cai-dump-paths
   required: true
   type: string
 - name: inventory-cai-eu-bucket-name
