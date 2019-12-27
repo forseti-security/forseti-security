@@ -25,6 +25,8 @@ steps:
   - 'TF_VAR_forseti_version=$BRANCH_NAME'
   - 'TF_VAR_gsuite_admin_email=$_GSUITE_ADMIN_EMAIL'
   - 'TF_VAR_inventory_performance_cai_dump_paths=$_INVENTORY_PERFORMANCE_CAI_DUMP_PATHS'
+  - 'TF_VAR_kms_key=$_KMS_KEY'
+  - 'TF_VAR_kms_keyring=$_KMS_KEYRING'
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_project_id=$_PROJECT_ID'
 tags:
