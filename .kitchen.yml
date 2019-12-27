@@ -60,6 +60,7 @@ suites:
             - inventory-create
             - inventory-delete
             - inventory-get-list
+            - inventory-performance
             - inventory-purge
             - logs-debug-level
             - model-create-get

@@ -56,6 +56,9 @@ attributes:
 - name: inventory-cai-eu-bucket-name
   required: true
   type: string
+- name: inventory-performance-cai-dump-paths
+  required: true
+  type: string
 - name: network_project
   required: false
   type: string
