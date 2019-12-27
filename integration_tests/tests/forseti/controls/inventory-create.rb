@@ -17,7 +17,6 @@ require 'json'
 
 db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
-kms_resources_names = attribute('kms_resources_names')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "inventory-create" do
