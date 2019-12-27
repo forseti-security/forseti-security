@@ -66,6 +66,7 @@ suites:
             - model-delete
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
+            - scanner-config_validator_gcs_policy
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
             - scanner-run

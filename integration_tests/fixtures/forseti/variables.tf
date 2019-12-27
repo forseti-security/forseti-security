@@ -18,6 +18,11 @@ variable "billing_account" {
   description = "GCP Organization billing account details"
 }
 
+variable "config_validator_enabled" {
+  description = "Config Validator scanner enabled"
+  default     = true
+}
+
 variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
