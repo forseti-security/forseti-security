@@ -148,10 +148,12 @@ module "forseti_iam" {
 # Forseti Rules
 #-------------------------#
 module "forseti_server_rules" {
-  source                        = "./modules/rules"
-  domain                        = var.domain
-  forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
-  org_id                        = var.org_id
+  source                         = "./modules/rules"
+  domain                         = var.domain
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  forseti_server_storage_bucket  = module.forseti.forseti-server-storage-bucket
+  org_id                         = var.org_id
+  project_id                     = var.project_id
 }
 
 #-------------------------#
@@ -166,9 +168,10 @@ module "policy_library" {
 # Test Resources
 #-------------------------#
 module "test_resources" {
-  source     = "./modules/test_resources"
-  billing_account = var.billing_account
-  org_id          = var.org_id
-  project_id      = var.project_id
-  random_test_id  = random_id.random_test_id.hex
+  source                         = "./modules/test_resources"
+  billing_account                = var.billing_account
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  org_id                         = var.org_id
+  project_id                     = var.project_id
+  random_test_id                 = random_id.random_test_id.hex
 }

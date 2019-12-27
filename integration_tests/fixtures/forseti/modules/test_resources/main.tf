@@ -29,6 +29,23 @@ resource "google_compute_firewall" "enforcer_allow_all_icmp_rule" {
 }
 
 #-------------------------#
+# inventory-cai_enabled_vs_disabled.rb: Create a bucket in the EU
+#-------------------------#
+resource "google_storage_bucket" "inventory_cai_eu" {
+  name     = "foresti-test-bucket-eu-${var.random_test_id}"
+  project  = var.project_id
+  location = "EU"
+}
+
+resource "google_storage_bucket_access_control" "inventory_cai_eu_acl" {
+  bucket = google_storage_bucket.bucket_acl_scanner.name
+  role   = "READER"
+  entity = "user-${var.forseti_server_service_account}"
+
+  depends_on = [google_storage_bucket.inventory_cai_eu]
+}
+
+#-------------------------#
 # scanner-bucket_acl_scanner.rb: Create a bucket with AllAuth + All Users Reader ACL
 #-------------------------#
 resource "google_storage_bucket" "bucket_acl_scanner" {

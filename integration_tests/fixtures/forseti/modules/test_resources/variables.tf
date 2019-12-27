@@ -18,6 +18,10 @@ variable "billing_account" {
   description = "GCP Organization billing account details"
 }
 
+variable "forseti_server_service_account" {
+  description = "Forseti Server service account"
+}
+
 variable "org_id" {
   description = "GCP Organization Id that Forseti will have purview over"
 }
