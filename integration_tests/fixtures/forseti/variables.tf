@@ -20,7 +20,7 @@ variable "billing_account" {
 
 variable "config_validator_enabled" {
   description = "Enable Config Validator scanner"
-  default     = false
+  default     = true
 }
 
 variable "domain" {
@@ -29,7 +29,7 @@ variable "domain" {
 
 variable "forseti_version" {
   description = "The version of Forseti to deploy"
-  default = "master"
+  default     = "master"
 }
 
 variable "forseti_email_recipient" {
@@ -48,7 +48,7 @@ variable "gsuite_admin_email" {
 
 variable "inventory_email_summary_enabled" {
   description = "Email summary for inventory enabled"
-  default = false
+  default     = false
 }
 
 variable "inventory_performance_cai_dump_paths" {

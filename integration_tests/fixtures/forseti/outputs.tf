@@ -18,10 +18,10 @@ output "bastion_host" {
   value = module.bastion.host
 }
 
-//output "forseti-cai-storage-bucket" {
-//  description = "Forseti CAI storage bucket"
-//  value       = module.forseti.forseti-cai-storage-bucket
-//}
+output "forseti-cai-storage-bucket" {
+  description = "Forseti CAI storage bucket"
+  value       = module.forseti.forseti-cai-storage-bucket
+}
 
 output "forseti-client-vm-ip" {
   description = "Forseti Client VM private IP address"
@@ -81,7 +81,7 @@ output "forseti-server-storage-bucket" {
 
 output "forseti-version" {
   description = "Forseti Server storage bucket"
-  value = var.forseti_version
+  value       = var.forseti_version
 }
 
 output "kms-key" {
@@ -127,5 +127,5 @@ output "inventory-performance-cai-dump-paths" {
 
 output "inventory-cai-eu-bucket-name" {
   description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
-  value = module.test_resources.inventory-cai-eu-bucket-name
+  value       = module.test_resources.inventory-cai-eu-bucket-name
 }

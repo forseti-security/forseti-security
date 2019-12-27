@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,28 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
 require 'json'
+require 'securerandom'
 
-suffix = attribute('suffix')
-org_id = attribute('org_id')
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-random_string = SecureRandom.uuid.gsub!('-', '')
+control "model-list" do
+  # Arrange
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
-control "inventory - cai gcs export file" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-
-  gs_file = "gs://forseti-cai-export-#{suffix}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
-
-  describe command("gsutil ls #{gs_file} | grep #{gs_file}") do
-    its('stdout') { should match (gs_file)}
-  end
-
-  describe command("forseti model delete #{random_string}") do
+  describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
+  # Act and assert
+  describe command("forseti model list") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/#{model_name}/) }
+  end
+
+  # Cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  describe command("forseti model delete #{random_string}") do
     its('exit_status') { should eq 0 }
   end
 end
