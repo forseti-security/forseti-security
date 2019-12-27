@@ -171,7 +171,7 @@ class SecurityCenterClient(object):
 
             response = self.repository.findings.list(parent=source_id,
                                                      filter='state="ACTIVE"',
-                                                     pageSize=500)
+                                                     pageSize=1000)
             LOGGER.debug('Successfully retrieved active findings.')
 
             return response
