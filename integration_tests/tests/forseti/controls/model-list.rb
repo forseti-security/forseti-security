@@ -33,7 +33,7 @@ control "model-list" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{random_string}") do
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 end
