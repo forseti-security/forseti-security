@@ -18,20 +18,17 @@ require 'securerandom'
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "model-list" do
-  # Arrange
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
   describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
-  # Act and assert
   describe command("forseti model list") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/#{model_name}/) }
+    its('stdout') { should match (/#{model_name}/) }
   end
 
-  # Cleanup
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end

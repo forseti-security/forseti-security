@@ -42,6 +42,12 @@ control "notifier-inventory-summary-email" do
   # Create inventory/model
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
+  # Scan
+  describe command("forseti model use #{model_name} && forseti scanner run") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/Scanner Index ID: .*([0-9]*) is created/) }
+  end
+
   # Run notifier
   describe command("forseti notifier run") do
     its('exit_status') { should eq 0 }
