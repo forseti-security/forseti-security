@@ -29,7 +29,7 @@ DEFAULT_RETRIES = 2
 # received from Slack API. Hence, setting the default wait to 30 seconds based
 # on Slack rate limits documentation.
 # https://api.slack.com/docs/rate-limits
-DEFAULT_WAIT = 3
+DEFAULT_WAIT = 30
 
 
 class SlackWebhook(base_notification.BaseNotification):
