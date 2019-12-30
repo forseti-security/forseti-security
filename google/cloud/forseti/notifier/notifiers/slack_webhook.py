@@ -14,8 +14,8 @@
 """Slack webhook notifier to perform notifications."""
 
 from builtins import str
-import time
 import requests
+from retrying import retry
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier.notifiers import base_notification
@@ -23,13 +23,6 @@ from google.cloud.forseti.notifier.notifiers import base_notification
 LOGGER = logger.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
-
-DEFAULT_RETRIES = 2
-# 'Retry-After' (seconds) is not always set in the header of the response
-# received from Slack API. Hence, setting the default wait to 30 seconds based
-# on Slack rate limits documentation.
-# https://api.slack.com/docs/rate-limits
-DEFAULT_WAIT = 30
 
 
 class SlackWebhook(base_notification.BaseNotification):
@@ -77,27 +70,19 @@ class SlackWebhook(base_notification.BaseNotification):
         return ('*type*:\t`{}`\n*details*:\n'.format(self.resource) +
                 self._dump_slack_output(violation.get('violation_data'), 1))
 
+    # Wait 30 seconds before retrying: https://api.slack.com/docs/rate-limits
+    @retry(wait_exponential_multiplier=30000, wait_exponential_max=60000,
+           stop_max_attempt_number=2)
     def _send(self, payload):
         """Sends a post to a Slack webhook url
 
         Args:
             payload (str): Payload data to send to slack.
         """
-        for retry_number in range(DEFAULT_RETRIES):
-            url = self.notification_config.get('webhook_url')
-            response = requests.post(url, json={'text': payload})
-            if response.status_code == 200:
-                LOGGER.info('Post was successfully sent to Slack webhook: %s',
-                            response)
-                break
-            elif response.status_code == 429:
-                LOGGER.debug('HTTP 429 Too many requests error encountered')
-                # Wait for 30 seconds before retrying.
-                time.sleep(DEFAULT_WAIT)
-                continue
-            # Retry before raising exception for all errors.
-            elif retry_number == DEFAULT_RETRIES - 1:
-                response.raise_for_status()
+        url = self.notification_config.get('webhook_url')
+        response = requests.post(url, json={'text': payload})
+
+        LOGGER.info(response)
 
     def run(self):
         """Run the slack webhook notifier"""
