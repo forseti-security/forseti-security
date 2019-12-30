@@ -18,6 +18,7 @@ import requests
 from retrying import retry
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import retryable_exceptions
 from google.cloud.forseti.notifier.notifiers import base_notification
 
 LOGGER = logger.get_logger(__name__)
@@ -71,7 +72,8 @@ class SlackWebhook(base_notification.BaseNotification):
                 self._dump_slack_output(violation.get('violation_data'), 1))
 
     # Wait 30 seconds before retrying: https://api.slack.com/docs/rate-limits
-    @retry(wait_exponential_multiplier=30000, wait_exponential_max=60000,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
+           wait_exponential_multiplier=30000, wait_exponential_max=60000,
            stop_max_attempt_number=2)
     def _send(self, payload):
         """Sends a post to a Slack webhook url
