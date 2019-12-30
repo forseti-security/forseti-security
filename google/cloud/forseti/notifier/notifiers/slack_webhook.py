@@ -111,3 +111,4 @@ class SlackWebhook(base_notification.BaseNotification):
                 self._send(payload=webhook_payload)
             except Exception: # pylint: disable=broad-except
                 LOGGER.exception('Post was not sent to Slack webhook.')
+
