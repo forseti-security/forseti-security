@@ -14,6 +14,7 @@
 """Slack webhook notifier to perform notifications."""
 
 from builtins import str
+import time
 import requests
 
 from google.cloud.forseti.common.util import logger
@@ -22,6 +23,13 @@ from google.cloud.forseti.notifier.notifiers import base_notification
 LOGGER = logger.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
+
+DEFAULT_RETRIES = 2
+# 'Retry-After' (seconds) is not always set in the header of the response
+# received from Slack API. Hence, setting the default wait to 30 seconds based
+# on Slack rate limits documentation.
+# https://api.slack.com/docs/rate-limits
+DEFAULT_WAIT = 3
 
 
 class SlackWebhook(base_notification.BaseNotification):
@@ -75,10 +83,21 @@ class SlackWebhook(base_notification.BaseNotification):
         Args:
             payload (str): Payload data to send to slack.
         """
-        url = self.notification_config.get('webhook_url')
-        request = requests.post(url, json={'text': payload})
-
-        LOGGER.info(request)
+        for retry_number in range(DEFAULT_RETRIES):
+            url = self.notification_config.get('webhook_url')
+            response = requests.post(url, json={'text': payload})
+            if response.status_code == 200:
+                LOGGER.info('Post was successfully sent to Slack webhook: %s',
+                            response)
+                break
+            elif response.status_code == 429:
+                LOGGER.debug('HTTP 429 Too many requests error encountered')
+                # Wait for 30 seconds before retrying.
+                time.sleep(DEFAULT_WAIT)
+                continue
+            # Retry before raising exception for all errors.
+            elif retry_number == DEFAULT_RETRIES - 1:
+                response.raise_for_status()
 
     def run(self):
         """Run the slack webhook notifier"""
@@ -88,4 +107,7 @@ class SlackWebhook(base_notification.BaseNotification):
 
         for violation in self.violations:
             webhook_payload = self._compose(violation=violation)
-            self._send(payload=webhook_payload)
+            try:
+                self._send(payload=webhook_payload)
+            except Exception: # pylint: disable=broad-except
+                LOGGER.exception('Post was not sent to Slack webhook.')
