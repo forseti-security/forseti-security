@@ -76,7 +76,7 @@ class SlackWebhook(base_notification.BaseNotification):
            wait_exponential_multiplier=30000, wait_exponential_max=60000,
            stop_max_attempt_number=2)
     def _send(self, payload):
-        """Sends a post to a Slack webhook url
+        """Sends a message to a Slack webhook url
 
         Args:
             payload (str): Payload data to send to slack.
@@ -97,4 +97,4 @@ class SlackWebhook(base_notification.BaseNotification):
             try:
                 self._send(payload=webhook_payload)
             except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('Post was not sent to Slack webhook.')
+                LOGGER.exception('Failed to send a message to a channel.')
