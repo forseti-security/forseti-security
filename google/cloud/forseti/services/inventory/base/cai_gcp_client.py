@@ -1148,25 +1148,22 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
-    def fetch_crm_organization_access_policy(self, org_id):
-        """Gets access policy in an organization from Cloud Asset data.
+    def iter_crm_org_access_policies(self, org_id):
+        """Iterate access policies in an organization from Cloud Asset data.
 
         Args:
             org_id (str): id of the organization to get the Policy.
 
-        Returns:
-            dict:  Access policy of Organization.
+        Yields:
+            dict: Generator of access policies for an Organization.
         """
-        resource = self.dao.fetch_cai_asset(
+        resource = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        if resource:
-            return resource
-
-        # Clusters with no Access policy return an empty dict.
-        return {}, None
+        for access_policy in resource:
+            yield access_policy
 
     def iter_crm_organization_access_levels(self, access_policy_id):
         """Iterate access levels from Cloud Asset data.
@@ -1219,6 +1216,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         for org_policy in resources:
             data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
             yield data[0], metadata
 
     def iter_crm_project_org_policies(self, project_number):
@@ -1238,6 +1237,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         for org_policy in resources:
             data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
             yield data[0], metadata
 
     def iter_crm_folder_org_policies(self, folder_id):
@@ -1256,6 +1257,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         for org_policy in resources:
             data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
             yield data[0], metadata
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):

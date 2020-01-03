@@ -2173,7 +2173,7 @@ class BillingAccountIterator(resource_iter_class_factory(
 
 class ResourceManagerOrganizationAccessPolicyIterator(
         resource_iter_class_factory(
-            api_method_name='fetch_crm_organization_access_policy',
+            api_method_name='iter_crm_org_access_policies',
             resource_name='crm_access_policy',
             api_method_arg_key='name')):
     """The Resource iterator implementation for Access Policy."""
