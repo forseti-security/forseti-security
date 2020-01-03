@@ -378,7 +378,7 @@ class Inventory(BASE):
 
         parent = resource.parent()
         iam_policy = resource.get_iam_policy()
-        org_policy = resource.get_org_policy()
+        org_policies = resource.get_org_policy()
         access_policy = resource.get_access_policy()
         gcs_policy = resource.get_gcs_policy()
         dataset_policy = resource.get_dataset_policy()
@@ -418,12 +418,13 @@ class Inventory(BASE):
                 full_name=cls._get_policy_full_name(resource, 'iam_policy'),
                 resource_data=json.dumps(iam_policy, sort_keys=True)))
 
-        if org_policy:
-            policy_rows.append(dict(
-                base_row,
-                category=Categories.org_policy,
-                full_name=cls._get_policy_full_name(resource, 'org_policy'),
-                resource_data=json.dumps(org_policy, sort_keys=True)))
+        if org_policies:
+            for org_policy, _ in org_policies:
+                policy_rows.append(dict(
+                    base_row,
+                    category=Categories.org_policy,
+                    full_name=cls._get_policy_full_name(resource, 'org_policy'),
+                    resource_data=json.dumps(org_policy, sort_keys=True)))
 
         if access_policy:
             policy_rows.append(dict(
