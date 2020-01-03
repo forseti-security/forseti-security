@@ -1155,14 +1155,14 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             org_id (str): id of the organization to get the Policy.
 
         Yields:
-            dict: Generator of access policies for an Organization.
+            dict: Generator of access policies for an organization.
         """
-        resource = self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.access_policy,
             'cloudresourcemanager.googleapis.com/Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
-        for access_policy in resource:
+        for access_policy in resources:
             yield access_policy
 
     def iter_crm_organization_access_levels(self, access_policy_id):
