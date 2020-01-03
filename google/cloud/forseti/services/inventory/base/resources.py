@@ -733,7 +733,7 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             dict: Access Policy.
         """
         try:
-            data, _ = client.fetch_crm_organization_access_policy(self['name'])
+            data, _ = client.iter_crm_org_access_policies(self['name'])
             return data
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Access Policy: %s', e)
