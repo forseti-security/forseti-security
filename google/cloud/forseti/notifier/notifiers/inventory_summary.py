@@ -179,9 +179,14 @@ class InventorySummary(object):
                                  email_subject=email_subject,
                                  email_content=email_content,
                                  content_type='text/html')
-            LOGGER.debug('Inventory summary sent successfully by email.')
+            log_message = f'Inventory summary email successfully sent with ' \
+                          f'subject: {email_subject}.'
+            LOGGER.debug(log_message)
+            self.progress_queue.put(log_message)
         except util_errors.EmailSendError:
-            LOGGER.exception('Unable to send Inventory summary email')
+            log_message = 'Unable to send Inventory summary email.'
+            LOGGER.exception(log_message)
+            self.progress_queue.put(log_message)
 
     @staticmethod
     def transform_to_template(data):

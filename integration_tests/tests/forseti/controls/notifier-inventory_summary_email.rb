@@ -45,13 +45,13 @@ control "notifier-inventory-summary-email" do
   # Scan
   describe command("forseti model use #{model_name} && forseti scanner run") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/Scanner Index ID: .*([0-9]*) is created/) }
-    its('stdout') { should not match(/Error occurred during the scanning process/) }
+    its('stdout') { should match(/Scanner Index ID: ([0-9]*) is created/) }
   end
 
   # Run notifier
   describe command("forseti notifier run") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match(/Inventory summary email successfully sent with subject: #{@inventory_id}/) }
     its('stdout') { should match(/Notification completed!/) }
   end
 
