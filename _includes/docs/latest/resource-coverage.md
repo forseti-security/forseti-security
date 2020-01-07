@@ -1,8 +1,7 @@
 {: .table .table-striped}
-| Resource                                |
-| --------------------------------------- |
-| [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) |
-| [App Engine Instances](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions.instances) |
+| Resource coverage by CAI   | Resource coverage by API
+| ---------------------------| -----------
+| [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) | [App Engine Instances](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions.instances)
 | [App Engine Services](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services) |
 | [App Engine Version](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions) 
 | [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) |
