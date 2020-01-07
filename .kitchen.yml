@@ -70,6 +70,7 @@ suites:
             - scanner-config-validator-gcs-policy
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
+            - scanner-firewall-scanner
             - scanner-run
           hosts_output: forseti-server-vm-ip
           user: ubuntu

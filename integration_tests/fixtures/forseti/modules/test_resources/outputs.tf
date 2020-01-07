@@ -24,6 +24,11 @@ output "enforcer_allow_all_icmp_rule_name" {
   value = google_compute_firewall.enforcer_allow_all_icmp_rule.name
 }
 
+output "firewall-allow-all-ingress-name" {
+  description = "Firewall rule name created for the firewall scanner test"
+  value       = google_compute_firewall.firewall_allow_all_ingress.name
+}
+
 output "inventory-cai-eu-bucket-name" {
   description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
   value = google_storage_bucket.inventory_cai_eu.name
