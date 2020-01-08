@@ -2,21 +2,21 @@
 | Resource coverage by CAI   | Resource coverage by API
 | ---------------------------| -----------
 | [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) | [App Engine Instances](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions.instances)
-| [App Engine Services](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services) |
-| [App Engine Version](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions) 
-| [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) |
-| [BigQuery Datasets](https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets) |
-| [BigQuery Tables](https://cloud.google.com/bigquery/docs/reference/rest/v2/tables) |
-| [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) |
-| [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
-| [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) |
-| [Cloud Access Levels](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.accessLevels) |
-| [Cloud Access Policies](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies) |
-| [Cloud APIs Configuration](https://cloud.google.com/apis/) |
-| [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
-| [Cloud Dataproc Clusters](https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters) |
-| [Cloud IAM Grantable Roles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
-| [Cloud IAM Organization Roles](https://cloud.google.com/iam/reference/rest/v1/organizations.roles) |
+| [App Engine Services](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services) | [Cloud Dataproc Jobs](https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.jobs)
+| [App Engine Version](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions) | [Compute Engine Routes](https://cloud.google.com/compute/docs/reference/rest/v1/routes)
+| [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) | [Groups Settings](https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups)
+| [BigQuery Datasets](https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets) | [G Suite Groups](https://developers.google.com/admin-sdk/directory/v1/reference/groups)
+| [BigQuery Tables](https://cloud.google.com/bigquery/docs/reference/rest/v2/tables) | [G Suite Group Members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members)
+| [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) | [G Suite Users](https://developers.google.com/admin-sdk/directory/v1/guides/manage-users)
+| [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) | [Kubernetes Engine NodePools](https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones.clusters.nodePools)
+| [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) | [Kubernetes Engine Services](https://kubernetes.io/docs/concepts/services-networking/service/)
+| [Cloud Access Levels](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.accessLevels) | [Project Billing](https://cloud.google.com/billing/reference/rest/v1/billingAccounts.projects)
+| [Cloud Access Policies](https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies) | [Project Liens](https://cloud.google.com/resource-manager/reference/rest/v1/liens)
+| [Cloud APIs Configuration](https://cloud.google.com/apis/) | [Stackdriver Billing Account Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/billingAccounts.sinks/create)
+| [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) | [Stackdriver Folder Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/folders.sinks)
+| [Cloud Dataproc Clusters](https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters) | [Stackdriver Organization Sinks](https://cloud.google.com/logging/docs/reference/v2/rest/v2/organizations.sinks)
+| [Cloud IAM Grantable Roles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |  [Service Management](https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/)
+| [Cloud IAM Organization Roles](https://cloud.google.com/iam/reference/rest/v1/organizations.roles) | [Storage Object IAM](https://cloud.google.com/storage/docs/json_api/v1/objects)
 | [Cloud IAM Project Roles](https://cloud.google.com/iam/reference/rest/v1/projects.roles) |
 | [Cloud IAM Roles](https://cloud.google.com/iam/reference/rest/v1/roles) |
 | [Cloud KMS CryptoKeys](https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys) |
