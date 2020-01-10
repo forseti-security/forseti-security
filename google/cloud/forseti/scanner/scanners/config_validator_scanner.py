@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,28 @@
 # limitations under the License.
 
 """Config Validator Scanner."""
+import os
 
 from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    cv_data_converter)
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    validator_client)
+    cv_data_converter, errors, validator_client)
 from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
     import data_model_builder
 
 
 LOGGER = logger.get_logger(__name__)
+POLICY_LIBRARY_PATH = os.environ.get('POLICY_LIBRARY_HOME',
+                                     '/home/ubuntu/forseti-security')
+POLICY_LIBRARY_CONSTRAINTS_PATH = os.path.join(POLICY_LIBRARY_PATH,
+                                               'policy-library',
+                                               'policies',
+                                               'constraints')
+POLICY_LIBRARY_LIB_PATH = os.path.join(POLICY_LIBRARY_PATH,
+                                       'policy-library',
+                                       'lib')
 
 
 class ConfigValidatorScanner(base_scanner.BaseScanner):
@@ -145,6 +153,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 yield cv_data_converter.convert_data_to_cv_asset(
                     resource, data_type)
 
+    # TODO: break up the this method.
     def _retrieve_flattened_violations(self, iam_policy=False):
         """Retrieve flattened violations by flattening the config validator
         violations returned by the config validator client.
@@ -180,9 +189,9 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         it will be hard for Forseti to retrieve the right resource_data for the
         corresponding violation types.
         """
-        # TODO: break up the _retrieve_flattened_violations method.
-        # Retrieving resource violations.
+        ConfigValidatorScanner.verify_policy_library()
 
+        # Retrieving resource violations.
         for flattened_violations in self._retrieve_flattened_violations():
             # Write resource violations to the db.
             self._output_results(flattened_violations)
@@ -191,3 +200,41 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 iam_policy=True):
             # Write iam violations to the db.
             self._output_results(flattened_violations)
+
+    @staticmethod
+    def verify_policy_library():
+        """Verify the Config Validator Policy Library exists and is populated
+        with constraints and that the lib directory exists.
+
+        Returns: Nothing
+
+        Raises:
+            ConfigValidatorPolicyLibraryError: if the Policy Library is not
+             configured correctly.
+        """
+        if not os.path.isdir(POLICY_LIBRARY_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library directory is missing: '
+                f'{POLICY_LIBRARY_PATH}')
+
+        # Verify constraints
+        if not os.path.isdir(POLICY_LIBRARY_CONSTRAINTS_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library constraints directory is '
+                f'missing: {POLICY_LIBRARY_CONSTRAINTS_PATH}')
+
+        if not os.listdir(POLICY_LIBRARY_CONSTRAINTS_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library constraints directory is '
+                f'empty: {POLICY_LIBRARY_CONSTRAINTS_PATH}')
+
+        # Verify lib
+        if not os.path.isdir(POLICY_LIBRARY_LIB_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library lib directory is '
+                f'missing: {POLICY_LIBRARY_LIB_PATH}')
+
+        if not os.listdir(POLICY_LIBRARY_LIB_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library lib directory is '
+                f'empty: {POLICY_LIBRARY_LIB_PATH}')
