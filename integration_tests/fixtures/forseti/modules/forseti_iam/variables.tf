@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-variable "domain" {
-  description = "The domain associated with the GCP Organization ID"
-}
-
 variable "forseti_server_service_account" {
-  description = "Forseti Server service account"
-}
-
-variable "forseti_server_storage_bucket" {
-  description = "The Forseti Server GCS bucket name"
-}
-
-variable "org_id" {
-  description = "The organization ID"
+  description = "The email of the Forseti Server service account"
 }
 
 variable "project_id" {
-  description = "The organization ID"
+  description = "The ID of an existing Google project where Forseti will be installed"
+}
+
+variable "random_test_id" {
+  description = "Random test Id generated for this test run"
 }

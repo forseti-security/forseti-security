@@ -13,33 +13,43 @@
 * limitations under the License.
 */
 
-resource "random_id" "random_test_id" {
-  byte_length = 8
-}
+#-------------------------#
+# enforcer-remediates_non_compliant_rule.rb: Create a firewall rule to test it gets removed
+#-------------------------#
+resource "google_compute_firewall" "enforcer_allow_all_icmp_rule" {
+  name                    = "forseti-server-allow-icmp-${var.random_test_id}"
+  project                 = var.project_id
+  network                 = "default"
+  priority                = "100"
+  source_ranges           = ["10.0.0.0/32"]
 
-resource "random_pet" "random_name_generator" {
+  allow {
+    protocol = "icmp"
+  }
 }
 
 #-------------------------#
-# inventory-create.rb: Create KMS resources for inventory testing
+# inventory-cai_enabled_vs_disabled.rb: Create a bucket in the EU
 #-------------------------#
-resource "google_kms_key_ring" "test-keyring" {
+resource "google_storage_bucket" "inventory_cai_eu" {
+  name     = "foresti-test-bucket-eu-${var.random_test_id}"
   project  = var.project_id
-  name     = "keyring-${random_pet.random_name_generator.id}"
-  location = "global"
+  location = "EU"
 }
 
-resource "google_kms_crypto_key" "test-crypto-key" {
-  name            = "crypto-key-${random_pet.random_name_generator.id}"
-  key_ring        = google_kms_key_ring.test-keyring.self_link
-  rotation_period = "100000s"
+resource "google_storage_bucket_access_control" "inventory_cai_eu_acl" {
+  bucket = google_storage_bucket.bucket_acl_scanner.name
+  role   = "READER"
+  entity = "user-${var.forseti_server_service_account}"
+
+  depends_on = [google_storage_bucket.inventory_cai_eu]
 }
 
 #-------------------------#
 # scanner-bucket_acl_scanner.rb: Create a bucket with AllAuth + All Users Reader ACL
 #-------------------------#
 resource "google_storage_bucket" "bucket_acl_scanner" {
-  name     = "foresti-test-bucket-${random_id.random_test_id.hex}"
+  name     = "foresti-test-bucket-${var.random_test_id}"
   project  = var.project_id
   location = "US"
 }
@@ -61,4 +71,23 @@ resource "google_storage_bucket_access_control" "bucket_acl_scanner_all_users_ac
     google_storage_bucket.bucket_acl_scanner,
     google_storage_bucket_access_control.bucket_acl_scanner_all_auth_acl
   ]
+}
+
+#-------------------------#
+# scanner-firewall_scanner.rb: Create a disabled firewall rule allowing all ingress
+#-------------------------#
+resource "google_compute_firewall" "firewall_allow_all_ingress" {
+  name                    = "forseti-allow-all-ingress-${var.random_test_id}"
+  description             = "Forseti test firewall rule for firewall scanner"
+  disabled                = true
+  network                 = "default"
+  priority                = "1000"
+  project                 = var.project_id
+  source_ranges           = ["10.0.0.0/32"]
+  source_tags             = ["forseti-test-tag"]
+  target_tags             = ["forseti-test-tag"]
+
+  allow {
+    protocol = "all"
+  }
 }

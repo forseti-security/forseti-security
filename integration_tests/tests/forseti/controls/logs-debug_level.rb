@@ -27,19 +27,14 @@ control "logs-debug-level" do
   end
   instance_id = JSON.parse(instance_describe_cmd.stdout)["id"]
 
-  # Set the log level to debug
-  describe command("forseti server log_level set debug") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match /isSuccess": true/}
-  end
-
   # Note the timestamp
   timestamp = Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')
 
-  # Create inventory
-  inventory_cmd = command("forseti inventory create --import_as #{random_string}")
+  # Set debug log level to debug and create inventory
+  inventory_cmd = command("forseti server log_level set debug && forseti inventory create --import_as #{random_string}")
   describe inventory_cmd do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match /isSuccess": true/}
   end
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(inventory_cmd.stdout)[1]
 
@@ -48,9 +43,9 @@ control "logs-debug-level" do
   end
 
   # Get all debug logs for the instance after the noted timestamp
-  gcloud_log_read_cmd = command("gcloud logging read 'resource.type=gce_instance AND resource.labels.instance_id=#{instance_id} AND logName=projects/#{project_id}/logs/forseti AND severity=DEBUG AND timestamp>=\"#{timestamp}\"' --limit=10 | grep -c \"severity: DEBUG\"")
-
+  gcloud_log_read_cmd = command("sudo gcloud logging read 'resource.type=gce_instance AND resource.labels.instance_id=#{instance_id} AND logName=projects/#{project_id}/logs/forseti AND severity=DEBUG AND timestamp>=\"#{timestamp}\"' --limit=10 | grep -c \"severity: DEBUG\"")
   describe gcloud_log_read_cmd do
+    its('exit_status') { should eq 0 }
     its('stdout') { should match /10/ }
   end
 

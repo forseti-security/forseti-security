@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ User=ubuntu
 Restart=always
 RestartSec=3
 ExecStart=$FORSETI_COMMAND
+Environment="POLICY_LIBRARY_HOME=${POLICY_LIBRARY_HOME}"
 [Install]
 WantedBy=multi-user.target
 EOF

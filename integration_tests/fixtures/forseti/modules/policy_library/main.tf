@@ -16,29 +16,22 @@
 
 locals {
   files = [
-    "rules/enabled_apis_rules.yaml",
-    "rules/location_rules.yaml",
+    "constraints/cloudsql_location.yaml",
+    "constraints/compute_zone.yaml",
   ]
 }
 
-data "template_file" "main" {
+data "template_file" "constraints" {
   count = length(local.files)
   template = file(
     "${path.module}/templates/${element(local.files, count.index)}",
   )
-
-  vars = {
-    domain                         = var.domain
-    forseti_server_service_account = var.forseti_server_service_account
-    org_id                         = var.org_id
-    project_id                     = var.project_id
-  }
 }
 
 resource "google_storage_bucket_object" "main" {
   count   = length(local.files)
-  name    = element(local.files, count.index)
-  content = element(data.template_file.main.*.rendered, count.index)
+  name    = "policy-library/policies/${element(local.files, count.index)}"
+  content = element(data.template_file.constraints.*.rendered, count.index)
   bucket  = var.forseti_server_storage_bucket
 
   lifecycle {

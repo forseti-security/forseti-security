@@ -18,12 +18,26 @@ variable "billing_account" {
   description = "GCP Organization billing account details"
 }
 
+variable "config_validator_enabled" {
+  description = "Config Validator scanner enabled"
+  default     = true
+}
+
 variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
 
+variable "forseti_version" {
+  description = "The version of Forseti to deploy"
+  default = "master"
+}
+
 variable "gsuite_admin_email" {
   description = "The email of a GSuite super admin, used for pulling user directory information *and* sending notifications."
+}
+
+variable "inventory_performance_cai_dump_paths" {
+  description = "GCS paths of the CAI dump files to be used for the inventory performance test"
 }
 
 variable "org_id" {
@@ -32,9 +46,4 @@ variable "org_id" {
 
 variable "project_id" {
   description = "The ID of an existing Google project where Forseti will be installed"
-}
-
-variable "forseti_version" {
-  description = "The version of Forseti to deploy"
-  default = "master"
 }

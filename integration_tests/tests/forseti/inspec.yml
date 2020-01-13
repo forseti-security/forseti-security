@@ -17,7 +17,13 @@ attributes:
 - name: bucket_acl_scanner_bucket_name
   required: true
   type: string
+- name: enforcer_allow_all_icmp_rule_name
+  required: true
+  type: string
 - name: forseti-cai-storage-bucket
+  required: true
+  type: string
+- name: firewall-allow-all-ingress-name
   required: true
   type: string
 - name: forseti-client-service-account
@@ -50,12 +56,12 @@ attributes:
 - name: forseti-server-vm-ip
   required: true
   type: string
-- name: scanner-test-big-query-id
+- name: inventory-cai-eu-bucket-name
   required: true
   type: string
-- name: kms_resources_names
+- name: inventory-performance-cai-dump-paths
   required: true
-  type: array
+  type: string
 - name: network_project
   required: false
   type: string
@@ -63,13 +69,6 @@ attributes:
   required: true
   type: string
 - name: project_id
-  required: true
-  type: string
-  default: ''
-- name: random_test_id
-  required: true
-  type: string
-- name: scanner_test_model_name
   required: true
   type: string
 - name: suffix

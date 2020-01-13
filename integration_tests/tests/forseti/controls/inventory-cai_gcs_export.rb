@@ -15,21 +15,27 @@
 require 'securerandom'
 require 'json'
 
-org_id = attribute('org_id')
 forseti_cai_storage_bucket = attribute('forseti-cai-storage-bucket')
-
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
+org_id = attribute('org_id')
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "inventory-cai-gcs-export" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  # Act
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match /"id": "([0-9]*)"/}
+  end
+  @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
   gs_file = "gs://#{forseti_cai_storage_bucket}/organizations-#{org_id}-resource-#{@inventory_id}.dump"
 
-  describe command("gsutil ls #{gs_file} | grep #{gs_file}") do
+  # Assert
+  describe command("sudo gsutil ls #{gs_file}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (gs_file)}
   end
 
-  describe command("forseti model delete #{random_string}") do
+  # Cleanup
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 

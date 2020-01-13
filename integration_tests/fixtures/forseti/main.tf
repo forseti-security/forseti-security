@@ -21,6 +21,10 @@ provider "tls" {
   version = "~> 2.0"
 }
 
+resource "random_id" "random_test_id" {
+  byte_length = 8
+}
+
 #-------------------------#
 # Bastion Host
 #-------------------------#
@@ -49,10 +53,11 @@ module "bastion" {
 module "forseti" {
   source = "git::github.com/forseti-security/terraform-google-forseti"
 
-  project_id      = var.project_id
-  org_id          = var.org_id
-  domain          = var.domain
-  forseti_version = var.forseti_version
+  project_id               = var.project_id
+  org_id                   = var.org_id
+  domain                   = var.domain
+  forseti_version          = var.forseti_version
+  config_validator_enabled = var.config_validator_enabled
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
@@ -130,23 +135,45 @@ resource "null_resource" "install-mysql-client" {
 }
 
 #-------------------------#
-# Forseti Server Rules
+# Forseti IAM
+#-------------------------#
+module "forseti_iam" {
+  source                         = "./modules/forseti_iam"
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  project_id                     = var.project_id
+  random_test_id                 = random_id.random_test_id.hex
+}
+
+#-------------------------#
+# Forseti Rules
 #-------------------------#
 module "forseti_server_rules" {
-  source                        = "./modules/rules"
-  domain                        = var.domain
+  source                         = "./modules/rules"
+  domain                         = var.domain
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  forseti_server_storage_bucket  = module.forseti.forseti-server-storage-bucket
+  org_id                         = var.org_id
+  project_id                     = var.project_id
+}
+
+#-------------------------#
+# Policy Library GCS
+#-------------------------#
+module "policy_library" {
+  source                        = "./modules/policy_library"
   forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
-  org_id                        = var.org_id
 }
 
 #-------------------------#
 # Test Resources
 #-------------------------#
 module "test_resources" {
-  source     = "./modules/test_resources"
-  billing_account = var.billing_account
-  org_id          = var.org_id
-  project_id      = var.project_id
+  source                         = "./modules/test_resources"
+  billing_account                = var.billing_account
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  org_id                         = var.org_id
+  project_id                     = var.project_id
+  random_test_id                 = random_id.random_test_id.hex
 }
 
 resource "google_bigquery_dataset" "scanner-test-bigquery-dataset" {
