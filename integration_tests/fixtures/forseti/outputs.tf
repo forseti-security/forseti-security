@@ -120,6 +120,11 @@ output "enforcer_allow_all_icmp_rule_name" {
   value       = module.test_resources.enforcer_allow_all_icmp_rule_name
 }
 
+output "firewall-allow-all-ingress-name" {
+  description = "Firewall rule name created for the firewall scanner test"
+  value       = module.test_resources.firewall-allow-all-ingress-name
+}
+
 output "inventory-performance-cai-dump-paths" {
   description = "GCS paths of the CAI dump files to be used for the inventory performance test"
   value       = var.inventory_performance_cai_dump_paths

@@ -23,6 +23,9 @@ attributes:
 - name: forseti-cai-storage-bucket
   required: true
   type: string
+- name: firewall-allow-all-ingress-name
+  required: true
+  type: string
 - name: forseti-client-service-account
   required: true
   type: string
