@@ -83,7 +83,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'full_name': full_name,
                 'rule_index': 0,
                 'rule_name': violation.constraint,
-                'violation_type': 'CV '+violation.constraint,
+                'violation_type': 'CV ' + violation.constraint,
                 'violation_data': json_format.MessageToDict(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
