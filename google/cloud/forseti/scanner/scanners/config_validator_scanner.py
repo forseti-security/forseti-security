@@ -40,8 +40,6 @@ POLICY_LIBRARY_LIB_PATH = os.path.join(POLICY_LIBRARY_PATH,
 class ConfigValidatorScanner(base_scanner.BaseScanner):
     """Config Validator Scanner."""
 
-    VIOLATION_TYPE = 'CONFIG_VALIDATOR_VIOLATION'
-
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
         """Constructor for the base pipeline.
@@ -85,7 +83,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'full_name': full_name,
                 'rule_index': 0,
                 'rule_name': violation.constraint,
-                'violation_type': self.VIOLATION_TYPE,
+                'violation_type': 'CV '+violation.constraint,
                 'violation_data': json_format.MessageToDict(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
