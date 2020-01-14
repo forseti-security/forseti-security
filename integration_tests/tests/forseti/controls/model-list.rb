@@ -12,28 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
 require 'json'
+require 'securerandom'
 
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
+model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "model-list" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
 
-  describe command("forseti model use #{random_string}") do
+  describe command("forseti model use #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 
   describe command("forseti model list") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{random_string}/)}
+    its('stdout') { should match (/#{model_name}/) }
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti model delete #{random_string}") do
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 end
