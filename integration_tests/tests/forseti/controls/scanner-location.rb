@@ -17,15 +17,17 @@ require 'securerandom'
 
 db_password = attribute('forseti-cloudsql-password')
 db_user_name = attribute('forseti-cloudsql-user')
-firewall_name = attribute('firewall-allow-all-ingress-name')
+# firewall_name = attribute('firewall-allow-all-ingress-name')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control 'scanner-firewall-scanner' do
+control 'scanner-location' do
   # Arrange
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
-  describe command("forseti model use #{model_name}") do
+  inventory_create = command("forseti inventory create --import_as #{model_name}")
+  describe inventory_create do
     its('exit_status') { should eq 0 }
+    its('stdout') { should match /"id": "([0-9]*)"/}
   end
+  @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
   # Act
   describe command("forseti scanner run") do
@@ -34,8 +36,8 @@ control 'scanner-firewall-scanner' do
   end
 
   # Assert Firewall violation found
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --execute \"SELECT COUNT(*) FROM forseti_security.violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'FIREWALL_BLACKLIST_VIOLATION' AND V.resource_name = '#{firewall_name}' AND V.rule_name = 'prevent_allow_all_ingress';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --execute \"SELECT COUNT(*) FROM forseti_security.violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'LOCATION_VIOLATION' AND V.resource_name = '#{firewall_name}';\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/1/) }
+    its('stdout') { should match(/2/) }
   end
 end

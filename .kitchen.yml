@@ -71,6 +71,7 @@ suites:
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
             - scanner-firewall-scanner
+            - scanner-location
             - scanner-run
           hosts_output: forseti-server-vm-ip
           user: ubuntu
