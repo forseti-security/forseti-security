@@ -91,3 +91,12 @@ resource "google_compute_firewall" "firewall_allow_all_ingress" {
     protocol = "all"
   }
 }
+
+#-------------------------#
+# scanner-location.rb: Create a bucket in the EU
+#-------------------------#
+resource "google_storage_bucket" "inventory_cai_eu" {
+  name     = "foresti-test-scanner-location-bucket-eu-${var.random_test_id}"
+  project  = var.project_id
+  location = "EU"
+}
