@@ -145,18 +145,6 @@ module "forseti_iam" {
 }
 
 #-------------------------#
-# Forseti Rules
-#-------------------------#
-module "forseti_server_rules" {
-  source                         = "./modules/rules"
-  domain                         = var.domain
-  forseti_server_service_account = module.forseti.forseti-server-service-account
-  forseti_server_storage_bucket  = module.forseti.forseti-server-storage-bucket
-  org_id                         = var.org_id
-  project_id                     = var.project_id
-}
-
-#-------------------------#
 # Policy Library GCS
 #-------------------------#
 module "policy_library" {
@@ -174,4 +162,16 @@ module "test_resources" {
   org_id                         = var.org_id
   project_id                     = var.project_id
   random_test_id                 = random_id.random_test_id.hex
+}
+
+#-------------------------#
+# Forseti Rules
+#-------------------------#
+module "forseti_server_rules" {
+  source                         = "./modules/rules"
+  domain                         = var.domain
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  forseti_server_storage_bucket  = module.forseti.forseti-server-storage-bucket
+  org_id                         = var.org_id
+  project_id                     = var.project_id
 }
