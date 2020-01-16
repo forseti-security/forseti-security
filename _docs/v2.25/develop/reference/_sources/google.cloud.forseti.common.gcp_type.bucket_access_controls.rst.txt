@@ -1,7 +1,0 @@
-google.cloud.forseti.common.gcp\_type.bucket\_access\_controls module
-=====================================================================
-
-.. automodule:: google.cloud.forseti.common.gcp_type.bucket_access_controls
-    :members:
-    :undoc-members:
-    :show-inheritance:

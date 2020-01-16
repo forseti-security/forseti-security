@@ -1,7 +1,0 @@
-google.cloud.forseti.common.util.email.mailjet\_connector module
-================================================================
-
-.. automodule:: google.cloud.forseti.common.util.email.mailjet_connector
-    :members:
-    :undoc-members:
-    :show-inheritance:

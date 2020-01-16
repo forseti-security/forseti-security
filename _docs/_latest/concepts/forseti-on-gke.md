@@ -13,7 +13,7 @@ This page describes the architecture of Forseti when deployed on the Google Kube
 
 ## Deployment Architecture
 
-In a traditional Forseti installation, the compute resources are deployed as GCE virtual machines (VM).  The Forseti server VM executes the forseti_server process, listening for requests to take action.  On the Forseti server is also a Linux cronjob that periodically invokes the server to build inventory and a model, scan, and notify on any violations.  The Forseti client VM provides a CLI where a user can invoke these same functions as well as execute the IAM explain function.
+In a traditional Forseti installation, the compute resources are deployed as GCE virtual machines (VM).  The Forseti server VM executes the forseti_server process, listening for requests to take action.  On the Forseti server is also a Linux cron job that periodically invokes the server to build inventory and a model, scan, and notify on any violations.  The Forseti client VM provides a CLI where a user can invoke these same functions as well as execute the IAM explain function.
 
 In Forseti on-GKE, the core compute resources are deployed in containers: the server and orchestrator.  These containers are each wrapped in [Kubernetes Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/); the forseti-server and forseti-orchestrator pods respectively.  
 
