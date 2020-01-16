@@ -40,7 +40,7 @@ control 'scanner-location-scanner' do
     its('stdout') { should match(/Scanner Index ID: (.*[0-9].*) is created/) }
   end
 
-  # Assert Firewall violation found
+  # Assert location violation found
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --execute \"SELECT COUNT(*) FROM forseti_security.violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'LOCATION_VIOLATION' AND V.rule_name = 'All buckets in project must not be in EU';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match(/2/) }
