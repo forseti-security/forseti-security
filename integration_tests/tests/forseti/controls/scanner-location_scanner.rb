@@ -20,15 +20,10 @@ db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_storage_bucket = attribute('forseti-server-storage-bucket')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control 'scanner-location' do
+control 'scanner-location-scanner' do
   # Arrange
   # Copy the constraints from GCS
-  describe command("sudo gsutil cp -r gs://#{forseti_server_storage_bucket}/rules /home/ubuntu/forseti-security") do
-    its('exit_status') { should eq 0 }
-  end
-
-  # Restart Config Validator
-  describe command("sudo systemctl restart config-validator") do
+  describe command("sudo gsutil cp -r gs://#{forseti_server_storage_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
   end
 
@@ -39,12 +34,8 @@ control 'scanner-location' do
   end
   @inventory_id = /"id": "([0-9]*)"/.match(inventory_create.stdout)[1]
 
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-  end
-
   # Act
-  describe command("forseti scanner run") do
+  describe command("forseti model use #{model_name} && forseti scanner run") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match(/Scanner Index ID: (.*[0-9].*) is created/) }
   end
@@ -53,5 +44,13 @@ control 'scanner-location' do
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --execute \"SELECT COUNT(*) FROM forseti_security.violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.violation_type = 'LOCATION_VIOLATION' AND V.rule_name = 'All buckets in project must not be in EU';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match(/2/) }
+  end
+
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  describe command("forseti model delete #{model_name}") do
+    its('exit_status') { should eq 0 }
   end
 end
