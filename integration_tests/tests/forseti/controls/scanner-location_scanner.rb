@@ -22,7 +22,7 @@ model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control 'scanner-location-scanner' do
   # Arrange
-  # Copy the constraints from GCS
+  # Copy the rules from GCS
   describe command("sudo gsutil cp -r gs://#{forseti_server_storage_bucket}/rules $FORSETI_HOME/") do
     its('exit_status') { should eq 0 }
   end
