@@ -65,6 +65,7 @@ suites:
             - logs-debug-level
             - model-create-get
             - model-delete
+            - notifier-inventory-summary-email
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
             - scanner-config-validator-gcs-policy
