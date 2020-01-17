@@ -56,11 +56,11 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         response.reason = 'Requested range not satisfiable'
         error = errors.HttpError(response, b'', uri='')
         mock_downloader.side_effect = error
-        fd = mock.MagicMock()
+        output_file_mock = mock.MagicMock()
 
         # Act
-        client = google.cloud.forseti.common.gcp_api.storage.StorageRepositoryClient()
-        result = client.objects.download_to_file('testbucket', 'testobject', fd)
+        result = self.gcs_api_client.objects.download_to_file(
+            'testbucket', 'testobject', output_file_mock)
 
         # Assert
         self.assertEqual(0, result)
