@@ -56,14 +56,13 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         response.reason = 'Requested range not satisfiable'
         error = errors.HttpError(response, b'', uri='')
         mock_downloader.side_effect = error
-        output_file_mock = mock.MagicMock()
 
         # Act
-        result = self.gcs_api_client.objects.download_to_file(
-            'testbucket', 'testobject', output_file_mock)
+        result = self.gcs_api_client.download('gs://testbucket', 'testobject')
 
         # Assert
-        self.assertEqual(0, result)
+        expected_file_size = 0
+        self.assertEqual(expected_file_size, result)
 
     def test_get_bucket_and_path_from(self):
         """Given a valid bucket object path, return the bucket and path."""
