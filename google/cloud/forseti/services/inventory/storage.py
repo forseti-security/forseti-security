@@ -348,18 +348,18 @@ class Inventory(BASE):
         Returns:
             dict: A mapping of Action: Column.
         """
-        columns_to_create = [Column('cai_resource_type',
-                                    String(512),
-                                    default=''),
-                             Column('cai_resource_name',
-                                    String(4096),
-                                    default=''),
-                             Column('full_name',
-                                    String(2048),
-                                    nullable=False)]
+        columns_to_alter = {
+            Column('category', Enum(Categories)):
+                Column('category', Enum(Categories))
+        }
 
-        schema_update_actions = {'CREATE': columns_to_create}
-        return schema_update_actions
+        columns_to_create = [
+            Column('cai_resource_type', String(512), default=''),
+            Column('cai_resource_name', String(4096), default=''),
+            Column('full_name', String(2048), nullable=False)
+        ]
+
+        return {'ALTER': columns_to_alter, 'CREATE': columns_to_create}
 
     # pylint: disable=too-many-locals
     @classmethod
