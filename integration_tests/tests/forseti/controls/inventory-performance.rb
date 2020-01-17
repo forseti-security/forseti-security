@@ -57,8 +57,15 @@ control "inventory-performance" do
     its('exit_status') { should eq 0 }
   end
 
+  describe command("forseti server log_level set debug") do
+    its('exit_status') { should eq 0 }
+  end
+
   # Act
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
+  describe command("forseti server log_level set info") do
+    its('exit_status') { should eq 0 }
+  end
 
   # Assert Inventory is successful and takes less than 12 minutes
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT I.inventory_status FROM inventory_index I where I.id=#{@inventory_id};\"") do
