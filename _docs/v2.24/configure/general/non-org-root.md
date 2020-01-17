@@ -40,7 +40,7 @@ to the target folder:
 1. If Forseti was installed with Org Admin credentials, then the org-level
    roles will be inherited on the folder-level.
 
-1. If Foresti was not installed with Org Admin credentails, then you need
+1. If Foresti was not installed with Org Admin credentials, then you need
    to grant the Forseti server service account to have the same roles on the
    target resources, as was [originally granted on the
    organization]({% link _docs/v2.24/concepts/service-accounts.md %}#the-server-service-account).
@@ -54,6 +54,9 @@ to the target folder:
    1. Use sudo gsutil to copy the `forseti_conf_server.yaml` file from GCS
    bucket to `/home/ubuntu/forseti-security/configs/`.
    1. Make the server [reload the updated configuration]({% link _docs/v2.24/use/cli/server.md %}).
+
+1. Create a [custom role](https://cloud.google.com/iam/docs/creating-custom-roles) with `storage.buckets.get` permission 
+and assign it to your Forseti server service account.
 
 ## Configure Forseti to Run on Projects
 
@@ -73,6 +76,9 @@ inferred from the environment.
 
 1. Grant project viewer role to the Forseti server service account,
 on the projects that you own.
+
+1. Create a [custom role](https://cloud.google.com/iam/docs/creating-custom-roles) with `storage.buckets.get` permission 
+and assign it to your Forseti server service account.
 
 When you run Forseti again, all the resources from the target root
 will be collected in Inventory and audited.
