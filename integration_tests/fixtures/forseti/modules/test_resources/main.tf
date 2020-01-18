@@ -95,12 +95,13 @@ resource "google_compute_firewall" "firewall_allow_all_ingress" {
 #-------------------------#
 # scanner-location_bigquery.rb: Create a bigquery with exposed dataset
 #-------------------------#
-resource "google_bigquery_dataset" "dataset" {
+resource "google_bigquery_dataset" "bigquery_scanner_test_dataset" {
   dataset_id                  = "bigquery_scanner_test_resource"
   friendly_name               = "bigquery_scanner_test_resource"
   description                 = "Should violate the BigQuery rule to search for public datasets"
   location                    = "US"
   default_table_expiration_ms = 3600000
+  project                     = var.project_id
 
   access {
     role          = "READER"
