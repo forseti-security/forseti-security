@@ -20,7 +20,7 @@ db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_storage_bucket = attribute('forseti-server-storage-bucket')
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control 'scanner-location-bigquery' do
+control 'scanner-bigquery-scanner' do
   # Arrange
   # Copy the constraints from GCS
   # describe command("sudo gsutil cp -r gs://#{forseti_server_storage_bucket}/rules $FORSETI_HOME/") do
