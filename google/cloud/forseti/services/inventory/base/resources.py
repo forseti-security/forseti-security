@@ -868,13 +868,13 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
 
     @cached('org_policy')
     def get_org_policy(self, client=None):
-        """Gets Organization policy for this organization.
+        """Gets Organization policy for this folder.
 
         Args:
             client (object): GCP API client.
 
         Returns:
-            dict: Organization Policy.
+            dict: Folder Organization Policy.
         """
         try:
             data = client.iter_crm_organization_org_policies(self['name'])
@@ -953,13 +953,13 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
 
     @cached('org_policy')
     def get_org_policy(self, client=None):
-        """Gets Organization policy for this organization.
+        """Gets Organization policy for this project.
 
         Args:
             client (object): GCP API client.
 
         Returns:
-            dict: Organization Policy.
+            dict: Project Organization Policy.
         """
         try:
             data = client.iter_crm_organization_org_policies(self['name'])
