@@ -22,11 +22,6 @@ model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control 'scanner-bigquery-scanner' do
   # Arrange
-  # Copy the constraints from GCS
-  # describe command("sudo gsutil cp -r gs://#{forseti_server_storage_bucket}/rules $FORSETI_HOME/") do
-  #   its('exit_status') { should eq 0 }
-  # end
-
   inventory_create = command("forseti inventory create --import_as #{model_name}")
   describe inventory_create do
     its('exit_status') { should eq 0 }
