@@ -54,6 +54,11 @@ output "forseti-cloudsql-user" {
   value       = module.forseti.forseti-cloudsql-user
 }
 
+output "forseti-email-sender" {
+  description = "Email address that sends the Forseti notifications"
+  value       = var.forseti_email_sender
+}
+
 output "forseti-server-vm-ip" {
   description = "Forseti Server VM private IP address"
   value       = module.forseti.forseti-server-vm-ip
@@ -77,6 +82,16 @@ output "forseti-server-storage-bucket" {
 output "forseti-version" {
   description = "Forseti Server storage bucket"
   value       = var.forseti_version
+}
+
+output "kms-key" {
+  description = "KMS key to be used for encrypting/decrypting test resources"
+  value       = var.kms_key
+}
+
+output "kms-keyring" {
+  description = "KMS keyring to be used for encrypting/decrypting test resources"
+  value       = var.kms_keyring
 }
 
 output "org_id" {
@@ -105,6 +120,11 @@ output "enforcer_allow_all_icmp_rule_name" {
   value       = module.test_resources.enforcer_allow_all_icmp_rule_name
 }
 
+output "firewall-allow-all-ingress-name" {
+  description = "Firewall rule name created for the firewall scanner test"
+  value       = module.test_resources.firewall-allow-all-ingress-name
+}
+
 output "inventory-performance-cai-dump-paths" {
   description = "GCS paths of the CAI dump files to be used for the inventory performance test"
   value       = var.inventory_performance_cai_dump_paths
@@ -112,5 +132,5 @@ output "inventory-performance-cai-dump-paths" {
 
 output "inventory-cai-eu-bucket-name" {
   description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
-  value = module.test_resources.inventory-cai-eu-bucket-name
+  value       = module.test_resources.inventory-cai-eu-bucket-name
 }

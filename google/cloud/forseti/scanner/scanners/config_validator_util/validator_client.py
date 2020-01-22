@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Config Validator Validator Client."""
+"""Config Validator Client."""
 
 
 from builtins import object
@@ -75,12 +75,11 @@ class ValidatorClient(object):
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(
-                    e.message)
+                raise errors.ConfigValidatorServerUnavailableError(e)
             else:
                 LOGGER.exception('Failed to add data: %s', assets[0])
-                # LOGGER.exception('ConfigValidatorAddDataError: %s', e.message)
-                # raise errors.ConfigValidatorAddDataError(e.message)
+                # LOGGER.exception('ConfigValidatorAddDataError: %s', e)
+                # raise errors.ConfigValidatorAddDataError(e)
                 return
 
     def add_data_in_bulk(self, assets):
@@ -143,11 +142,10 @@ class ValidatorClient(object):
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(
-                    e.message)
+                raise errors.ConfigValidatorServerUnavailableError(e)
             else:
-                LOGGER.exception('ConfigValidatorAuditError: %s', e.message)
-                raise errors.ConfigValidatorAuditError(e.message)
+                LOGGER.exception('ConfigValidatorAuditError: %s', e)
+                raise errors.ConfigValidatorAuditError(e)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
@@ -179,11 +177,10 @@ class ValidatorClient(object):
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(
-                    e.message)
+                raise errors.ConfigValidatorServerUnavailableError(e)
             else:
-                LOGGER.exception('ConfigValidatorAuditError: %s', e.message)
-                raise errors.ConfigValidatorAuditError(e.message)
+                LOGGER.exception('ConfigValidatorAuditError: %s', e)
+                raise errors.ConfigValidatorAuditError(e)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
@@ -200,11 +197,10 @@ class ValidatorClient(object):
         except grpc.RpcError as e:
             # pylint: disable=no-member
             if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(
-                    e.message)
+                raise errors.ConfigValidatorServerUnavailableError(e)
             else:
-                LOGGER.exception('ConfigValidatorResetError: %s', e.message)
-                raise errors.ConfigValidatorResetError(e.message)
+                LOGGER.exception('ConfigValidatorResetError: %s', e)
+                raise errors.ConfigValidatorResetError(e)
 
 
 class BufferedCVDataSender(object):

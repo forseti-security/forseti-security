@@ -23,6 +23,9 @@ attributes:
 - name: forseti-cai-storage-bucket
   required: true
   type: string
+- name: firewall-allow-all-ingress-name
+  required: true
+  type: string
 - name: forseti-client-service-account
   required: true
   type: string
@@ -41,6 +44,9 @@ attributes:
 - name: forseti-cloudsql-user
   required: true
   type: string
+- name: forseti-email-sender
+  required: true
+  type: string
 - name: forseti-server-service-account
   required: true
   type: string
@@ -54,6 +60,18 @@ attributes:
   required: true
   type: string
 - name: inventory-cai-eu-bucket-name
+  required: true
+  type: string
+- name: inventory-performance-cai-dump-paths
+  required: true
+  type: string
+- name: inventory-cai-eu-bucket-name
+  required: true
+  type: string
+- name: kms-key
+  required: true
+  type: string
+- name: kms-keyring
   required: true
   type: string
 - name: inventory-performance-cai-dump-paths
@@ -75,4 +93,3 @@ depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git
     tag: v0.10.0
-

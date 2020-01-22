@@ -72,3 +72,22 @@ resource "google_storage_bucket_access_control" "bucket_acl_scanner_all_users_ac
     google_storage_bucket_access_control.bucket_acl_scanner_all_auth_acl
   ]
 }
+
+#-------------------------#
+# scanner-firewall_scanner.rb: Create a disabled firewall rule allowing all ingress
+#-------------------------#
+resource "google_compute_firewall" "firewall_allow_all_ingress" {
+  name                    = "forseti-allow-all-ingress-${var.random_test_id}"
+  description             = "Forseti test firewall rule for firewall scanner"
+  disabled                = true
+  network                 = "default"
+  priority                = "1000"
+  project                 = var.project_id
+  source_ranges           = ["10.0.0.0/32"]
+  source_tags             = ["forseti-test-tag"]
+  target_tags             = ["forseti-test-tag"]
+
+  allow {
+    protocol = "all"
+  }
+}

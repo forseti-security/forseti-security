@@ -65,11 +65,13 @@ suites:
             - logs-debug-level
             - model-create-get
             - model-delete
+            - notifier-inventory-summary-email
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
             - scanner-config-validator-gcs-policy
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
+            - scanner-firewall-scanner
             - scanner-run
           hosts_output: forseti-server-vm-ip
           user: ubuntu
