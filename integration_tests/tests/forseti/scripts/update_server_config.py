@@ -91,9 +91,17 @@ class ServerConfigActions:
     def enable_scanner(scanner_name):
         try:
             config = ServerConfigActions.read_server_config()
+            not_found = True
             for i in range(len(config['scanner']['scanners'])):
                 if config['scanner']['scanners'][i]["name"] == scanner_name:
                     config['scanner']['scanners'][i]["enabled"] = True
+                    not_found = False
+                    break
+
+            if not_found:
+                print(f'ERROR: Unable to set {scanner_name} scanner enabled. Not found.')
+                sys.exit(2)
+
             ServerConfigActions.write_server_config(config)
             print(f'Successfully set {scanner_name} scanner enabled...')
         except Exception as e:
@@ -104,14 +112,23 @@ class ServerConfigActions:
     def disable_scanner(scanner_name):
         try:
             config = ServerConfigActions.read_server_config()
+            not_found = True
             for i in range(len(config['scanner']['scanners'])):
                 if config['scanner']['scanners'][i]["name"] == scanner_name:
                     config['scanner']['scanners'][i]["enabled"] = False
+                    not_found = False
+                    break
+
+            if not_found:
+                print(f'ERROR: Unable to set {scanner_name} scanner enabled. Not found.')
+                sys.exit(2)
+
             ServerConfigActions.write_server_config(config)
             print(f'Successfully set {scanner_name} scanner disabled...')
         except Exception as e:
             print(f'ERROR: Unable to set {scanner_name} scanner disabled. {e}')
             sys.exit(2)
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
