@@ -35,7 +35,7 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
 
   # Enable enabled_apis Scanner
-  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py enabled_apis true") do
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py enable_scanner enabled_apis") do
     its('exit_status') { should eq 0 }
   end
 

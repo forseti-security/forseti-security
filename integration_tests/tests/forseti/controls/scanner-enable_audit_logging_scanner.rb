@@ -26,7 +26,7 @@ control 'scanner-enable-audit-logging-scanner' do
   end
 
   #  Enable audit logging Scanner
-  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py audit_logging true") do
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py enable_scanner audit_logging") do
     its('exit_status') { should eq 0 }
   end
   describe command("forseti server configuration reload") do
