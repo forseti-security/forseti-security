@@ -87,6 +87,31 @@ class ServerConfigActions:
             print(f'ERROR: Unable to write server config. {e}')
             sys.exit(-3)
 
+    @staticmethod
+    def enable_scanner(scanner_name):
+        try:
+            config = ServerConfigActions.read_server_config()
+            for i in range(len(config['scanner']['scanners'])):
+                if config['scanner']['scanners'][i]["name"] == scanner_name:
+                    config['scanner']['scanners'][i]["enabled"] = True
+            ServerConfigActions.write_server_config(config)
+            print(f'Successfully set {scanner_name} scanner enabled...')
+        except Exception as e:
+            print(f'ERROR: Unable to set {scanner_name} scanner enabled. {e}')
+            sys.exit(2)
+
+    @staticmethod
+    def disable_scanner(scanner_name):
+        try:
+            config = ServerConfigActions.read_server_config()
+            for i in range(len(config['scanner']['scanners'])):
+                if config['scanner']['scanners'][i]["name"] == scanner_name:
+                    config['scanner']['scanners'][i]["enabled"] = False
+            ServerConfigActions.write_server_config(config)
+            print(f'Successfully set {scanner_name} scanner disabled...')
+        except Exception as e:
+            print(f'ERROR: Unable to set {scanner_name} scanner disabled. {e}')
+            sys.exit(2)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
