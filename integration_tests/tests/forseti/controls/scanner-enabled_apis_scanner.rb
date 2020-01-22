@@ -62,8 +62,7 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
   end
 
   # Disable Scanner
-  @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py disable_scanner enabled_apis") do
     its('exit_status') { should eq 0 }
   end
   describe command("forseti server configuration reload") do

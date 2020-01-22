@@ -40,9 +40,8 @@ control 'scanner-enable-audit-logging-scanner' do
     its('stdout') { should match (/Scan completed/)}
   end
 
-  # disable audit logging scanner
-  @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = false
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+  #  Disable audit logging Scanner
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py disable_scanner audit_logging") do
     its('exit_status') { should eq 0 }
   end
   describe command("forseti server configuration reload").result do
