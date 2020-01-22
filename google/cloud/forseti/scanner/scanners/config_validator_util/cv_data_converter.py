@@ -111,6 +111,8 @@ def convert_data_to_cv_asset(resource, data_type):
     ancestry_path = generate_ancestry_path(resource.full_name)
 
     data = json.loads(resource.data)
+    if isinstance(data, list):
+        data = data[0]
     cleanup_dict(data)
 
     asset_resource, asset_iam_policy = None, None
