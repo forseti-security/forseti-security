@@ -16,6 +16,7 @@ require 'json'
 require 'securerandom'
 
 model_name = SecureRandom.uuid.gsub!('-', '')
+forseti_tests_path = "/home/ubuntu/forseti-security/integration_tests/tests/forseti"
 
 control 'scanner-enable-audit-logging-scanner' do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
@@ -24,11 +25,8 @@ control 'scanner-enable-audit-logging-scanner' do
     its('exit_status') { should eq 0 }
   end
 
-  # update server config to enable audit logging scanner
-  @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
-  @scanner_index = @modified_yaml["scanner"]["scanners"].find_index { |scanner| scanner["name"] == "audit_logging" }
-  @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = true
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+  #  Enable audit logging Scanner
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py audit_logging true") do
     its('exit_status') { should eq 0 }
   end
   describe command("forseti server configuration reload") do

@@ -18,6 +18,7 @@ require 'securerandom'
 db_password = attribute('forseti-cloudsql-password')
 db_user_name = attribute('forseti-cloudsql-user')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
+forseti_tests_path = "/home/ubuntu/forseti-security/integration_tests/tests/forseti"
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 project_id = attribute('project_id')
 
@@ -33,13 +34,11 @@ control 'scanner-enabled-apis-scanner', :order => :defined do
     its('exit_status') { should eq 0 }
   end
 
-  # Enable Scanner
-  @modified_yaml = yaml('/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml').params
-  @scanner_index = @modified_yaml["scanner"]["scanners"].find_index { |scanner| scanner["name"] == "enabled_apis" }
-  @modified_yaml["scanner"]["scanners"][@scanner_index]["enabled"] = true
-  describe command("echo -en \"#{@modified_yaml.to_yaml}\" | sudo tee /home/ubuntu/forseti-security/configs/forseti_conf_server.yaml") do
+  # Enable enabled_apis Scanner
+  describe command("sudo python3 #{forseti_tests_path}/scripts/update_server_config.py enabled_apis true") do
     its('exit_status') { should eq 0 }
   end
+
   describe command("forseti server configuration reload") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/\"isSuccess\": true/) }
