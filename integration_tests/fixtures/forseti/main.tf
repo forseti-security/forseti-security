@@ -59,7 +59,7 @@ module "forseti" {
   forseti_version          = var.forseti_version
 
   config_validator_enabled = var.config_validator_enabled
-  forseti_run_frequency    = '0 */10 * * *'
+  forseti_run_frequency    = "0 */10 * * *"
 
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
