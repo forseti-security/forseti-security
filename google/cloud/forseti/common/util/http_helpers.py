@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Helpers for httplib2.Http module."""
+import os
 import httplib2
 from google.cloud import forseti as forseti_security
 
@@ -32,13 +33,16 @@ def build_http(http=None):
     Returns:
         httplib2.Http: An http object with the forseti user agent set.
     """
+    platform = os.getenv('FORSETI_PLATFORM', 'gce')
+
     if not http:
         http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
-    user_agent = 'Python-httplib2/{} (gzip), {}/{} {}'.format(
+    user_agent = 'Python-httplib2/{} (gzip), {}/{} {} {}'.format(
         httplib2.__version__,
         forseti_security.__package_name__,
         forseti_security.__version__,
-        _USER_AGENT_SUFFIX).strip()
+        _USER_AGENT_SUFFIX,
+        platform).strip()
 
     return _set_user_agent(http, user_agent)
 

@@ -29,6 +29,47 @@ from google.cloud.forseti.services.inventory.cai_temporary_storage import (
 LOGGER = logger.get_logger(__name__)
 
 
+def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
+    """Correct different attribute names between CAI and json representation.
+    Args:
+        resource (dict): The resource dictionary to scan for keys in the
+            key_map.
+        key_map (dict): A map of bad_key:good_key pairs, any instance of bad_key
+            in the resource dict is replaced with an instance of good_key.
+        only_fixup_lists (bool): If true, only keys that have values which are
+            lists will be fixed. This allows the case where there is the same
+            key used for both a scalar entry and a list entry, and only the
+            list entry should change to the different key.
+    Returns:
+        dict: A resource dict with all bad keys replaced with good keys.
+    """
+    fixed_resource = {}
+    for key, value in list(resource.items()):
+        if isinstance(value, dict):
+            # Recursively fix keys in sub dictionaries.
+            value = _fixup_resource_keys(value, key_map)
+        elif isinstance(value, list):
+            # Recursively fix keys in sub dictionaries in lists.
+            new_value = []
+            for item in value:
+                if isinstance(item, dict):
+                    item = _fixup_resource_keys(item, key_map)
+                new_value.append(item)
+            value = new_value
+
+        # Only replace the old key with the new key if the value of the field
+        # is a list. This behavior can be overridden by setting the optional
+        # argument only_fixup_lists to False.
+        should_update_key = bool(
+            not only_fixup_lists or isinstance(value, list))
+        if key in key_map and should_update_key:
+            fixed_resource[key_map[key]] = value
+        else:
+            fixed_resource[key] = value
+
+    return fixed_resource
+
+
 # pylint: disable=too-many-public-methods
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
@@ -296,6 +337,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of address resources.
         """
+        cai_to_gcp_key_map = {
+            'user': 'users',
+        }
+
         address_resources = self._iter_compute_resources('Address',
                                                          project_number)
 
@@ -304,8 +349,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         resources = itertools.chain(address_resources, global_address_resources)
 
-        for address in resources:
-            yield address
+        for address, metadata in resources:
+            yield (
+                _fixup_resource_keys(address, cai_to_gcp_key_map),
+                metadata)
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from Cloud Asset data.
@@ -1101,6 +1148,110 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
+    def iter_crm_organization_access_policies(self, org_id):
+        """Iterate access policies in an organization from Cloud Asset data.
+
+        Args:
+            org_id (str): id of the organization to get the Policy.
+
+        Yields:
+            dict: Generator of access policies for an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for access_policy in resources:
+            yield access_policy
+
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate access levels from Cloud Asset data.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Yields:
+            dict: Generator of access levels in an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.access_level,
+            'cloudresourcemanager.googleapis.com/Organization',
+            access_policy_id,
+            self.engine)
+        for access_level in resources:
+            yield access_level
+
+    # pylint: disable=using-constant-test,inconsistent-return-statements
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Gets service perimeter from Cloud Asset data.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Returns:
+            dict: Service Perimeter resource.
+        """
+        resource = self.dao.iter_cai_assets(
+            ContentTypes.service_perimeter,
+            'cloudresourcemanager.googleapis.com/Organization',
+            access_policy_id,
+            self.engine)
+        if resource:
+            return resource
+
+    def iter_crm_organization_org_policies(self, org_id):
+        """Iterates organization policies from Cloud Asset data in an org.
+
+        Args:
+            org_id (str): id of the organization to get the policy.
+
+        Yields:
+            dict: Generator of organization policies for an organization.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
+    def iter_crm_project_org_policies(self, project_number):
+        """Iterates organization policies from Cloud Asset data in a project.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of organization policies for a project.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Project',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Iterate organization policies in a folder from Cloud Asset data.
+
+        Args:
+            folder_id (str): id of the folder to get the policy.
+
+        Yields:
+            dict: Generator of organization policies for a folder.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.org_policy,
+            'cloudresourcemanager.googleapis.com/Folder',
+            '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
+            self.engine)
+        for org_policy in resources:
+            yield org_policy
+
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.
 
@@ -1314,6 +1465,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         for serviceaccount in resources:
             yield serviceaccount
+
+    def iter_iam_serviceaccount_keys(self, project_id, serviceaccount_id):
+        """Iterate Service Account Keys in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            serviceaccount_id (str): id of the service account to query.
+
+        Yields:
+            dict: Generator of service account.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'iam.googleapis.com/ServiceAccountKey',
+            '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+                project_id, serviceaccount_id),
+            self.engine)
+        for serviceaccount_key in resources:
+            yield serviceaccount_key
 
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from Cloud Asset data.

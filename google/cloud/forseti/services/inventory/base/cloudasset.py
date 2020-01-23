@@ -28,7 +28,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory import cai_temporary_storage
 
 LOGGER = logger.get_logger(__name__)
-CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
+CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY', 'ORG_POLICY', 'ACCESS_POLICY']
 
 # Any asset type referenced in cai_gcp_client.py needs to be added here.
 DEFAULT_ASSET_TYPES = [
@@ -94,6 +94,7 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Node',
     'k8s.io/Pod',
     'iam.googleapis.com/ServiceAccount',
+    'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
     'pubsub.googleapis.com/Topic',
     'rbac.authorization.k8s.io/ClusterRole',
@@ -128,7 +129,7 @@ def _download_cloudasset_data(config, inventory_index_id):
         root_resources.append(config.get_root_resource_id())
     cloudasset_client = cloudasset.CloudAssetClient(
         config.get_api_quota_configs())
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
         for root_id in root_resources:
             for content_type in CONTENT_TYPES:

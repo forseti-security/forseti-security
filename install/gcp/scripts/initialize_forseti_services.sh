@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ if [ "$POLICY_LIBRARY_SYNC_ENABLED" == "true" ]; then
   POLICY_LIBRARY_SYNC_COMMAND+=" -v ${POLICY_LIBRARY_HOME}:/tmp/git"
   POLICY_LIBRARY_SYNC_COMMAND+=" -v /etc/git-secret:/etc/git-secret"
   POLICY_LIBRARY_SYNC_COMMAND+=" k8s.gcr.io/git-sync:${POLICY_LIBRARY_SYNC_GIT_SYNC_TAG}"
-  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=master"
+  POLICY_LIBRARY_SYNC_COMMAND+=" --branch=${POLICY_LIBRARY_REPOSITORY_BRANCH:=master}"
   POLICY_LIBRARY_SYNC_COMMAND+=" --dest=policy-library"
   POLICY_LIBRARY_SYNC_COMMAND+=" --max-sync-failures=-1"
   POLICY_LIBRARY_SYNC_COMMAND+=" --repo=${POLICY_LIBRARY_REPOSITORY_URL}"
@@ -85,6 +85,7 @@ User=ubuntu
 Restart=always
 RestartSec=3
 ExecStart=$FORSETI_COMMAND
+Environment="POLICY_LIBRARY_HOME=${POLICY_LIBRARY_HOME}"
 [Install]
 WantedBy=multi-user.target
 EOF

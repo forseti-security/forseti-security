@@ -14,32 +14,68 @@
 
 """Fake runnable scanners."""
 
-ALL_ENABLED = {'scanners': [
-    {'name': 'bigquery', 'enabled': True},
-    {'name': 'bucket_acl', 'enabled': True},
-    {'name': 'cloudsql_acl', 'enabled': True},
-    {'name': 'iam_policy', 'enabled': True}
-]}
+import inspect
+import os
+
+test_rules_path = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+ALL_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'bigquery', 'enabled': True},
+        {'name': 'bucket_acl', 'enabled': True},
+        {'name': 'cloudsql_acl', 'enabled': True},
+        {'name': 'iam_policy', 'enabled': True}
+    ]}
 
 ALL_DISABLED = {'scanners': []}
 
-ONE_ENABLED = {'scanners': [
-    {'name': 'bigquery', 'enabled': False},
-    {'name': 'bucket_acl', 'enabled': False},
-    {'name': 'cloudsql_acl', 'enabled': False},
-    {'name': 'iam_policy', 'enabled': True}
-]}
 
-TWO_ENABLED = {'scanners': [
-    {'name': 'bigquery', 'enabled': False},
-    {'name': 'bucket_acl', 'enabled': True},
-    {'name': 'cloudsql_acl', 'enabled': False},
-    {'name': 'iam_policy', 'enabled': True}
-]}
+CONFIG_VALIDATOR_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'config_validator', 'enabled': True}
+    ]}
 
-NONEXISTENT_ENABLED = {'scanners': [
-    {'name': 'bigquery', 'enabled': False},
-    {'name': 'bucket_acl', 'enabled': True},
-    {'name': 'cloudsql_acl', 'enabled': False},
-    {'name': 'non_exist_scanner', 'enabled': True}
-]}
+ONE_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'bigquery', 'enabled': False},
+        {'name': 'bucket_acl', 'enabled': False},
+        {'name': 'cloudsql_acl', 'enabled': False},
+        {'name': 'iam_policy', 'enabled': True}
+    ]}
+
+TWO_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'bigquery', 'enabled': False},
+        {'name': 'bucket_acl', 'enabled': True},
+        {'name': 'cloudsql_acl', 'enabled': False},
+        {'name': 'iam_policy', 'enabled': True}
+    ]}
+
+NONEXISTENT_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'bigquery', 'enabled': False},
+        {'name': 'bucket_acl', 'enabled': True},
+        {'name': 'cloudsql_acl', 'enabled': False},
+        {'name': 'non_exist_scanner', 'enabled': True}
+    ]}
+
+NONEXISTENT_RULES_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'bigquery', 'enabled': False},
+        {'name': 'bucket_acl', 'enabled': False},
+        {'name': 'cloudsql_acl', 'enabled': False},
+        {'name': 'firewall_rule', 'enabled': True},
+    ]}
+
+EXTERNAL_PROJECT_ACCESS_ENABLED = {
+    'rules_path': test_rules_path,
+    'scanners': [
+        {'name': 'external_project_access_scanner', 'enabled': True}
+    ]}

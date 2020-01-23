@@ -398,6 +398,26 @@ class Resource(object):
         del client  # Unused.
         return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets org policy template.
+
+        Args:
+            client (object): GCP API client.
+        """
+        del client  # Unused.
+        return None
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Gets access policy template.
+
+        Args:
+            client (object): GCP API client.
+        """
+        del client  # Unused.
+        return None
+
     @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
         """Get gcs policy template.
@@ -702,6 +722,29 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
         return self['name'].split('/', 1)[-1]
 
 
+class ResourceManagerAccessPolicy(resource_class_factory('crm_access_policy',
+                                                         None)):
+    """The Resource implementation for Resource Manager Access Policy."""
+
+    def key(self):
+        """Gets key of thisf resource.
+
+        Returns:
+            str: key of this resource
+        """
+        return self['name']
+
+
+class ResourceManagerAccessLevel(resource_class_factory('crm_access_level',
+                                                        'name')):
+    """The Resource implementation for Access Level."""
+
+
+class ResourceManagerServicePerimeter(resource_class_factory(
+        'crm_service_perimeter', 'name')):
+    """The Resource implementation for Service Perimeter."""
+
+
 class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
     """The Resource implementation for Resource Manager Organization Policy."""
 
@@ -711,9 +754,15 @@ class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
         Returns:
             str: key of this resource
         """
-        unique_key = '/'.join([self.parent().type(),
-                               self.parent().key(),
-                               self['constraint']])
+        if 'constraint' not in self._data:
+            # A row is retrieved for each constraint on a resource.
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self[0]['constraint']])
+        else:
+            unique_key = '/'.join([self.parent().type(),
+                                   self.parent().key(),
+                                   self['constraint']])
         return '%u' % ctypes.c_size_t(hash(unique_key)).value
 
 
@@ -1053,6 +1102,42 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self.add_warning(err_msg)
             return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets Organization policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Organization Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_org_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Gets access policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Access Policy.
+        """
+        try:
+            data, _ = client.iter_crm_organization_access_policies(self['name'])
+            return data
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Access Policy: %s', e)
+            self.add_warning(e)
+            return None
+
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset.
@@ -1382,18 +1467,9 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
             return None
 
 
-class IamServiceAccountKey(resource_class_factory('serviceaccount_key', None)):
+class IamServiceAccountKey(resource_class_factory('serviceaccount_key', 'name',
+                                                  hash_key=True)):
     """The Resource implementation for IAM ServiceAccountKey."""
-
-    def key(self):
-        """Get key of this resource.
-
-        Key name is in the format:
-           projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
-        Returns:
-            str: id key of this resource
-        """
-        return self['name'].split('/')[-1]
 
 
 # Key Management Service resource classes
@@ -1834,8 +1910,23 @@ def resource_iter_class_factory(api_method_name,
     return ResourceIteratorSubclass
 
 
+class AccessLevelIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_organization_access_levels',
+        resource_name='crm_access_level',
+        api_method_arg_key='name')):
+    """ The Resource iterator implementation for Access Level."""
+
+
+class ServicePerimeterIterator(resource_iter_class_factory(
+        api_method_name='fetch_crm_organization_service_perimeter',
+        resource_name='crm_service_perimeter',
+        api_method_arg_key='name')):
+    """ The Resource iterator implementation for Service Perimeter."""
+
+
 class ResourceManagerFolderIterator(resource_iter_class_factory(
-        api_method_name='iter_crm_folders', resource_name='folder',
+        api_method_name='iter_crm_folders',
+        resource_name='folder',
         api_method_arg_key='name')):
     """The Resource iterator implementation for Resource Manager Folder."""
 
@@ -2042,6 +2133,14 @@ class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
     """The Resource iterator implementation for Billing Account."""
+
+
+class ResourceManagerOrganizationAccessPolicyIterator(
+        resource_iter_class_factory(
+            api_method_name='iter_crm_organization_access_policies',
+            resource_name='crm_access_policy',
+            api_method_arg_key='name')):
+    """The Resource iterator implementation for Access Policy."""
 
 
 class CloudSqlInstanceIterator(resource_iter_class_factory(
@@ -2442,9 +2541,10 @@ class IamServiceAccountIterator(resource_iter_class_factory(
 
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_serviceaccount_exported_keys',
+        api_method_name='iter_iam_serviceaccount_keys',
         resource_name='iam_serviceaccount_key',
-        api_method_arg_key='name')):
+        api_method_arg_key='projectId',
+        additional_arg_keys=['uniqueId'])):
     """The Resource iterator implementation for IAM ServiceAccount Key."""
 
 
@@ -2740,6 +2840,7 @@ FACTORIES = {
             ResourceManagerOrganizationOrgPolicyIterator,
             ResourceManagerFolderIterator,
             ResourceManagerProjectIterator,
+            ResourceManagerOrganizationAccessPolicyIterator,
         ]}),
 
     'folder': ResourceFactory({
@@ -3056,6 +3157,24 @@ FACTORIES = {
     'crm_org_policy': ResourceFactory({
         'dependsOn': ['folder', 'organization', 'project'],
         'cls': ResourceManagerOrgPolicy,
+        'contains': []}),
+
+    'crm_access_policy': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': ResourceManagerAccessPolicy,
+        'contains': [
+            AccessLevelIterator,
+            ServicePerimeterIterator,
+        ]}),
+
+    'crm_access_level': ResourceFactory({
+        'dependsOn': ['crm_access_policy'],
+        'cls': ResourceManagerAccessLevel,
+        'contains': []}),
+
+    'crm_service_perimeter': ResourceFactory({
+        'dependsOn': ['crm_access_policy'],
+        'cls': ResourceManagerServicePerimeter,
         'contains': []}),
 
     'dataproc_cluster': ResourceFactory({
