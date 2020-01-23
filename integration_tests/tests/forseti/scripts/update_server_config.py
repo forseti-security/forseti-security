@@ -80,6 +80,11 @@ if __name__ == '__main__':
         print('No action provided!')
         sys.exit(-1)
 
-    action_method = getattr(ServerConfigActions, sys.argv[1])
-    print(f'Running action {action_method}')
+    action_method = getattr(ServerConfigActions, sys.argv[1], None)
+    if not action_method:
+        print('Invalid action provided!')
+        sys.exit(-1)
+
+    print(f'Running action {sys.argv[1]}')
     action_method(*sys.argv[2:])
+    ServerConfigActions.reload_server_config()
