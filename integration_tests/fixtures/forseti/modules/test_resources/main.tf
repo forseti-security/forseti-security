@@ -56,21 +56,13 @@ resource "google_storage_bucket" "bucket_acl_scanner" {
   force_destroy = true
 }
 
-resource "google_storage_bucket_access_control" "bucket_acl_scanner_all_auth_acl" {
+resource "google_storage_bucket_acl" "bucket_acl_scanner_acl" {
   bucket = google_storage_bucket.bucket_acl_scanner.name
-  role   = "READER"
-  entity = "allAuthenticatedUsers"
+
+  role_entity = [
+    "READER:allAuthenticatedUsers",
+    "READER:allUsers",
+  ]
 
   depends_on = [google_storage_bucket.bucket_acl_scanner]
-}
-
-resource "google_storage_bucket_access_control" "bucket_acl_scanner_all_users_acl" {
-  bucket = google_storage_bucket.bucket_acl_scanner.name
-  role   = "READER"
-  entity = "allUsers"
-
-  depends_on = [
-    google_storage_bucket.bucket_acl_scanner,
-    google_storage_bucket_access_control.bucket_acl_scanner_all_auth_acl
-  ]
 }
