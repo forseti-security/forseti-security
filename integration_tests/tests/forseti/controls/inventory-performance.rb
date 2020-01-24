@@ -26,7 +26,13 @@ control "inventory-performance" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo python3 inventory-performance.py --cai_dump_file_gcs_paths=#{cai_dump_file_gcs_paths} --cloudsql_password=#{cloudsql_password} --cloudsql_username=#{cloudsql_username} --forseti_server_bucket_name=#{forseti_server_bucket_name} --forseti_server_config_path=#{forseti_server_config_path} --root_resource_id=#{root_resource_id}") do
+  describe command("sudo pytest $FORSETI_HOME/endtoend_tests \
+        --cai_dump_file_gcs_paths=#{cai_dump_file_gcs_paths} \
+        --cloudsql_password=#{cloudsql_password} \
+        --cloudsql_username=#{cloudsql_username} \
+        --forseti_server_bucket_name=#{forseti_server_bucket_name} \
+        --forseti_server_config_path=#{forseti_server_config_path} \
+        --root_resource_id=#{root_resource_id}") do
     its('exit_status') { should eq 0 }
   end
 end
