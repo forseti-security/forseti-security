@@ -24,7 +24,7 @@ forseti_cloudsql_instance_name = "forseti-server-db-#{forseti_suffix}"
 model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 policy_library_path = '/home/ubuntu/policy-library/policy-library'
 
-control "scanner-config_validator_gcs_policy" do
+control "scanner-config-validator-gcs-policy" do
   # Arrange
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
   describe command("forseti model use #{model_name}") do
@@ -60,13 +60,13 @@ control "scanner-config_validator_gcs_policy" do
   end
 
   # Assert violations exist for Cloud SQL Location policy
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_cloudsql_instance_name}' AND V.violation_type = 'CONFIG_VALIDATOR_VIOLATION' AND V.rule_name = 'sql_location_denylist';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_cloudsql_instance_name}' AND V.violation_type = CONCAT('CV_', V.rule_name);\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/) }
   end
 
   # Assert violations exist for Compute Zone policy
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_server_vm_name}' AND V.resource_type = 'compute.googleapis.com/Instance' AND V.violation_type = 'CONFIG_VALIDATOR_VIOLATION' AND V.rule_name = 'compute_zone_denylist';\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_server_vm_name}' AND V.resource_type = 'compute.googleapis.com/Instance' AND V.violation_type = CONCAT('CV_', V.rule_name);\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/) }
   end

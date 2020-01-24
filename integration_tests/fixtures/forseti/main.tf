@@ -59,6 +59,11 @@ module "forseti" {
   forseti_version          = var.forseti_version
   config_validator_enabled = var.config_validator_enabled
 
+  inventory_email_summary_enabled = var.inventory_email_summary_enabled
+  forseti_email_recipient = var.forseti_email_recipient
+  forseti_email_sender = var.forseti_email_sender
+  sendgrid_api_key = var.sendgrid_api_key
+
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
   }
@@ -148,10 +153,12 @@ module "forseti_iam" {
 # Forseti Rules
 #-------------------------#
 module "forseti_server_rules" {
-  source                        = "./modules/rules"
-  domain                        = var.domain
-  forseti_server_storage_bucket = module.forseti.forseti-server-storage-bucket
-  org_id                        = var.org_id
+  source                         = "./modules/rules"
+  domain                         = var.domain
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  forseti_server_storage_bucket  = module.forseti.forseti-server-storage-bucket
+  org_id                         = var.org_id
+  project_id                     = var.project_id
 }
 
 #-------------------------#
@@ -166,9 +173,10 @@ module "policy_library" {
 # Test Resources
 #-------------------------#
 module "test_resources" {
-  source     = "./modules/test_resources"
-  billing_account = var.billing_account
-  org_id          = var.org_id
-  project_id      = var.project_id
-  random_test_id  = random_id.random_test_id.hex
+  source                         = "./modules/test_resources"
+  billing_account                = var.billing_account
+  forseti_server_service_account = module.forseti.forseti-server-service-account
+  org_id                         = var.org_id
+  project_id                     = var.project_id
+  random_test_id                 = random_id.random_test_id.hex
 }

@@ -24,15 +24,12 @@ output "enforcer_allow_all_icmp_rule_name" {
   value = google_compute_firewall.enforcer_allow_all_icmp_rule.name
 }
 
-output "kms_resources_names" {
-  description = "KMS resources for Inventory tests"
-  value       = [
-    google_kms_key_ring.test-keyring.name,
-    google_kms_crypto_key.test-crypto-key.name,
-  ]
+output "firewall-allow-all-ingress-name" {
+  description = "Firewall rule name created for the firewall scanner test"
+  value       = google_compute_firewall.firewall_allow_all_ingress.name
 }
 
-output "random_test_id" {
-  description = "Random test id generated every time the tests are run"
-  value       = random_id.random_test_id.hex
+output "inventory-cai-eu-bucket-name" {
+  description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
+  value = google_storage_bucket.inventory_cai_eu.name
 }

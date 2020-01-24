@@ -191,9 +191,6 @@ class CsccNotifier(object):
             finding_id = finding_list[0]
             to_be_updated_finding = finding_list[1]
 
-            if to_be_updated_finding['state'] == 'INACTIVE':
-                continue
-
             if finding_id not in new_findings_map:
                 to_be_updated_finding['state'] = 'INACTIVE'
                 current_time = date_time.get_utc_now_datetime()
@@ -237,7 +234,8 @@ class CsccNotifier(object):
                     finding_data = findings_in_page.get('finding')
                     name = finding_data.get('name')
                     finding_id = name[-32:]
-                    formatted_cscc_findings.append([finding_id, finding_data])
+                    formatted_cscc_findings.append([finding_id,
+                                                    finding_data])
 
             inactive_findings = self.find_inactive_findings(
                 new_findings,
