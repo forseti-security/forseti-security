@@ -17,7 +17,6 @@ require 'json'
 
 db_user_name = attribute('forseti-cloudsql-user')
 db_password = attribute('forseti-cloudsql-password')
-kms_resources_names = attribute('kms_resources_names')
 random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
 control "inventory-create" do
@@ -35,11 +34,6 @@ control "inventory-create" do
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/1/)}
-  end
-
-  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_type) from gcp_inventory where resource_type in ('kms_cryptokey', 'kms_keyring');\"") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should match (/#{kms_resources_names.count}/)}
   end
 
   describe command("forseti inventory delete #{@inventory_id}") do

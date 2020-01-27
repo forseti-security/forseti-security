@@ -14,10 +14,16 @@
 
 name: forseti_integration_testing
 attributes:
+- name: bucket_acl_scanner_bucket_name
+  required: true
+  type: string
+- name: enforcer_allow_all_icmp_rule_name
+  required: true
+  type: string
 - name: forseti-cai-storage-bucket
   required: true
   type: string
-- name: forseti-client-vm-name
+- name: firewall-allow-all-ingress-name
   required: true
   type: string
 - name: forseti-client-service-account
@@ -26,18 +32,20 @@ attributes:
 - name: forseti-client-storage-bucket
   required: true
   type: string
+- name: forseti-client-vm-name
+  required: true
+  type: string
+  value: ''
 - name: forseti-client-vm-ip
   required: true
   type: string
 - name: forseti-cloudsql-password
   required: true
   type: string
-  value: ''
 - name: forseti-cloudsql-user
   required: true
   type: string
-  value: root
-- name: forseti-server-vm-name
+- name: forseti-email-sender
   required: true
   type: string
 - name: forseti-server-service-account
@@ -46,12 +54,27 @@ attributes:
 - name: forseti-server-storage-bucket
   required: true
   type: string
+- name: forseti-server-vm-name
+  required: true
+  type: string
 - name: forseti-server-vm-ip
   required: true
   type: string
-- name: kms_resources_names
+- name: inventory-cai-eu-bucket-name
+  required: true
+  type: string
+- name: inventory-performance-cai-dump-paths
+  required: true
+  type: string
+- name: inventory-cai-eu-bucket-name
   required: true
   type: array
+- name: kms-key
+  required: true
+  type: string
+- name: kms-keyring
+  required: true
+  type: string
 - name: network_project
   required: false
   type: string
@@ -61,15 +84,10 @@ attributes:
 - name: project_id
   required: true
   type: string
-  default: ''
 - name: suffix
-  required: true
-  type: string
-- name: test-resource-bucket-scanner-bucket
   required: true
   type: string
 depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git
     tag: v0.10.0
-

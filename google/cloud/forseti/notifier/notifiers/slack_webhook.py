@@ -15,8 +15,10 @@
 
 from builtins import str
 import requests
+from retrying import retry
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import retryable_exceptions
 from google.cloud.forseti.notifier.notifiers import base_notification
 
 LOGGER = logger.get_logger(__name__)
@@ -69,16 +71,20 @@ class SlackWebhook(base_notification.BaseNotification):
         return ('*type*:\t`{}`\n*details*:\n'.format(self.resource) +
                 self._dump_slack_output(violation.get('violation_data'), 1))
 
+    # Wait 30 seconds before retrying: https://api.slack.com/docs/rate-limits
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
+           wait_exponential_multiplier=30000, wait_exponential_max=60000,
+           stop_max_attempt_number=2)
     def _send(self, payload):
-        """Sends a post to a Slack webhook url
+        """Sends a message to a Slack webhook url
 
         Args:
             payload (str): Payload data to send to slack.
         """
         url = self.notification_config.get('webhook_url')
-        request = requests.post(url, json={'text': payload})
+        response = requests.post(url, json={'text': payload})
 
-        LOGGER.info(request)
+        LOGGER.info(response)
 
     def run(self):
         """Run the slack webhook notifier"""
@@ -88,4 +94,7 @@ class SlackWebhook(base_notification.BaseNotification):
 
         for violation in self.violations:
             webhook_payload = self._compose(violation=violation)
-            self._send(payload=webhook_payload)
+            try:
+                self._send(payload=webhook_payload)
+            except Exception:  # pylint: disable=broad-except
+                LOGGER.exception('Failed to send a message to a channel.')
