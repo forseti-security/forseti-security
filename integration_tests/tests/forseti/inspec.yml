@@ -35,7 +35,6 @@ attributes:
 - name: forseti-client-vm-name
   required: true
   type: string
-  value: ''
 - name: forseti-client-vm-ip
   required: true
   type: string
@@ -68,7 +67,7 @@ attributes:
   type: string
 - name: inventory-cai-eu-bucket-name
   required: true
-  type: array
+  type: string
 - name: kms-key
   required: true
   type: string
