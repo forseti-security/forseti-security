@@ -61,6 +61,19 @@ class ServerConfigActions:
             sys.exit(1)
 
     @staticmethod
+    def set_inventory_summary_email_enabled(enabled):
+        print(f'Setting inventory summary email enabled to {enabled}')
+        try:
+            config = ServerConfigActions.read_server_config()
+            value = True if enabled.lower() == 'true' else False
+            config['notifier']['inventory']['email_summary']['enabled'] = value
+            ServerConfigActions.write_server_config(config)
+            print('Successfully updated inventory summary email enabled...')
+        except Exception as e:
+            print(f'ERROR: Unable to set inventory summary email enabled. {e}')
+            sys.exit(2)
+
+    @staticmethod
     def write_server_config(config):
         try:
             with open(FORSETI_SERVER_CONFIG, 'w', encoding='utf8') as outfile:
