@@ -70,6 +70,10 @@ OPTIONAL_PACKAGES = {
     ],
     'mailjet': [
         'mailjet-rest==1.3.3'
+    ],
+    'endtoend_tests': [
+        'google-cloud-storage==1.25.0',
+        'pytest==5.3.3'
     ]
 }
 

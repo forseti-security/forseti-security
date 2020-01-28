@@ -715,8 +715,12 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             dict: Organization Policy.
         """
         try:
-            data = client.iter_crm_organization_org_policies(self['name'])
-            return data
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Org policy: %s', e)
             self.add_warning(e)
@@ -733,8 +737,12 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             dict: Access Policy.
         """
         try:
-            data = client.iter_crm_org_access_policies(self['name'])
-            return data
+            access_policies = []
+            access_policy_iter = (
+                client.iter_crm_org_access_policies(self['name']))
+            for access_policy in access_policy_iter:
+                access_policies.append(access_policy)
+            return access_policies
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Access Policy: %s', e)
             self.add_warning(e)
@@ -877,8 +885,12 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
             dict: Folder Organization Policy.
         """
         try:
-            data = client.iter_crm_organization_org_policies(self['name'])
-            return data
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Org policy: %s', e)
             self.add_warning(e)
@@ -962,8 +974,12 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
             dict: Project Organization Policy.
         """
         try:
-            data = client.iter_crm_organization_org_policies(self['name'])
-            return data
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warning('Could not get Org policy: %s', e)
             self.add_warning(e)
