@@ -193,21 +193,17 @@ class Violation(BASE):
         Returns:
             dict: A mapping of Action: Column.
         """
-        columns_to_create = [Column('resource_name',
-                                    String(256),
-                                    default=''),
-                             Column('violation_message',
-                                    Text(),
-                                    default='')]
-
-        columns_to_update = {
+        columns_to_alter = {
             Column('violation_data', Text()):
-            Column('violation_data', Text(16777215))}
+                Column('violation_data', Text(16777215))
+        }
 
-        schema_update_actions = {'CREATE': columns_to_create,
-                                 'ALTER': columns_to_update}
+        columns_to_create = [
+            Column('resource_name', String(256), default=''),
+            Column('violation_message', Text(), default='')
+        ]
 
-        return schema_update_actions
+        return {'ALTER': columns_to_alter, 'CREATE': columns_to_create}
 
 
 class ViolationAccess(object):

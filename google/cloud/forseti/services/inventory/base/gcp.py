@@ -85,7 +85,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
 
         Args:
@@ -1562,10 +1562,10 @@ class ApiClientImpl(ApiClient):
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('ServicePerimeters are not '
+        raise ResourceNotSupported('ServicePerimeter is not '
                                    'supported by this API client')
 
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
 
         Args:

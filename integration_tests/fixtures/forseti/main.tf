@@ -57,7 +57,9 @@ module "forseti" {
   org_id                   = var.org_id
   domain                   = var.domain
   forseti_version          = var.forseti_version
+
   config_validator_enabled = var.config_validator_enabled
+  forseti_run_frequency    = "0 */10 * * *"
 
   inventory_email_summary_enabled = var.inventory_email_summary_enabled
   forseti_email_recipient = var.forseti_email_recipient
