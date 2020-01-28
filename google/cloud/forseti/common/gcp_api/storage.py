@@ -333,7 +333,14 @@ class _StorageObjectsRepository(
 
          Returns:
             int: Total size in bytes of file.
+
+         Raises:
+            HttpError: HttpError is raised if the call to the GCP storage API
+                fails
         """
+        done = False
+        ignored_http_error_codes = [416]
+        progress = None
         verb_arguments = {
             'bucket': bucket,
             'object': object_name}
@@ -347,10 +354,17 @@ class _StorageObjectsRepository(
         media_request.http = self.http
 
         downloader = http.MediaIoBaseDownload(output_file, media_request)
-        done = False
-        while not done:
-            progress, done = downloader.next_chunk(
-                num_retries=self._num_retries)
+        try:
+            while not done:
+                progress, done = downloader.next_chunk(
+                    num_retries=self._num_retries)
+        except errors.HttpError as e:
+            if e.resp.status in ignored_http_error_codes:
+                LOGGER.debug(f'Ignoring HTTP error code {e.resp.status} for '
+                             f'downloading {object_name} object from GCS '
+                             f'bucket {bucket}.')
+                return 0
+            raise
         return progress.total_size
 
     def upload(self, bucket, object_name, file_content):
