@@ -431,7 +431,8 @@ class Inventory(BASE):
                 policy_rows.append(dict(
                     base_row,
                     category=Categories.access_policy,
-                    full_name=cls._get_policy_full_name(resource, 'access_policy'),
+                    full_name=cls._get_policy_full_name(resource,
+                                                        'access_policy'),
                     resource_data=json.dumps(access_policy, sort_keys=True)))
 
         if gcs_policy:
