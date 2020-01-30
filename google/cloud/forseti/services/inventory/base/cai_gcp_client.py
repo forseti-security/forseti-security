@@ -982,6 +982,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for folder in resources:
             yield folder
 
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Services from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of services.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'serviceusage.googleapis.com/Service',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.engine)
+
+        for service in resources:
+            yield service
+
     def iter_kubernetes_nodes(self, project_id, zone, cluster):
         """Iterate k8s nodes in a cluster from Cloud Asset data.
 

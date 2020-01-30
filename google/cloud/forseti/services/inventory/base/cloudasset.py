@@ -101,6 +101,7 @@ DEFAULT_ASSET_TYPES = [
     'rbac.authorization.k8s.io/ClusterRoleBinding',
     'rbac.authorization.k8s.io/Role',
     'rbac.authorization.k8s.io/RoleBinding',
+    'serviceusage.googleapis.com/Service',
     'spanner.googleapis.com/Database',
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',

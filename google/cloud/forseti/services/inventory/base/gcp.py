@@ -945,6 +945,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage services from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.
 
@@ -2708,6 +2716,18 @@ class ApiClientImpl(ApiClient):
                 and asset metadata that defaults to None for all GCP clients.
         """
         return self.serviceusage.get_enabled_apis(project_number), None
+
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage Services from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Service Usage Services are not supported '
+                                   'by this API client.')
 
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.

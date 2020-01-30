@@ -1771,6 +1771,12 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
             return None
 
 
+# Service Usage resource classes
+class ServiceUsageService(resource_class_factory('service', 'name',
+                                                 hash_key=True)):
+    """The Resource implementation for Service Usage Service."""
+
+
 # Cloud Spanner resource classes
 class SpannerDatabase(resource_class_factory('spanner_database', 'name',
                                              hash_key=True)):
@@ -2842,6 +2848,13 @@ class ResourceManagerProjectLienIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Resource Manager Lien."""
 
 
+class ServiceUsageServiceIterator(resource_iter_class_factory(
+        api_method_name='iter_serviceusage_services',
+        resource_name='service',
+        api_method_arg_key='projectNumber')):
+    """The Resource Iterator implementation for Service Usage Services."""
+
+
 class SpannerDatabaseIterator(resource_iter_class_factory(
         api_method_name='iter_spanner_databases',
         resource_name='spanner_database',
@@ -2959,6 +2972,7 @@ FACTORIES = {
             PubsubTopicIterator,
             ResourceManagerProjectLienIterator,
             ResourceManagerProjectOrgPolicyIterator,
+            ServiceUsageServiceIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
         ]}),
@@ -3242,6 +3256,11 @@ FACTORIES = {
     'dns_policy': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DnsPolicy,
+        'contains': []}),
+
+    'service': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ServiceUsageService,
         'contains': []}),
 
     'gsuite_group': ResourceFactory({

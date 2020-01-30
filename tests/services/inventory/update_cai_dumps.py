@@ -222,6 +222,16 @@ def role(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def service(item):
+    parent = item.parent()
+    name = '//serviceusage.googleapis.com/projects/{}/services/{}'.format(
+        parent['projectNumber'], item['data']['name'])
+    asset_type = 'serviceusage.googleapis.com/Service'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def serviceaccount(item):
     parent = item.parent()
     name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
@@ -347,6 +357,7 @@ CAI_TYPE_MAP = {
     'kubernetes_cluster': kubernetes_cluster,
     'network': network,
     'role': role,
+    'service': service,
     'serviceaccount': serviceaccount,
     'serviceaccount_key': serviceaccount_key,
     'snapshot': snapshot,
