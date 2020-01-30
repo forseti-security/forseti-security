@@ -1772,7 +1772,8 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
 
 
 # Service Usage resource classes
-class ServiceUsageService(resource_class_factory('service', 'name')):
+class ServiceUsageService(resource_class_factory('service', 'name',
+                                                 hash_key=True)):
     """The Resource implementation for Service Usage Service."""
 
 
