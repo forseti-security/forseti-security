@@ -1167,7 +1167,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate access policies in an organization from Cloud Asset data.
 
         Args:
@@ -1234,7 +1234,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def iter_crm_project_org_policies(self, project_number):
         """Iterates organization policies from Cloud Asset data in a project.
@@ -1252,7 +1255,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def iter_crm_folder_org_policies(self, folder_id):
         """Iterate organization policies in a folder from Cloud Asset data.
@@ -1269,7 +1275,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.

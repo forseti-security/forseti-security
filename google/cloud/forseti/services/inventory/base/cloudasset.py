@@ -170,6 +170,7 @@ def load_cloudasset_data(engine, config, inventory_index_id):
 
     for gcs_path in cai_gcs_dump_paths:
         try:
+            LOGGER.debug(f'Streaming CAI dump from GCS {gcs_path}.')
             assets = _stream_gcs_to_database(gcs_path,
                                              engine,
                                              storage_client)
