@@ -2848,9 +2848,9 @@ class ResourceManagerProjectLienIterator(resource_iter_class_factory(
 
 
 class ServiceUsageServiceIterator(resource_iter_class_factory(
-    api_method_name='iter_serviceusage_services',
-    resource_name='service',
-    api_method_arg_key='projectNumber')):
+        api_method_name='iter_serviceusage_services',
+        resource_name='service',
+        api_method_arg_key='projectNumber')):
     """The Resource Iterator implementation for Service Usage Services."""
 
 
