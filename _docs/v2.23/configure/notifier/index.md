@@ -232,27 +232,7 @@ the UI or API:
 - via the UI (`API & Services ->  Library`)
 - via the command line in Cloud Shell `gcloud services enable securitycenter.googleapis.com`
 - Note: You will need to have either owner, editor or service management roles
-  in the Project in order to enable the API
-
-**Using Deployment Manager**
-1. Enable the  API connector config to Cloud SCC.  Specifically, this means
-in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
- as follows:
-
-- Open `forseti-security/configs/forseti_conf_server.yaml` from the GCS bucket.
-- Navigate to the `notifier` > `violation` > `cscc` section.
-
-  The options below are available for you to configure:
-
-  * `enabled:`
-    * **Description**: Whether to send notification to Cloud SCC.
-    * **Valid values**: one of valid `true` or `false`
-  
-  * `source_id`
-    * **Description**: ID from the Cloud SCC on-boarding. **This must be added**
-    to use the API integration.
-    * **Valid values**: String
-    * **Note**: It is in the form: source_id: <organizations/ORG_ID/sources/SOURCE_ID>
+  in the Project in order to enable the API.
 
 **Using Terraform**
 1. Enable the  API connector config to Cloud SCC by configuring the following fields in 
