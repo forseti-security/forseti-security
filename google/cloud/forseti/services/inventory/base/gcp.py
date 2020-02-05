@@ -844,6 +844,17 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
     def iter_kubernetes_namespaces(self, project_id, zone, cluster):
         """Iterate k8s namespaces in a cluster from GCP API.
 
@@ -2574,6 +2585,19 @@ class ApiClientImpl(ApiClient):
 
     def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
         """Iterate k8s pods in a namespace from GCP API.
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+         Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Kubernetes resources are not supported '
+                                   'by this API client')
+
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
          Args:
             project_id (str): id of the project to query.
             zone (str): The zone the cluster is in.
