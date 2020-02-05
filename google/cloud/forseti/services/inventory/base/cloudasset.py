@@ -93,6 +93,7 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Namespace',
     'k8s.io/Node',
     'k8s.io/Pod',
+    'k8s.io/Service',
     'iam.googleapis.com/ServiceAccount',
     'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
