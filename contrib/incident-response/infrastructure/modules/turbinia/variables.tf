@@ -20,17 +20,17 @@ variable "gcp_project" {
 
 variable "gcp_region" {
   description = "GCP region to create resources in"
-  default     = "us-central1"
+  default     = "australia-southeast1"
 }
 
 variable "gcp_zone" {
   description = "GCP zone to create resources in"
-  default     = "us-central1-f"
+  default     = "australia-southeast1"
 }
 
 variable "appengine_location" {
   description = "Location for AppEngine and Datastore"
-  default     = "us-central"
+  default     = "australia-southeast1"
 }
 
 variable "gcp_ubuntu_1804_image" {
@@ -64,7 +64,7 @@ variable "turbinia_worker_disk_size_gb" {
 
 variable "turbinia_worker_count" {
   description = "Number of Turbinia worker machines to run."
-  default     = 1
+  default     = 2
 }
 
 variable "turbinia_pip_source" {
