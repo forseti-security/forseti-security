@@ -9,7 +9,7 @@ This guide explains how to install Forseti Security.
 
 ---
 
-## Before you begin
+## **Before you begin**
 
 Before you set up Forseti Security, you will need:
 
@@ -22,14 +22,26 @@ organization Cloud IAM policy.
   Forseti 1.0 installed in it.
 * Enable billing on the project.
 
-## Setting up Forseti Security
+## **Setting up Forseti Security**
 
 The Forseti Terraform module is the only supported method of installing Forseti Security. The default infrastructure for 
 Forseti is Google Compute Engine. This module also supports installing Forseti on Google Kubernetes Engine (GKE), 
 and at some point in the future will become the default. For more information on installing Forseti on-GKE, please see 
 the [detailed guide on setting up Forseti on-GKE]({% link _docs/latest/setup/forseti-on-gke.md %}).
 
-## Google Cloud Shell Walkthrough
+## **Requirements**
+This section describes in detail the requirements necessary to deploy Forseti. The setup helper script automates the 
+service account creation and enabling the APIs for you. Read through this section if you are not using the setup script 
+or want to understand these details.
+
+1. Install Terraform.
+2. A GCP project to deploy Forseti into. The 
+[Google Project Factory Terraform](https://github.com/terraform-google-modules/terraform-google-project-factory) module 
+can be used to provision the project with the required APIs enabled, along with a Shared VPC connection.
+3. The Service Account used to execute this module has the right permissions.
+4. Enable the required GCP APIs to allow the Terraform module to deploy Forseti.
+
+## **Google Cloud Shell Walkthrough**
 A Google Cloud Shell walkthrough has been setup to make it easy for users who are new to Forseti and Terraform. 
 This walkthrough provides a set of instructions to get a default installation of Forseti setup that can be used in a 
 production environment.
@@ -41,7 +53,12 @@ walkthrough and move onto the How to Deploy section below.
 [![Open in Google Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=modulerelease520&cloudshell_working_dir=examples/install_simple&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 
-## How to Deploy
+## **How to Deploy**
+
+### Install Terraform
+Terraform version 0.12 is required for this module, which can be downloaded from the 
+[Terraform website](https://www.terraform.io/downloads.html).
+
 In order to run this module you will need to be authenticated as a user that has access to the project and can 
 create/authorize service accounts at both the organization and project levels. To login to GCP from a shell:
 
@@ -49,19 +66,21 @@ create/authorize service accounts at both the organization and project levels. T
 gcloud auth login
 ```
 
-### Install Terraform
-Terraform version 0.12 is required for this module, which can be downloaded from the 
-[Terraform website](https://www.terraform.io/downloads.html).
+## Service Account
+In order to execute this module you must have a Service Account with the following IAM roles assigned.
+
+### IAM Roles
+For this module to work, you need the following roles enabled on the Service Account.
+
+{% include docs/latest/forseti-terraform-sa-roles.md %}
 
 ### Create the Service Account and enable required APIs
-
-#### Service Account
 
 {% include docs/latest/setup-script-credentials.md %}
 
 {% include docs/latest/setup-script-credentials-gce.md %}
 
-#### APIs
+### APIs
 For this module to work, you need the following APIs enabled on the Forseti project:
 
 {% include docs/latest/forseti-terraform-setup-apis.md %}
@@ -79,7 +98,7 @@ Create a file named `main.tf` in an empty directory and copy the contents below 
 ```hcl
 module "forseti" {
   source  = "terraform-google-modules/forseti/google"
-  version = "~> 5.0.0"
+  version = "~> 5.1"
 
   gsuite_admin_email = "superadmin@yourdomain.com"
   domain             = "yourdomain.com"
@@ -148,7 +167,7 @@ policy enforcer, you can set the `-e` flag to clean up those roles as well:
 ./scripts/cleanup.sh -p PROJECT_ID -o ORG_ID -S cloud-foundation-forseti-<suffix> -e
 ```
 
-## Forseti Configuration
+## **Forseti Configuration**
 Now that Forseti has been deployed, there are additional steps that you can follow to further 
 [configure Forseti]({% link _docs/latest/configure/index.md %}). Some of the commonly used features are 
 listed below:
@@ -158,34 +177,7 @@ listed below:
   - After activating this integration, add the Source ID into the Terraform configuration using 
   the `cscc_source_id` input and re-run the Terraform `apply` command.
 
-## Requirements
-This section describes in detail the requirements necessary to deploy Forseti. The setup helper script automates the 
-service account creation and enabling the APIs for you. Read through this section if you are not using the setup script 
-or want to understand these details.
-
-1. Install Terraform.
-2. A GCP project to deploy Forseti into. The 
-[Google Project Factory Terraform](https://github.com/terraform-google-modules/terraform-google-project-factory) module 
-can be used to provision the project with the required APIs enabled, along with a Shared VPC connection.
-3. The Service Account used to execute this module has the right permissions.
-4. Enable the required GCP APIs to allow the Terraform module to deploy Forseti.
-
-## Software Dependencies
-
-### Terraform and Plugins
-- [Terraform](https://www.terraform.io/downloads.html) 0.12
-- [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) 2.11.0
-- [Terraform Provider Templates](https://www.terraform.io/docs/providers/template/index.html) 2.0
-
-## Service Account
-In order to execute this module you must have a Service Account with the following IAM roles assigned.
-
-### IAM Roles
-For this module to work, you need the following roles enabled on the Service Account.
-
-{% include docs/latest/forseti-terraform-sa-roles.md %}
-
-## Outputs
+## **Outputs**
 When completed, the Terraform deployment will output a list of values on the terminal that can help users identify 
 important resources that have been created by the Forseti installation. View the list of outputs 
 [here](https://github.com/forseti-security/terraform-google-forseti#outputs).
