@@ -41,13 +41,6 @@ can be used to provision the project with the required APIs enabled, along with 
 3. The Service Account used to execute this module has the right permissions.
 4. Enable the required GCP APIs to allow the Terraform module to deploy Forseti.
 
-## **Software Dependencies**
-
-### Terraform and Plugins
-- [Terraform](https://www.terraform.io/downloads.html) 0.12
-- [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) 2.11.0
-- [Terraform Provider Templates](https://www.terraform.io/docs/providers/template/index.html) 2.0
-
 ## **Google Cloud Shell Walkthrough**
 A Google Cloud Shell walkthrough has been setup to make it easy for users who are new to Forseti and Terraform. 
 This walkthrough provides a set of instructions to get a default installation of Forseti setup that can be used in a 
@@ -105,7 +98,7 @@ Create a file named `main.tf` in an empty directory and copy the contents below 
 ```hcl
 module "forseti" {
   source  = "terraform-google-modules/forseti/google"
-  version = "~> 5.2.0"
+  version = "~> 5.1"
 
   gsuite_admin_email = "superadmin@yourdomain.com"
   domain             = "yourdomain.com"
