@@ -47,8 +47,7 @@ apt-get update
 apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 
 # Install Timesketch from PyPi.
-#pip3 install timesketch
-pip3 install https://github.com/google/timesketch/archive/enable-new-ui.zip
+pip3 install timesketch
 
 # Create default config.
 cp /usr/local/share/timesketch/timesketch.conf /etc/
