@@ -1,10 +1,10 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#   https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@
 sudo: required
 jobs:
   include:
-  - stage: Unit test
+  - stage: Unit Tests
     name: Unit Tests with Python 3.6
     language: python
     python:
@@ -24,31 +24,9 @@ jobs:
     - docker
     before_install:
     - "./install/scripts/docker_setup_forseti.sh"
-    install:
-    -
     script:
     - "./install/scripts/docker_run_forseti.sh"
     - "./install/scripts/docker_unittest_forseti.sh"
     - "./install/scripts/docker_pystyle_forseti.sh"
     after_success:
-    - # Collect codecov results.
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
-  - stage: Integration test
-    name: Integration test - docker
-    if: (type = push AND branch = master) OR (branch =~ /^release-.*$/) OR (branch =~ /^test\/.*$/)
-    services:
-    - docker
-    before_install:
-    - openssl aes-256-cbc -K $encrypted_4a777c2b03c8_key -iv $encrypted_4a777c2b03c8_iv
-      -in secret-key.tar.enc -out secret-key.tar -d
-    - tar xvf secret-key.tar
-    install:
-    - docker image pull gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
-    script:
-    - docker container run -it
-      -e TF_VAR_forseti_version=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-      -e KITCHEN_TEST_BASE_PATH="integration_tests/tests"
-      -e SERVICE_ACCOUNT_JSON="$(< credentials.json)"
-      --env-file travis-integration.env
-      -v $(pwd):/workspace
-      gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1 /usr/local/bin/test_integration.sh

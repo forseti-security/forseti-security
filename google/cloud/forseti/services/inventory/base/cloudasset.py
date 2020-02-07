@@ -28,7 +28,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory import cai_temporary_storage
 
 LOGGER = logger.get_logger(__name__)
-CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
+CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY', 'ORG_POLICY', 'ACCESS_POLICY']
 
 # Any asset type referenced in cai_gcp_client.py needs to be added here.
 DEFAULT_ASSET_TYPES = [
@@ -93,13 +93,16 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Namespace',
     'k8s.io/Node',
     'k8s.io/Pod',
+    'k8s.io/Service',
     'iam.googleapis.com/ServiceAccount',
+    'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
     'pubsub.googleapis.com/Topic',
     'rbac.authorization.k8s.io/ClusterRole',
     'rbac.authorization.k8s.io/ClusterRoleBinding',
     'rbac.authorization.k8s.io/Role',
     'rbac.authorization.k8s.io/RoleBinding',
+    'serviceusage.googleapis.com/Service',
     'spanner.googleapis.com/Database',
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',
@@ -128,7 +131,7 @@ def _download_cloudasset_data(config, inventory_index_id):
         root_resources.append(config.get_root_resource_id())
     cloudasset_client = cloudasset.CloudAssetClient(
         config.get_api_quota_configs())
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
         for root_id in root_resources:
             for content_type in CONTENT_TYPES:
@@ -168,6 +171,7 @@ def load_cloudasset_data(engine, config, inventory_index_id):
 
     for gcs_path in cai_gcs_dump_paths:
         try:
+            LOGGER.debug(f'Streaming CAI dump from GCS {gcs_path}.')
             assets = _stream_gcs_to_database(gcs_path,
                                              engine,
                                              storage_client)

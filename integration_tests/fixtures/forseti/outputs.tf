@@ -18,10 +18,10 @@ output "bastion_host" {
   value = module.bastion.host
 }
 
-//output "forseti-cai-storage-bucket" {
-//  description = "Forseti CAI storage bucket"
-//  value       = module.forseti.forseti-cai-storage-bucket
-//}
+output "forseti-cai-storage-bucket" {
+  description = "Forseti CAI storage bucket"
+  value       = module.forseti.forseti-cai-storage-bucket
+}
 
 output "forseti-client-vm-ip" {
   description = "Forseti Client VM private IP address"
@@ -41,6 +41,22 @@ output "forseti-client-service-account" {
 output "forseti-client-storage-bucket" {
   description = "Forseti Client storage bucket"
   value       = module.forseti.forseti-client-storage-bucket
+}
+
+output "forseti-cloudsql-password" {
+  description = "CloudSQL password"
+  value       = module.forseti.forseti-cloudsql-password
+  sensitive   = true
+}
+
+output "forseti-cloudsql-user" {
+  description = "CloudSQL user"
+  value       = module.forseti.forseti-cloudsql-user
+}
+
+output "forseti-email-sender" {
+  description = "Email address that sends the Forseti notifications"
+  value       = var.forseti_email_sender
 }
 
 output "forseti-server-vm-ip" {
@@ -63,10 +79,19 @@ output "forseti-server-storage-bucket" {
   value       = module.forseti.forseti-server-storage-bucket
 }
 
-output "kms_resources_names" {
-  description = "Forseti KMS resources"
-  value       = [
-    google_kms_key_ring.test-keyring.name, google_kms_crypto_key.test-crypto-key.name]
+output "forseti-version" {
+  description = "Forseti Server storage bucket"
+  value       = var.forseti_version
+}
+
+output "kms-key" {
+  description = "KMS key to be used for encrypting/decrypting test resources"
+  value       = var.kms_key
+}
+
+output "kms-keyring" {
+  description = "KMS keyring to be used for encrypting/decrypting test resources"
+  value       = var.kms_keyring
 }
 
 output "org_id" {
@@ -82,4 +107,30 @@ output "project_id" {
 output "suffix" {
   description = "The random suffix appended to Forseti resources"
   value       = module.forseti.suffix
+}
+
+# Test Resources
+output "bucket_acl_scanner_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner test"
+  value       = module.test_resources.bucket_acl_scanner_bucket_name
+}
+
+output "enforcer_allow_all_icmp_rule_name" {
+  description = "Firewall rule name created for the Firewall Enforcer test"
+  value       = module.test_resources.enforcer_allow_all_icmp_rule_name
+}
+
+output "firewall-allow-all-ingress-name" {
+  description = "Firewall rule name created for the firewall scanner test"
+  value       = module.test_resources.firewall-allow-all-ingress-name
+}
+
+output "inventory-performance-cai-dump-paths" {
+  description = "GCS paths of the CAI dump files to be used for the inventory performance test"
+  value       = var.inventory_performance_cai_dump_paths
+}
+
+output "inventory-cai-eu-bucket-name" {
+  description = "Bucket name of EU bucket create for the the Inventory CAI Enabled vs Disabled test"
+  value       = module.test_resources.inventory-cai-eu-bucket-name
 }

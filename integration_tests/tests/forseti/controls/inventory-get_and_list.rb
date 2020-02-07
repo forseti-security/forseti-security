@@ -15,14 +15,11 @@
 require 'securerandom'
 require 'json'
 
-db_user_name = attribute('db_user_name')
-db_password = attribute('db_password')
-if db_password.strip != ""
-  db_password = "-p#{db_password}"
-end
-random_string = SecureRandom.uuid.gsub!('-', '')
+db_user_name = attribute('forseti-cloudsql-user')
+db_password = attribute('forseti-cloudsql-password')
+random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "inventory - get" do
+control "inventory-get-list" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
 
   describe command("forseti model use #{random_string}") do
@@ -39,7 +36,7 @@ control "inventory - get" do
     its('stdout') { should match (/#{@inventory_id}/)}
   end
 
-  describe command("mysql -u #{db_user_name} #{db_password} --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{@inventory_id};\"") do
+  describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"select * from inventory_index where id = #{@inventory_id};\"") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match (/#{@inventory_id}/)}
   end

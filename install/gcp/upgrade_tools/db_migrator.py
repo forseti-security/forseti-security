@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,14 +25,17 @@ import sys
 import migrate.changeset  # noqa: F401, pylint: disable=unused-import
 from sqlalchemy.exc import OperationalError
 
+from google.cloud.forseti.common.util import logger
 import google.cloud.forseti.services.scanner.dao as scanner_dao
 import google.cloud.forseti.services.inventory.storage as inventory_dao
 import google.cloud.forseti.services.dao as general_dao
 
-from google.cloud.forseti.common.util import logger
 
 DB_NAME = os.environ.get('FORSETI_DB_NAME', 'forseti_security')
-DEFAULT_DB_CONN_STR = f'mysql+pymysql://root@127.0.0.1:3306/{DB_NAME}'
+DB_USER = os.environ.get('SQL_DB_USER', '')
+DB_PASSWORD = os.environ.get('SQL_DB_PASSWORD', '')
+DEFAULT_DB_CONN_STR = (f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@'
+                       f'127.0.0.1:3306/{DB_NAME}')
 LOGGER = logger.get_logger(__name__)
 
 
@@ -41,17 +44,6 @@ class ColumnAction(object):
     DROP = 'DROP'
     CREATE = 'CREATE'
     ALTER = 'ALTER'
-
-
-def create_column(table, column):
-    """Create Column.
-
-    Args:
-        table (sqlalchemy.schema.Table): The sql alchemy table object.
-        column (sqlalchemy.schema.Column): The sql alchemy column object.
-    """
-    LOGGER.info('Attempting to create column: %s', column.name)
-    column.create(table, populate_default=True)
 
 
 def alter_column(table, old_column, new_column):
@@ -64,14 +56,25 @@ def alter_column(table, old_column, new_column):
         new_column (sqlalchemy.schema.Column): The sql alchemy column object,
             this is the column to update to.
     """
-    LOGGER.info('Attempting to alter column: %s', old_column.name)
+    LOGGER.info(f'Attempting to alter column {table.name}.{old_column.name}.')
 
     # bind the old column with the corresponding table.
     old_column.table = table
-
     old_column.alter(name=new_column.name,
                      type=new_column.type,
                      nullable=new_column.nullable)
+
+
+def create_column(table, column):
+    """Create Column.
+
+    Args:
+        table (sqlalchemy.schema.Table): The sql alchemy table object.
+        column (sqlalchemy.schema.Column): The sql alchemy column object.
+    """
+    if column.name not in table.columns:
+        LOGGER.info(f'Attempting to create column {table.name}.{column.name}')
+        column.create(table, populate_default=True)
 
 
 def drop_column(table, column):
@@ -81,7 +84,7 @@ def drop_column(table, column):
         table (sqlalchemy.schema.Table): The sql alchemy table object.
         column (sqlalchemy.schema.Column): The sql alchemy column object.
     """
-    LOGGER.info('Attempting to drop column: %s', column.name)
+    LOGGER.info(f'Attempting to drop column {table.name}.{column.name}')
     column.drop(table)
 
 
@@ -97,26 +100,28 @@ def migrate_schema(base, dao_classes):
         base (Base): Declarative base.
         dao_classes (list): A list of dao classes.
     """
-
     # Find all the Table objects for each of the classes.
     # The format of tables is: {table_name: Table object}.
     tables = base.metadata.tables
-
     schema_update_actions_method = 'get_schema_update_actions'
 
     for dao_class in dao_classes:
         get_schema_update_actions = getattr(dao_class,
                                             schema_update_actions_method,
                                             None)
-        if (not callable(get_schema_update_actions) or
-                dao_class.__tablename__ not in tables):
-            LOGGER.info('Table %s doesn\'t require update.',
-                        dao_class.__tablename__)
+        if not callable(get_schema_update_actions):
+            LOGGER.info(f'Table {dao_class.__tablename__} has not implemented '
+                        f'the get_schema_update_actions method.')
             continue
+        if dao_class.__tablename__ not in tables:
+            LOGGER.info(f'Table {dao_class.__tablename__} not found in '
+                        f'existing database tables.')
+            continue
+
         LOGGER.info('Updating table %s', dao_class.__tablename__)
-        # schema_update will require the Table object.
         table = tables.get(dao_class.__tablename__)
         schema_update_actions = get_schema_update_actions()
+
         for column_action, columns in schema_update_actions.items():
             if column_action in [ColumnAction.CREATE, ColumnAction.DROP]:
                 _create_or_drop_columns(column_action, columns, table)
