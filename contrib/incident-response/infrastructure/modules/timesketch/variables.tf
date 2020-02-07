@@ -20,12 +20,12 @@ variable "gcp_project" {
 
 variable "gcp_region" {
   description = "GCP region to create resources in"
-  default     = "australia-southeast1"
+  default     = "us-central1"
 }
 
 variable "gcp_zone" {
   description = "GCP zone to create resources in"
-  default     = "australia-southeast1-b"
+  default     = "us-central1-f"
 }
 
 variable "gcp_ubuntu_1804_image" {
