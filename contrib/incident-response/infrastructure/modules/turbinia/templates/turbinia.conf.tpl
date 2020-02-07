@@ -12,6 +12,56 @@ MOUNT_DIR_PREFIX    = '/mnt/turbinia'
 SHARED_FILESYSTEM   = False
 DEBUG_TASKS         = False
 
+# This will enable the usage of docker containers for the worker.
+DOCKER_ENABLED = False
+
+# Any jobs added to this list will disable it from being used.
+DISABLED_JOBS = []
+
+# Configure additional job dependency checks below.
+DEPENDENCIES = [{
+    'job': 'BinaryExtractorJob',
+    'programs': ['image_export.py'],
+    'docker_image': None
+}, {
+    'job': 'BulkExtractorJob',
+    'programs': ['bulk_extractor'],
+    'docker_image': None
+}, {
+    'job': 'GrepJob',
+    'programs': ['grep'],
+    'docker_image': None
+}, {
+    'job': 'HadoopAnalysisJob',
+    'programs': ['strings'],
+    'docker_image': None
+}, {
+    'job': 'HindsightJob',
+    'programs': ['hindsight.py'],
+    'docker_image': None
+}, {
+    'job': 'JenkinsAnalysisJob',
+    'programs': ['john'],
+    'docker_image': None
+}, {
+    'job': 'PlasoJob',
+    'programs': ['log2timeline.py'],
+    'docker_image': None
+}, {
+    'job': 'PsortJob',
+    'programs': ['psort.py'],
+    'docker_image': None
+}, {
+    'job': 'StringsJob',
+    'programs': ['strings'],
+    'docker_image': None
+}, {
+    'job': 'VolatilityJob',
+    'programs': ['vol.py'],
+    'docker_image': None
+}]
+
+
 # GCP
 TURBINIA_PROJECT    = '${project}'
 TURBINIA_REGION     = '${region}'

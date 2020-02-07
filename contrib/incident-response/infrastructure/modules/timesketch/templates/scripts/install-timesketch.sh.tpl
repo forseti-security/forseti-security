@@ -50,20 +50,21 @@ apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 pip3 install timesketch
 
 # Create default config.
-cp /usr/local/share/timesketch/timesketch.conf /etc/
+mkdir /etc/timesketch
+wget https://raw.githubusercontent.com/google/timesketch/master/data/timesketch.conf -O /etc/timesketch/timesketch.conf
 
 # Set session key.
-sed -i s/"SECRET_KEY = '<KEY_GOES_HERE>'"/"SECRET_KEY = '$${SECRET_KEY}'"/ /etc/timesketch.conf
+sed -i s/"SECRET_KEY = '<KEY_GOES_HERE>'"/"SECRET_KEY = '$${SECRET_KEY}'"/ /etc/timesketch/timesketch.conf
 
 # Configure database password.
-sed -i s/"<USERNAME>:<PASSWORD>@localhost\/timesketch"/"${postgresql_user}:${postgresql_password}@${postgresql_host}\/${postgresql_db_name}"/ /etc/timesketch.conf
+sed -i s/"<USERNAME>:<PASSWORD>@localhost\/timesketch"/"${postgresql_user}:${postgresql_password}@${postgresql_host}\/${postgresql_db_name}"/ /etc/timesketch/timesketch.conf
 
 # What Elasticsearch server to use.
-sed -i s/"ELASTIC_HOST = '127.0.0.1'"/"ELASTIC_HOST = '${elasticsearch_node}'"/ /etc/timesketch.conf
+sed -i s/"ELASTIC_HOST = '127.0.0.1'"/"ELASTIC_HOST = '${elasticsearch_node}'"/ /etc/timesketch/timesketch.conf
 
 # Enable upload.
-sed -i s/"UPLOAD_ENABLED = False"/"UPLOAD_ENABLED = True"/ /etc/timesketch.conf
-sed -i s/"redis:\/\/127.0.0.1:6379"/"redis:\/\/${redis_host}:${redis_port}"/ /etc/timesketch.conf
+sed -i s/"UPLOAD_ENABLED = False"/"UPLOAD_ENABLED = True"/ /etc/timesketch/timesketch.conf
+sed -i s/"redis:\/\/127.0.0.1:6379"/"redis:\/\/${redis_host}:${redis_port}"/ /etc/timesketch/timesketch.conf
 
 
 # Systemd configuration for Gunicorn.
