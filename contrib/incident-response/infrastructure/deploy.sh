@@ -7,9 +7,9 @@ terraform apply -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
 
 # Turbinia
 cd ~
-#virtualenv --python=/usr/bin/python2.7 turbinia
-#source turbinia/bin/activate
-#pip install turbinia
+virtualenv --python=/usr/bin/python2.7 turbinia
+source turbinia/bin/activate
+pip install turbinia
 cd $DIR
 terraform output turbinia-config > ~/.turbiniarc
 sed -i s/"\/var\/log\/turbinia\/turbinia.log"/"\/tmp\/turbinia.log"/ ~/.turbiniarc
