@@ -111,6 +111,11 @@ resource "google_cloudfunctions_function" "cloudfunctions" {
   trigger_http              = true
   source_archive_bucket     = "${google_storage_bucket.output-bucket.name}"
   source_archive_object     = "${google_storage_bucket_object.cloudfunction-archive.name}"
+  timeouts {
+    create = "60m"
+    update = "60m"
+    delete = "60m"
+  }
 }
 
 # Template for systemd service file
