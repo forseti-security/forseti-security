@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$DEVSHELL_PROJECT_ID" ]; then
+  echo "ERROR: Project ID unknown - please restart cloudshell"
+  exit 1
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
 terraform init
