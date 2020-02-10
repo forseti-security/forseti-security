@@ -46,6 +46,9 @@ add-apt-repository -y ppa:gift/stable
 apt-get update
 apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 
+# Install Google Cloud dependencies
+pip3 install google-cloud-pubsub google-cloud-storage
+
 # Install Timesketch from PyPi.
 pip3 install timesketch
 
@@ -170,12 +173,29 @@ EOF
 mkdir -p /var/{lib,log,run}/celery
 chown www-data /var/{lib,log,run}/celery
 
+# GCS importer
+wget https://raw.githubusercontent.com/google/timesketch/master/contrib/gcs_importer.py -O /usr/local/bin/gcs-importer.py
+
+cat > /etc/systemd/system/gcs-importer.service <<EOF
+[Unit]
+Description=Google Cloud Storage importer for Timesketch
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/gcs-importer.py --project ${gcp_project} --bucket turbinia-${infrastructure_id} --subscription gcs-subscription --output /tmp/
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Enable and start WSGI, Celery and NGINX servers.
 /bin/systemctl daemon-reload
 /bin/systemctl enable gunicorn.socket
 /bin/systemctl restart gunicorn.socket
 /bin/systemctl enable celery.service
 /bin/systemctl restart celery.service
+/bin/systemctl enable gcs-importer.service
+/bin/systemctl restart gcs-importer.service
 /bin/systemctl restart nginx
 
 # --- END MAIN ---

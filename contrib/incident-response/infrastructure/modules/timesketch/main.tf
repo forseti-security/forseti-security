@@ -159,6 +159,8 @@ data "template_file" "timesketch-server-startup-script" {
     postgresql_password       = "${random_string.timesketch-db-password.result}"
     redis_host                = "${google_redis_instance.redis.host}"
     redis_port                = "${google_redis_instance.redis.port}"
+    gcp_project               = "${var.gcp_project}"
+    infrastructure_id         = "${var.infrastructure_id}}"
   }
 }
 
