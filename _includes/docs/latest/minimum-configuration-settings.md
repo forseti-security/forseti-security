@@ -3,14 +3,15 @@ To run Forseti, you'll need to set up your configuration file. Please see the
 get a default installation of Forseti setup that can be used in production 
 environment. 
 
-Please see the optional settings below to customize your inventory. View the
-list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) to see all of the available options and default values.
+Please see the optional settings below to customize your inventory. View the 
+full list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs)
+to see all of the available options and default values.
 
 You must set `composite_root_resources` variable in your `main.tf` if you want 
 to run Forseti on a non-organizational root, or one or more resources from GCP
 resource hierarchy (organizations, folders and projects) in any combination.
 
-**NOTE:** The composite_root_resources configuration does not support G Suite 
+**NOTE:** The `composite_root_resources` configuration does not support G Suite 
 and Explain at this time.
 
 * `composite_root_resources`
@@ -24,10 +25,10 @@ and Explain at this time.
     to the Forseti service account before they can be included in the inventory.
 
     Resources can exist in multiple organizations.
-  * **Valid values**: List of Strings,
-    the format for each string is `<resource_type>/<resource_id>`.
-  * **Example values**: `organizations/5678901234`, `folders/12345677890`, 
-    `projects/9876543210`,
+  * **Valid values**: List of Strings. The format for each string is 
+    `<resource_type>/<resource_id>`.
+  * **Example values**: `organizations/5678901234`, `folders/12345677890` and 
+    `projects/9876543210`.
 
 * `gsuite_admin_email`
   * **Description**: G Suite administrator email address to match your Forseti
@@ -40,7 +41,7 @@ process for your organization. The default values are setup based on the
 default quota that all organizations get in Google Cloud Platform and to ensure
 the greatest breadth of resources and policies are covered by the inventory.
 
-* `api_quota`
+* API Quota:
   * **Description**: The maximum calls we can make to each API per second. This
     should be about 10% lower than the max allowed API quota to allow space for
     retries.
