@@ -12,8 +12,8 @@ resource hierarchy.
 But, you also have the option to run Forseti on a subset of resources:
 1. if you are Org Admin, and you want to run Forseti on a specific folder
 1. if you are Folder Admin, and you want to run Forseti on a specific folder
-1. if you are Project Admin, and you want to run Forseti on projects
-that are only owned by you.
+1. if you are Project Admin, and you want to run Forseti on projects that are 
+only owned by you.
 
 Inventory, Data Model, and Scanner will be supported for use on these subset
 of resources, but Explain will not be supported.
@@ -46,13 +46,10 @@ will be collected in Inventory and audited.
 ## Configure Forseti to Run on Projects
 
 As an alternative, you can use the `composite_root_resources` configuration to 
-include multiple resources in a single Forseti installation.
+include one or more resources from GCP resource hierarchy in a single Forseti 
+installation.
 See [Configure Inventory]({% link _docs/latest/configure/inventory/index.md %})
 for more details.
-
-**Note:** `composite_root_resources` variable accepts a list of root resources 
-(organizations, folders and projects) that Forseti will monitor where each
-resource is enclosed in a string.
 
 For example: `composite_root_resources:` `["folders/<foo_folder1_id>", "projects/<foo_project1_id"]`
 
