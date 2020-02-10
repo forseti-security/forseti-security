@@ -57,6 +57,43 @@ resource "google_storage_bucket" "output-bucket" {
   force_destroy = true
 }
 
+# Bucket notfication for GCS importer
+resource "google_pubsub_topic" "pubsub-topic-gcs" {
+  name = "turbinia-gcs"
+  depends_on  = ["google_project_service.services"]
+}
+
+data "google_storage_project_service_account" "gcs-pubsub-account" {
+}
+
+resource "google_pubsub_topic_iam_binding" "binding" {
+  topic   = google_pubsub_topic.pubsub-topic-gcs.id
+  role    = "roles/pubsub.publisher"
+  members = ["serviceAccount:${data.google_storage_project_service_account.gcs-pubsub-account.email_address}"]
+}
+
+resource "google_storage_notification" "notification" {
+  bucket         = google_storage_bucket.output-bucket.name
+  payload_format = "JSON_API_V1"
+  topic          = google_pubsub_topic.pubsub-topic-gcs.id
+  event_types    = ["OBJECT_FINALIZE", "OBJECT_METADATA_UPDATE"]
+  custom_attributes = {
+    new-attribute = "new-attribute-value"
+  }
+  depends_on = [google_pubsub_topic_iam_binding.binding]
+}
+
+resource "google_pubsub_subscription" "gcs-subscription" {
+  name  = "gcs-subscription"
+  topic = google_pubsub_topic.pubsub-topic-gcs.name
+  message_retention_duration = "1200s"
+  retain_acked_messages      = true
+  ack_deadline_seconds = 20
+  expiration_policy {
+    ttl = "300000.5s"
+  }
+}
+
 # AppEngine is needed in order to activate datastore
 resource "google_app_engine_application" "app" {
   project     = "${var.gcp_project}"
