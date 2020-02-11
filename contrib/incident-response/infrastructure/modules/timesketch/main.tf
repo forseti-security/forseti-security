@@ -160,7 +160,7 @@ data "template_file" "timesketch-server-startup-script" {
     redis_host                = "${google_redis_instance.redis.host}"
     redis_port                = "${google_redis_instance.redis.port}"
     gcp_project               = "${var.gcp_project}"
-    infrastructure_id         = "${var.infrastructure_id}}"
+    infrastructure_id         = "${var.infrastructure_id}"
   }
 }
 
