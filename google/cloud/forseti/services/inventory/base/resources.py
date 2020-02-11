@@ -1650,6 +1650,10 @@ class KubernetesPod(k8_resource_class_factory('kubernetes_pod')):
     """The Resource implementation for Kubernetes Pod."""
 
 
+class KubernetesService(k8_resource_class_factory('kubernetes_service')):
+    """The Resource implementation for Kubernetes Service."""
+
+
 class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace')):
     """The Resource implementation for Kubernetes Namespace."""
 
@@ -2681,6 +2685,29 @@ class KubernetesPodIterator(ResourceIterator):
             LOGGER.debug(e)
 
 
+class KubernetesServiceIterator(ResourceIterator):
+    """The Resource iterator implementation for Kubernetes Service"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: Kubernetes Service created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_services(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_service'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class KubernetesNamespaceIterator(ResourceIterator):
     """The Resource iterator implementation for KubernetesNamespace"""
 
@@ -3349,6 +3376,7 @@ FACTORIES = {
             KubernetesPodIterator,
             KubernetesRoleIterator,
             KubernetesRoleBindingIterator,
+            KubernetesServiceIterator,
         ]}),
 
     'kubernetes_node': ResourceFactory({
@@ -3359,6 +3387,11 @@ FACTORIES = {
     'kubernetes_pod': ResourceFactory({
         'dependsOn': ['kubernetes_namespace'],
         'cls': KubernetesPod,
+        'contains': []}),
+
+    'kubernetes_service': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesService,
         'contains': []}),
 
     'kubernetes_role': ResourceFactory({

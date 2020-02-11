@@ -264,6 +264,25 @@ def kubernetes_cluster(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def kubernetes_service(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/projects/{}/zones/{}/'
+            'clusters/{}/k8s/namespaces/{}/services/{}'.format(
+                parent['projectId'],
+                parent['zone'],
+                parent['name'],
+                item['metadata']['namespace'],
+                item['metadata']['name']))
+    asset_type = 'k8s.io/Service'
+    parent_name = ('//container.googleapis.com/projects/{}/zones/{}/'
+                   'clusters/{}/k8s/namespaces/{}'.format(
+                    parent['projectId'],
+                    parent['zone'],
+                    parent['name'],
+                    item['metadata']['namespace']))
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def _create_compute_asset(item, asset_type):
     parent = item.parent()
     self_link = '/'.join(item['selfLink'].split('/')[5:])
@@ -355,6 +374,7 @@ CAI_TYPE_MAP = {
     'interconnect': interconnect,
     'interconnect_attachment': interconnect_attachment,
     'kubernetes_cluster': kubernetes_cluster,
+    'kubernetes_service': kubernetes_service,
     'network': network,
     'role': role,
     'service': service,
