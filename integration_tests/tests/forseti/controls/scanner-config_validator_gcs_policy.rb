@@ -54,20 +54,33 @@ control "scanner-config-validator-gcs-policy" do
   # Act
   describe command("forseti scanner run") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Running ConfigValidatorScanner.../) }
-    its('stdout') { should match (/Scan completed/) }
-    its('stdout') { should match (/Scanner Index ID: (.*[0-9]*) is created/) }
+    its('stdout') { should match(/Running ConfigValidatorScanner.../) }
+    its('stdout') { should match(/Scan completed/) }
+    its('stdout') { should match(/Scanner Index ID: (.*[0-9]*) is created/) }
+  end
+
+  # Test notifier for the GCS export
+  describe command("forseti notifier run --inventory_index_id #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/Notification completed!/) }
+    its('stdout') { should match(/Retrieved ([0-9]*) violations for resource 'config_validator_violations'/) }
   end
 
   # Assert violations exist for Cloud SQL Location policy
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_cloudsql_instance_name}' AND V.violation_type = CONCAT('CV_', V.rule_name);\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/) }
+    its('stdout') { should match(/1/) }
   end
 
   # Assert violations exist for Compute Zone policy
   describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT COUNT(*) FROM violations V JOIN forseti_security.scanner_index SI ON SI.id = V.scanner_index_id WHERE SI.inventory_index_id = #{@inventory_id} AND V.resource_id = '#{forseti_server_vm_name}' AND V.resource_type = 'compute.googleapis.com/Instance' AND V.violation_type = CONCAT('CV_', V.rule_name);\"") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/1/) }
+    its('stdout') { should match(/1/) }
+  end
+
+  # Assert GCS violations file exists
+  gcs_file_path = "gs://#{forseti_server_storage_bucket}/scanner_violations/violations.config_validator_violations.#{@inventory_id}.*"
+  describe command("sudo gsutil ls #{gcs_file_path}") do
+    its('exit_status') { should eq 0 }
   end
 end
