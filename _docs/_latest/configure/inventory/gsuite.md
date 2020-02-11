@@ -38,25 +38,25 @@ https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googl
 
 ## Configuring Forseti to collect G Suite data
 
-After you set up your service account above, you may need to edit the
-[`domain_super_admin_email`]({% link _docs/latest/configure/inventory/index.md %})
-field in your `forseti_conf_server.yaml`.
+To collect G Suite data, set the `gsuite_admin_email` variable to the G Suite
+administrator email address in your `main.tf`.
 
-If you are running Forseti on GCP and made any changes to the above values,
-you will need to copy the `conf` file to the Cloud Storage bucket. For more
-information, see
+When you're finished making changes:
+- Run command `terraform plan` to see the infrastructure plan. 
+- Run command `terraform apply` to apply the infrastructure build.
+
 [Moving configuration to Cloud Storage]({% link _docs/latest/configure/general/index.md %}).
 
 ## Troubleshooting
 
-Below are the common errors for GSuite configurations and the steps to be taken
+Below are the common errors for G Suite configurations and the steps to be taken
 to resolve the errors.
 
 You can find what errors have happened by running `forseti inventory list|get`,
 or look at the `inventory_index_errors` column in the `inventory_index` table.
 
-If you make any changes to the `forseti_conf_server.yaml` file, be sure
-to update the server by reloading it with `forseti server configuration reload`.
+If you make any changes to the `main.tf`, be sure run command `terraform apply`
+to apply the infrastructure build.
 
 Error:
 ```
@@ -64,9 +64,10 @@ Error:
 ```
 
 Solution:
-Double-check the email you entered in the `domain_super_admin_email` field of
-the `forseti_conf_server.yaml` file. Make sure there is no typo and the user
-exists.
+Double-check the email provided to the `gsuite_admin_email` variable in your
+`main.tf`. Make sure there is no typo and the user exists. If you are making 
+any changes to the `main.tf`, be sure run command `terraform apply`
+to apply the infrastructure build.
 
 ***
 
@@ -77,8 +78,8 @@ GCP API Error: unable to get groups from GCP:
 ```
 
 Solution:
-Make sure you specified a super admin user in the `domain_super_admin_email`
-field of the `forseti_conf_server.yaml` file.
+Make sure you set the `gsuite_admin_email` variable to the G Suite
+administrator email address in your `main.tf`.
 
 ***
 

@@ -225,7 +225,7 @@ notifier:
 
 ### Cloud SCC Notification
 
-Forseti Security can configured to send violations to
+Forseti Security can be configured to send violations to
 [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
 Cloud SCC API is now Generally Available (GA). Please see the steps below to 
