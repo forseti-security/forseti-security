@@ -28,8 +28,8 @@ manually assign the correct roles later.
 
 ## Configure Forseti to Run on a Folder
 
-1. Edit `main.tf` and set `composite_root_resources` variable to the target 
-folder: `["folders/<foo_folder_id>"]`.
+1. Edit `main.tf` and set `composite_root_resources` variable to point to the 
+target folder: `["folders/<foo_folder_id>"]`.
 
 1. You can use the `composite_root_resources` configuration to include 
    multiple resources in a single Forseti installation. See [Configure Inventory]({% link _docs/latest/configure/inventory/index.md %})
@@ -51,7 +51,7 @@ installation.
 See [Configure Inventory]({% link _docs/latest/configure/inventory/index.md %})
 for more details.
 
-For example: `composite_root_resources:` `["folders/<foo_folder1_id>", "projects/<foo_project1_id"]`
+For example: `composite_root_resources:` `["projects/<foo_project1_id>", "projects/<foo_project2_id"]`
 
 1. Edit `main.tf` and set `composite_root_resources` variable to the target 
 projects: `["projects/<foo_project1_id>", "projects/<foo_project2_id"]`.
