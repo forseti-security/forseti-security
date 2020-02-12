@@ -37,7 +37,7 @@ Create a file named *main.tf* in an empty directory and add the following conten
 #### New GKE Cluster
 ```bash
 module "forseti-on-gke" {
-    source                  = "terraform-google-modules/examples/on_gke_end_to_end"
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke_end_to_end"
     domain                  = ""
     gsuite_admin_email      = ""
     org_id                  = ""
@@ -49,7 +49,7 @@ module "forseti-on-gke" {
 #### Existing GKE Cluster
 ```bash
 module "forseti-on-gke" {
-    source                  = "terraform-google-modules/examples/on_gke"
+    source                  = "terraform-google-modules/forseti/google//examples/on_gke"
     domain                  = ""
     gsuite_admin_email      = ""
     org_id                  = ""
