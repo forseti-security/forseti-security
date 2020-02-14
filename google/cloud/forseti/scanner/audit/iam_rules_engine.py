@@ -152,7 +152,14 @@ class IamRulesEngine(bre.BaseRulesEngine):
         violations = self.rule_book.find_violations(
             resource, policy, policy_bindings)
 
-        return set(violations)
+        # dedupe violations
+        registry = {}
+        for violation in violations:
+            key = (violation.resource_id, violation.role, violation.members)
+            if key in registry:
+                continue
+            registry[key] = violation
+            yield violation
 
     def add_rules(self, rules):
         """Add rules to the rule book.
