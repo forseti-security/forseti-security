@@ -2,7 +2,7 @@
 . ./helpers/setup.sh -p PROJECT_ID -o ORG_ID -k
 ```
 
-This will create a service account called `cloud-foundation-forseti-<suffix>`.
+This will create a service account called `cloud-foundation-forseti-<suffix>`
 Grant the newly created service account the following roles:
 - roles/container.admin
 - roles/container.clusterAdmin
