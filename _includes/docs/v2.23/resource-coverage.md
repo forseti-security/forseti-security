@@ -44,7 +44,7 @@
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
 | [Compute Engine Interconnects](https://cloud.google.com/compute/docs/reference/rest/v1/interconnects) |
 | [Compute Engine Interconnect Attachments](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectAttachments) |
-| [Compute Engine Licenses](https://cloud.google.com/compute/docs/reference/rest/v1/licenses/get) |
+| Compute Engine Licenses |
 | [Compute Engine Projects](https://cloud.google.com/compute/docs/reference/rest/v1/projects) |
 | [Compute Engine Region Backend Service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)|
 | [Compute Engine Routers](https://cloud.google.com/compute/docs/reference/rest/v1/routers) |
