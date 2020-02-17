@@ -44,6 +44,12 @@ Google Cloud Platform (GCP) resources.
 Configure Cloud Profiler to view and analyze CPU usage and memory-allocation of your Forseti application on a 
 Google Cloud Platform (GCP) interface.
 
+**[Configuring Forseti Visualizer]({% link _docs/latest/configure/forseti-visualizer/index.md %})**
+
+Configure Forseti Visualizer to better understand your GCP organization
+structure, and to gain insights into policy adherence through identification
+of violations.
+
 **[Enabling G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})**
 
 Enable the data collection of G Suite for processing by Forseti Inventory. G Suite access helps
