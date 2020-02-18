@@ -118,6 +118,7 @@ class CaiTemporaryStore(BASE):
             content_type = 'org_policy'
             parent_name = asset['name']
             asset_data = json.dumps(asset['org_policy'], sort_keys=True)
+            name = asset['org_policy'][0]['constraint']
         elif 'access_policy' in asset:
             content_type = 'access_policy'
             parent_name = asset['name']

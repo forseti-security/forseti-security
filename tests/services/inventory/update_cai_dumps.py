@@ -222,6 +222,16 @@ def role(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def service(item):
+    parent = item.parent()
+    name = '//serviceusage.googleapis.com/projects/{}/services/{}'.format(
+        parent['projectNumber'], item['data']['name'])
+    asset_type = 'serviceusage.googleapis.com/Service'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def serviceaccount(item):
     parent = item.parent()
     name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
@@ -251,6 +261,25 @@ def kubernetes_cluster(item):
     asset_type = 'container.googleapis.com/Cluster'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
+def kubernetes_service(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/projects/{}/zones/{}/'
+            'clusters/{}/k8s/namespaces/{}/services/{}'.format(
+                parent['projectId'],
+                parent['zone'],
+                parent['name'],
+                item['metadata']['namespace'],
+                item['metadata']['name']))
+    asset_type = 'k8s.io/Service'
+    parent_name = ('//container.googleapis.com/projects/{}/zones/{}/'
+                   'clusters/{}/k8s/namespaces/{}'.format(
+                    parent['projectId'],
+                    parent['zone'],
+                    parent['name'],
+                    item['metadata']['namespace']))
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
@@ -345,8 +374,10 @@ CAI_TYPE_MAP = {
     'interconnect': interconnect,
     'interconnect_attachment': interconnect_attachment,
     'kubernetes_cluster': kubernetes_cluster,
+    'kubernetes_service': kubernetes_service,
     'network': network,
     'role': role,
+    'service': service,
     'serviceaccount': serviceaccount,
     'serviceaccount_key': serviceaccount_key,
     'snapshot': snapshot,

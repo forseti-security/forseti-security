@@ -85,7 +85,7 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
 
         Args:
@@ -844,6 +844,17 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
     def iter_kubernetes_namespaces(self, project_id, zone, cluster):
         """Iterate k8s namespaces in a cluster from GCP API.
 
@@ -939,6 +950,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def fetch_services_enabled_apis(self, project_number):
         """Project enabled API services from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage services from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -1562,10 +1581,10 @@ class ApiClientImpl(ApiClient):
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
         """
-        raise ResourceNotSupported('ServicePerimeters are not '
+        raise ResourceNotSupported('ServicePerimeter is not '
                                    'supported by this API client')
 
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate Access Policies from GCP API.
 
         Args:
@@ -2577,6 +2596,19 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Kubernetes resources are not supported '
                                    'by this API client')
 
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+         Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Kubernetes resources are not supported '
+                                   'by this API client')
+
     def iter_kubernetes_namespaces(self, project_id, zone, cluster):
         """Iterate k8s namespaces in a cluster from GCP API.
          Args:
@@ -2708,6 +2740,18 @@ class ApiClientImpl(ApiClient):
                 and asset metadata that defaults to None for all GCP clients.
         """
         return self.serviceusage.get_enabled_apis(project_number), None
+
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage Services from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Service Usage Services are not supported '
+                                   'by this API client.')
 
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.

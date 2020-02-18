@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,28 +13,44 @@
 # limitations under the License.
 """Unit Tests: Inventory storage for Forseti Server."""
 
-
 from future import standard_library
 standard_library.install_aliases()
-from datetime import datetime
-import time
-import unittest.mock as mock
 import os
-from io import StringIO
 import unittest
-from sqlalchemy.orm import sessionmaker
+import unittest.mock as mock
 
-from tests.services.util.db import create_test_engine
+from datetime import datetime
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
+from google.cloud.forseti.services.inventory.storage import (
+    Categories, DataAccess, initialize, InventoryIndex, Storage)
+from sqlalchemy.orm import sessionmaker
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import ResourceMock
 from tests.unittest_utils import ForsetiTestCase
 
-from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.storage import DataAccess
-from google.cloud.forseti.services.inventory.storage import initialize
-from google.cloud.forseti.services.inventory.storage import InventoryIndex
-from google.cloud.forseti.services.inventory.storage import Storage
 
+MOCK_ACCESS_POLICY = [
+    (
+        {
+            'name': 'accessPolicies/678657630408',
+            'parent': 'organizations/92932930834',
+            'title': 'default policy'
+        },
+        AssetMetadata(cai_name='accessPolicies/678657630408',
+                      cai_type='cloudresourcemanager.googleapis.com/Organization')
+    )]
+
+MOCK_ORG_POLICY = [
+    (
+        {
+            'boolean_policy': {'enforced': True},
+            'constraint': 'constraints/appengine.disableCodeDownload',
+            'update_time': {'nanos': 712000000, 'seconds': 1579031330}
+        },
+        AssetMetadata(cai_name='constraints/appengine.disableCodeDownload',
+                      cai_type='cloudresourcemanager.googleapis.com/Organization')
+    )]
 
 
 class StorageTest(ForsetiTestCase):
@@ -52,11 +68,13 @@ class StorageTest(ForsetiTestCase):
         mock.patch.stopall()
         ForsetiTestCase.tearDown(self)
 
-    def reduced_inventory(self, session, inventory_index_id, types):
+    def reduced_inventory(self, session, inventory_index_id, types,
+                          fetch_category=Categories.resource):
         result = (
             [x for x in DataAccess.iter(session,
                                         inventory_index_id,
-                                        types)])
+                                        types,
+                                        fetch_category)])
         return result
 
     def test_basic(self):
@@ -66,6 +84,9 @@ class StorageTest(ForsetiTestCase):
         scoped_sessionmaker = db.create_scoped_sessionmaker(self.engine)
 
         res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
+        res_org.set_access_policy(MOCK_ACCESS_POLICY)
+        res_org.set_org_policy(MOCK_ORG_POLICY)
+
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
                                  res_org)
         res_proj1.set_iam_policy({'id': 'test'})
@@ -106,6 +127,18 @@ class StorageTest(ForsetiTestCase):
                                                             inventory_index_id,
                                                             [])),
                                  'No types should yield empty list')
+
+                access_policy = self.reduced_inventory(
+                    session, inventory_index_id, ['organization'],
+                    Categories.access_policy)
+                self.assertEqual(1, len(access_policy),
+                                 'Access Policy not found in inventory.')
+
+                org_policy = self.reduced_inventory(
+                    session, inventory_index_id, ['organization'],
+                    Categories.org_policy)
+                self.assertEqual(1, len(org_policy),
+                                 'Org Policy not found in inventory.')
 
         with scoped_sessionmaker() as session:
             storage = Storage(session, self.engine)
