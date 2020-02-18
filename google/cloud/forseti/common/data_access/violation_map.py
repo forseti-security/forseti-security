@@ -16,6 +16,7 @@
 
 from google.cloud.forseti.common.data_access import violation_format as vf
 
+CV_VIOLATION_TYPE = 'config_validator_violations'
 
 VIOLATION_MAP = {
     'violations': vf.format_violation,
@@ -30,7 +31,7 @@ VIOLATION_RESOURCES = {
     'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
-    'CONFIG_VALIDATOR_VIOLATION': 'config_validator_violations',
+    'CONFIG_VALIDATOR_VIOLATION': CV_VIOLATION_TYPE,
     'ENABLED_APIS_VIOLATION': 'enabled_apis_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
     'FIREWALL_BLACKLIST_VIOLATION': 'firewall_rule_violations',
