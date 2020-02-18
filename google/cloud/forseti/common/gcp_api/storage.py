@@ -562,6 +562,14 @@ class StorageClient(object):
                                 'retrying.', bucket)
                     return self.get_bucket_acls(bucket, self._user_project)
 
+            raw_error = e.args[1]
+            error = raw_error.decode('utf-8')
+            formatted_error = json.loads(error)
+            error_code = formatted_error['error']['code']
+            if error_code == 400:
+                LOGGER.debug('Cannot get legacy ACL for a bucket that has '
+                             'uniform bucket-level access')
+
             api_exception = api_errors.ApiExecutionError(
                 'bucketAccessControls', e, 'bucket', bucket)
             LOGGER.exception(api_exception)
