@@ -447,7 +447,7 @@ class FirewallRules(object):
                 for item in rules['items']:
                     rule = dict(
                       [(key, item[key]) for key in rv.ALLOWED_RULE_ITEMS
-                       if key in item])
+                          if key in item])
                     self.add_rule(rule)
 
     def _order_lists_in_rule(self, unsorted_rule):

@@ -61,11 +61,11 @@ def validate_gcp_rule(rule):
     # Check for the presense of all items from REQUIRED_RULE_ITEMS.
     missing_keys = REQUIRED_RULE_ITEMS - key_set
     if missing_keys:
-       return ('Rule missing required field(s):"%s".' %
-               ','.join(list(missing_keys)))
+        return ('Rule missing required field(s):"%s".' %
+                ','.join(list(missing_keys)))
 
     # Direction defaults to INGRESS
-    direction = rule.get('direction','INGRESS')
+    direction = rule.get('direction', 'INGRESS')
 
     # Direction must be either INGRESS or EGRESS
     if direction not in ['INGRESS', 'EGRESS']:
@@ -79,7 +79,7 @@ def validate_gcp_rule(rule):
 
     # Egress rules cannot have sourceRanges or sourceTags.
     if direction == 'EGRESS' and key_set.intersection(
-        ['sourceRanges', 'sourceTags']):
+            ['sourceRanges', 'sourceTags']):
         return ('Egress rules cannot include "sourceRanges", "sourceTags": '
                 '"%s".' % rule)
 
@@ -98,7 +98,7 @@ def validate_gcp_rule(rule):
                             VALID_RESOURCE_NAME_RE.pattern, rule['name']))
 
     # Rules must have either allowed or denied sections, but cannot have both.
-    if not (('allowed' in rule) ^ ('denied' in rule)):
+    if not ('allowed' in rule) ^ ('denied' in rule):
         return ('Rule must contain one of "allowed" or "denied" entries:'
                 ' "%s".' % rule)
 
@@ -112,8 +112,8 @@ def validate_gcp_rule(rule):
     # IPProtocol must be specified in denied rules.
     for deny in rule.get('denied', []):
         if 'IPProtocol' not in deny:
-           return (
-               'Deny rule %s missing required field "IPProtocol": "%s".' % (
+            return (
+                'Deny rule %s missing required field "IPProtocol": "%s".' % (
                     rule['name'], deny))
 
     # Priority is optional but must be an integer between 0-65535 inclusive.

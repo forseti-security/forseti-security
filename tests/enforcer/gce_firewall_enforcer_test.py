@@ -26,8 +26,8 @@ from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
-from google.cloud.forseti.tests.enforcer import testing_constants as constants
-from google.cloud.forseti.tests.unittest_utils import ForsetiTestCase
+from tests.enforcer import testing_constants as constants
+from tests.unittest_utils import ForsetiTestCase
 
 class HelperFunctionTest(ForsetiTestCase):
     """Unit tests for helper functions."""
