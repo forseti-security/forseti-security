@@ -43,7 +43,7 @@ def validate_gcp_rule(rule):
 
 
     Args:
-      rule: A dict representation of the rule to be validated.
+      rule (dict): A dict representation of the rule to be validated.
 
     Returns:
       err_str: A string describing the reason the rule is invalid. None if
@@ -130,3 +130,5 @@ def validate_gcp_rule(rule):
     if VALID_RESOURCE_NAME_RE.match(rule['name']) is None:
         return ('Rule name does not match valid GCP resource name regex '
                 '"%s": "%s".' % (VALID_RESOURCE_NAME_RE.pattern, rule['name']))
+
+    return None
