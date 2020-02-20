@@ -191,9 +191,9 @@ rule file.
 
 Kubernetes Engine clusters have a wide-variety of options.  You might
 want to have standards so your clusters are deployed in a uniform
-fashion.  Some of the options can introduce unnecessary security
-risks.  The KE scanner allows you to write rules that check arbitrary
-cluster properties for violations.  It supports the following
+fashion. Some of the options can introduce unnecessary security
+risks. The KE scanner allows you to write rules that check arbitrary
+cluster properties for violations. It supports the following
 features:
 
 * Any cluster property can be checked in a rule by providing a
@@ -255,11 +255,21 @@ For examples of how to define scanner rules for log sink, see the
 [`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/log_sink_rules.yaml)
 rule file.
 
+## Resource scanner
+
+Alert or notify if the scanner rules created on resources does not have a match 
+in the Forseti inventory.
+
 ## Retention scanner
 
 Allow customers to ensure the retention policies on their resources are set as intended.
 
 For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/retention_rules.yaml) rule file.
+
+## Role scanner
+
+Alert or notify if the custom role granted to the resource does not have 
+intended permissions.
 
 ## Service Account Key scanner
 
