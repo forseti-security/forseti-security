@@ -254,7 +254,7 @@ Alert or notify if a project does not have required log sinks. This scanner will
 be able to check if the sink destination is correctly configured.
 
 For examples of how to define scanner rules for log sink, see the
-[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/retention_rules.yaml)
+[`log_sink_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/log_sink_rules.yaml)
 rule file.
 
 ## Resource scanner
