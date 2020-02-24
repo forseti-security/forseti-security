@@ -1187,7 +1187,7 @@ rules:
      `bucket`, `dataset` and `instance`.
 
 * `resource_trees`
-  * **Description**: The list of resource trees to match.
+  * **Description**: A list of resource trees to match.
     * `type`
       * **Description**: The type of resource tree to match.
       * **Valid values**: One of `project`, `bucket`, `dataset` or 
@@ -1198,7 +1198,7 @@ rules:
       * **Valid values**: String
     
   * `children`
-    * **Description**: The list of sub-resource trees to match.
+    * **Description**: A list of sub-resource trees to match.
       * `type`
         * **Description**: The type of the children resource to match.
         * **Valid values**: String.
