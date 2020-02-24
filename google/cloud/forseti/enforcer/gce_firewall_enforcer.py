@@ -371,10 +371,10 @@ class FirewallRules(object):
                 'Rule %s already defined in rules: %s' % (
                     rule['name'], ', '.join(sorted(self.rules.keys()))))
 
-        if self._add_rule_callback:
-            if self._add_rule_callback(new_rule):
-                self.rules[new_rule['name']] = new_rule
-        else:
+        callback_ok = (
+            self._add_rule_callback(new_rule)
+            if self._add_rule_callback else True)
+        if callback_ok:
             self.rules[new_rule['name']] = new_rule
 
     def filtered_by_networks(self, networks):
