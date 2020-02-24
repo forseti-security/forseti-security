@@ -124,8 +124,6 @@ class MockServerConfig(AbstractServiceConfig):
         raise NotImplementedError()
 
 
-
-
 class ResourceMock(Resource):
 
     def __init__(self, key, data, res_type, category, parent=None, warning=[]):
@@ -157,8 +155,14 @@ class ResourceMock(Resource):
     def parent(self):
         return self._parent
 
+    def set_access_policy(self, access_policy):
+        self._set_cache('access_policy', access_policy)
+
     def set_iam_policy(self, iam_policy):
         self._set_cache('iam_policy', iam_policy)
+
+    def set_org_policy(self, org_policy):
+        self._set_cache('org_policy', org_policy)
 
     def set_billing_info(self, billing_info):
         self._set_cache('billing_info', billing_info)

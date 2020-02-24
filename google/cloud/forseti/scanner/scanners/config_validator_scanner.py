@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,25 +13,32 @@
 # limitations under the License.
 
 """Config Validator Scanner."""
+import os
 
 from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    cv_data_converter)
-from google.cloud.forseti.scanner.scanners.config_validator_util import (
-    validator_client)
-from google.cloud.forseti.services.model.importer import importer
+    cv_data_converter, errors, validator_client)
+from google.cloud.forseti.scanner.scanners.config_validator_util.data_models \
+    import data_model_builder
 
 
 LOGGER = logger.get_logger(__name__)
+POLICY_LIBRARY_PATH = os.environ.get('POLICY_LIBRARY_HOME',
+                                     '/home/ubuntu/forseti-security')
+POLICY_LIBRARY_CONSTRAINTS_PATH = os.path.join(POLICY_LIBRARY_PATH,
+                                               'policy-library',
+                                               'policies',
+                                               'constraints')
+POLICY_LIBRARY_LIB_PATH = os.path.join(POLICY_LIBRARY_PATH,
+                                       'policy-library',
+                                       'lib')
 
 
 class ConfigValidatorScanner(base_scanner.BaseScanner):
     """Config Validator Scanner."""
-
-    VIOLATION_TYPE = 'CONFIG_VALIDATOR_VIOLATION'
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -76,7 +83,7 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'full_name': full_name,
                 'rule_index': 0,
                 'rule_name': violation.constraint,
-                'violation_type': self.VIOLATION_TYPE,
+                'violation_type': 'CV_' + violation.constraint,
                 'violation_data': json_format.MessageToDict(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
@@ -107,41 +114,44 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        model_manager = self.service_config.model_manager
-        scoped_session, data_access = model_manager.get(self.model_name)
-
-        if not iam_policy:
-            resource_types = importer.GCP_TYPE_LIST
-            data_type = 'resource'
-        else:
-            resource_types = ['iam_policy']
-            data_type = 'iam_policy'
-
-        # Clean up the resource look up table to release memory and
-        # avoid confusion.
         self.resource_lookup_table = {}
+        data_models = (
+            data_model_builder
+            .DataModelBuilder(self.global_configs,
+                              self.scanner_configs,
+                              self.service_config,
+                              self.model_name)
+            .build()
+        )
 
-        with scoped_session as session:
-            # fetching GCP resources based on their types.
-            LOGGER.info('Retrieving GCP %s data.', data_type)
-            for resource_type in resource_types:
-                for resource in data_access.scanner_iter(session,
-                                                         resource_type,
-                                                         stream_results=False):
-                    if (not resource.cai_resource_name and
-                            resource.type not in
-                            cv_data_converter.CAI_RESOURCE_TYPE_MAPPING):
+        for data_model in data_models:
+            data = data_model.retrieve(iam_policy)
+            for resource_object in data:
+                data_type = resource_object.get('data_type')
+                primary_key = resource_object.get('primary_key')
+                resource = resource_object.get('resource')
+                resource_type = resource_object.get('resource_type')
+
+                if not resource.cai_resource_name:
+                    if resource_type in (
+                            cv_data_converter.MOCK_CAI_RESOURCE_TYPE_MAPPING):
+                        resource = cv_data_converter.convert_data_to_cai_asset(
+                            primary_key, resource, resource_type)
+                    else:
                         LOGGER.debug('Resource type %s is not currently '
                                      'supported in Config Validator scanner.',
                                      resource.type)
-                        break
-                    self.resource_lookup_table[resource.cai_resource_name] = (
-                        resource.full_name,
-                        resource.cai_resource_type,
-                        resource.data)
-                    yield cv_data_converter.convert_data_to_cv_asset(
-                        resource, data_type)
+                        continue
 
+                self.resource_lookup_table[resource.cai_resource_name] = (
+                    resource.full_name,
+                    resource.cai_resource_type,
+                    resource.data)
+
+                yield cv_data_converter.convert_data_to_cv_asset(
+                    resource, data_type)
+
+    # TODO: break up the this method.
     def _retrieve_flattened_violations(self, iam_policy=False):
         """Retrieve flattened violations by flattening the config validator
         violations returned by the config validator client.
@@ -163,9 +173,9 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
 
         for violations in self.validator_client.paged_review(cv_assets):
             flattened_violations = self._flatten_violations(violations)
-            # Clean up the lookup table to free up the memory.
-            self.resource_lookup_table = {}
             yield flattened_violations
+        # Clean up the lookup table to free up the memory.
+        self.resource_lookup_table = {}
 
     def run(self):
         """Runs the Config Validator Scanner.
@@ -177,9 +187,9 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         it will be hard for Forseti to retrieve the right resource_data for the
         corresponding violation types.
         """
-        # TODO: break up the _retrieve_flattened_violations method.
-        # Retrieving resource violations.
+        ConfigValidatorScanner.verify_policy_library()
 
+        # Retrieving resource violations.
         for flattened_violations in self._retrieve_flattened_violations():
             # Write resource violations to the db.
             self._output_results(flattened_violations)
@@ -188,3 +198,41 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 iam_policy=True):
             # Write iam violations to the db.
             self._output_results(flattened_violations)
+
+    @staticmethod
+    def verify_policy_library():
+        """Verify the Config Validator Policy Library exists and is populated
+        with constraints and that the lib directory exists.
+
+        Returns: Nothing
+
+        Raises:
+            ConfigValidatorPolicyLibraryError: if the Policy Library is not
+             configured correctly.
+        """
+        if not os.path.isdir(POLICY_LIBRARY_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library directory is missing: '
+                f'{POLICY_LIBRARY_PATH}')
+
+        # Verify constraints
+        if not os.path.isdir(POLICY_LIBRARY_CONSTRAINTS_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library constraints directory is '
+                f'missing: {POLICY_LIBRARY_CONSTRAINTS_PATH}')
+
+        if not os.listdir(POLICY_LIBRARY_CONSTRAINTS_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library constraints directory is '
+                f'empty: {POLICY_LIBRARY_CONSTRAINTS_PATH}')
+
+        # Verify lib
+        if not os.path.isdir(POLICY_LIBRARY_LIB_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library lib directory is '
+                f'missing: {POLICY_LIBRARY_LIB_PATH}')
+
+        if not os.listdir(POLICY_LIBRARY_LIB_PATH):
+            raise errors.ConfigValidatorPolicyLibraryError(
+                f'The Policy Library lib directory is '
+                f'empty: {POLICY_LIBRARY_LIB_PATH}')

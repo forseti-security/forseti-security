@@ -25,6 +25,7 @@ import unittest.mock as mock
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.scanner import scanner_base_db
+from tests.services.scanner.test_data import config_validator_violations
 from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util import date_time
@@ -277,6 +278,12 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             expected_id,
             scanner_dao.get_latest_scanner_index_id(
                 self.session, expected_id, IndexState.FAILURE))
+
+    @staticmethod
+    def test_map_by_resource_returns_cv_violations():
+        resource_map = scanner_dao.map_by_resource(
+            config_validator_violations.CONFIG_VALIDATOR_VIOLATIONS)
+        assert len(resource_map['config_validator_violations']) == 2
 
 
 class ScannerIndexTest(ForsetiTestCase):

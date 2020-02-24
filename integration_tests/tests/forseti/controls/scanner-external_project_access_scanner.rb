@@ -15,9 +15,9 @@
 require 'securerandom'
 require 'json'
 
-random_string = SecureRandom.uuid.gsub!('-', '')
+random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "scanner - external project access" do
+control "scanner-external-project-access-scanner" do
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
   
   describe command("forseti model use #{random_string}") do
@@ -26,7 +26,7 @@ control "scanner - external project access" do
 
   describe command("forseti scanner run --scanner external_project_access_scanner") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/Scanner Index ID: [0-9]* is created/)}
+    its('stdout') { should match (/Scanner Index ID: .*[0-9]* is created/)}
     its('stdout') { should match (/Running ExternalProjectAccessScanner.../)}
     its('stdout') { should match (/Scan completed!/)}
   end
@@ -38,5 +38,4 @@ control "scanner - external project access" do
   describe command("forseti model delete " + random_string) do
     its('exit_status') { should eq 0 }
   end
-
 end

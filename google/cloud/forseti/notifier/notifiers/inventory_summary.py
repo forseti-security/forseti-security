@@ -34,15 +34,17 @@ LOGGER = logger.get_logger(__name__)
 class InventorySummary(object):
     """Create and send inventory summary."""
 
-    def __init__(self, service_config, inventory_index_id):
+    def __init__(self, service_config, inventory_index_id, progress_queue):
         """Initialization.
 
         Args:
             inventory_index_id (int64): Inventory index id.
             service_config (ServiceConfig): Forseti 2.0 service configs.
+            progress_queue (Queue): The progress queue.
         """
         self.service_config = service_config
         self.inventory_index_id = inventory_index_id
+        self.progress_queue = progress_queue
 
         self.notifier_config = self.service_config.get_notifier_config()
 
@@ -69,6 +71,8 @@ class InventorySummary(object):
             summary_data (list): Summary of inventory data as a list of dicts.
                 Example: [{resource_type, count}, {}, {}, ...]
         """
+        gcs_upload_path = ''
+
         LOGGER.debug('Uploading inventory summary data to GCS.')
         gcs_summary_config = (
             self.notifier_config.get('inventory').get('gcs_summary'))
@@ -98,6 +102,10 @@ class InventorySummary(object):
                     self._get_output_filename(
                         string_formats.INVENTORY_SUMMARY_JSON_FMT))
                 file_uploader.upload_json(summary_data, gcs_upload_path)
+            log_message = (f'Inventory Summary file saved to GCS path: '
+                           f'{gcs_upload_path}')
+            self.progress_queue.put(log_message)
+            LOGGER.info(log_message)
         except HttpError:
             LOGGER.exception('Unable to upload inventory summary in bucket %s:',
                              gcs_upload_path)
@@ -118,7 +126,8 @@ class InventorySummary(object):
         Raises:
             InvalidInputError: Indicating that invalid input was encountered.
         """
-        LOGGER.debug('Sending inventory summary by email.')
+        LOGGER.debug(f'Sending inventory summary by email for inventory id '
+                     f'{self.inventory_index_id}.')
 
         email_summary_config = (
             self.notifier_config.get('inventory').get('email_summary'))
@@ -171,9 +180,15 @@ class InventorySummary(object):
                                  email_subject=email_subject,
                                  email_content=email_content,
                                  content_type='text/html')
-            LOGGER.debug('Inventory summary sent successfully by email.')
-        except util_errors.EmailSendError:
-            LOGGER.exception('Unable to send Inventory summary email')
+            log_message = (f'Inventory summary email successfully sent for '
+                           f'inventory id {self.inventory_index_id}.')
+            LOGGER.debug(log_message)
+            self.progress_queue.put(log_message)
+        except util_errors.EmailSendError as e:
+            log_message = (f'Unable to send Inventory summary email for '
+                           f'inventory id {self.inventory_index_id}. {e}')
+            LOGGER.exception(log_message)
+            self.progress_queue.put(log_message)
 
     @staticmethod
     def transform_to_template(data):

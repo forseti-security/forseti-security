@@ -52,6 +52,10 @@ class ContentTypes(enum.Enum):
     """Cloud Asset Inventory Content Types."""
     resource = 1
     iam_policy = 2
+    org_policy = 3
+    access_policy = 4
+    access_level = 5
+    service_perimeter = 6
 
 
 SUPPORTED_CONTENT_TYPES = frozenset(item.name for item in list(ContentTypes))
@@ -98,6 +102,7 @@ class CaiTemporaryStore(BASE):
                            asset['name'])
             return None
 
+        name = ''
         if 'resource' in asset:
             content_type = 'resource'
             parent_name = cls._get_parent_name(asset)
@@ -109,12 +114,34 @@ class CaiTemporaryStore(BASE):
             content_type = 'iam_policy'
             parent_name = asset['name']
             asset_data = json.dumps(asset['iam_policy'], sort_keys=True)
+        elif 'org_policy' in asset:
+            content_type = 'org_policy'
+            parent_name = asset['name']
+            asset_data = json.dumps(asset['org_policy'], sort_keys=True)
+            name = asset['org_policy'][0]['constraint']
+        elif 'access_policy' in asset:
+            content_type = 'access_policy'
+            parent_name = asset['name']
+            asset_data = json.dumps(asset['access_policy'], sort_keys=True)
+            name = asset['access_policy']['name']
+        elif 'access_level' in asset:
+            content_type = 'access_level'
+            access_level = asset[content_type]
+            asset_data = json.dumps(access_level, sort_keys=True)
+            name = access_level['name']
+            parent_name = name.split('/accessLevels')[0]
+        elif 'service_perimeter' in asset:
+            content_type = 'service_perimeter'
+            service_perimeter = asset[content_type]
+            asset_data = json.dumps(service_perimeter, sort_keys=True)
+            name = service_perimeter['name']
+            parent_name = name.split('/servicePerimeters')[0]
         else:
             LOGGER.warning('Unparsable asset, no resource or iam policy: %s',
                            asset)
             return None
 
-        return {'name': asset['name'],
+        return {'name': name or asset['name'],
                 'parent_name': parent_name,
                 'content_type': content_type,
                 'asset_type': asset['asset_type'],
@@ -291,7 +318,6 @@ class CaiDataAccess(object):
             for line in data:
                 if not line:
                     continue
-
                 row = CaiTemporaryStore.from_json(line.strip().encode())
                 if row:
                     num_rows += 1
