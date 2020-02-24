@@ -299,6 +299,7 @@ class FirewallRules(object):
                 name.
             InvalidFirewallRuleError: One or more rules failed validation.
         """
+        # pylint: disable=too-many-branches
         if not isinstance(rule, dict):
             raise InvalidFirewallRuleError(
                 'Invalid rule type. Found %s expected dict' % type(rule))

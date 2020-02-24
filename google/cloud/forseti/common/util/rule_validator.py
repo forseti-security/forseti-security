@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Validation routines for GCE firewall rules."""
+# pylint: disable=too-many-branches,too-many-return-statements
 from __future__ import unicode_literals
 
 import re
