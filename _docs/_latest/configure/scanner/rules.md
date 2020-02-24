@@ -1187,22 +1187,25 @@ rules:
      `bucket`, `dataset` and `instance`.
 
 * `resource_trees`
-  * `type`
-    * **Description**: The type of sub resource tree to match.
-    * **Valid values**: List, one of `project`, `bucket`, `dataset` or 
+  * **Description**: The list of resource trees to match.
+    * `type`
+      * **Description**: The type of resource tree to match.
+      * **Valid values**: One of `project`, `bucket`, `dataset` or 
       `instance`.
 
-  * `resource_id`
-    * **Description**: ID of the resource to match.
-    * **Valid values**: String
-    
-  * `children`
-    * `type`
-      * **Description**: The type of the children resource to match.
-      * **Valid values**: String.
     * `resource_id`
       * **Description**: ID of the resource to match.
       * **Valid values**: String
+    
+  * `children`
+    * **Description**: The list of sub-resource trees to match.
+      * `type`
+        * **Description**: The type of the children resource to match.
+        * **Valid values**: String.
+      
+      * `resource_id`
+        * **Description**: ID of the resource to match.
+        * **Valid values**: String, you can use `*` to match for all
 
 ## Retention rules
 
@@ -1279,7 +1282,7 @@ rules:
   * **Valid values**: String.
 
 * `permissions`
-  * **Description**: The list of permissions to verify.
+  * **Description**: A list of permissions to verify.
   * **Valid values**: String.
   * **Example values**: `bigquery.datasets.get`, `bigquery.tables.get`
 
