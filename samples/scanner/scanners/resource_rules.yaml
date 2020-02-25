@@ -20,32 +20,32 @@
 # Note: please use the id of the resource (such as organization id,
 # folder id, project id, etc.) when specifying the resource ids.
 
-# rules:
-# - name: Project resource trees.
-#   mode: required
-#   resource_types:
-#   - 'project'
-#   - 'bucket'
-#   - 'dataset'
-#   - 'instance'
-#   resource_trees:
-#   - type: 'project'
-#     resource_id: 'proj-1'
-#     children:
-#     - type: 'bucket'
-#       resource_id: 'bucket-1'
-#     - type: 'bucket'
-#       resource_type: 'bucket-2'
-#     - type: 'dataset'
-#       resource_id: 'proj-1:dataset1'
-#     - type: 'dataset'
-#       resource_id: 'proj-1:dataset2'
-#   - type: 'project'
-#     resource_id: 'proj-2'
-#     children:
-#     - type: 'bucket'
-#       resource_id: 'bucket-3'
-#     - type: 'dataset'
-#       resource_id: 'proj-2:dataset1'
-#     - type: 'instance'
-#       resource_id: '*'
+ rules:
+ - name: Project resource trees.
+   mode: required
+   resource_types:
+   - 'project'
+   - 'bucket'
+   - 'dataset'
+   - 'instance'
+   resource_trees:
+   - type: 'project'
+     resource_id: 'proj-1'
+     children:
+     - type: 'bucket'
+       resource_id: 'bucket-1'
+     - type: 'bucket'
+       resource_type: 'bucket-2'
+     - type: 'dataset'
+       resource_id: 'proj-1:dataset1'
+     - type: 'dataset'
+       resource_id: 'proj-1:dataset2'
+   - type: 'project'
+     resource_id: 'proj-2'
+     children:
+     - type: 'bucket'
+       resource_id: 'bucket-3'
+     - type: 'dataset'
+       resource_id: 'proj-2:dataset1'
+     - type: 'instance'
+       resource_id: '*'

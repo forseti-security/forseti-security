@@ -11,21 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# rules:
-#   # Note: please use the id of the resource (such as organization id,
-#   # folder id, project id, etc.) when specifying the resource ids.
-#   # Example rules.
-#   - name: 'Require BigQuery Audit Log sinks in all projects.'
-#     mode: required
-#     resource:
-#       - type: organization
-#         applies_to: children
-#         resource_ids:
-#           - {ORGANIZATION_ID}
-#     sink:
-#       destination: 'bigquery.googleapis.com/*'
-#       filter: 'logName:"logs/cloudaudit.googleapis.com"'
-#       include_children: '*'
+
+ rules:
+   # Note: please use the id of the resource (such as organization id,
+   # folder id, project id, etc.) when specifying the resource ids.
+   # Example rules.
+   - name: 'Require BigQuery Audit Log sinks in all projects.'
+     mode: required
+     resource:
+       - type: organization
+         applies_to: children
+         resource_ids:
+           - {ORGANIZATION_ID}
+     sink:
+       destination: 'bigquery.googleapis.com/*'
+       filter: 'logName:"logs/cloudaudit.googleapis.com"'
+       include_children: '*'
 #  - name: 'Only allow BigQuery Audit Log sinks in projects.'
 #    mode: whitelist
 #    resource:

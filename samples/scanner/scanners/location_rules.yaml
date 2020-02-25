@@ -29,30 +29,30 @@
 # naming, we recommend writing rules that can cover both (e.g. eu* instead of
 # europe*).
 
-# rules:
-#   # Note: please use the id of the resource (such as organization id,
-#   # folder id, project id, etc.) when specifying the resource ids.
-#   - name: All buckets in organization must be in the US.
-#     mode: whitelist
-#     resource:
-#       - type: organization
-#         resource_ids:
-#           - {ORGANIZATION_ID}
-#     applies_to:
-#       - type: 'bucket'
-#         resource_ids:
-#           - '*'
-#     locations:
-#       - 'us*'
-#  - name: All buckets in organization must not be in EU.
-#     mode: blacklist
-#     resource:
-#       - type: organization
-#         resource_ids:
-#           - {ORGANIZATION_ID}
-#     applies_to:
-#       - type: 'bucket'
-#         resource_ids:
-#           - '*'
-#     locations:
-#       - 'eu*'
+ rules:
+   # Note: please use the id of the resource (such as organization id,
+   # folder id, project id, etc.) when specifying the resource ids.
+   - name: All buckets in organization must be in the US.
+     mode: whitelist
+     resource:
+       - type: organization
+         resource_ids:
+           - {ORGANIZATION_ID}
+     applies_to:
+       - type: 'bucket'
+         resource_ids:
+           - '*'
+     locations:
+       - 'us*'
+  - name: All buckets in organization must not be in EU.
+     mode: blacklist
+     resource:
+       - type: organization
+         resource_ids:
+           - {ORGANIZATION_ID}
+     applies_to:
+       - type: 'bucket'
+         resource_ids:
+           - '*'
+     locations:
+       - 'eu*'

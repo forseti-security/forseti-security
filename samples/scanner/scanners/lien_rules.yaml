@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# rules:
-#   # Note: please use the id of the resource (such as organization id,
-#   # folder id, project id, etc.) when specifying the resource ids.
-#   # Example rules.
-#   - name: Require project deletion liens for all projects in organization
-#     mode: required
-#     resource:
-#       - type: organization
-#         resource_ids:
-#           - {ORGANIZATION_ID}
-#     restrictions: [resourcemanager.projects.delete]
+
+ rules:
+   # Note: please use the id of the resource (such as organization id,
+   # folder id, project id, etc.) when specifying the resource ids.
+   # Example rules.
+   - name: Require project deletion liens for all projects in organization
+     mode: required
+     resource:
+       - type: organization
+         resource_ids:
+           - {ORGANIZATION_ID}
+     restrictions: [resourcemanager.projects.delete]
