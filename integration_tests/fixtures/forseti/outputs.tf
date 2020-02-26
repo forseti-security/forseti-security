@@ -110,9 +110,14 @@ output "suffix" {
 }
 
 # Test Resources
-output "bucket_acl_scanner_bucket_name" {
-  description = "Bucket name created for the Bucket ACL Scanner test"
-  value       = module.test_resources.bucket_acl_scanner_bucket_name
+output "bucket_acl_scanner_all_auth_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner all auth test"
+  value       = module.test_resources.bucket_acl_scanner_all_auth_bucket_name
+}
+
+output "bucket_acl_scanner_all_users_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner all user test"
+  value       = module.test_resources.bucket_acl_scanner_all_users_bucket_name
 }
 
 output "enforcer_allow_all_icmp_rule_name" {
