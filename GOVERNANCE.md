@@ -48,12 +48,14 @@ Users should be encouraged to participate in the life of the project and the com
 Users who continue to engage with the project and its community will often find themselves becoming more and more involved. Such users may then go on to become contributors, as described above.
 
 ## Support
-All participants in the community are encouraged to provide support for new users within the project management infrastructure. This support is provided as a way of growing the community. Those seeking support should recognise that all support activity within the project is voluntary and is therefore provided as and when time allows.
+All participants in the community are encouraged to provide support for new users within the project management infrastructure. This support is provided as a way of growing the community. Those seeking support should recognize that all support activity within the project is voluntary and is therefore provided as is and when time allows.
 
 ## Contribution Process
 Anyone can contribute to the project, regardless of their skills, as there are many ways to contribute. For instance, a contributor might be active on the project mailing list and issue tracker, or might supply patches. The various ways of contributing are described in more detail in the [roles in open source](http://oss-watch.ac.uk/resources/rolesinopensource) document.
 
 The project mailing list [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss) is the most appropriate place for a contributor to ask for help when making their first contribution.
+
+If you are considering a large contribution for example adding a new module please [connect](https://forsetisecurity.org/docs/latest/use/get-help.html) with the Forseti team so we can collaborate on requirements, testing / acceptance criteria and how to ensure support of the contribution over the lifetime of the project. 
 
 ## Decision-Making Process
 The benevolent dictatorship model does not need a formal conflict resolution process, since the project lead’s word is final. If the community chooses to question the wisdom of the actions of a committer, the project lead can review their decisions by checking the email archives, and either uphold or reverse them.
