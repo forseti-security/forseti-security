@@ -5,9 +5,7 @@ This document describes the governance model for this project.
 
 This project is led by a benevolent dictator and managed by the community. That is, the community actively contributes to the day-to-day maintenance of the project, but the general strategic line is drawn by the benevolent dictator. In case of disagreement, the benevolent dictator has the the last word. It is the benevolent dictator’s job to resolve disputes within the community and to ensure that the project is able to progress in a coordinated way. In turn, it is the community’s job to guide the decisions of the benevolent dictator through active engagement and contribution.
 
-
 ## Roles And Responsibilities
-
 
 ### Benevolent dictator (project lead)
 
@@ -15,13 +13,11 @@ Typically, the benevolent dictator, or project lead, is self-appointed. However,
 
 In many ways, the role of the benevolent dictator is less about dictatorship and more about diplomacy. The key is to ensure that, as the project expands, the right people are given influence over it and the community rallies behind the vision of the project lead. The lead’s job is then to ensure that the committers (see below) make the right decisions on behalf of the project. Generally speaking, as long as the committers are aligned with the project’s strategy, the project lead will allow them to proceed as they desire.
 
-
 ### Committers
 
 Committers are contributors who have made several valuable contributions to the project and are now relied upon to both write code directly to the repository and screen the contributions of others. In many cases they are programmers but it is also possible that they contribute in a different role). Typically, a committer will focus on a specific aspect of the project, and will bring a level of expertise and understanding that earns them the respect of the community and the project lead. The role of committer is not an official one, it is simply a position that influential members of the community will find themselves in as the project lead looks to them for guidance and support.
 
 Committers have no authority over the overall direction of the project. However, they do have the ear of the project lead. It is a committer’s job to ensure that the lead is aware of the community’s needs and collective objectives, and to help develop or elicit appropriate contributions to the project. Often, committers are given informal control over their specific areas of responsibility, and are assigned rights to directly modify certain areas of the source code. That is, although committers do not have explicit decision-making authority, they will often find that their actions are synonymous with the decisions made by the lead.
-
 
 ### Contributors
 
