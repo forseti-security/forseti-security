@@ -6,7 +6,7 @@ This project is led by a benevolent dictator and managed by the community. That 
 
 ## Roles And Responsibilities
 
-### Benevolent dictator (project lead)
+### Benevolent dictator ([project lead](https://github.com/forseti-security/forseti-security/blob/master/AUTHORS))
 Typically, the benevolent dictator, or project lead, is self-appointed. However, because the community always has the ability to fork, this person is fully answerable to the community. The project lead’s role is a difficult one: they set the strategic objectives of the project and communicate these clearly to the community. They also have to understand the community as a whole and strive to satisfy as many conflicting needs as possible, while ensuring that the project survives in the long term.
 
 In many ways, the role of the benevolent dictator is less about dictatorship and more about diplomacy. The key is to ensure that, as the project expands, the right people are given influence over it and the community rallies behind the vision of the project lead. The lead’s job is then to ensure that the committers (see below) make the right decisions on behalf of the project. Generally speaking, as long as the committers are aligned with the project’s strategy, the project lead will allow them to proceed as they desire.
