@@ -27,10 +27,6 @@ policy_library_path = '/home/ubuntu/policy-library/policy-library'
 control "scanner-config-validator-gcs-policy" do
   # Arrange
   @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
-  describe command("forseti model use #{model_name}") do
-    its('exit_status') { should eq 0 }
-    its('stdout') { should_not match /Error communicating to the Forseti server./ }
-  end
 
   # Clone Policy Library repo
   describe command("sudo rm -rf #{policy_library_path}") do
@@ -52,8 +48,9 @@ control "scanner-config-validator-gcs-policy" do
   end
 
   # Act
-  describe command("forseti scanner run") do
+  describe command("forseti model use #{model_name} && forseti scanner run") do
     its('exit_status') { should eq 0 }
+    its('stdout') { should_not match /Error communicating to the Forseti server./ }
     its('stdout') { should match(/Running ConfigValidatorScanner.../) }
     its('stdout') { should match(/Scan completed/) }
     its('stdout') { should match(/Scanner Index ID: (.*[0-9]*) is created/) }
@@ -81,6 +78,14 @@ control "scanner-config-validator-gcs-policy" do
   # Assert GCS violations file exists
   gcs_file_path = "gs://#{forseti_server_storage_bucket}/scanner_violations/violations.config_validator_violations.#{@inventory_id}.*"
   describe command("sudo gsutil ls #{gcs_file_path}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  describe command("forseti inventory delete #{@inventory_id}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  describe command("forseti model delete #{model_name}") do
     its('exit_status') { should eq 0 }
   end
 end
