@@ -14,8 +14,3 @@ Grant the newly created service account the following roles:
 Ensure the following APIs are enabled on the Forseti project:
 - container.googleapis.com
 - compute.googleapis.com
-
-Set and export the `GOOGLE_APPLICATION_CREDENTIALS` variable to the newly
-created credential.json as shown below.
-
-`export GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"`
