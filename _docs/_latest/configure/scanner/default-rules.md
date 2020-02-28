@@ -77,9 +77,6 @@ resources.
     * purpose: ENCRYPT_DECRYPT
     * state: ENABLED
     
-## Kubernetes Engine
-  * Logging should be enabled on the projects.
-    
 ## Kubernetes Engine Version
   * Only allow the following supported versions:
     * For major version 1.8, the minor version must be at least 12-gke.1
