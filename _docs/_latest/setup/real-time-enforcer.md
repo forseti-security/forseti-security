@@ -81,7 +81,7 @@ module "real_time_enforcer_organization_sink" {
 1. Ensure that you have the following additional roles assigned to the newly created service account:
     * **On the organization:**
         * `roles/resourcemanager.organizationAdmin`
-        * `roles/securityReviewer`
+        * `roles/iam.securityReviewer`
     * **On the project:**
         * `roles/owner`
     * **On the host project (when using shared VPC):**
