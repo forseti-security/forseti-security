@@ -93,6 +93,7 @@ DEFAULT_ASSET_TYPES = [
     'k8s.io/Namespace',
     'k8s.io/Node',
     'k8s.io/Pod',
+    'k8s.io/Service',
     'iam.googleapis.com/ServiceAccount',
     'iam.googleapis.com/ServiceAccountKey',
     'pubsub.googleapis.com/Subscription',
@@ -101,6 +102,7 @@ DEFAULT_ASSET_TYPES = [
     'rbac.authorization.k8s.io/ClusterRoleBinding',
     'rbac.authorization.k8s.io/Role',
     'rbac.authorization.k8s.io/RoleBinding',
+    'serviceusage.googleapis.com/Service',
     'spanner.googleapis.com/Database',
     'spanner.googleapis.com/Instance',
     'sqladmin.googleapis.com/Instance',
@@ -169,6 +171,7 @@ def load_cloudasset_data(engine, config, inventory_index_id):
 
     for gcs_path in cai_gcs_dump_paths:
         try:
+            LOGGER.debug(f'Streaming CAI dump from GCS {gcs_path}.')
             assets = _stream_gcs_to_database(gcs_path,
                                              engine,
                                              storage_client)

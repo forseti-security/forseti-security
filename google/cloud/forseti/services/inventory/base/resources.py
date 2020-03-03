@@ -704,6 +704,50 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
             self.add_warning(err_msg)
             return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets Organization policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Organization Policy.
+        """
+        try:
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
+
+    @cached('access_policy')
+    def get_access_policy(self, client=None):
+        """Gets access policy for this organization.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Access Policy.
+        """
+        try:
+            access_policies = []
+            access_policy_iter = (
+                client.iter_crm_org_access_policies(self['name']))
+            for access_policy in access_policy_iter:
+                access_policies.append(access_policy)
+            return access_policies
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Access Policy: %s', e)
+            self.add_warning(e)
+            return None
+
     def has_directory_resource_id(self):
         """Whether this organization has a directoryCustomerId.
 
@@ -830,6 +874,28 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
             self.add_warning(err_msg)
             return None
 
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets Organization policy for this folder.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Folder Organization Policy.
+        """
+        try:
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
+
 
 class ResourceManagerProject(resource_class_factory('project', 'projectId')):
     """The Resource implementation for Project."""
@@ -896,6 +962,28 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
                 return None
 
         return {}
+
+    @cached('org_policy')
+    def get_org_policy(self, client=None):
+        """Gets Organization policy for this project.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Project Organization Policy.
+        """
+        try:
+            org_policies = []
+            org_policies_iter = (
+                client.iter_crm_organization_org_policies(self['name']))
+            for org_policy in org_policies_iter:
+                org_policies.append(org_policy)
+            return org_policies
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warning('Could not get Org policy: %s', e)
+            self.add_warning(e)
+            return None
 
     @cached('billing_info')
     def get_billing_info(self, client=None):
@@ -1100,42 +1188,6 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
                        '%s' % (self.key(), self.parent().key(), e))
             LOGGER.warning(err_msg)
             self.add_warning(err_msg)
-            return None
-
-    @cached('org_policy')
-    def get_org_policy(self, client=None):
-        """Gets Organization policy for this organization.
-
-        Args:
-            client (object): GCP API client.
-
-        Returns:
-            dict: Organization Policy.
-        """
-        try:
-            data, _ = client.iter_crm_organization_org_policies(self['name'])
-            return data
-        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warning('Could not get Org policy: %s', e)
-            self.add_warning(e)
-            return None
-
-    @cached('access_policy')
-    def get_access_policy(self, client=None):
-        """Gets access policy for this organization.
-
-        Args:
-            client (object): GCP API client.
-
-        Returns:
-            dict: Access Policy.
-        """
-        try:
-            data, _ = client.iter_crm_organization_access_policies(self['name'])
-            return data
-        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
-            LOGGER.warning('Could not get Access Policy: %s', e)
-            self.add_warning(e)
             return None
 
     @cached('dataset_policy')
@@ -1598,6 +1650,10 @@ class KubernetesPod(k8_resource_class_factory('kubernetes_pod')):
     """The Resource implementation for Kubernetes Pod."""
 
 
+class KubernetesService(k8_resource_class_factory('kubernetes_service')):
+    """The Resource implementation for Kubernetes Service."""
+
+
 class KubernetesNamespace(k8_resource_class_factory('kubernetes_namespace')):
     """The Resource implementation for Kubernetes Namespace."""
 
@@ -1717,6 +1773,12 @@ class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
             LOGGER.warning(err_msg)
             self.add_warning(err_msg)
             return None
+
+
+# Service Usage resource classes
+class ServiceUsageService(resource_class_factory('service', 'name',
+                                                 hash_key=True)):
+    """The Resource implementation for Service Usage Service."""
 
 
 # Cloud Spanner resource classes
@@ -2137,7 +2199,7 @@ class BillingAccountIterator(resource_iter_class_factory(
 
 class ResourceManagerOrganizationAccessPolicyIterator(
         resource_iter_class_factory(
-            api_method_name='iter_crm_organization_access_policies',
+            api_method_name='iter_crm_org_access_policies',
             resource_name='crm_access_policy',
             api_method_arg_key='name')):
     """The Resource iterator implementation for Access Policy."""
@@ -2623,6 +2685,29 @@ class KubernetesPodIterator(ResourceIterator):
             LOGGER.debug(e)
 
 
+class KubernetesServiceIterator(ResourceIterator):
+    """The Resource iterator implementation for Kubernetes Service"""
+
+    def iter(self):
+        """Resource iterator.
+
+        Yields:
+            Resource: Kubernetes Service created
+        """
+        gcp = self.client
+        try:
+            for data, metadata in gcp.iter_kubernetes_services(
+                    project_id=self.resource.parent().parent()['projectId'],
+                    zone=self.resource.parent()['zone'],
+                    cluster=self.resource.parent()['name'],
+                    namespace=self.resource['metadata']['name']):
+                yield FACTORIES['kubernetes_service'].create_new(
+                    data, metadata=metadata)
+        except ResourceNotSupported as e:
+            # API client doesn't support this resource, ignore.
+            LOGGER.debug(e)
+
+
 class KubernetesNamespaceIterator(ResourceIterator):
     """The Resource iterator implementation for KubernetesNamespace"""
 
@@ -2790,6 +2875,13 @@ class ResourceManagerProjectLienIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Resource Manager Lien."""
 
 
+class ServiceUsageServiceIterator(resource_iter_class_factory(
+        api_method_name='iter_serviceusage_services',
+        resource_name='service',
+        api_method_arg_key='projectNumber')):
+    """The Resource Iterator implementation for Service Usage Services."""
+
+
 class SpannerDatabaseIterator(resource_iter_class_factory(
         api_method_name='iter_spanner_databases',
         resource_name='spanner_database',
@@ -2907,6 +2999,7 @@ FACTORIES = {
             PubsubTopicIterator,
             ResourceManagerProjectLienIterator,
             ResourceManagerProjectOrgPolicyIterator,
+            ServiceUsageServiceIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
         ]}),
@@ -3192,6 +3285,11 @@ FACTORIES = {
         'cls': DnsPolicy,
         'contains': []}),
 
+    'service': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ServiceUsageService,
+        'contains': []}),
+
     'gsuite_group': ResourceFactory({
         'dependsOn': ['organization'],
         'cls': GsuiteGroup,
@@ -3278,6 +3376,7 @@ FACTORIES = {
             KubernetesPodIterator,
             KubernetesRoleIterator,
             KubernetesRoleBindingIterator,
+            KubernetesServiceIterator,
         ]}),
 
     'kubernetes_node': ResourceFactory({
@@ -3288,6 +3387,11 @@ FACTORIES = {
     'kubernetes_pod': ResourceFactory({
         'dependsOn': ['kubernetes_namespace'],
         'cls': KubernetesPod,
+        'contains': []}),
+
+    'kubernetes_service': ResourceFactory({
+        'dependsOn': ['kubernetes_namespace'],
+        'cls': KubernetesService,
         'contains': []}),
 
     'kubernetes_role': ResourceFactory({

@@ -18,6 +18,7 @@ from builtins import object
 from collections import defaultdict
 import hashlib
 import json
+import re
 
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
@@ -38,6 +39,7 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 SUCCESS_STATES = [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]
+CV_VIOLATION_PATTERN = re.compile('^cv', re.I)
 
 
 class ScannerIndex(BASE):
@@ -193,21 +195,17 @@ class Violation(BASE):
         Returns:
             dict: A mapping of Action: Column.
         """
-        columns_to_create = [Column('resource_name',
-                                    String(256),
-                                    default=''),
-                             Column('violation_message',
-                                    Text(),
-                                    default='')]
-
-        columns_to_update = {
+        columns_to_alter = {
             Column('violation_data', Text()):
-            Column('violation_data', Text(16777215))}
+                Column('violation_data', Text(16777215))
+        }
 
-        schema_update_actions = {'CREATE': columns_to_create,
-                                 'ALTER': columns_to_update}
+        columns_to_create = [
+            Column('resource_name', String(256), default=''),
+            Column('violation_message', Text(), default='')
+        ]
 
-        return schema_update_actions
+        return {'ALTER': columns_to_alter, 'CREATE': columns_to_create}
 
 
 class ViolationAccess(object):
@@ -354,9 +352,13 @@ def map_by_resource(violation_rows):
             v_data['resource_data'] = json.loads(
                 json.dumps(v_data['resource_data']))
 
-        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
-        if v_resource:
-            v_by_type[v_resource].append(v_data)
+        violation_type = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
+        if not violation_type:
+            if bool(CV_VIOLATION_PATTERN.match(v_data['violation_type'])):
+                violation_type = vm.CV_VIOLATION_TYPE
+
+        if violation_type:
+            v_by_type[violation_type].append(v_data)
 
     return dict(v_by_type)
 
