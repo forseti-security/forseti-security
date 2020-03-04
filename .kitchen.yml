@@ -34,23 +34,23 @@ suites:
         - chmod go-rwx integration_tests/fixtures/bastion/tls_private_key
     verifier:
       systems:
-        - name: forseti-client
-          backend: ssh
-          controls:
-            - explain
-            - inventory-cai-gcs-export
-            - model-list
-            - model-use
-            - notifier-inventory-summary-export
-            - scanner-external-project-access-scanner
-          hosts_output: forseti-client-vm-ip
-          user: ubuntu
-          key_files:
-            - integration_tests/fixtures/forseti/sshkey
-          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
-          shell: true
-          shell_options: "--login"
-          show_progress: true
+#        - name: forseti-client
+#          backend: ssh
+#          controls:
+#            - explain
+#            - inventory-cai-gcs-export
+#            - model-list
+#            - model-use
+#            - notifier-inventory-summary-export
+#            - scanner-external-project-access-scanner
+#          hosts_output: forseti-client-vm-ip
+#          user: ubuntu
+#          key_files:
+#            - integration_tests/fixtures/forseti/sshkey
+#          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+#          shell: true
+#          shell_options: "--login"
+#          show_progress: true
         - name: forseti-server
           backend: ssh
           controls:

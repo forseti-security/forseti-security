@@ -25,15 +25,16 @@ model_name = SecureRandom.uuid.gsub!('-', '')[0..10]
 policy_library_path = '/home/ubuntu/policy-library/policy-library'
 
 control "scanner-config-validator-gcs-policy" do
-  # Arrange
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
-
   # Clone Policy Library repo
   describe command("sudo rm -rf #{policy_library_path}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo git clone https://github.com/forseti-security/policy-library.git --branch master --depth 1 #{policy_library_path}") do
+  describe command("sudo git clone https://github.com/forseti-security/policy-library.git #{policy_library_path}") do
+    its('exit_status') { should eq 0 }
+  end
+
+  describe command("cd #{policy_library_path} && sudo git checkout 8e1a6ca") do
     its('exit_status') { should eq 0 }
   end
 
@@ -47,10 +48,13 @@ control "scanner-config-validator-gcs-policy" do
     its('exit_status') { should eq 0 }
   end
 
+  # Create Inventory
+  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{model_name}").stdout)[1]
+
   # Act
   describe command("forseti model use #{model_name} && forseti scanner run && forseti notifier run --inventory_index_id #{@inventory_id}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should_not match /Error communicating to the Forseti server./ }
+    its('stdout') { should_not match(/Error communicating to the Forseti server./) }
     its('stdout') { should match(/Running ConfigValidatorScanner.../) }
     its('stdout') { should match(/Scan completed/) }
     its('stdout') { should match(/Scanner Index ID: (.*[0-9]*) is created/) }
