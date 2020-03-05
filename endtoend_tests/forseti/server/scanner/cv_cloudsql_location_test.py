@@ -15,7 +15,6 @@
 """Inventory performance end-to-end test"""
 
 import pytest
-import re
 from sqlalchemy.sql import text
 
 

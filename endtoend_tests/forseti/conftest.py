@@ -25,21 +25,22 @@ def forseti_cli():
 
 
 @pytest.fixture
-def forseti_inventory_id_readonly(forseti_cli):
-    inventory_id, _ = forseti_cli.inventory_create()
-    yield inventory_id
+def forseti_inventory_readonly(forseti_cli):
+    inventory_id, result = forseti_cli.inventory_create()
+    yield inventory_id, result
     forseti_cli.inventory_delete(inventory_id)
 
 
 @pytest.fixture
-def forseti_model_name_readonly(forseti_cli, forseti_inventory_id_readonly):
+def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
     model_name = f'Test{str(int(time.time()))}'
-    forseti_cli.model_create(forseti_inventory_id_readonly, model_name)
-    yield model_name
+    result = forseti_cli.model_create(forseti_inventory_readonly[0],
+                                      model_name)
+    yield model_name, result
     forseti_cli.model_delete(model_name)
 
 
 @pytest.fixture
-def forseti_scan_readonly(forseti_model_name_readonly):
-    forseti_cli.model_use(forseti_model_name_readonly)
+def forseti_scan_readonly(forseti_cli, forseti_model_readonly):
+    forseti_cli.model_use(forseti_model_readonly[0])
     yield forseti_cli.scanner_run()

@@ -16,7 +16,6 @@
 
 import pytest
 import re
-from sqlalchemy.sql import text
 
 
 class TestConfigValidatorScan:
