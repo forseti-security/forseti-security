@@ -38,15 +38,15 @@ def _run(client):
     Returns:
         ServerRunReply: the returned proto message.
     """
-    today = datetime.now()
-    model_name = today.strftime('run_model_%Y%m%d_%H%M')
-    message = 'Forseti server run complete'
+
 
     inventory_id = 0
 
     for progress in client.inventory.create():
         inventory_id = progress.id
 
+    today = datetime.now()
+    model_name = today.strftime('run_model_%Y%m%d_%H%M')
     model_reply = client.model.new_model(
         'inventory',
         model_name,
@@ -67,7 +67,8 @@ def _run(client):
         message = 'ERROR: Model status is {}'.format(model_status)
 
     client.delete_model(model_handle)
-
+    
+    message = 'Forseti server run complete'
     return server_pb2.ServerRunReply(message=message)
 
 
