@@ -27,6 +27,8 @@ def pytest_addoption(parser):
     parser.addoption('--cai_dump_file_gcs_paths',
                      default='',
                      help='CAI dump file paths for inventory performance test')
+    parser.addoption('--cloudsql_instance_name',
+                     help='Cloud SQL instance name')
     parser.addoption('--cloudsql_password', help='Cloud SQL password')
     parser.addoption('--cloudsql_port',
                      default=CLOUDSQL_PORT,
@@ -61,6 +63,11 @@ def cai_dump_file_gcs_paths(request):
 @pytest.fixture
 def cloudsql_connection(cloudsql_password, cloudsql_port, cloudsql_username):
     yield create_engine(f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}')
+
+
+@pytest.fixture
+def cloudsql_instance_name(request):
+    return request.config.getoption('--cloudsql_instance_name')
 
 
 @pytest.fixture
