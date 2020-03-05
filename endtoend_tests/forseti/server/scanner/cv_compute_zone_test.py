@@ -19,42 +19,43 @@ import re
 from sqlalchemy.sql import text
 
 
-class TestConfigValidatorCloudSqlLocation:
-    """Config Validator Cloud SQL Location test
+class TestConfigValidatorComputeZone:
+    """Config Validator Cloud Zone test
 
-    Run a scan and assert the Cloud SQL Location policy
+    Run a scan and assert the Cloud Zone policy
     produces a violation.
     """
 
     @pytest.mark.e2e
     @pytest.mark.scanner
-    def test_cv_cloudsql_location(self,
-                                  cloudsql_connection,
-                                  cloudsql_instance_name,
-                                  forseti_scan_readonly):
-        """Config Validator Cloud SQL Location test
+    def test_cv_compute_zone(self,
+                             cloudsql_connection,
+                             forseti_scan_readonly,
+                             forseti_server_vm_name):
+        """Config Validator Cloud Zone test
 
         Args:
             cloudsql_connection (object): SQLAlchemy engine connection for Forseti
-            cloudsql_instance_name (str): Cloud SQL instance name
             forseti_scan_readonly (Tuple): Scanner id and scanner process result
+            forseti_server_vm_name (str): Forseti server VM name
         """
         # Arrange/Act
         scanner_id, scanner_result = forseti_scan_readonly
 
         # Assert violation found
-        violation_type = 'CV_sql_location_denylist'
+        violation_type = 'CV_compute_zone_denylist'
         query = text('SELECT '
                      'COUNT(*) '
                      'FROM forseti_security.violations '
                      'WHERE '
                      'scanner_index_id = :scanner_id '
-                     'AND resource_id = :cloudsql_instance_name '
+                     'AND resource_id = :forseti_server_vm_name '
+                     'AND resource_type = \'compute.googleapis.com/Instance\' '
                      'AND violation_type = :violation_type')
         violation_count = (
                 cloudsql_connection.execute(
                     query,
-                    cloudsql_instance_name=cloudsql_instance_name,
+                    forseti_server_vm_name=forseti_server_vm_name,
                     scanner_id=scanner_id,
                     violation_type=violation_type)
                 .fetchone())

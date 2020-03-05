@@ -39,6 +39,7 @@ def pytest_addoption(parser):
     parser.addoption('--forseti_server_config_path',
                      default=FORSETI_SERVER_CONFIG_PATH,
                      help='Path to Forseti server config')
+    parser.addoption('--forseti_server_vm_name', help='Forseti server VM name')
     parser.addoption('--root_resource_id',
                      help='Root resource id for inventory performance test')
 
@@ -48,7 +49,10 @@ def pytest_configure(config):
         'markers', 'e2e: mark test to run only on named environment'
     )
     config.addinivalue_line(
-        'markers', 'inventory: mark test to run only on named environment'
+        'markers', 'inventory: mark to run all inventory tests'
+    )
+    config.addinivalue_line(
+        'markers', 'scanner: mark to run all scanner tests'
     )
 
 
@@ -93,6 +97,11 @@ def forseti_server_bucket_name(request):
 @pytest.fixture
 def forseti_server_config_path(request):
     return request.config.getoption('--forseti_server_config_path')
+
+
+@pytest.fixture
+def forseti_server_vm_name(request):
+    return request.config.getoption('--forseti_server_vm_name')
 
 
 @pytest.fixture

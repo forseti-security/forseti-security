@@ -37,3 +37,9 @@ def forseti_model_name_readonly(forseti_cli, forseti_inventory_id_readonly):
     forseti_cli.model_create(forseti_inventory_id_readonly, model_name)
     yield model_name
     forseti_cli.model_delete(model_name)
+
+
+@pytest.fixture
+def forseti_scan_readonly(forseti_model_name_readonly):
+    forseti_cli.model_use(forseti_model_name_readonly)
+    yield forseti_cli.scanner_run()

@@ -19,22 +19,13 @@ import subprocess
 
 
 class ForsetiCli:
-    """Server Config helper
+    """Forseti CLI helper
 
-    Helper class for common functions performed on the Forseti server config
-    for end-to-end tests.
+    Run common commands with the Forseti CLI.
     """
 
     @staticmethod
     def inventory_create(model_name=None):
-        """Copy server config from GCS to local path.
-
-        Args:
-            model_name (str): Model name to import inventory as
-
-        Returns:
-            Tuple(str, subprocess.CompletedProcess): Tuple of Inventory id and result from subprocess.run
-        """
         cmd = ['forseti', 'inventory', 'create']
         if model_name:
             cmd.extend(['--import_as', model_name])
@@ -63,7 +54,8 @@ class ForsetiCli:
 
     @staticmethod
     def model_create(inventory_id, model_name):
-        cmd = ['forseti', 'model', 'create', '--inventory_index_id', inventory_id, model_name]
+        cmd = ['forseti', 'model', 'create', '--inventory_index_id',
+               inventory_id, model_name]
         return subprocess.run(cmd, stderr=subprocess.PIPE,
                               stdout=subprocess.PIPE)
 
