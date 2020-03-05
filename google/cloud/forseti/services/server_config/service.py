@@ -39,11 +39,16 @@ def _run(client):
         ServerRunReply: the returned proto message.
     """
 
-
     inventory_id = 0
 
     for progress in client.inventory.create():
         inventory_id = progress.id
+
+    inventory_meta = client.inventory.get(inventory_id)
+
+    if inventory_meta.errors:
+        message = 'Error create inventory: {}'.format(inventory_meta.errors)
+        return server_pb2.ServerRunReply(message=message)
 
     today = datetime.now()
     model_name = today.strftime('run_model_%Y%m%d_%H%M')
@@ -58,16 +63,16 @@ def _run(client):
 
     client.switch_model(model_handle)
 
-    if model_status in ['SUCCESS', 'PARTIAL_SUCCESS']:
-        for progress in client.scanner.run(scanner_name=None):
-            pass
-        for progress in client.notifier.run(inventory_id, 0):
-            pass
-    else:
+    if model_status not in ['SUCCESS', 'PARTIAL_SUCCESS']:
         message = 'ERROR: Model status is {}'.format(model_status)
 
+    for progress in client.scanner.run(scanner_name=None):
+        pass
+    for progress in client.notifier.run(inventory_id, 0):
+        pass
+
     client.delete_model(model_handle)
-    
+
     message = 'Forseti server run complete'
     return server_pb2.ServerRunReply(message=message)
 
