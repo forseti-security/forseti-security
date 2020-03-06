@@ -15,8 +15,11 @@
 """Server Config gRPC service. """
 
 from builtins import object
+from datetime import datetime
 import json
 import logging
+
+from google.cloud.forseti.services.client import ClientComposition
 
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
@@ -24,6 +27,57 @@ from google.cloud.forseti.common.util import logger
 
 
 LOGGER = logger.get_logger(__name__)
+
+
+def _run(client):
+    """Runs Forseti.
+
+    Args:
+        client (ClientComposition): Forseti client object.
+
+    Returns:
+        ServerRunReply: the returned proto message.
+    """
+
+    inventory_id = 0
+
+    for progress in client.inventory.create():
+        inventory_id = progress.id
+
+    inventory_meta = client.inventory.get(inventory_id)
+
+    if inventory_meta.inventory.errors:
+        message = 'Error create inventory: {}'.format(
+            inventory_meta.inventory.errors)
+        return server_pb2.ServerRunReply(message=message)
+
+    today = datetime.now()
+    model_name = today.strftime('run_model_%Y%m%d_%H%M')
+    model_reply = client.model.new_model(
+        'inventory',
+        model_name,
+        inventory_id,
+        False)
+
+    model_handle = model_reply.model.handle
+    model_status = model_reply.model.status
+
+    client.switch_model(model_handle)
+
+    if model_status not in ['SUCCESS', 'PARTIAL_SUCCESS']:
+        message = 'ERROR: Model status is {}'.format(model_status)
+        client.delete_model(model_handle)
+        return server_pb2.ServerRunReply(message=message)
+
+    for progress in client.scanner.run(scanner_name=None):
+        pass
+    for progress in client.notifier.run(inventory_id, 0):
+        pass
+
+    client.delete_model(model_handle)
+
+    message = 'Forseti server run complete'
+    return server_pb2.ServerRunReply(message=message)
 
 
 class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
@@ -132,6 +186,23 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
 
         return server_pb2.GetServerConfigurationReply(
             configuration=json.dumps(forseti_config, sort_keys=True))
+
+    def Run(self, request, _):
+        """Run Forseti inventory, scanner and notifier
+
+        Args:
+            request (ServerRunRequest): The grpc request object.
+            _ (object): Context of the request.
+
+        Returns:
+            ServerRunReply: The ServerRunReply
+                grpc object.
+        """
+
+        LOGGER.info('Running the server processes, end-to-end.')
+        client = ClientComposition()
+
+        return _run(client)
 
 
 class GrpcServerConfigFactory(object):
