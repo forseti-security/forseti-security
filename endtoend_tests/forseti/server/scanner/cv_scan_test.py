@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inventory performance end-to-end test"""
+"""Config Validator Scan test"""
 
 import pytest
 import re
@@ -30,7 +30,7 @@ class TestConfigValidatorScan:
         """Config Validator Scan test
 
         Args:
-            forseti_scan_readonly (Tuple): Scanner id and scanner process result
+            forseti_scan_readonly (Tuple): Scanner id & scanner process result
         """
         # Arrange/Act
         scanner_id, scanner_result = forseti_scan_readonly

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inventory performance end-to-end test"""
+"""Config Validator Cloud SQL Location test"""
 
 import pytest
 from sqlalchemy.sql import text
@@ -21,8 +21,7 @@ from sqlalchemy.sql import text
 class TestConfigValidatorCloudSqlLocation:
     """Config Validator Cloud SQL Location test
 
-    Run a scan and assert the Cloud SQL Location policy
-    produces a violation.
+    Run a scan and assert the Cloud SQL Location policy produces a violation.
     """
 
     @pytest.mark.e2e
@@ -34,9 +33,9 @@ class TestConfigValidatorCloudSqlLocation:
         """Config Validator Cloud SQL Location test
 
         Args:
-            cloudsql_connection (object): SQLAlchemy engine connection for Forseti
+            cloudsql_connection (object): SQLAlchemy connection for Forseti
             cloudsql_instance_name (str): Cloud SQL instance name
-            forseti_scan_readonly (Tuple): Scanner id and scanner process result
+            forseti_scan_readonly (Tuple): Scanner id & scanner process result
         """
         # Arrange/Act
         scanner_id, scanner_result = forseti_scan_readonly

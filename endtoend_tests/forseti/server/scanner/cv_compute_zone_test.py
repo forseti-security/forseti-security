@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inventory performance end-to-end test"""
+"""Config Validator Cloud Zone test"""
 
 import pytest
 from sqlalchemy.sql import text
@@ -21,8 +21,7 @@ from sqlalchemy.sql import text
 class TestConfigValidatorComputeZone:
     """Config Validator Cloud Zone test
 
-    Run a scan and assert the Cloud Zone policy
-    produces a violation.
+    Run a scan and assert the Cloud Zone policy produces a violation.
     """
 
     @pytest.mark.e2e
@@ -34,8 +33,8 @@ class TestConfigValidatorComputeZone:
         """Config Validator Cloud Zone test
 
         Args:
-            cloudsql_connection (object): SQLAlchemy engine connection for Forseti
-            forseti_scan_readonly (Tuple): Scanner id and scanner process result
+            cloudsql_connection (object): SQLAlchemy  connection for Forseti
+            forseti_scan_readonly (Tuple): Scanner id & scanner process result
             forseti_server_vm_name (str): Forseti server VM name
         """
         # Arrange/Act

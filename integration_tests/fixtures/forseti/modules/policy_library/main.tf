@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+# TODO: Remove static Policy Library when bundle feature is added
 locals {
   files = [
     "policy-library/lib/constraints.rego",
