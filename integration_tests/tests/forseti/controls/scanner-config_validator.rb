@@ -31,8 +31,8 @@ control "scanner-config-validator" do
         --cloudsql_instance_name=#{cloudsql_instance_name} \
         --forseti_server_vm_name=#{forseti_server_vm_name}") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match(/collected 3 items/) }
-    its('stdout') { should_not match(/ERROR/) }
-    its('stdout') { should_not match(/FAILED/) }
+    its('stdout') { should match(/test_cv_cloudsql_location PASSED/) }
+    its('stdout') { should match(/test_cv_compute_zone PASSED/) }
+    its('stdout') { should match(/test_cv_scan PASSED/) }
   end
 end
