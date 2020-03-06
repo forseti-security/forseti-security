@@ -46,8 +46,9 @@ def _run(client):
 
     inventory_meta = client.inventory.get(inventory_id)
 
-    if inventory_meta.errors:
-        message = 'Error create inventory: {}'.format(inventory_meta.errors)
+    if inventory_meta.inventory.errors:
+        message = 'Error create inventory: {}'.format(
+            inventory_meta.inventory.errors)
         return server_pb2.ServerRunReply(message=message)
 
     today = datetime.now()
@@ -65,6 +66,8 @@ def _run(client):
 
     if model_status not in ['SUCCESS', 'PARTIAL_SUCCESS']:
         message = 'ERROR: Model status is {}'.format(model_status)
+        client.delete_model(model_handle)
+        return server_pb2.ServerRunReply(message=message)
 
     for progress in client.scanner.run(scanner_name=None):
         pass

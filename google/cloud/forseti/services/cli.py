@@ -737,8 +737,6 @@ def run_server(client, config, output, _):
 
     def do_server_run():
         """Run the Forseti server, end-to-end"""
-        # for message in client.server_run():
-        #     output.write(message)
         message = client.server_run()
         output.write(message)
 
