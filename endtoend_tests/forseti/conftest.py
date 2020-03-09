@@ -19,19 +19,19 @@ import time
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_cli():
     return ForsetiCli()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_inventory_readonly(forseti_cli):
     inventory_id, result = forseti_cli.inventory_create()
     yield inventory_id, result
     forseti_cli.inventory_delete(inventory_id)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
     model_name = f'Test{str(int(time.time()))}'
     result = forseti_cli.model_create(forseti_inventory_readonly[0],
@@ -40,7 +40,7 @@ def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
     forseti_cli.model_delete(model_name)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_scan_readonly(forseti_cli, forseti_model_readonly):
     forseti_cli.model_use(forseti_model_readonly[0])
     yield forseti_cli.scanner_run()

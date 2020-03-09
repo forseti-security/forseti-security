@@ -18,7 +18,7 @@ import pytest
 from endtoend_tests.helpers.server_config import ServerConfig
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def server_config_helper(forseti_server_bucket_name, forseti_server_config_path):
     server_config = ServerConfig(forseti_server_config_path)
     yield server_config
