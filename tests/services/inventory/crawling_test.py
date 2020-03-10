@@ -574,10 +574,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
-            'crm_access_level': {'resource': 3},
-            'crm_access_policy': {'resource': 1},
-            'crm_org_policy': {'resource': 3},
-            'crm_service_perimeter': {'resource': 1},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'disk': {'resource': 5},
@@ -605,6 +601,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
         })
+
+        del expected_counts['crm_org_policy']
 
         self.assertEqual(expected_counts, result_counts)
 
@@ -662,10 +660,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetvpngateway': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'compute_vpntunnel': {'resource': 1},
-            'crm_access_level': {'resource': 3},
-            'crm_access_policy': {'resource': 1},
-            'crm_org_policy': {'resource': 3},
-            'crm_service_perimeter': {'resource': 1},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
             'disk': {'resource': 5},
@@ -805,18 +799,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                               content_type='IAM_POLICY',
                                               asset_types=asset_types,
                                               blocking=mock.ANY,
-                                              timeout=mock.ANY),
-                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                              output_config=mock.ANY,
-                                              content_type='ORG_POLICY',
-                                              asset_types=asset_types,
-                                              blocking=mock.ANY,
-                                              timeout=mock.ANY),
-                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                              output_config=mock.ANY,
-                                              content_type='ACCESS_POLICY',
-                                              asset_types=asset_types,
-                                              blocking=mock.ANY,
                                               timeout=mock.ANY)]
                                 (gcp_mocks.mock_cloudasset.export_assets
                                 .assert_has_calls(expected_calls, any_order=True))
@@ -829,10 +811,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                             storage)
 
         expected_counts = {
-            'crm_access_level': {'resource': 3},
-            'crm_access_policy': {'resource': 1},
-            'crm_org_policy': {'resource': 3},
-            'crm_service_perimeter': {'resource': 1},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
