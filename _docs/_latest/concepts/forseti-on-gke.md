@@ -48,7 +48,7 @@ The following describes the container image tags used in a Forseti on-GKE instal
 
 ### Container Builds
 
-Forseti Security employs [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) wherever possible for example the **forseti** image.  With multi-stage builds, container images can be built where the build-time dependencies are not necissarily present in the runtime container image.  The result is a smaller image for deployment.  The following image and chart describe each of the container image layers defined by the [Dockerfile](https://raw.githubusercontent.com/forseti-security/forseti-security/master/Dockerfile)
+Forseti Security employs [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) wherever possible for example the **forseti** image.  With multi-stage builds, container images can be built where the build-time dependencies are not necessarily present in the runtime container image.  The result is a smaller image for deployment.  The following image and chart describe each of the container image layers defined by the [Dockerfile](https://raw.githubusercontent.com/forseti-security/forseti-security/master/Dockerfile)
 
 
 {% responsive_image path: images/docs/concepts/forseti-gke-build-layers.png alt: "forseti container build layers" %}
