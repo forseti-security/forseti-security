@@ -107,3 +107,16 @@ ENTRYPOINT forseti_server \
            --enable_console_log
 
 ##### END Forseti Server IMAGE #####
+
+##### BEGIN Forseti Orchestrator IMAGE #####
+FROM runtime AS forseti-orchestrator
+
+ENV PORT=50051
+
+ENTRYPOINT forseti \
+           --endpoint $SERVER_HOST:$PORT \
+           # The SQL_DB_CONNECTION_STRING connection string should be set in Kubernetes
+           server \
+           run
+
+##### END Forseti Orchestrator IMAGE #####
