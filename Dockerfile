@@ -115,7 +115,6 @@ ENV PORT=50051
 
 ENTRYPOINT forseti \
            --endpoint $SERVER_HOST:$PORT \
-           # The SQL_DB_CONNECTION_STRING connection string should be set in Kubernetes
            server \
            run
 
