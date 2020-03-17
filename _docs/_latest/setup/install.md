@@ -98,7 +98,7 @@ Create a file named `main.tf` in an empty directory and copy the contents below 
 ```hcl
 module "forseti" {
   source  = "terraform-google-modules/forseti/google"
-  version = "~> 5.2"
+  version = "~> 5.2.0"
   
   gsuite_admin_email = "superadmin@yourdomain.com"
   domain             = "yourdomain.com"
