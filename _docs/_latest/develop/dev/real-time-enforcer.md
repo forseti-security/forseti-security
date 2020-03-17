@@ -1,5 +1,5 @@
 ---
-title: Forseti Real-Time Enforcer
+title: Real-Time Enforcer
 order: 106
 ---
 # {{ page.title }}
@@ -127,7 +127,7 @@ gcloud projects add-iam-policy-binding $project_id \
 We'll be using the [Open Policy Agent](https://www.openpolicyagent.org/) 
 Docker image with policies located in a folder named policy. 
 You can use your own policies as long as they match the schema used by rpe-lib. 
-Refer to the Adding Resources and Policies for Evaluation section for 
+Refer to the Adding resources and policies for evaluation section for 
 documentation on how to add new resources and policies for evaluation.
 
 ```
@@ -138,7 +138,7 @@ docker run -d \
   run --server /opt/opa/policy
 ```
 
-### Building our docker image
+### Building our Docker image
 The enforcement code is all in the [run.py](https://github.com/forseti-security/real-time-enforcer/blob/master/app/run.py) 
 script of the `real-time-enforcer/app directory`. Stackdriver logs are parsed 
 in [real-time-enforcer/app/parsers/stackdriver.py](https://github.com/forseti-security/real-time-enforcer/blob/master/app/parsers/stackdriver.py) 
@@ -176,7 +176,7 @@ docker run -ti --rm \
     forsetisecurity/real-time-enforcer
 ```
 
-## Adding Resources from Stackdriver
+## Adding resources from Stackdriver
 Add your resource type to the StackdriverLogParser [_extract_asset_info()](https://github.com/forseti-security/real-time-enforcer/blob/8531f53abd3a1ca02af6c2b852a8cc6a188987e1/app/parsers/stackdriver.py#L126) 
 function in order to filter for the correct AuditLog resource type message and 
 return relevant data about the resource that can be parsed.
@@ -200,10 +200,10 @@ elif res_type == "gke_nodepool":
 Each resource that is then returned is evaluated against the list of available 
 policies and enforced if violations are found. These policies can be found in 
 the [resource-policy-evaluation-library Github repository](https://github.com/forseti-security/resource-policy-evaluation-library). 
-Refer to the Adding Resources and Policies for Evaluation section for 
+Refer to the Adding resources and policies for evaluation section for 
 documentation on how to add new resources and policies for evaluation.
 
-## Adding Resources and Policies for Evaluation
+## Adding resources and policies for evaluation
 
 ### Resources
 
@@ -394,7 +394,7 @@ a violations rule. This allows the OPA engine to query all violations for a
 given resource type in a single API call. 
 
 Below is an example `common.rego` file for the `GKE Cluster Nodepool` resource type:
-package `gcp.container.projects.locations.clusters.nodePools`:
+`package gcp.container.projects.locations.clusters.nodePools`:
 
 ```
 policies [policy_name] {
@@ -409,7 +409,7 @@ violations [policy_name] {
 
 ### Relevant links:
 - [Real-time Enforcer application source code](https://github.com/forseti-security/real-time-enforcer)
-- [Resource policy evaluation library (rpe-lib)](https://github.com/forseti-security/resource-policy-evaluation-library)
+- [Resource-policy-evaluation library (rpe-lib)](https://github.com/forseti-security/resource-policy-evaluation-library)
 - [Real-time Enforcer Terraform deployment](https://github.com/forseti-security/terraform-google-forseti/tree/master/modules/real_time_enforcer)
 - [Real-time Enforcer Organization Sink deployment](https://github.com/forseti-security/terraform-google-forseti/tree/master/modules/real_time_enforcer_organization_sink)
 - [Real-time Enforcer Project Sink deployment](https://github.com/forseti-security/terraform-google-forseti/tree/master/modules/real_time_enforcer_project_sink)
