@@ -30,3 +30,7 @@ Install, build, edit, and run the Forseti website locally.
 **[Get Help Developing on Forseti]({% link _docs/v2.25/use/get-help.md %})**
 
 Find the best way to get help with development.
+
+**[Start Developing on Forseti Real-Time Enforcer]({% link _docs/v2.24/develop/dev/real-time-enforcer.md %})**
+
+Get set up and started locally to contribute to Forseti Real-Time Enforcer.

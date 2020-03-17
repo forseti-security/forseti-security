@@ -29,6 +29,10 @@ Create your own GCP API clients, so that Forseti can interact with GCP.
 Create your own Forseti Scanner rules to check different types of data to
 make sure it's securely configured.
 
+**[Develop on Real-Time Enforcer]({% link _docs/v2.24/develop/dev/real-time-enforcer.md %})**
+
+Add new resources and policies to Forseti Real-Time Enforcer.
+
 **[Testing Your Changes]({% link _docs/v2.24/develop/dev/testing.md %})**
 
 Learn how to build protos and run unit tests for your Forseti contributions.
