@@ -1,6 +1,6 @@
 On the organization:
 - `roles/resourcemanager.organizationAdmin`
-- `roles/securityReviewer`
+- `roles/iam.securityReviewer`
 
 On the project:
 - `roles/owner`
