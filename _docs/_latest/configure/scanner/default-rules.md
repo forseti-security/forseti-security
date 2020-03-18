@@ -11,7 +11,7 @@ This page describes the default rules for specific Google Cloud Platform (GCP) p
 resources.
 
 ---
-
+  
 ## BigQuery
   * Datasets should not be public.
   * Datasets should not be accessible by users who's email address matches `@gmail.com`.
@@ -35,23 +35,31 @@ resources.
 ## Cloud Identity-Aware Proxy (Cloud IAP) bypass access
   * Forbid any Cloud IAP bypasses on all resources in my organization, when Cloud IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
-
+  
 ## External Project Access
   * Find any users in your org that may have access to projects outside of your allowed org or folder.
   
 ## Firewall
   * Prevent allow all ingress (used to detect allow ingress to all policies)
-
-## G Suite
+  
+## Group
   * Your company users (@domain.tld) and all gmail users are allowed to be members of your G Suite
   groups.
   
+## Group Settings
+  * Only allow the following supported settings for groups with IAM policies:
+    * A user from outside of the organization can never join the group.
+    * Invitation is required to join.
+    * Managers can invite people to join the group.
+    * Managers can add people to the group.
+    * Managers can leave the group.
+  
 ## KMS
   * Crypto keys with the following config should be rotated in 100 days.
-    algorithm: GOOGLE_SYMMETRIC_ENCRYPTION
-    protection_level: SOFTWARE
-    purpose: ENCRYPT_DECRYPT
-    state: ENABLED
+    * algorithm: GOOGLE_SYMMETRIC_ENCRYPTION
+    * protection_level: SOFTWARE
+    * purpose: ENCRYPT_DECRYPT
+    * state: ENABLED
     
 ## Kubernetes Engine Version
   * Only allow the following supported versions:

@@ -1,33 +1,22 @@
-To run Forseti, you'll need to set up your configuration file. Edit
-the [forseti_conf_server.yaml sample](https://github.com/forseti-security/forseti-security/blob/master/configs/server/forseti_conf_server.yaml.sample)
-file and save it as `forseti_conf_server.yaml`.
+To run Forseti, you'll need to set up your configuration file. Please see the 
+[detailed guide](https://forsetisecurity.org/docs/latest/setup/install.html) to 
+get a default installation of Forseti setup that can be used in production 
+environment. 
 
-You will also need to edit, at a minimum, the following variables in the config
-file:
+Please see the optional settings below to customize your inventory. View the 
+full list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs)
+to see all of the available options and default values.
 
-You must set ONLY one of root_resource_id or composite_root_resources in your
-configuration. Defining both will cause Forseti to exit with an error.
+You must set `composite_root_resources` variable in your `main.tf` if you want 
+to run Forseti on a non-organizational root, or one or more resources from GCP
+resource hierarchy (organizations, folders and projects) in any combination.
 
-*NOTE*: The composite_root_resources configuration does not support gsuite and
-Explain at this time.
-
-**Either**
-
-* `root_resource_id`
-  * **Description**: Root resource to start crawling from.
-  * **Valid values**: String, the format is `<resource_type>/<resource_id>`.
-  * **Example values**: `organizations/12345677890`.
-
-* `domain_super_admin_email`
-  * **Description**: G Suite super admin email.
-  * **Valid values**: String.
-  * **Example values**: `my_gsuite_admin@my_domain.com`.
-
-**OR**
+**NOTE:** The `composite_root_resources` configuration does not support G Suite 
+and Explain at this time.
 
 * `composite_root_resources`
-  * **Description**: List of all resources to include in a single Forseti
-    inventory. Can contain one or more resources from the GCP Resource Hierarchy
+  * **Description**: A list of root resources that Forseti will monitor. Can 
+    contain one or more resources from the GCP Resource Hierarchy
     in any combination.
     https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy
 
@@ -36,17 +25,23 @@ Explain at this time.
     to the Forseti service account before they can be included in the inventory.
 
     Resources can exist in multiple organizations.
-  * **Valid values**: List of Strings,
-    the format for each string is `<resource_type>/<resource_id>`.
-  * **Example values**: `folders/12345677890`, `projects/9876543210`,
-    `organizations/5678901234`
+  * **Valid values**: List of Strings. The format for each string is 
+    `<resource_type>/<resource_id>`.
+  * **Example values**: `organizations/5678901234`, `folders/12345677890` and 
+    `projects/9876543210`.
+
+* `gsuite_admin_email`
+  * **Description**: G Suite administrator email address to match your Forseti
+    installation.
+  * **Valid values**: String.
+  * **Example values**: `my_gsuite_admin@my_domain.com`.
 
 Additional configuration settings allow you to finely tune the inventory
 process for your organization. The default values are setup based on the
 default quota that all organizations get in Google Cloud Platform and to ensure
 the greatest breadth of resources and policies are covered by the inventory.
 
-* `api_quota`
+* API Quota:
   * **Description**: The maximum calls we can make to each API per second. This
     should be about 10% lower than the max allowed API quota to allow space for
     retries.
@@ -66,49 +61,57 @@ the greatest breadth of resources and policies are covered by the inventory.
     The default values are based on the default quota all projects get for GCP
     APIs, however large organizations may request quota increases through the
     cloud console to reduce the time it takes to complete an inventory.
-  * `max_calls`
-    * **Description**: Maximum calls we can make to the API for a give period of
-      time.
-    * **Valid values**: Integer.
-    * **Example values**: `1`, `2`, `100`.
-  * `period`
-    * **Description**: What is the period over which max_calls is measured (in
-      seconds).
-    * **Valid values**: Float.
-    * **Example values**: `1.0`, `1.2`.
-  * `disable_polling`
+  * Max calls:
+    * **Description**: Maximum calls we can make to the API for a given period 
+      of time. For example, maximum calls that can be made to the Admin API can 
+      be configured by setting `admin_max_calls` variable in your `main.tf`. 
+    * **Valid values**: String.
+    * **Example values**: `"1"`, `"2"`, `"100"`.
+  * Period:
+    * **Description**: The period of max calls for the various APIs. It is 
+      measured in seconds. For example, the period of max calls for the Admin 
+      API can be configured by setting `admin_period` variable in your 
+      `main.tf`.
+    * **Valid values**: String.
+    * **Example values**: `"1.0"`, `"1.2"`.
+  * Disable Polling:
     * **Description**: Specifies that this API should not be called by the
       inventory crawler. This can be used to disable APIs with low QPS for
       resources that are not important or used by your organization in order to
-      speed up the time it takes to complete an inventory snapshot.
+      speed up the time it takes to complete an inventory snapshot. For example,
+      you can disable polling to the Admin API by setting 
+      `admin_disable_polling` variable to `"true"` in your `main.tf`. 
     * **Valid values**: Boolean.
-    * **Example values**: `true`, `false`.
+    * **Example values**: `"true"`, `"false"`.
 
-* `retention_days`
+* `inventory_retention_days`
   * **Description**: Number of days to retain inventory data, -1 : (default)
     keep all previous data forever.
-  * **Valid values**: Integer.
-  * **Example values**: `-1`, `5`, `10`.
+  * **Valid values**: String.
+  * **Example values**: `"-1"`, `"5"`, `"10"`.
 
-* `cai`
-  * **Description**: Cloud Asset Inventory (CAI) can be enabled if the level
-    is `organization` by providing values for the attributes below.
-  * `enabled`
-    * **Description**: Specifies whether CAI is enabled or not.
-    * **Valid values**: Boolean.
-    * **Example values**: `true`, `false`.
-  * `gcs_path`
-    * **Description**: GCS Path of the newly created bucket to be used for
-      CAI exports. Bucket needs to be in the Forseti project.
-    * **Valid values**: String. Location of the bucket, must start with gs://.
-    * **Example values**: `gs://my_cai_export_bucket`
-  * `asset_types`
-    * **Description**: Optional list of asset types to restrict the Cloud
-      Asset inventory API to, when exporting data for your resources. If not
-      specified, all supported asset types will be included in the inventory.
-      The full list of supported asset types is available in the public
-      documentation:
-      https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
-    * **Valid values**: List.
-    * **Example values**: `google.cloud.resourcemanager.Organization`,
-      `google.compute.Instance`
+* Forseti uses [Cloud Asset Inventory](https://cloud.google.com/asset-inventory/docs/overview) (CAI).
+  Below are the Forseti-CAI settings that can be customized.
+  * `bucket_cai_lifecycle_age`
+    * **Description**: GCS CAI lifecycle age value
+    * **Valid values**: String.
+    * **Example values**: `"14"`
+  * `bucket_cai_location`
+    * **Description**: GCS CAI storage bucket location
+    * **Valid values**: String.
+    * **Example values**: `"us-central1"`
+  * `cai_api_timeout`
+    * **Description**: Timeout in seconds to wait for the exportAssets API to 
+      return success.
+    * **Valid values**: String.
+    * **Example values**: `"3600"`
+  * `enable_cai_bucket`
+    * **Description**: Create a GCS bucket for CAI exports
+    * **Valid values**: String.
+    * **Example values**: `"true"`
+  
+
+Saving changes:
+  1. Save the changes to `main.tf` file.
+  1. Run command `terraform plan` to see the infrastructure plan. 
+  1. Run command `terraform apply` to apply the infrastructure build.

@@ -11,20 +11,20 @@ Platform (GCP) resources, such as organizations or projects. After running the
 audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
 writes it to Cloud Storage bucket.
 
-
 ## Configuring Scanner
 
 Forseti Scanner runs in batch mode, executing each scanner serially
 for each run. To modify the scanner settings:
 
-1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
-1. Navigate to the `scanner` > `scanners` section.
-1. Edit the `enabled` property for the appropriate scanners.
-   `true` enables the scanner, and `false` disables the scanner.
+1. View the list of inputs [here](https://github.com/forseti-security/terraform-google-forseti#inputs) to see all of the available options and default values.
+1. Set the input variable for the scanner whose settings you want to modify to
+`true` or `false` in your `main.tf`, where `true` enables the scanner, and 
+`false` disables the scanner. For example, setting `config_validator_enabled` to 
+`true` enables Config Validator Scanner.
 
-When you're finished making changes, run the
-[configuration reload]({% link _docs/latest/use/cli/server.md %})
-command to update the configuration of the server.
+When you're finished making changes:
+- Run command `terraform plan` to see the infrastructure plan. 
+- Run command `terraform apply` to apply the infrastructure build.
 
 You can learn how to run the [Forseti Scanner]({% link _docs/latest/use/cli/scanner.md %}).
 

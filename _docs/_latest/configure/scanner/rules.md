@@ -700,7 +700,6 @@ rules:
     groups_emails:
       - '*'
     settings:
-      allowExternalMembers: True
       whoCanJoin: "INVITED_CAN_JOIN"
       whoCanInvite: "ALL_MANAGERS_CAN_INVITE"
       whoCanAdd: "ALL_MANAGERS_CAN_ADD"
@@ -1136,6 +1135,77 @@ rules:
     * **Description**: Whether to include children. It is only relevant to sinks created for organizations or folders.
     * **Valid values**: String. One of `true`, `false` or `*`. `*` means the rule will match sinks with either true or false.
 
+
+## Resource rules
+
+### Rule definition
+
+```yaml
+ rules:
+ - name: Project resource trees.
+   mode: required
+   resource_types:
+   - 'project'
+   - 'bucket'
+   - 'dataset'
+   - 'instance'
+   resource_trees:
+   - type: 'project'
+     resource_id: 'proj-1'
+     children:
+     - type: 'bucket'
+       resource_id: 'bucket-1'
+     - type: 'bucket'
+       resource_type: 'bucket-2'
+     - type: 'dataset'
+       resource_id: 'proj-1:dataset1'
+     - type: 'dataset'
+       resource_id: 'proj-1:dataset2'
+   - type: 'project'
+     resource_id: 'proj-2'
+     children:
+     - type: 'bucket'
+       resource_id: 'bucket-3'
+     - type: 'dataset'
+       resource_id: 'proj-2:dataset1'
+     - type: 'instance'
+       resource_id: '*'
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: String, currently only supports `required` mode.
+
+* `resource_types`
+    * **Description**: A list of resources to apply the rule to.
+    * **Valid values**: List of strings, currently only supports `project`,
+     `bucket`, `dataset` and `instance`.
+
+* `resource_trees`
+  * **Description**: A list of resource trees to match.
+    * `type`
+      * **Description**: The type of resource tree to match.
+      * **Valid values**: One of `project`, `bucket`, `dataset` or 
+      `instance`.
+
+    * `resource_id`
+      * **Description**: ID of the resource to match.
+      * **Valid values**: String
+    
+  * `children`
+    * **Description**: A list of sub-resource trees to match.
+      * `type`
+        * **Description**: The type of the children resource to match.
+        * **Valid values**: String.
+      
+      * `resource_id`
+        * **Description**: ID of the resource to match.
+        * **Valid values**: String, you can use `*` to match for all
+
 ## Retention rules
 
 ### Rule definition
@@ -1184,6 +1254,47 @@ rules:
   * **Valid values**: Integer, number of days.
 
     *Tip*: The rule must include a minimum_retention, maximum_retention or both.
+    
+## Role rules
+
+### Rule definitions
+
+```yaml
+rules:
+  - name: "The role BigqueryViewer contains exactly the following 3 permissions"
+    role_name: "BigqueryViewer"
+    permissions:
+      - "bigquery.datasets.get"
+      - "bigquery.tables.get"
+      - "bigquery.tables.list"
+    resource:
+      - type: project
+        resource_ids: ['*']
+```
+ 
+* `name`
+  * **Description**: The name of the rule
+  * **Valid values**: String.
+
+* `role_name`
+  * **Description**: The role to be tested.
+  * **Valid values**: String.
+
+* `permissions`
+  * **Description**: A list of permissions to verify.
+  * **Valid values**: String.
+  * **Example values**: `bigquery.datasets.get`, `bigquery.tables.get`
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: String, one of `organization`, `folder`, `project` or
+      `role`.
+ 
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `['*']` to match for all.
+
 
 ## Service Account Key rules
 
