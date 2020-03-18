@@ -59,7 +59,7 @@ gcloud beta logging sinks create rpe-lib-events \
   pubsub.googleapis.com/projects/$project_id/topics/rpe-lib-events \
   --organization=$organization_id \
   --include-children \
-  --log-filter='protoPayload."@type"="type.googleapis.com/google.cloud.audit.AuditLog" severity!="ERROR" protoPayload.serviceName!="k8s.io" NOT protoPayload.methodName: "delete"'
+  --log-filter=’logName:”logs/cloudaudit.googleapis.com%2Factivity” severity>INFO’
 ```
 
 ### Setting up the Pub/Sub resources
@@ -125,8 +125,9 @@ gcloud projects add-iam-policy-binding $project_id \
 ## Running OPA with our policies
 
 We'll be using the [Open Policy Agent](https://www.openpolicyagent.org/) 
-Docker image with policies located in a folder named policy. 
-You can use your own policies as long as they match the schema used by rpe-lib. 
+Docker image with policies located in a folder named `policy` found in the 
+[resource-policy-evaluation-library Github repository](https://github.com/forseti-security/resource-policy-evaluation-library)
+(rpe-lib). You can use your own policies as long as they match the schema used by rpe-lib. 
 Refer to the Adding resources and policies for evaluation section for 
 documentation on how to add new resources and policies for evaluation.
 
