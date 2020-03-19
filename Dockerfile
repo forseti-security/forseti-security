@@ -116,3 +116,14 @@ ENTRYPOINT forseti_server \
            --log_level=$LOG_LEVEL \
            --enable_console_log
 ##### END FORSETI-SERVER IMAGE #####
+
+##### BEGIN FORSETI-ORCHESTRATOR IMAGE #####
+FROM runtime AS forseti-orchestrator
+
+ENV PORT=50051
+
+ENTRYPOINT forseti \
+           --endpoint $SERVER_HOST:$PORT \
+           server \
+           run
+##### END FORSETI-ORCHESTRATOR IMAGE #####
