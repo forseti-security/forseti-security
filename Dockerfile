@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,14 +55,23 @@ FROM pre-build AS build
 # Expose our source so we can install Forseti Security.
 COPY --chown=forseti:forseti . ${WORK_DIR}
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt --user
+COPY requirements.txt /
+RUN pip install --no-cache-dir --upgrade  --user -r /requirements.txt
 
-RUN pip install --no-cache-dir --upgrade google-cloud-profiler --user
+RUN pip install --no-cache-dir --upgrade --user google-cloud-profiler
 
 # Install Forseti Security.
 RUN python setup.py install --user
-
 ##### END BUILD IMAGE #####
+
+##### BEGIN FORSETI-TEST IMAGE #####
+FROM build AS forseti-test
+
+COPY requirements-test.txt /
+RUN pip install --no-cache-dir --upgrade --user -r /requirements-test.txt
+
+ENTRYPOINT /bin/bash
+##### END FORSETI-TEST IMAGE #####
 
 ##### BEGIN RUNTIME IMAGE #####
 FROM base AS runtime
@@ -86,8 +95,9 @@ COPY --from=build --chown=forseti:forseti \
 RUN chmod u+x /home/forseti/.local/bin/docker_entrypoint.sh
 
 ENTRYPOINT ["docker_entrypoint.sh"]
+##### END RUNTIME IMAGE #####
 
-##### BEGIN Forseti Server IMAGE #####
+##### BEGIN FORSETI-SERVER IMAGE #####
 FROM runtime AS forseti-server
 
 ENV SERVER_HOST 0.0.0.0
@@ -105,10 +115,9 @@ ENTRYPOINT forseti_server \
            --config_file_path $CONFIG_FILE_PATH \
            --log_level=$LOG_LEVEL \
            --enable_console_log
+##### END FORSETI-SERVER IMAGE #####
 
-##### END Forseti Server IMAGE #####
-
-##### BEGIN Forseti Orchestrator IMAGE #####
+##### BEGIN FORSETI-ORCHESTRATOR IMAGE #####
 FROM runtime AS forseti-orchestrator
 
 ENV PORT=50051
@@ -117,5 +126,4 @@ ENTRYPOINT forseti \
            --endpoint $SERVER_HOST:$PORT \
            server \
            run
-
-##### END Forseti Orchestrator IMAGE #####
+##### END FORSETI-ORCHESTRATOR IMAGE #####
