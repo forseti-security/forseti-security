@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 Google LLC
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,23 +15,26 @@
 # taken when a PR is merged into the "master" branch.  It creates a new
 # base image, pre-build image, and final "master" image.
 
+timeout: 1200s
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-security base container image
+  id: Build forseti-security base image
   args: ['build', '--target', 'base', '-t', 'gcr.io/$PROJECT_ID/forseti-base:master', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-security pre-build container image
+  id: Build forseti-security pre-build image
   args: ['build', '--target', 'pre-build', '-t', 'gcr.io/$PROJECT_ID/forseti-prebuild:master', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-security master container image
+  id: Build forseti-security master image
   args: ['build',  '--target', 'runtime', '-t', 'gcr.io/$PROJECT_ID/forseti:master', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-server master container image
+  id: Build forseti-server master image
   args: ['build', '--target', 'forseti-server', '-t', 'gcr.io/$PROJECT_ID/forseti-server:master', '.']
-
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security test image
+  args: ['build', '--target', 'forseti-test', '-t', 'gcr.io/$PROJECT_ID/forseti-test:master', '.']
 images:
 - gcr.io/$PROJECT_ID/forseti-server:master
 - gcr.io/$PROJECT_ID/forseti:master
 - gcr.io/$PROJECT_ID/forseti-base:master
 - gcr.io/$PROJECT_ID/forseti-prebuild:master
-timeout: 1200s
+- gcr.io/$PROJECT_ID/forseti-test:master

@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,19 @@
 # limitations under the License.
 
 sudo: required
+git:
+  depth: 1
 jobs:
   include:
-  - stage: Unit Tests
-    name: Unit Tests with Python 3.6
+  - stage: Lint and Unit Tests
+    name: Lint and Unit Tests with Python 3.6
     language: python
     python:
     - "3.6"
     services:
     - docker
-    before_install:
-    - "./install/scripts/docker_setup_forseti.sh"
     script:
-    - "./install/scripts/docker_run_forseti.sh"
-    - "./install/scripts/docker_unittest_forseti.sh"
-    - "./install/scripts/docker_pystyle_forseti.sh"
+    - make docker_test_lint
+    - make docker_test_unit
     after_success:
     - docker -l error exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
