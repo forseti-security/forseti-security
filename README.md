@@ -56,4 +56,4 @@ In addition to [milestones](https://github.com/forseti-security/forseti-security
 ## Pull Requests
 The team and community encourages pull requests to fix issues or improve the product. Pull requests are typically reviewed within 48 hours of submission. 
 If pull requests become inactive they will be automatically closed, but can be quickly and easily re-opened.
-Please review the project’s contributing (guidelines)[.github/CONTRIBUTING.md] before submitting a pull request.
+Please review the project’s contributing [guidelines](.github/CONTRIBUTING.md) before submitting a pull request.
