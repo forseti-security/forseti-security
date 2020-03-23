@@ -96,5 +96,4 @@ echo "Cleaning up model tables"
 forseti model delete ${MODEL_NAME}
 
 # Restart Forseti to release used memory
-systemctl restart forseti
-
+sudo systemctl restart forseti
