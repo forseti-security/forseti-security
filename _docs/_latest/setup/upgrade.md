@@ -1,6 +1,6 @@
 ---
 title: Upgrade
-order: 003
+order: 200
 ---
 
 # {{ page.title }}
