@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# Copyright 2019 Google LLC
+#
+# Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,22 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-# Block until the Forseti startup script has finished running.
+package validator.gcp.lib
 
-MAX_WAIT=900
+# Function to fetch the constraint spec
+# Usage:
+# get_constraint_params(constraint, params)
 
-echo "Waiting for up to $MAX_WAIT seconds for Forseti to be ready."
+get_constraint_params(constraint) = params {
+	params := constraint.spec.parameters
+}
 
-for _ in $(seq 1 $MAX_WAIT); do
-  if [[ -f /etc/profile.d/forseti_environment.sh ]]; then
-    echo "Waiting for startup script to complete"
-    sleep 60
-    exit 0
-  else
-    sleep 10
-  fi
-done
+# Function to fetch constraint info
+# Usage:
+# get_constraint_info(constraint, info)
 
-echo "Forseti was not ready after $MAX_WAIT seconds!"
-exit 1
+get_constraint_info(constraint) = info {
+	info := {
+		"name": constraint.metadata.name,
+		"kind": constraint.kind,
+	}
+}

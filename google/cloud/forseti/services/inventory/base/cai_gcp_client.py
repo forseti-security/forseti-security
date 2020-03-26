@@ -982,6 +982,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for folder in resources:
             yield folder
 
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Services from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of services.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'serviceusage.googleapis.com/Service',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.engine)
+
+        for service in resources:
+            yield service
+
     def iter_kubernetes_nodes(self, project_id, zone, cluster):
         """Iterate k8s nodes in a cluster from Cloud Asset data.
 
@@ -1022,6 +1041,27 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.engine)
         for pod in resources:
             yield pod
+
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.;
+            namespace (str): The namespace name.
+
+        Yields:
+            dict: Generator of services.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'k8s.io/Service',
+            '//container.googleapis.com/projects/{}/zones/{}/clusters/{}/k8s/'
+            'namespaces/{}'.format(project_id, zone, cluster, namespace),
+            self.engine)
+        for service in resources:
+            yield service
 
     def iter_kubernetes_namespaces(self, project_id, zone, cluster):
         """Iterate k8s namespaces in a cluster from Cloud Asset data.
@@ -1148,7 +1188,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
-    def iter_crm_organization_access_policies(self, org_id):
+    def iter_crm_org_access_policies(self, org_id):
         """Iterate access policies in an organization from Cloud Asset data.
 
         Args:
@@ -1215,7 +1255,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def iter_crm_project_org_policies(self, project_number):
         """Iterates organization policies from Cloud Asset data in a project.
@@ -1233,7 +1276,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def iter_crm_folder_org_policies(self, folder_id):
         """Iterate organization policies in a folder from Cloud Asset data.
@@ -1250,7 +1296,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.engine)
         for org_policy in resources:
-            yield org_policy
+            data, metadata = org_policy
+            # data[0] is needed to retrieve the only Organization Policy from
+            # the list.
+            yield data[0], metadata
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from Cloud Asset data.

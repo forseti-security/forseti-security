@@ -207,6 +207,15 @@ class ServerConfigClient(ForsetiClient):
         request = server_pb2.GetServerConfigurationRequest()
         return self.stub.GetServerConfiguration(request)
 
+    def server_run(self):
+        """Run the Forseti server, end-to-end.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_pb2.ServerRunRequest()
+        return self.stub.Run(request)
+
 
 class NotifierClient(ForsetiClient):
     """Notifier service allows the client to send violation notifications."""
@@ -725,8 +734,10 @@ class ClientComposition(object):
             Exception: gRPC connected but services not registered
         """
         self.gigabyte = 1024 ** 3
+
         self.channel = grpc.insecure_channel(endpoint, options=[
             ('grpc.max_receive_message_length', self.gigabyte)])
+
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)

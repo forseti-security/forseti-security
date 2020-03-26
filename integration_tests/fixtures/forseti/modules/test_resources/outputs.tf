@@ -14,9 +14,14 @@
 * limitations under the License.
 */
 
-output "bucket_acl_scanner_bucket_name" {
-  description = "Bucket name created for the Bucket ACL Scanner test"
-  value = google_storage_bucket.bucket_acl_scanner.name
+output "bucket_acl_scanner_all_auth_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner all auth test"
+  value = google_storage_bucket.bucket_acl_scanner_all_auth.name
+}
+
+output "bucket_acl_scanner_all_users_bucket_name" {
+  description = "Bucket name created for the Bucket ACL Scanner all user test"
+  value = google_storage_bucket.bucket_acl_scanner_all_users.name
 }
 
 output "enforcer_allow_all_icmp_rule_name" {

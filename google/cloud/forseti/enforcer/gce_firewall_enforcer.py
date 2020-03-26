@@ -15,22 +15,18 @@
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
-from builtins import object
 import hashlib
-import http.client
 import json
 import operator
-import re
 import socket
 import ssl
 
-from future import standard_library
+import http.client
 import httplib2
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
-
-standard_library.install_aliases()
+from google.cloud.forseti.common.util import rule_validator as rv
 
 
 # The name of the GCE API.
@@ -42,27 +38,17 @@ API_ROOT = 'https://www.googleapis.com/'
 # The version of the GCE API to use.
 API_VERSION = 'v1'
 
-LOGGER = logger.get_logger(__name__)
+LOGGER = logger.logging
 
 # What transient exceptions should be retried.
 RETRY_EXCEPTIONS = (http.client.ResponseNotReady, http.client.IncompleteRead,
                     httplib2.ServerNotFoundError, socket.error, ssl.SSLError,)
-
-# Allowed items in a firewall rule.
-ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
-                                'disabled', 'logConfig', 'name', 'network',
-                                'priority', 'sourceRanges', 'destinationRanges',
-                                'sourceTags', 'targetTags'))
 
 # Maximum time to allow an active API operation to wait for status=Done
 OPERATION_TIMEOUT = 120.0
 
 # The number of times to retry an operation if it times out before completion.
 OPERATION_RETRY_COUNT = 5
-
-# Name restrictions described at
-# https://cloud.google.com/compute/docs/reference/rest/v1/firewalls
-VALID_RESOURCE_NAME_RE = re.compile('(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$)')
 
 
 class Error(Exception):
@@ -273,7 +259,7 @@ class FirewallRules(object):
             # Only include keys in the ALLOWED_RULE_ITEMS set.
             scrubbed_rule = dict(
                 [(k, v) for k, v in list(rule.items()) if k
-                 in ALLOWED_RULE_ITEMS])
+                 in rv.ALLOWED_RULE_ITEMS])
             self.add_rule(scrubbed_rule)
 
     def add_rules(self, rules, network_name=None):
@@ -313,6 +299,7 @@ class FirewallRules(object):
                 name.
             InvalidFirewallRuleError: One or more rules failed validation.
         """
+        # pylint: disable=too-many-branches
         if not isinstance(rule, dict):
             raise InvalidFirewallRuleError(
                 'Invalid rule type. Found %s expected dict' % type(rule))
@@ -375,7 +362,19 @@ class FirewallRules(object):
         if 'disabled' not in new_rule:
             new_rule['disabled'] = self.DEFAULT_DISABLED
 
-        if self._check_rule_before_adding(new_rule):
+        error = rv.validate_gcp_rule(new_rule)
+        if error:
+            raise InvalidFirewallRuleError(error)
+
+        if rule['name'] in self.rules:
+            raise DuplicateFirewallRuleNameError(
+                'Rule %s already defined in rules: %s' % (
+                    rule['name'], ', '.join(sorted(self.rules.keys()))))
+
+        callback_ok = (
+            self._add_rule_callback(new_rule)
+            if self._add_rule_callback else True)
+        if callback_ok:
             self.rules[new_rule['name']] = new_rule
 
     def filtered_by_networks(self, networks):
@@ -447,8 +446,9 @@ class FirewallRules(object):
         elif isinstance(rules, dict):
             if 'items' in rules:
                 for item in rules['items']:
-                    rule = dict([(key, item[key]) for key in ALLOWED_RULE_ITEMS
-                                 if key in item])
+                    rule = dict(
+                        [(key, item[key]) for key in rv.ALLOWED_RULE_ITEMS
+                         if key in item])
                     self.add_rule(rule)
 
     def _order_lists_in_rule(self, unsorted_rule):
@@ -479,121 +479,6 @@ class FirewallRules(object):
             else:
                 sorted_rule[key] = value
         return sorted_rule
-
-    # TODO: clean up break up into additional methods
-    # pylint: disable=too-many-branches
-    def _check_rule_before_adding(self, rule):
-        """Validates that a rule is valid and not a duplicate.
-
-        Validation is based on reference:
-        https://cloud.google.com/compute/docs/reference/beta/firewalls and
-        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table
-        If add_rule_callback is set, this will also confirm that
-        add_rule_callback returns True for the rule, otherwise it will not add
-        the rule.
-
-        Args:
-            rule (dict): The rule to validate.
-
-        Returns:
-            bool: True if rule is valid, False if the add_rule_callback returns
-                False.
-
-        Raises:
-            DuplicateFirewallRuleNameError: Two or more rules have the same
-                name.
-            InvalidFirewallRuleError: One or more rules failed validation.
-        """
-        unknown_keys = set(rule.keys()) - ALLOWED_RULE_ITEMS
-        if unknown_keys:
-            # This is probably the result of a API version upgrade that didn't
-            # properly update this function (or a broken binary).
-            raise InvalidFirewallRuleError(
-                'An unexpected entry exists in a firewall rule dict: "%s".' %
-                ','.join(list(unknown_keys)))
-
-        for key in ['name', 'network']:
-            if key not in rule:
-                raise InvalidFirewallRuleError(
-                    'Rule missing required field "%s": "%s".' % (key, rule))
-
-        if 'direction' not in rule or rule['direction'] == 'INGRESS':
-            if 'destinationRanges' in rule:
-                raise InvalidFirewallRuleError(
-                    'Ingress rules cannot include "destinationRanges": "%s".'
-                    % rule)
-
-        elif rule['direction'] == 'EGRESS':
-            if 'sourceRanges' in rule or 'sourceTags' in rule:
-                raise InvalidFirewallRuleError(
-                    'Egress rules cannot include "sourceRanges", "sourceTags":'
-                    '"%s".' % rule)
-
-        else:
-            raise InvalidFirewallRuleError(
-                'Rule "direction" must be either "INGRESS" or "EGRESS": "%s".'
-                % rule)
-
-        max_256_value_keys = {'sourceRanges', 'sourceTags', 'targetTags',
-                              'destinationRanges'}
-        for key in max_256_value_keys:
-            if key in rule and len(rule[key]) > 256:
-                raise InvalidFirewallRuleError(
-                    'Rule entry "%s" must contain 256 or fewer values: "%s".'
-                    % (key, rule))
-
-        if (('allowed' not in rule and 'denied' not in rule) or
-                ('allowed' in rule and 'denied' in rule)):
-            raise InvalidFirewallRuleError(
-                'Rule must contain oneof "allowed" or "denied" entries: '
-                ' "%s".' % rule)
-
-        if 'allowed' in rule:
-            for allow in rule['allowed']:
-                if 'IPProtocol' not in allow:
-                    raise InvalidFirewallRuleError(
-                        'Allow rule in %s missing required field '
-                        '"IPProtocol": "%s".' % (rule['name'], allow))
-
-        elif 'denied' in rule:
-            for deny in rule['denied']:
-                if 'IPProtocol' not in deny:
-                    raise InvalidFirewallRuleError(
-                        'Deny rule in %s missing required field '
-                        '"IPProtocol": "%s".' % (rule['name'], deny))
-
-        if 'priority' in rule:
-            try:
-                priority = int(rule['priority'])
-            except ValueError:
-                raise InvalidFirewallRuleError(
-                    'Rule "priority" could not be converted to an integer: '
-                    '"%s".' % rule)
-            if priority < 0 or priority > 65535:
-                raise InvalidFirewallRuleError(
-                    'Rule "priority" out of range 0-65535: "%s".' % rule)
-
-        if len(rule['name']) > 63:
-            raise InvalidFirewallRuleError(
-                'Rule name exceeds length limit of 63 chars: "%s".' %
-                rule['name'])
-
-        if VALID_RESOURCE_NAME_RE.match(rule['name']) is None:
-            raise InvalidFirewallRuleError(
-                'Rule name does not match valid GCP resource name regex "'
-                '(?:^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?)": "%s".' % rule['name'])
-
-        if rule['name'] in self.rules:
-            raise DuplicateFirewallRuleNameError(
-                'Rule %s already defined in rules: %s' %
-                (rule['name'], ', '.join(sorted(self.rules.keys()))))
-
-        if self._add_rule_callback:
-            if not self._add_rule_callback(rule):
-                return False
-
-        return True
-    # pylint: enable=too-many-branches
 
 
 # pylint: disable=too-many-instance-attributes
