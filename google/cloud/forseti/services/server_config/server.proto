@@ -28,6 +28,9 @@ service Server {
 
   rpc ReloadServerConfiguration(ReloadServerConfigurationRequest)
     returns (ReloadServerConfigurationReply) {}
+
+  rpc Run(ServerRunRequest)
+    returns (ServerRunReply) {}
 }
 
 message SetLogLevelRequest {
@@ -67,4 +70,10 @@ message PingRequest {
 
 message PingReply {
   string data = 1;
+}
+
+message ServerRunRequest {}
+
+message ServerRunReply {
+  string message = 1;
 }
