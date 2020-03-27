@@ -15,18 +15,20 @@
 """Tests the Storage client."""
 from future import standard_library
 standard_library.install_aliases()
-import unittest
-import unittest.mock as mock
+import httplib2
 import google.auth
-from google.oauth2 import credentials
 import io
+import unittest.mock as mock
 
-from tests import unittest_utils
-from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
-from tests.common.gcp_api.test_data import http_mocks
+from google.oauth2 import credentials
+from googleapiclient import errors
+
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import metadata_server
+from tests import unittest_utils
+from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
+from tests.common.gcp_api.test_data import http_mocks
 
 
 class StorageTest(unittest_utils.ForsetiTestCase):
@@ -45,6 +47,22 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         mock_reach_metadata.return_value = True
         mock_get_project_id.return_value = 'test-project'
         cls.gcs_api_client = storage.StorageClient({})
+
+    @mock.patch('googleapiclient.http.MediaIoBaseDownload.next_chunk')
+    def test_download_to_file_ignores_http_416(self, mock_downloader):
+        # Arrange
+        response = httplib2.Response({"status": "416",
+                                      "content-type": "application/json"})
+        response.reason = 'Requested range not satisfiable'
+        error = errors.HttpError(response, b'', uri='')
+        mock_downloader.side_effect = error
+
+        # Act
+        result = self.gcs_api_client.download('gs://testbucket', 'testobject')
+
+        # Assert
+        expected_file_size = 0
+        self.assertEqual(expected_file_size, result)
 
     def test_get_bucket_and_path_from(self):
         """Given a valid bucket object path, return the bucket and path."""
@@ -75,7 +93,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         results = self.gcs_api_client.get_buckets(
             fake_storage.FAKE_PROJECT_NUMBER)
         self.assertEqual(expected_bucket_names,
-                          [r.get('name') for r in results])
+                         [r.get('name') for r in results])
 
     def test_get_buckets_raises(self):
         """Test get buckets access forbidden."""
@@ -160,7 +178,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_default_object_acls(
-                 fake_storage.FAKE_BUCKET_NAME)
+                fake_storage.FAKE_BUCKET_NAME)
 
     def test_get_default_object_acls_user_project(self):
         """Test get default object acls requires user project."""
@@ -188,7 +206,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         results = self.gcs_api_client.get_objects(
             fake_storage.FAKE_PROJECT_NUMBER)
         self.assertEqual(expected_object_names,
-                          [r.get('name') for r in results])
+                         [r.get('name') for r in results])
 
     def test_get_objects_raises(self):
         """Test get objects bucket not found."""
@@ -212,7 +230,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         results = self.gcs_api_client.get_objects(
             fake_storage.FAKE_PROJECT_NUMBER)
         self.assertEqual(expected_object_names,
-                          [r.get('name') for r in results])
+                         [r.get('name') for r in results])
 
     def test_get_object_iam_policy(self):
         """Test get object iam policy."""
@@ -274,7 +292,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         results = self.gcs_api_client.get_object_acls(
             fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
         self.assertEqual(4, len(results))
-
 
     def test_get_text_file(self):
         """Test get test file returns a valid response."""

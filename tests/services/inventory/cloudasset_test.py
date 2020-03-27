@@ -260,7 +260,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
                                                   self.inventory_index_id)
         # Total of resources, IAM policies, org policies and access policies in
         # dumps.
-        expected_results = 16
+        expected_results = 12
         self.assertEqual(expected_results, results)
 
         # Validate data from both projects in database.

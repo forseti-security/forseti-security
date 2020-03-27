@@ -1,5 +1,5 @@
 /**
-* Copyright 2019 Google LLC
+* Copyright 2020 Google LLC
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -12,14 +12,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
-provider "google-beta" {
-  version     = "~> 2.10"
-}
-
-provider "tls" {
-  version = "~> 2.0"
-}
 
 resource "random_id" "random_test_id" {
   byte_length = 8
@@ -57,7 +49,11 @@ module "forseti" {
   org_id                   = var.org_id
   domain                   = var.domain
   forseti_version          = var.forseti_version
+
   config_validator_enabled = var.config_validator_enabled
+
+  # run the cron job every 10 so it does not run while tests are executing
+  forseti_run_frequency    = "0 */10 * * *"
 
   inventory_email_summary_enabled = var.inventory_email_summary_enabled
   forseti_email_recipient = var.forseti_email_recipient
@@ -78,7 +74,9 @@ resource "null_resource" "wait_for_client" {
   }
 
   provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
+    inline = [
+      "until [ -f /home/ubuntu/forseti-security/configs/forseti_conf_client.yaml ]; do sleep 5; done; echo Forseti client startup complete;",
+    ]
 
     connection {
       type                = "ssh"
@@ -99,7 +97,9 @@ resource "null_resource" "wait_for_server" {
   }
 
   provisioner "remote-exec" {
-    script = "${path.module}/scripts/wait-for-forseti.sh"
+    inline = [
+      "until [ -f /home/ubuntu/forseti_env.sh ]; do sleep 5; done; echo Forseti server startup complete;",
+    ]
 
     connection {
       type                = "ssh"
