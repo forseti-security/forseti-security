@@ -1,12 +1,12 @@
 ---
-title: Testing
-order: 105
+title: Run Unit Tests
+order: 042
 ---
 # {{ page.title }}
 
 This page describes how to run tests on your Forseti contributions.
 
-## Before you begin
+## **Before you begin**
 
 Before you run unit tests, install Forseti by following the
 [Developer Setup]({% link _docs/latest/develop/dev/setup.md %}) for
@@ -17,7 +17,7 @@ instance to run the unit tests.
 
 ---
 
-## Executing tests
+## **Executing tests**
 
 Unit tests are in the top-level `tests/` directory. We use
 [`unittest`](https://docs.python.org/2/library/unittest.html) from standard Python to run our tests.
@@ -52,7 +52,7 @@ Run pylint checkers:
   ./install/scripts/docker_pystyle_forseti.sh
   ```
 
-### Executing Individual Tests
+### **Executing Individual Tests**
 
 If you want to execute individual tests:
 
@@ -66,7 +66,7 @@ If you want to execute a subset of tests (e.g., all tests in a specific subdirec
    docker -l error exec -it build /bin/bash -c "python -m unittest discover -s tests/common -p '*_test.py'"
    ```
 
-### Update Code and Re-Run Test
+### **Update Code and Re-Run Test**
 
 During the Docker image setup process, the code for Forseti is copied over to Docker.
 This copy is static and not dynamic, so if you make changes to your local code and
