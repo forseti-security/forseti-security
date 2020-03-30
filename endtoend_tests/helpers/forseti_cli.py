@@ -25,6 +25,14 @@ class ForsetiCli:
     """
 
     @staticmethod
+    def explainer_access_by_member(member, permissions=None):
+        cmd = ['forseti', 'explainer', 'access_by_member', member]
+        if permissions:
+            cmd.extend(permissions)
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
     def inventory_create(model_name=None):
         cmd = ['forseti', 'inventory', 'create']
         if model_name:
