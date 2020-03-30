@@ -28,10 +28,6 @@ Installer to Terraform.
 Get new features and update your GCP deployment by upgrading your Forseti Security installation
 to the latest version.
 
-**[Deploy Forseti Security Manually]({% link _docs/latest/setup/manual.md %})**
-
-Deploy Forseti manually on GCP.
-
 **[Deploy Forseti Security on Google Kubernetes Engine]({% link _docs/latest/setup/forseti-on-gke.md %})**
 
 Deploy Forseti on Google GKE (**BETA**)
