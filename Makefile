@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,63 @@
 # Make will use bash instead of sh
 SHELL := /usr/bin/env bash
 
-DOCKER_TAG_VERSION_DEVELOPER_TOOLS := 0.4.1
-DOCKER_IMAGE_DEVELOPER_TOOLS := cft/developer-tools
-REGISTRY_URL := gcr.io/cloud-foundation-cicd
+DEV_TOOLS_TAG := 0.4.1
+DEV_TOOLS_IMAGE := cft/developer-tools
+DEV_TOOLS_URL := gcr.io/cloud-foundation-cicd
+
+FORSETI_NS := forseti-security
+FORSETI_IMAGE_NAME := forseti-server
+FORSETI_TEST_IMAGE_NAME := forseti-test
+FORSETI_TAG := $(shell git rev-parse --short HEAD)
+CONTAINER_NAME ?= forseti-server
+
+LOG_LEVEL := info
+SERVICES := 'explain inventory model scanner notifier'
+
+# Build Forseti-server docker image
+docker:
+	docker build --target forseti-server -t $(FORSETI_NS)/$(FORSETI_IMAGE_NAME):$(FORSETI_TAG) .
+
+# Rebuild Forseti-server docker image
+docker_rebuild:
+	docker build --no-cache --target forseti-server -t $(FORSETI_NS)/$(FORSETI_IMAGE_NAME):$(FORSETI_TAG) .
+
+# Build Forseti-test docker image
+docker_target_test:
+	docker build --target forseti-test -t $(FORSETI_NS)/$(FORSETI_TEST_IMAGE_NAME):$(FORSETI_TAG) .
+
+# Run Forseti docker image
+.PHONY: docker_run
+docker_run: docker
+	docker-compose up
+
+# Run flake8 style tests with docker
+.PHONY: docker_test_lint_flake
+docker_test_lint_flake: docker_target_test
+	docker run -it --rm \
+		--entrypoint /bin/bash \
+		$(FORSETI_NS)/$(FORSETI_TEST_IMAGE_NAME):$(FORSETI_TAG) \
+		-c "flake8 -v --doctests --max-line-length=80 --ignore=E501,E711,E722,F841,W504,W605 --exclude=*pb2*.py /home/forseti/forseti-security/google/"
+
+# Run pylint tests with docker
+.PHONY: docker_test_lint_pylint
+docker_test_lint_pylint: docker_target_test
+	docker run -it --rm \
+		--entrypoint /bin/bash \
+		$(FORSETI_NS)/$(FORSETI_TEST_IMAGE_NAME):$(FORSETI_TAG) \
+		-c "pylint --rcfile=/home/forseti/forseti-security/pylintrc /home/forseti/forseti-security/google/ /home/forseti/forseti-security/install/"
+
+# Run lint tests with docker
+.PHONY: docker_test_lint
+docker_test_lint: docker_target_test docker_test_lint_pylint docker_test_lint_flake
+
+# Run unit tests with docker
+.PHONY: docker_test_unit
+docker_test_unit: docker_target_test
+	docker run -it --rm \
+		--entrypoint /bin/bash \
+		$(FORSETI_NS)/$(FORSETI_TEST_IMAGE_NAME):$(FORSETI_TAG) \
+ 		-c "python3 -m unittest discover --verbose -s /home/forseti/forseti-security/tests/ -p '*_test.py'"
 
 # Enter docker container for local development
 .PHONY: docker_e2etest_shell
@@ -27,7 +81,7 @@ docker_e2etest_shell:
 		-e SERVICE_ACCOUNT_JSON \
 		--env-file ~/forseti/environments/forseti-gce-fanta/travis-integration.env \
 		-v $(CURDIR):/workspace \
-		$(REGISTRY_URL)/${DOCKER_IMAGE_DEVELOPER_TOOLS}:${DOCKER_TAG_VERSION_DEVELOPER_TOOLS} \
+		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
 		/bin/bash
 
 # Execute terraform init for the end-to-end tests

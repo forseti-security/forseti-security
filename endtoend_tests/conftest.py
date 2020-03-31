@@ -27,6 +27,8 @@ def pytest_addoption(parser):
     parser.addoption('--cai_dump_file_gcs_paths',
                      default='',
                      help='CAI dump file paths for inventory performance test')
+    parser.addoption('--cloudsql_instance_name',
+                     help='Cloud SQL instance name')
     parser.addoption('--cloudsql_password', help='Cloud SQL password')
     parser.addoption('--cloudsql_port',
                      default=CLOUDSQL_PORT,
@@ -37,6 +39,7 @@ def pytest_addoption(parser):
     parser.addoption('--forseti_server_config_path',
                      default=FORSETI_SERVER_CONFIG_PATH,
                      help='Path to Forseti server config')
+    parser.addoption('--forseti_server_vm_name', help='Forseti server VM name')
     parser.addoption('--root_resource_id',
                      help='Root resource id for inventory performance test')
 
@@ -46,7 +49,10 @@ def pytest_configure(config):
         'markers', 'e2e: mark test to run only on named environment'
     )
     config.addinivalue_line(
-        'markers', 'inventory: mark test to run only on named environment'
+        'markers', 'inventory: mark to run all inventory tests'
+    )
+    config.addinivalue_line(
+        'markers', 'scanner: mark to run all scanner tests'
     )
 
 
@@ -58,41 +64,51 @@ def cai_dump_file_gcs_paths(request):
     return path.split(',')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def cloudsql_connection(cloudsql_password, cloudsql_port, cloudsql_username):
     yield create_engine(f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def cloudsql_instance_name(request):
+    return request.config.getoption('--cloudsql_instance_name')
+
+
+@pytest.fixture(scope="session")
 def cloudsql_password(request):
     return request.config.getoption('--cloudsql_password')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def cloudsql_port(request):
     return request.config.getoption('--cloudsql_port')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def cloudsql_username(request):
     return request.config.getoption('--cloudsql_username')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_server_bucket_name(request):
     return request.config.getoption('--forseti_server_bucket_name')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def forseti_server_config_path(request):
     return request.config.getoption('--forseti_server_config_path')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def forseti_server_vm_name(request):
+    return request.config.getoption('--forseti_server_vm_name')
+
+
+@pytest.fixture(scope="session")
 def root_resource_id(request):
     return request.config.getoption('--root_resource_id')
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_id():
     return str(int(time.time()))

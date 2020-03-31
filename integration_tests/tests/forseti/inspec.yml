@@ -14,7 +14,10 @@
 
 name: forseti_integration_testing
 attributes:
-- name: bucket_acl_scanner_bucket_name
+- name: bucket_acl_scanner_all_auth_bucket_name
+  required: true
+  type: string
+- name: bucket_acl_scanner_all_users_bucket_name
   required: true
   type: string
 - name: enforcer_allow_all_icmp_rule_name
@@ -63,9 +66,6 @@ attributes:
   required: true
   type: string
 - name: inventory-performance-cai-dump-paths
-  required: true
-  type: string
-- name: inventory-cai-eu-bucket-name
   required: true
   type: string
 - name: kms-key

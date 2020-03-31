@@ -887,7 +887,7 @@ class ResourceManagerFolder(resource_class_factory('folder', None)):
         try:
             org_policies = []
             org_policies_iter = (
-                client.iter_crm_organization_org_policies(self['name']))
+                client.iter_crm_folder_org_policies(self['name']))
             for org_policy in org_policies_iter:
                 org_policies.append(org_policy)
             return org_policies
@@ -976,7 +976,7 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         try:
             org_policies = []
             org_policies_iter = (
-                client.iter_crm_organization_org_policies(self['name']))
+                client.iter_crm_project_org_policies(self['name']))
             for org_policy in org_policies_iter:
                 org_policies.append(org_policy)
             return org_policies

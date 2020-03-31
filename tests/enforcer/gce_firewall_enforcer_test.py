@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,6 @@
 # limitations under the License.
 
 """Tests for google.cloud.forseti.enforcer.gce_firewall_enforcer."""
-
-from builtins import str
-from builtins import range
 import copy
 import json
 import threading
@@ -26,13 +22,12 @@ import unittest.mock as mock
 from googleapiclient import errors
 import parameterized
 
-from tests.enforcer import testing_constants as constants
-from tests.unittest_utils import ForsetiTestCase
-
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
+from tests.enforcer import testing_constants as constants
+from tests.unittest_utils import ForsetiTestCase
 
 class HelperFunctionTest(ForsetiTestCase):
     """Unit tests for helper functions."""
@@ -98,6 +93,9 @@ class FirewallRulesTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
         self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
+        self.test_rule = copy.deepcopy(
+            constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-1'])
+
 
     def test_add_rule_for_an_invalid_rule_type(self):
         """Validate that invalid rules raises an exception.
@@ -381,196 +379,26 @@ class FirewallRulesTest(ForsetiTestCase):
 
         self.assertEqual(self.firewall_rules, new_firewall_rules)
 
-
-class FirewallRulesCheckRuleTest(ForsetiTestCase):
-    """Multiple tests for FirewallRules._check_rule_before_adding."""
-
-    def setUp(self):
-        """Set up."""
-        self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
-
-        self.test_rule = copy.deepcopy(
-            constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-1'])
-
-    def test_valid(self):
-        """Verify valid rules returns True."""
-        self.assertTrue(
-            self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_valid_callback_false(self):
-        """Verify valid rules returns True."""
-        self.firewall_rules._add_rule_callback = lambda _: False
-        self.assertFalse(
-            self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_unknown_key(self):
-        """A rule with an unknown key raises InvalidFirewallRuleError."""
-        self.test_rule['unknown'] = True
-        with self.assertRaises(fe.InvalidFirewallRuleError) as r:
-            self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-        self.assertEqual(
-            'An unexpected entry exists in a firewall rule dict: "unknown".',
-            str(r.exception))
-
-    def test_missing_required_key(self):
-        """A rule missing a required key raises InvalidFirewallRuleError."""
-        for key in ['allowed', 'name', 'network']:
-            test_rule = copy.deepcopy(self.test_rule)
-            test_rule.pop(key)
-            with self.assertRaises(fe.InvalidFirewallRuleError):
-                self.firewall_rules._check_rule_before_adding(test_rule)
-
-    def test_missing_ip_protocol(self):
-        """Rule missing IPProtocol in an allow predicate raises an exception."""
-        self.test_rule['allowed'][0].pop('IPProtocol')
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-            self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_denied_missing_ip_protocol(self):
-      """A rule missing IPProtocol in an denied predicate raises an
-         exception."""
-      allowed = self.test_rule.pop('allowed')
-      self.test_rule['denied'] = allowed
-      self.test_rule['denied'][0].pop('IPProtocol')
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_long_name(self):
-        """A rule with a very long name raises InvalidFirewallRuleError."""
-        # Make rule name 64 characters long
-        self.test_rule['name'] = 'long-name-' + 'x' * 54
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-            self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_invalid_name_capitals(self):
-        """A rule with capital in name raises InvalidFirewallRuleError."""
-        # Make rule name contain invalid Capital letters
-        self.test_rule['name'] = 'no-Capital-Letters-Allowed'
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_invalid_name_number_at_start(self):
-        """A rule with number at start raises InvalidFirewallRuleError."""
-        # Make rule name contain number at start
-        self.test_rule['name'] = '1-no-number-at-start'
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_invalid_name_punctuation(self):
-        """A rule with invalid char in name raises InvalidFirewallRuleError."""
-        # Make rule name contain '_' which is not valid
-        self.test_rule['name'] = 'punctuation_not_allowed'
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_duplicate_rule_name(self):
-        """A rule with the same name as an existing rule raises an exception.
+    def test_add_rule_duplicate_rules(self):
+        """Validate that attempting to add a duplicate rule raises exception.
 
         Setup:
-          * Add test_rule to the firewall_rules object.
-          * Set new_rule to a different rule from the EXPECTED_FIREWALL_RULES
-            policy.
-          * Update new_rule to have the same name as test_rule.
-          * Run _check_rule_before_adding on new_rule.
+          * Add 'test-rule' with add_rule
+          * Create new rule with same name as 'test-rule'
+          * Attempt to add new rule
 
         Expected Results:
-          * DuplicateFirewallRuleNameError exception is raised.
-        """
-        self.firewall_rules.add_rule(self.test_rule)
+          * add_rule should raise DuplicateFirewallRuleNameError
 
+        """
+        # First addition should work.
+        self.firewall_rules.add_rule(self.test_rule)
         new_rule = copy.deepcopy(
             constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-0'])
         new_rule['name'] = self.test_rule['name']
+        # Adding the rule
         with self.assertRaises(fe.DuplicateFirewallRuleNameError):
-            self.firewall_rules._check_rule_before_adding(new_rule)
-
-    def test_allowed_and_denied(self):
-      """A rule with allowed and denied ports raises
-         InvalidFirewallRuleError."""
-      self.test_rule['denied'] = [{'IPProtocol': u'udp'}]
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_denied_rule(self):
-      """A rule with denied ports returns True."""
-      allowed = self.test_rule.pop('allowed')
-      self.test_rule['denied'] = allowed
-      self.assertTrue(
-          self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_direction_ingress(self):
-      """A rule with direction set to INGRESS returns True."""
-      self.test_rule['direction'] = 'INGRESS'
-      self.assertTrue(
-          self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_direction_egress_source_ranges(self):
-      """Rule with direction set to EGRESS with sourceRanges raises
-         exception."""
-      self.test_rule['direction'] = 'EGRESS'
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_direction_egress_destination_ranges(self):
-      """Rule with direction set to EGRESS with destinationRanges returns
-         True."""
-      self.test_rule['direction'] = 'EGRESS'
-      source_ranges = self.test_rule.pop('sourceRanges')
-      self.test_rule['destinationRanges'] = source_ranges
-      self.assertTrue(
-          self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_invalid_direction(self):
-      """Rule with direction set to invalid raises exception."""
-      self.test_rule['direction'] = 'INVALID'
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_source_and_destination_ranges(self):
-      """Rule with sourceRanges and destinationRanges raises exception."""
-      self.test_rule['destinationRanges'] = copy.deepcopy(
-          self.test_rule['sourceRanges'])
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_priority(self):
-      """Rule with priority set returns True."""
-      self.test_rule['priority'] = '1000'
-      self.assertTrue(
-          self.firewall_rules._check_rule_before_adding(self.test_rule))
-
-    def test_invalid_priority(self):
-      """Rule with priority set to invalid raises exception."""
-      self.test_rule['priority'] = 'INVALID'
-      with self.assertRaises(fe.InvalidFirewallRuleError):
-        self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_invalid_priority_out_of_range(self):
-      """Rule with priority set to an out of range value raises exception."""
-      invalid_values = ['-1', '65536']
-      for priority in invalid_values:
-        self.test_rule['priority'] = priority
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(self.test_rule)
-
-    def test_keys_with_more_than_256_values(self):
-      """Rule entries with more than 256 values raises an exception."""
-      ingress_keys = set(['sourceRanges', 'sourceTags', 'targetTags'])
-      for key in ingress_keys:
-        new_rule = copy.deepcopy(self.test_rule)
-        new_rule['direction'] = 'INGRESS'
-        new_rule[key] = list(range(257))
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(new_rule)
-
-      egress_keys = set(['destinationRanges'])
-      for key in egress_keys:
-        new_rule = copy.deepcopy(self.test_rule)
-        new_rule['direction'] = 'EGRESS'
-        new_rule[key] = list(range(257))
-        with self.assertRaises(fe.InvalidFirewallRuleError):
-          self.firewall_rules._check_rule_before_adding(new_rule)
+          self.firewall_rules.add_rule(new_rule)
 
 
 class FirewallEnforcerTest(constants.EnforcerTestCase):
