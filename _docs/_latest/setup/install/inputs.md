@@ -1,5 +1,5 @@
 ---
-title: Terraform input variables
+title: Terraform Input Variables
 order: 102
 ---
 

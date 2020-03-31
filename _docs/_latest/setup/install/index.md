@@ -1,5 +1,5 @@
 ---
-title: Install Forseti on Google Compute Engine
+title: Deploy Forseti Security on Google Compute Engine
 order: 100
 ---
 
@@ -51,7 +51,7 @@ gcloud auth login
 ### **Service Account**
 
 In order to execute this module you must have a Service Account with the 
-[documented]({% link _docs/latest/setup/install/roles-and-permissions.md %}) IAM roles assigned and APIs enabled on the Forseti project.
+[documented]({% link _docs/latest/setup/install/roles-and-required-apis.md %}) IAM roles assigned and APIs enabled on the Forseti project.
 
 The setup script (as discussed below) will create the Service Account, grant the roles and enable the 
 APIs for you.
