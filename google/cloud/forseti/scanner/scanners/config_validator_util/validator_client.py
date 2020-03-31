@@ -182,26 +182,6 @@ class ValidatorClient(object):
                 LOGGER.exception('ConfigValidatorAuditError: %s', e)
                 raise errors.ConfigValidatorAuditError(e)
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=10, wait_exponential_max=100,
-           stop_max_attempt_number=5)
-    def reset(self):
-        """Clears previously added data from Config Validator.
-
-        Raises:
-            ConfigValidatorResetError: Config Validator Reset Error.
-            ConfigValidatorServerUnavailableError: Config Validator Server
-                Unavailable Error."""
-        try:
-            self.stub.Reset(validator_pb2.ResetRequest())
-        except grpc.RpcError as e:
-            # pylint: disable=no-member
-            if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(e)
-            else:
-                LOGGER.exception('ConfigValidatorResetError: %s', e)
-                raise errors.ConfigValidatorResetError(e)
-
 
 class BufferedCVDataSender(object):
     """Buffered Config Validator data sender."""

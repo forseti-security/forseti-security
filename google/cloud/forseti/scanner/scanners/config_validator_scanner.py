@@ -174,9 +174,6 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         Yields:
             list: A list of flattened violations.
         """
-        # Clean up the validator environment by doing a reset pre audit.
-        self.validator_client.reset()
-
         # Get all the data in Config Validator Asset format.
         cv_assets = self._retrieve(iam_policy=iam_policy)
 
