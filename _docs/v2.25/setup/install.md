@@ -38,7 +38,7 @@ If you are familiar with Terraform and would like to run Terraform from a differ
 walkthrough and move onto the How to Deploy section below.
 
 
-[![Open in Google Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=modulerelease520&cloudshell_working_dir=examples/install_simple&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
+[![Open in Google Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fforseti-security%2Fterraform-google-forseti.git&cloudshell_git_branch=modulerelease521&cloudshell_working_dir=examples/install_simple&cloudshell_image=gcr.io%2Fgraphite-cloud-shell-images%2Fterraform%3Alatest&cloudshell_tutorial=.%2Ftutorial.md)
 
 
 ## How to Deploy
@@ -79,7 +79,7 @@ Create a file named `main.tf` in an empty directory and copy the contents below 
 ```hcl
 module "forseti" {
   source  = "terraform-google-modules/forseti/google"
-  version = "~> 5.2.0"
+  version = "~> 5.2.1"
 
   gsuite_admin_email = "superadmin@yourdomain.com"
   domain             = "yourdomain.com"
