@@ -148,6 +148,7 @@ def resource_wrapper(data):
     }
 
 
+# TODO: Determine why this method is needed. What CAI resources need this? :)
 def cleanup_dict(raw_dict):
     """Replace empty value to None in dict.
 
@@ -155,7 +156,7 @@ def cleanup_dict(raw_dict):
         raw_dict (dict): Dict to clean up.
     """
     for key, value in list(raw_dict.items()):
-        if not value:
+        if not value and not isinstance(value, bool):
             raw_dict[key] = None
         elif isinstance(value, list):
             for i in value:
