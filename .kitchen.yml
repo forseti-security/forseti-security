@@ -61,7 +61,7 @@ suites:
             - inventory-delete
             - inventory-get-list
             - inventory-performance
-            - inventory-purge
+#            - inventory-purge
             - logs-debug-level
             - model-create-get
             - model-delete
