@@ -24,7 +24,7 @@ control "client-pytest" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo pytest -m client -v ./endtoend_tests/ \
+  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/ \
         --cloudsql_password=#{cloudsql_password} \
         --cloudsql_username=#{cloudsql_username} \
         --cloudsql_instance_name=#{cloudsql_instance_name}") do
