@@ -37,10 +37,10 @@ suites:
         - name: forseti-client
           backend: ssh
           controls:
+            - client-pytest
             - explain
             - inventory-cai-gcs-export
             - model-list
-            - model-use
             - notifier-inventory-summary-export
             - scanner-external-project-access-scanner
           hosts_output: forseti-client-vm-ip

@@ -25,6 +25,12 @@ class ForsetiCli:
     """
 
     @staticmethod
+    def config_show():
+        cmd = ['forseti', 'config', 'show']
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
     def inventory_create(model_name=None):
         cmd = ['forseti', 'inventory', 'create']
         if model_name:
@@ -40,14 +46,6 @@ class ForsetiCli:
 
     @staticmethod
     def inventory_delete(inventory_id):
-        """Copy server config from GCS to local path.
-
-        Args:
-            inventory_id (str): Inventory id to delete
-
-        Returns:
-            subprocess.CompletedProcess: Result from subprocess.run
-        """
         cmd = ['forseti', 'inventory', 'delete', inventory_id]
         return subprocess.run(cmd, stderr=subprocess.PIPE,
                               stdout=subprocess.PIPE)

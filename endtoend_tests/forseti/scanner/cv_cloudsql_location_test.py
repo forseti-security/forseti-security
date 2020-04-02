@@ -26,6 +26,7 @@ class TestConfigValidatorCloudSqlLocation:
 
     @pytest.mark.e2e
     @pytest.mark.scanner
+    @pytest.mark.server
     def test_cv_cloudsql_location(self,
                                   cloudsql_connection,
                                   cloudsql_instance_name,

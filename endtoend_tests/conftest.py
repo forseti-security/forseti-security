@@ -46,13 +46,22 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line(
+        'markers', 'client: mark to run all client tests'
+    )
+    config.addinivalue_line(
         'markers', 'e2e: mark test to run only on named environment'
     )
     config.addinivalue_line(
         'markers', 'inventory: mark to run all inventory tests'
     )
     config.addinivalue_line(
+        'markers', 'model: mark to run all model tests'
+    )
+    config.addinivalue_line(
         'markers', 'scanner: mark to run all scanner tests'
+    )
+    config.addinivalue_line(
+        'markers', 'server: mark to run all server tests'
     )
 
 
