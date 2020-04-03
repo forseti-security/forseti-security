@@ -19,8 +19,8 @@ your GCP infrastructure.
 - Cloud admins write security and governance constraints (as YAML files) once, 
 and store them within their company’s dedicated Git repo as a central source of 
 truth.
-- Forseti ingests policy constraints written in Rego and uses them as a new 
-scanner to monitor for violations.
+- Forseti ingests constraints and uses them as a new scanner to monitor for 
+violations.
 - Terraform Validator reads the same constraints to check for violations before 
 provisioning, in order to help prevent misconfigurations from happening.
 

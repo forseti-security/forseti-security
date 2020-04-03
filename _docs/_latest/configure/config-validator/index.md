@@ -35,6 +35,8 @@ module "forseti" {
 - `config_validator_image` and `config_validator_image_tag` need to be set 
 only when you want to use a specific Config Validator image or tag. Default 
 values can be found [here](https://github.com/forseti-security/terraform-google-forseti#inputs).
+Please reach out to the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) to see if the specific Config 
+Validator image/tag that you want to you use is supported.
 
 
 Apply the Terraform module.
@@ -56,7 +58,11 @@ updates to your Forseti Server to be used by future scans.
 ## **Troubleshooting**
 
 - You can find out what errors have happened by viewing any logs related to this 
-process from Stackdriver Logging by searching for `config-validator`.
+process from Operations Logging by searching for `config-validator`.
+- Operations Logging displays `All Logs` from the Forseti Server VM by default. 
+Change the log filter by selecting `forseti` from the drop-down menu to 
+view Forseti logs. Similarly, select `gcplogs-docker-driver` to view the
+docker logs for `config-validator` and `git-sync` services.   
 - You can also check that the config-validator service is running and healthy by 
 running the following command in the Forseti server VM:
 
