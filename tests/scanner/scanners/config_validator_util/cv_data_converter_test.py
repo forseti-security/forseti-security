@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 from google.cloud.forseti.scanner.scanners.config_validator_util \
     import cv_data_converter
+from tests.scanner.scanners.config_validator_util.test_data \
+    import mock_cai_resources
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_data_models
 
@@ -69,12 +71,31 @@ class ConfigValidatorUtilTest(ForsetiTestCase):
 
         expected_name = "//cloudresourcemanager.googleapis.com/Lien/lien/p123"
         expected_asset_type = "cloudresourcemanager.googleapis.com/Lien"
-        expected_ancestry_path = "folder/folder-1/project/project-2/"
 
         converted_resource = cv_data_converter.convert_data_to_cv_asset(
             resource, fake_data_models.EXPECTED_NON_CAI_RESOURCE["data_type"])
 
         self.assertEqual(expected_name, converted_resource.name, )
         self.assertEqual(expected_asset_type, converted_resource.asset_type)
-        self.assertEqual(expected_ancestry_path,
-                         converted_resource.ancestry_path)
+
+    def test_generate_ancestry_path_for_org(self):
+        full_name = 'organization/1234567890/project/test-project-123/firewall/1234567890123456789/'
+        expected_path = 'organization/1234567890/project/test-project-123/'
+        actual_path = cv_data_converter.generate_ancestry_path(full_name)
+        self.assertEqual(expected_path, actual_path)
+
+    def test_generate_ancestry_path_for_folder(self):
+        full_name = 'folder/folder-1/project/project-2/lien/p123/'
+        expected_path = 'folder/folder-1/project/project-2/'
+        actual_path = cv_data_converter.generate_ancestry_path(full_name)
+        self.assertEqual(expected_path, actual_path)
+
+    def test_cleanup_dict_does_not_replace_false(self):
+        firewall = mock_cai_resources.FIREWALL_DATA
+        cv_data_converter.cleanup_dict(firewall)
+        self.assertIsNotNone(firewall['disabled'])
+
+    def test_cleanup_replaces_empty_values(self):
+        bucket = mock_cai_resources.BUCKET_DATA
+        cv_data_converter.cleanup_dict(bucket)
+        self.assertIsNone(bucket['acl'])
