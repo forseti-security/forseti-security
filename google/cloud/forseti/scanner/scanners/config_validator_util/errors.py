@@ -30,11 +30,6 @@ class ConfigValidatorPolicyLibraryError(Exception):
     pass
 
 
-class ConfigValidatorResetError(Exception):
-    """ConfigValidator Reset Error."""
-    pass
-
-
 class ConfigValidatorServerUnavailableError(Exception):
     """ConfigValidator Server Unavailable Error."""
     pass
