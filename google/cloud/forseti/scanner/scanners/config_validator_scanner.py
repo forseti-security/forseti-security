@@ -60,6 +60,15 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         # Maps CAI resource name-> (full_name, resource_data).
         self.resource_lookup_table = {}
 
+        # Verify Policy Library
+        cv_scanner_config = {}
+        for scanner in self.scanner_configs.get('scanners', []):
+            if scanner['name'] == 'config_validator':
+                cv_scanner_config = scanner
+                break
+        self.verify_policy_library_enabled = (
+            cv_scanner_config.get('verify_policy_library', False))
+
     def _flatten_violations(self, violations):
         """Flatten Config Validator violations into a dict for each violation.
 
@@ -187,7 +196,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
         it will be hard for Forseti to retrieve the right resource_data for the
         corresponding violation types.
         """
-        ConfigValidatorScanner.verify_policy_library()
+        if self.verify_policy_library_enabled:
+            ConfigValidatorScanner.verify_policy_library()
 
         # Retrieving resource violations.
         for flattened_violations in self._retrieve_flattened_violations():

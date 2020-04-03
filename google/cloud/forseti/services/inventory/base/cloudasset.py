@@ -28,7 +28,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory import cai_temporary_storage
 
 LOGGER = logger.get_logger(__name__)
-CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY', 'ORG_POLICY', 'ACCESS_POLICY']
+CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
 # Any asset type referenced in cai_gcp_client.py needs to be added here.
 DEFAULT_ASSET_TYPES = [

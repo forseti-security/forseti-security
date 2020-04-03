@@ -39,7 +39,7 @@ resource "google_storage_bucket" "inventory_cai_eu" {
 }
 
 resource "google_storage_bucket_access_control" "inventory_cai_eu_acl" {
-  bucket = google_storage_bucket.bucket_acl_scanner.name
+  bucket = google_storage_bucket.inventory_cai_eu.name
   role   = "READER"
   entity = "user-${var.forseti_server_service_account}"
 
@@ -49,22 +49,34 @@ resource "google_storage_bucket_access_control" "inventory_cai_eu_acl" {
 #-------------------------#
 # scanner-bucket_acl_scanner.rb: Create a bucket with AllAuth + All Users Reader ACL
 #-------------------------#
-resource "google_storage_bucket" "bucket_acl_scanner" {
-  name          = "foresti-test-bucket-${var.random_test_id}"
+resource "google_storage_bucket" "bucket_acl_scanner_all_auth" {
+  name          = "foresti-test-bucket-all-auth-${var.random_test_id}"
   project       = var.project_id
   location      = "US"
   force_destroy = true
 }
 
-resource "google_storage_bucket_acl" "bucket_acl_scanner_acl" {
-  bucket = google_storage_bucket.bucket_acl_scanner.name
+resource "google_storage_bucket_acl" "bucket_acl_scanner_acl_all_auth" {
+  bucket = google_storage_bucket.bucket_acl_scanner_all_auth.name
 
   role_entity = [
-    "READER:allAuthenticatedUsers",
-    "READER:allUsers",
+    "READER:allAuthenticatedUsers"
   ]
+}
 
-  depends_on = [google_storage_bucket.bucket_acl_scanner]
+resource "google_storage_bucket" "bucket_acl_scanner_all_users" {
+  name          = "foresti-test-bucket-all-users-${var.random_test_id}"
+  project       = var.project_id
+  location      = "US"
+  force_destroy = true
+}
+
+resource "google_storage_bucket_acl" "bucket_acl_scanner_acl_all_users" {
+  bucket = google_storage_bucket.bucket_acl_scanner_all_users.name
+
+  role_entity = [
+    "READER:allUsers"
+  ]
 }
 
 #-------------------------#

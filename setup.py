@@ -38,6 +38,7 @@ REQUIRED_PACKAGES = [
     'google-api-python-client==1.7.10',
     'google-auth==1.6.3',
     'google-auth-httplib2==0.0.3',
+    'idna==2.8',
     'Jinja2==2.10.1',
     'jmespath==0.9.3',
     'netaddr==0.7.19',
