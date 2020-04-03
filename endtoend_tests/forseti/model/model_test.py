@@ -29,7 +29,8 @@ class TestModel:
     @pytest.mark.client
     @pytest.mark.e2e
     @pytest.mark.model
-    def test_model_use(self, cloudsql_connection, forseti_cli: ForsetiCli, forseti_model_readonly):
+    def test_model_use(self, cloudsql_connection, forseti_cli: ForsetiCli,
+                       forseti_model_readonly):
         # Arrange
         model_name, _ = forseti_model_readonly
         forseti_cli.model_use(model_name)
