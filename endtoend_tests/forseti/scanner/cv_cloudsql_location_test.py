@@ -42,7 +42,7 @@ class TestConfigValidatorCloudSqlLocation:
         scanner_id, scanner_result = forseti_scan_readonly
 
         # Assert violation found
-        violation_type = 'CV_sql_location_denylist'
+        violation_type = 'CV_sql-location-denylist'
         query = text('SELECT '
                      'COUNT(*) '
                      'FROM forseti_security.violations '

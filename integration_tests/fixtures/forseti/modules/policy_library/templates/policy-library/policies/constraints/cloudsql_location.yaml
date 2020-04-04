@@ -15,7 +15,7 @@
 apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPSQLLocationConstraintV1
 metadata:
-  name: sql_location_denylist
+  name: sql-location-denylist
 spec:
   severity: high
   match:
