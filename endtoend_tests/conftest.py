@@ -76,7 +76,7 @@ def cai_dump_file_gcs_paths(request):
 @pytest.fixture(scope="session")
 def cloudsql_connection(cloudsql_password, cloudsql_port, cloudsql_username):
     yield create_engine(
-            f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}?charset=utf8')
+            f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}')
 
 
 @pytest.fixture(scope="session")
