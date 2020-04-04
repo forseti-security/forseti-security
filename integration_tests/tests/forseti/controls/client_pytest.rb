@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-forseti_suffix = attribute('suffix')
-cloudsql_password = attribute('forseti-cloudsql-password')
-cloudsql_username = attribute('forseti-cloudsql-user')
-cloudsql_instance_name = "forseti-server-db-#{forseti_suffix}"
 forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
 
 
@@ -24,10 +20,7 @@ control "client-pytest" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/ \
-        --cloudsql_password=#{cloudsql_password} \
-        --cloudsql_username=#{cloudsql_username} \
-        --cloudsql_instance_name=#{cloudsql_instance_name}") do
+  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/") do
     its('exit_status') { should eq 0 }
     its('stdout') { should match(/test_model_use PASSED/) }
   end

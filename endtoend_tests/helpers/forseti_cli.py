@@ -54,8 +54,13 @@ class ForsetiCli:
     def model_create(inventory_id, model_name):
         cmd = ['forseti', 'model', 'create', '--inventory_index_id',
                inventory_id, model_name]
-        return subprocess.run(cmd, stderr=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
+        result = subprocess.run(cmd, stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        regex = re.compile('handle": "([0-9]*)"')
+        match = regex.search(str(result.stdout))
+        if match:
+            return match.group(1), result
+        return '', result
 
     @staticmethod
     def model_delete(model_name):
