@@ -12,7 +12,7 @@ Platform (GCP) environments.
 
 ---
 
-**[Installing Forseti Security]({% link _docs/latest/setup/install/index.md %})**
+**[Deploying Forseti Security on Google Compute Engine]({% link _docs/latest/setup/install/index.md %})**
 
 Install Forseti Security to help protect your GCP environments by monitoring your GCP resources to
 ensure that role-based access controls are set as you intended. The setup wizard automatically
