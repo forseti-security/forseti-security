@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,28 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
-require 'json'
+forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
 
-random_string = SecureRandom.uuid.gsub!('-', '')[0..10]
 
-control "model-use" do
-  @inventory_id = /\"id\"\: \"([0-9]*)\"/.match(command("forseti inventory create --import_as #{random_string}").stdout)[1]
-
-  describe command("forseti model use #{random_string}") do
+control "client-pytest" do
+  describe command("sudo pip3 install -r #{forseti_test_requirements}") do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("forseti config show") do
+  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/") do
     its('exit_status') { should eq 0 }
-    its('stdout') { should match (/model/)}
-  end
-
-  describe command("forseti inventory delete #{@inventory_id}") do
-    its('exit_status') { should eq 0 }
-  end
-
-  describe command("forseti model delete #{random_string}") do
-    its('exit_status') { should eq 0 }
+    its('stdout') { should match(/test_model_use PASSED/) }
   end
 end

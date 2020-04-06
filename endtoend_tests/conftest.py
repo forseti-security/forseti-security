@@ -46,13 +46,22 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line(
+        'markers', 'client: mark to run all client tests'
+    )
+    config.addinivalue_line(
         'markers', 'e2e: mark test to run only on named environment'
     )
     config.addinivalue_line(
         'markers', 'inventory: mark to run all inventory tests'
     )
     config.addinivalue_line(
+        'markers', 'model: mark to run all model tests'
+    )
+    config.addinivalue_line(
         'markers', 'scanner: mark to run all scanner tests'
+    )
+    config.addinivalue_line(
+        'markers', 'server: mark to run all server tests'
     )
 
 
@@ -66,7 +75,8 @@ def cai_dump_file_gcs_paths(request):
 
 @pytest.fixture(scope="session")
 def cloudsql_connection(cloudsql_password, cloudsql_port, cloudsql_username):
-    yield create_engine(f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}')
+    yield create_engine(
+            f'mysql+pymysql://{cloudsql_username}:{cloudsql_password}@127.0.0.1:{cloudsql_port}')
 
 
 @pytest.fixture(scope="session")

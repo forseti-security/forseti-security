@@ -25,6 +25,12 @@ class ForsetiCli:
     """
 
     @staticmethod
+    def config_show():
+        cmd = ['forseti', 'config', 'show']
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
     def inventory_create(model_name=None):
         cmd = ['forseti', 'inventory', 'create']
         if model_name:
@@ -40,14 +46,6 @@ class ForsetiCli:
 
     @staticmethod
     def inventory_delete(inventory_id):
-        """Copy server config from GCS to local path.
-
-        Args:
-            inventory_id (str): Inventory id to delete
-
-        Returns:
-            subprocess.CompletedProcess: Result from subprocess.run
-        """
         cmd = ['forseti', 'inventory', 'delete', inventory_id]
         return subprocess.run(cmd, stderr=subprocess.PIPE,
                               stdout=subprocess.PIPE)
@@ -56,8 +54,13 @@ class ForsetiCli:
     def model_create(inventory_id, model_name):
         cmd = ['forseti', 'model', 'create', '--inventory_index_id',
                inventory_id, model_name]
-        return subprocess.run(cmd, stderr=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
+        result = subprocess.run(cmd, stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        regex = re.compile('handle": "([0-9]*)"')
+        match = regex.search(str(result.stdout))
+        if match:
+            return match.group(1), result
+        return '', result
 
     @staticmethod
     def model_delete(model_name):

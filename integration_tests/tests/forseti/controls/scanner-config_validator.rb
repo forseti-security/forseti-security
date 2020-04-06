@@ -25,7 +25,7 @@ control "scanner-config-validator" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo pytest -v $FORSETI_HOME/endtoend_tests/forseti/server/scanner/ \
+  describe command("sudo pytest -v $FORSETI_HOME/endtoend_tests/forseti/scanner/ \
         --cloudsql_password=#{cloudsql_password} \
         --cloudsql_username=#{cloudsql_username} \
         --cloudsql_instance_name=#{cloudsql_instance_name} \
