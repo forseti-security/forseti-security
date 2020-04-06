@@ -3,7 +3,7 @@ Terraform uses an IAM Service Account to deploy and configure resources on behal
 Alternatively, if you are an Org Admin, you can use your own credentials to install Forseti.
 
 ```bash
-git clone --branch modulerelease520 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
+git clone --branch modulerelease521 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
 ```
 
 ```bash
