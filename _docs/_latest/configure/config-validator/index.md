@@ -35,12 +35,9 @@ module "forseti" {
 - `config_validator_image` and `config_validator_image_tag` should be set 
 only when you want to use a specific Config Validator image or tag. Default 
 values can be found [here](https://github.com/forseti-security/terraform-google-forseti#inputs).
-Versions of Config Validator newer than the default value included use OPA 
-0.17.x, which is not compatible with some of the policies. Please reach out to 
-the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
+Please reach out to the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
 to see if the specific Config Validator image/tag that you want to you use is 
 supported.
-
 
 Apply the Terraform module.
 
