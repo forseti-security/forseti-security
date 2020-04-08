@@ -30,8 +30,9 @@ policy constraints are based on Config Validator templates, it’s easy to reuse
 the same code base to implement similar, but distinct constraints.
 
 With this scanner in place, users are now able to define customized policies 
-easily without writing a new scanner. Hence, the Forseti Security team does not 
-plan to add any new custom scanners or expand the existing custom scanners.
+easily without writing a new scanner.
+
+**Note:** Forseti Security team does not plan to add any new custom scanners or expand the existing custom scanners.
 
 ## **What’s next**
 - Read more about how to set up the Config Validator Scanner and sync policies 
