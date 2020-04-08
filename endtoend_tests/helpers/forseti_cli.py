@@ -31,6 +31,41 @@ class ForsetiCli:
                               stdout=subprocess.PIPE)
 
     @staticmethod
+    def explainer_access_by_authz(permission=None, role=None):
+        cmd = ['forseti', 'explainer', 'access_by_authz']
+        if permission:
+            cmd.extend(['--permission', permission])
+        elif role:
+            cmd.extend(['--role', role])
+        else:
+            raise ValueError('Permission or role argument required.')
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
+    def explainer_access_by_member(member, permissions=None):
+        cmd = ['forseti', 'explainer', 'access_by_member', member]
+        if permissions:
+            cmd.extend(permissions)
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
+    def explainer_access_by_resource(resource, grep=None):
+        cmd = ['forseti', 'explainer', 'access_by_resource', resource]
+        if grep:
+            cmd.extend(['|', 'grep', '-c', grep])
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
+    def explainer_check_policy(resource, policy, member):
+        cmd = ['forseti', 'explainer', 'check_policy', resource, policy,
+               member]
+        return subprocess.run(cmd, stderr=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+
+    @staticmethod
     def inventory_create(model_name=None):
         cmd = ['forseti', 'inventory', 'create']
         if model_name:

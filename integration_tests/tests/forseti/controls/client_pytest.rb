@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+forseti_server_service_account = attribute('forseti-server-vm-name')
 forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
+org_id = attribute('org_id')
+project_id = attribute('project_id')
 
 
 control "client-pytest" do
@@ -20,8 +23,21 @@ control "client-pytest" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/") do
+  describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/ \
+                        --forseti_server_service_account=#{forseti_server_service_account} \
+                        --organization_id=#{org_id} \
+                        --project_id=#{project_id}") do
     its('exit_status') { should eq 0 }
+    # Explain
+    its('stdout') { should match(/test_access_by_authz_with_permission PASSED/) }
+    its('stdout') { should match(/test_access_by_authz_with_role PASSED/) }
+    its('stdout') { should match(/test_access_by_member PASSED/) }
+    its('stdout') { should match(/test_access_by_member_with_permission PASSED/) }
+    its('stdout') { should match(/test_access_by_resource_for_organization PASSED/) }
+    its('stdout') { should match(/test_access_by_resource_for_project PASSED/) }
+    its('stdout') { should match(/test_check_policy PASSED/) }
+
+    # Model
     its('stdout') { should match(/test_model_use PASSED/) }
   end
 end
