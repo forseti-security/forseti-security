@@ -54,3 +54,8 @@ of violations.
 
 Enable the data collection of G Suite for processing by Forseti Inventory. G Suite access helps
 ensure right people are in the right group, and is required for Forseti.
+
+**[Configuring Config Validator]({% link _docs/latest/configure/config-validator/index.md %})**
+
+Configure Config Validator Scanner to scan for non-compliant resources in your
+Google Cloud Platform (GCP) infrastructure.
