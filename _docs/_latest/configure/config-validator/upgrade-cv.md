@@ -27,6 +27,10 @@ and [validator_pb2_grpc.py](https://github.com/forseti-security/forseti-security
   ```
   make build
   ```
+  
+  ```
+  make pyproto
+  ```
 
 - Compare the protos generated in the above step with  [validator_pb2.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/scanner/scanners/config_validator_util/validator_pb2.py)
 and [validator_pb2_grpc.py](https://github.com/forseti-security/forseti-security/blob/master/google/cloud/forseti/scanner/scanners/config_validator_util/validator_pb2_grpc.py) to determine
