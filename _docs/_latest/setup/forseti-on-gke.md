@@ -1,6 +1,6 @@
 ---
 title: Deploy Forseti Security on Google Kubernetes Engine
-order: 004
+order: 300
 ---
 
 {% include docs/latest/beta-release-feature.md %}
@@ -11,6 +11,7 @@ This guide explains how to setup Forseti on Kubernetes.  Most installation scena
 
 ## Install Pre-Requisites
 
+The Forseti Terraform module also supports installing Forseti on Google Kubernetes Engine (GKE).
 The following tools are required:
 * [Terraform](https://www.terraform.io/downloads.html) - 0.12.12
 * [gsutil](https://cloud.google.com/storage/docs/gsutil)

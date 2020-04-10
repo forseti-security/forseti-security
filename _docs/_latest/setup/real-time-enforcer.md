@@ -1,6 +1,6 @@
 ---
 title: Deploy Real-Time Enforcer on GCP
-order: 006
+order: 500
 ---
 
 # {{ page.title }}
