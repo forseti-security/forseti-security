@@ -9,7 +9,7 @@ trusted networks.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [instance_network_interface_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/instance_network_interface_rules.yaml) | [gcp_compute_network_interface_whitelist_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_compute_network_interface_whitelist_v1.yaml) | [compute_network_interface_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/compute_network_interface_whitelist.yaml)
+| [instance_network_interface_<br>rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/instance_network_interface_rules.yaml) | [gcp_compute_network_interface_<br>whitelist_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_compute_network_interface_whitelist_v1.yaml) | [compute_network_interface_<br>whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/compute_network_interface_whitelist.yaml)
 
 ### Rego constraint asset type
 

@@ -9,7 +9,7 @@ that is older than the max age.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [service_account_key_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/service_account_key_rules.yaml) | [gcp_iam_restrict_service_account_key_age_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_restrict_service_account_key_age_v1.yaml) | [gcp_iam_restrict_service_account_key_age.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_iam_restrict_service_account_key_age.yaml)
+| [service_account_key_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/service_account_key_rules.yaml) | [gcp_iam_restrict_service_account_key_<br>age_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_restrict_service_account_key_age_v1.yaml) | [gcp_iam_restrict_service_account_key_<br>age.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_iam_restrict_service_account_key_age.yaml)
 
 ### Rego constraint asset type
 

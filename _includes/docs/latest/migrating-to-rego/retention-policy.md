@@ -6,7 +6,7 @@ resources are set as intended.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [retention_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/retention_rules.yaml) | [gcp_storage_bucket_retention_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_retention_v1.yaml)<br>[gcp_bigquery_table_retention_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_bigquery_table_retention_v1.yaml) | [storage_bucket_retention.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_bucket_retention.yaml)<br>[bigquery_table_retention.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/bigquery_table_retention.yaml)
+| [retention_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/retention_rules.yaml) | [gcp_storage_bucket_retention_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_retention_v1.yaml)<br><br>[gcp_bigquery_table_retention_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_bigquery_table_retention_v1.yaml) | [storage_bucket_retention.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_bucket_retention.yaml)<br><br>[bigquery_table_retention.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/bigquery_table_retention.yaml)
 
 ### Rego constraint asset type
 

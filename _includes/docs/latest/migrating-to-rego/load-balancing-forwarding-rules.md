@@ -8,7 +8,7 @@ to the intended target instances.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [forwarding_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/forwarding_rules.yaml) | [gcp_lb_forwarding_rules_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_lb_forwarding_rules_whitelist.yaml)<br>[gcp_glb_external_ip_access_constraint_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_glb_external_ip_access_constraint_v1.yaml) | [gcp_lb_forwarding_rules_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_lb_forwarding_rules_whitelist.yaml)<br>[gcp_glb_external_ip.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_glb_external_ip.yaml)
+| [forwarding_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/forwarding_rules.yaml) | [gcp_lb_forwarding_rules_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_lb_forwarding_rules_whitelist.yaml)<br><br>[gcp_glb_external_ip_access_constraint_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_glb_external_ip_access_constraint_v1.yaml) | [gcp_lb_forwarding_rules_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_lb_forwarding_rules_whitelist.yaml)<br><br>[gcp_glb_external_ip.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gcp_glb_external_ip.yaml)
 
 ### Rego constraint asset type
 

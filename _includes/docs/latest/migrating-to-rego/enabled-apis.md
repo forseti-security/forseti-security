@@ -7,7 +7,7 @@ APIs, and specifying required APIs that must be enabled.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [enabled_apis_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/enabled_apis_rules.yaml) | [gcp_serviceusage_allowed_services_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_serviceusage_allowed_services_v1.yaml) | [serviceusage_allow_basic_apis.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/serviceusage_allow_basic_apis.yaml)<br>[serviceusage_deny_apis.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/serviceusage_deny_apis.yaml)
+| [enabled_apis_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/enabled_apis_rules.yaml) | [gcp_serviceusage_allowed_services_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_serviceusage_allowed_services_v1.yaml) | [serviceusage_allow_basic_apis.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/serviceusage_allow_basic_apis.yaml)<br><br>[serviceusage_deny_apis.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/serviceusage_deny_apis.yaml)
 
 ### Rego constraint asset type
 
