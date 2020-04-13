@@ -7,13 +7,10 @@ be saved, along with members who are exempted from having their accesses logged.
 The audit logging scanner detects if any projects are missing a required audit 
 log, or have extra exempted members.
 
-
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [audit_logging_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/audit_logging_rules.yaml) |
-| [gcp_iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_audit_log.yaml) |
-| [iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_audit_log.yaml) |
+| [audit_logging_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/audit_logging_rules.yaml) | [gcp_iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_audit_log.yaml) | [iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_audit_log.yaml)
 
 ### Rego constraint asset type
 
@@ -28,16 +25,19 @@ This Rego constraint scans IAM policies for the following CAI asset types:
 {: .table .table-striped}
 | Python Scanner field | Rego Constraint field
 | ------------- | -------------
-| name | metadata.name |
-| resource.resource_ids | metadata.spec.match.target |
-| service | metadata.spec.parameters.services |
-| log_types | metadata.spec.parameters.log_types |
-| allowed_exemptions | metadata.spec.parameters.allowed_exemptions |
+| name | metadata.name
+| resource.resource_ids | metadata.spec.match.target
+| service | metadata.spec.parameters.services
+| log_types | metadata.spec.parameters.log_types
+| allowed_exemptions | metadata.spec.parameters.allowed_exemptions
 
 
 ### Python scanner to Rego constraint sample
 
-The following Python scanner rule utilizes the Audit Logging scanner to require all logging (log_types) for the Compute service (compute.googleapis.com) in two projects (`proj-1`, `proj-2`), with two exempted members (`user:user1@org.com`, `user:user12@org.com`).
+The following Python scanner rule utilizes the Audit Logging scanner to require 
+all logging (log_types) for the Compute service (compute.googleapis.com) in 
+two projects (`proj-1`, `proj-2`), with two exempted members 
+(`user:user1@org.com`, `user:user12@org.com`).
 
 `audit_logging_rules.yaml`:
 ```
