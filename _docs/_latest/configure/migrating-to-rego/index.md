@@ -5,11 +5,32 @@ order: 800
 
 # {{ page.title }}
 
-This guide will walk through migrating current Python scanner rule files to Rego 
-constraints found in the policy-library repository that can be used in Config Validator.
+This guide will walk through migrating the Python scanner rule files listed below to 
+functionally equivalent Rego constraints found in the policy-library repository 
+that can be used in Config Validator.
 
-For documentation on policy-library, refer [here](website link to policy-library).
-For documentation on Config Validator, refer [here](website link to Config Validator docs).
+- Audit Logging
+- Bigquery Dataset ACL
+- Bucket ACL
+- Cloud SQL
+- Enabled APIs
+- Firewall Rules
+- Load Balancer Forwarding Rules
+- IAM Policy
+- Instance Network Interface
+- Kubernetes Engine Version
+- Kubernetes Engine
+- KMS
+- Location
+- Retention Policy
+- Role
+- Service Account Key
+
+**Note:** Config Validator currently ingests Cloud Asset Inventory (CAI) data only. 
+GSuite data is not included in CAI exports. Users looking for GSuite specific constraints 
+should continue to utilize the Forseti Python scanners.
+
+For documentation on Config Validator and policy-library, refer [here]({% link _docs/latest/configure/config-validator/index.md %}).
 
 {% include docs/latest/migrating-to-rego/audit-logging.md %}
 

@@ -8,7 +8,7 @@ of the cryptographic key is correctly configured.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [kms_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/kms_rules.yamll) | [gcp_cmek_settings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_cmek_settings_v1.yaml) | [cmek_settings.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_settings.yaml)<br>[cmek_rotation_100_days.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_rotation_100_days.yaml)<br>[cmek_rotation.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_rotation.yaml)
+| [kms_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/kms_rules.yaml) | [gcp_cmek_settings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_cmek_settings_v1.yaml) | [cmek_settings.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_settings.yaml)<br>[cmek_rotation_100_days.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_rotation_100_days.yaml)<br>[cmek_rotation.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/cmek_rotation.yaml)
 
 ### Rego constraint asset type
 

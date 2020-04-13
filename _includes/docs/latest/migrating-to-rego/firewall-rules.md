@@ -77,7 +77,7 @@ in your `policies/templates/`directory.
 
 Create a new yaml file in your `policies/constraints/`directory with the following:
 
-`restrict_firewall_rules.yamll`:
+`restrict_firewall_rules.yaml`:
 ```
 apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPRestrictedFirewallRulesConstraintV1

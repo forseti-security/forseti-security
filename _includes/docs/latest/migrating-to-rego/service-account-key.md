@@ -46,7 +46,7 @@ rules:
 ```
 
 Add the Rego constraint template 
-[gcp_iam_restrict_service_account_key_age_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_restrict_service_account_key_age_v1.yam) 
+[gcp_iam_restrict_service_account_key_age_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_restrict_service_account_key_age_v1.yaml) 
 in your `policies/templates/`directory.
 
 Create a new yaml file in your `policies/constraints/`directory with the following:
