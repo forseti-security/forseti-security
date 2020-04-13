@@ -11,4 +11,4 @@ constraints found in the policy-library repository that can be used in Config Va
 For documentation on policy-library, refer [here](website link to policy-library).
 For documentation on Config Validator, refere [here](website link to Config Validator docs).
 
-{% include docs/latest/configure/migrating-to-rego/audit_logging.md %}
+{% include docs/latest/configure/migrating-to-rego/audit-logging.md %}
