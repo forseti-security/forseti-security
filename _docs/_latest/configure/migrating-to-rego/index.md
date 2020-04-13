@@ -9,6 +9,12 @@ This guide will walk through migrating the Python scanner rule files listed belo
 functionally equivalent Rego constraints found in the policy-library repository 
 that can be used in Config Validator.
 
+**Note:** Config Validator currently ingests Cloud Asset Inventory (CAI) data only. 
+GSuite data is not included in CAI exports. Users looking for GSuite specific constraints 
+should continue to utilize the Forseti Python scanners.
+
+For documentation on Config Validator and policy-library, refer [here]({% link _docs/latest/configure/config-validator/index.md %}).
+
 - Audit Logging
 - Bigquery Dataset ACL
 - Bucket ACL
@@ -26,11 +32,6 @@ that can be used in Config Validator.
 - Role
 - Service Account Key
 
-**Note:** Config Validator currently ingests Cloud Asset Inventory (CAI) data only. 
-GSuite data is not included in CAI exports. Users looking for GSuite specific constraints 
-should continue to utilize the Forseti Python scanners.
-
-For documentation on Config Validator and policy-library, refer [here]({% link _docs/latest/configure/config-validator/index.md %}).
 
 {% include docs/latest/migrating-to-rego/audit-logging.md %}
 
