@@ -71,7 +71,7 @@ for policies that allow ingress and expose every port.
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml) 

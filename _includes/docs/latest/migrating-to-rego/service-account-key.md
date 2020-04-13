@@ -44,7 +44,8 @@ rules:
           - '*'
     max_age: 100 # days
 ```
-Rego sample constraint:
+
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_iam_restrict_service_account_key_age_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_restrict_service_account_key_age_v1.yam) 

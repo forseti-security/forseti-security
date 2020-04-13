@@ -50,7 +50,7 @@ rules:
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) 

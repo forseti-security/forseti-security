@@ -31,7 +31,6 @@ This Rego constraint scans IAM policies for the following CAI asset types:
 | log_types | metadata.spec.parameters.log_types
 | allowed_exemptions | metadata.spec.parameters.allowed_exemptions
 
-
 ### Python scanner to Rego constraint sample
 
 The following Python scanner rule utilizes the Audit Logging scanner to require 
@@ -58,7 +57,7 @@ two projects (`proj-1`, `proj-2`), with two exempted members
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_audit_log.yaml) 

@@ -79,7 +79,7 @@ The following Python scanner rules utilizes the IAM Policy scanner to:
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 

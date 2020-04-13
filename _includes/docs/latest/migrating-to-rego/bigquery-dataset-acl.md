@@ -33,7 +33,6 @@ This Rego constraint utilizes the following properties:
 | bindings.role | metadata.spec.parameters.role
 | bindings.members | metadata.spec.parameters.members
 
-
 ### Python scanner to Rego constraint sample
 
 The following Python scanner rule utilizes the BigQuery Dataset ACL scanner to 
@@ -56,7 +55,7 @@ by groups with `googlegroups.com` addresses.
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 

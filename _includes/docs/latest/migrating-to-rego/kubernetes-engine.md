@@ -57,7 +57,7 @@ require that all logging is enabled in Kubernetes clusters.
 
 ```
 
-Rego sample constraint:
+#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_resource_value_pattern_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_resource_value_pattern_v1.yaml) 
