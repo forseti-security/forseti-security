@@ -59,3 +59,7 @@ ensure right people are in the right group, and is required for Forseti.
 
 Configure Config Validator Scanner to scan for non-compliant resources in your
 Google Cloud Platform (GCP) infrastructure.
+
+**[Migrating Python Scanners to Rego Constraints]({% link _docs/latest/configure/migrating-to-rego/index.md %})**
+
+Migrate current Forseti scanners to Rego constraints for use by Config Validator Scanner.
