@@ -45,8 +45,6 @@ the ‘BigqueryViewer’ role to ensure that there are only the permissions defi
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_iam_custom_role_permissions_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_custom_role_permissions_v1.yaml) 
 in your `policies/templates/`directory.

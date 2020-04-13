@@ -62,8 +62,6 @@ for any APIs that are not listed in the allowed services defined.
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_serviceusage_allowed_services_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_serviceusage_allowed_services_v1.yaml) 
 in your `policies/templates/`directory.

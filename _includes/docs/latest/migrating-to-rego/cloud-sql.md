@@ -53,8 +53,6 @@ name: Cloud SQL rule to search for publicly exposed instances (SSL enabled)
 
 ```
 
-#### Rego sample constraints
-
 Add the Rego constraint template [gcp_sql_allowed_authorized_networks_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_sql_allowed_authorized_networks_v1.yaml) 
 in your `policies/templates/`directory.
 

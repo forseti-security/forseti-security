@@ -54,8 +54,6 @@ scanner to allow only specific nodepool versions.
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_gke_cluster_version_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_version_v1.yaml) 
 in your `policies/templates/`directory.

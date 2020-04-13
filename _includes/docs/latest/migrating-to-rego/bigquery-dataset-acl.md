@@ -55,8 +55,6 @@ by groups with `googlegroups.com` addresses.
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 
 in your `policies/templates/`directory.

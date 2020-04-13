@@ -7,7 +7,7 @@ scanner can ensure that all your network’s firewalls are properly configured.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [firewall_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/firewall_rules.yaml) | [https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml) | [restrict_fw_rules_generic.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/restrict_fw_rules_generic.yaml)<br>[restrict_fw_rules_world_open.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/restrict_fw_rules_world_open.yaml)
+| [firewall_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/firewall_rules.yaml) | [gcp_restricted_firewall_rules_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml) | [restrict_fw_rules_generic.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/restrict_fw_rules_generic.yaml)<br>[restrict_fw_rules_world_open.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/restrict_fw_rules_world_open.yaml)
 
 ### Rego constraint asset type
 
@@ -70,8 +70,6 @@ for policies that allow ingress and expose every port.
             - 'all'
 
 ```
-
-#### Rego sample constraint
 
 Add the Rego constraint template 
 [https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_restricted_firewall_rules_v1.yaml) 

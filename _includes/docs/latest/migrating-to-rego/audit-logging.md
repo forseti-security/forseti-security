@@ -57,8 +57,6 @@ two projects (`proj-1`, `proj-2`), with two exempted members
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_iam_audit_log.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_audit_log.yaml) 
 in your `policies/templates/`directory.

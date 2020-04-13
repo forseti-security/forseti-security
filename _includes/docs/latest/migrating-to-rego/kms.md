@@ -54,8 +54,6 @@ rules:
          - ENCRYPT_DECRYPT
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_cmek_settings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_cmek_settings_v1.yaml) 
 in your `policies/templates/`directory.

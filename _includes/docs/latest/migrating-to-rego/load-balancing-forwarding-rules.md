@@ -48,8 +48,6 @@ scanner to only allow UDP load balancers for external VPN.
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_lb_forwarding_rules_whitelist.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_lb_forwarding_rules_whitelist.yaml) 
 in your `policies/templates/`directory.

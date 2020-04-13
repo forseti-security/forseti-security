@@ -8,7 +8,7 @@ Cloud Storage bucket.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [bucket_rules.yaml]https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bucket_rules.yaml) | [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) | [storage_blacklist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_blacklist_public.yaml)
+| [bucket_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bucket_rules.yaml) | [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) | [storage_blacklist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_blacklist_public.yaml)
 
 ### Rego constraint asset type
 
@@ -49,8 +49,6 @@ rules:
           - organizations/123456
 
 ```
-
-#### Rego sample constraint
 
 Add the Rego constraint template 
 [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) 

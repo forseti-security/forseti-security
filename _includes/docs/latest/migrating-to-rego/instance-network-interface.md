@@ -50,8 +50,6 @@ networks and instances are only running on networks created in allowed projects
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_compute_network_interface_whitelist_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_compute_network_interface_whitelist_v1.yaml) 
 in your `policies/templates/`directory.

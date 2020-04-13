@@ -110,8 +110,6 @@ all buckets in organization with ID 123456 are NOT be in EU.
 
 ```
 
-#### Rego sample constraint
-
 Add the Rego constraint template 
 [gcp_storage_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_location_v1.yaml) 
 in your `policies/templates/`directory.
