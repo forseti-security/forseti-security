@@ -36,9 +36,15 @@ For examples of how to define scanner rules, see the
 
 ## Bucket ACL scanner
 
-Cloud Storage buckets have ACLs that can grant public access to your
-Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
-to ensure unauthorized users don't gain access to your Cloud Storage bucket.
+Access Control Lists (ACLs) are enabled on the Cloud Storage buckets that don't 
+have uniform bucket-level access. ACLs allow you to grant public access to your 
+Cloud Storage bucket and objects. The bucket ACL scanner supports a blacklist 
+mode, to ensure unauthorized users don't gain access to your Cloud Storage bucket.
+
+**Note:** When uniform bucket-level access is enabled on a Cloud Storage bucket,
+only bucket-level Cloud IAM permissions grant access to that bucket and the 
+objects it contains; ACLs are disabled. Hence, Bucket ACL scanner only works for
+the buckets that do not have uniform bucket-level access.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
 [`bucket_rules.yaml`](https://github.com/forseti-security/forseti-security/blob/master/samples/scanner/scanners/bucket_rules.yaml) rule file.
