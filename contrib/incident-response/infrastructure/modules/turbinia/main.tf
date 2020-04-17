@@ -22,7 +22,8 @@ locals {
     "datastore.googleapis.com",
     "iam.googleapis.com",
     "pubsub.googleapis.com",
-    "storage-component.googleapis.com"
+    "storage-component.googleapis.com",
+    "logging.googleapis.com"
   ]
   # Cloud functions to deploy
   cloudfunctions_list = [
