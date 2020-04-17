@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Explainer access_by_authz tests"""
-
 import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
 class TestExplainerAccessByAuthz:
-    """Explainer access_by_authz tests
-
-    Run explain to verify access by authz is working.
-    """
+    """Explainer access_by_authz tests."""
 
     @pytest.mark.client
     @pytest.mark.e2e
@@ -31,7 +26,7 @@ class TestExplainerAccessByAuthz:
     def test_access_by_authz_with_permission(self, forseti_cli: ForsetiCli,
                                              forseti_model_readonly,
                                              project_id):
-        """Explainer access_by_authz tests
+        """Test access_by_authz with permission includes Forseti project id.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -47,7 +42,7 @@ class TestExplainerAccessByAuthz:
             permission='iam.serviceAccounts.get')
 
         # Assert
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert re.search(fr'"resource":[\s+]"project\/{project_id}"',
                          str(result.stdout))
         assert re.search(fr'"role":[\s+]"roles\/editor"', str(result.stdout))
@@ -59,7 +54,7 @@ class TestExplainerAccessByAuthz:
                                        forseti_model_readonly,
                                        forseti_server_service_account,
                                        project_id):
-        """Explainer access_by_member with permission tests
+        """Test access_by_authz with role includes Forseti project id.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -76,7 +71,7 @@ class TestExplainerAccessByAuthz:
             role='roles/storage.objectCreator')
 
         # Assert
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert re.search(fr'{project_id}', str(result.stdout))
         assert re.search(fr'serviceaccount\/{forseti_server_service_account}',
                          str(result.stdout))

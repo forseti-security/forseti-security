@@ -34,6 +34,8 @@ def pytest_addoption(parser):
                      default=CLOUDSQL_PORT,
                      help='Cloud SQL port')
     parser.addoption('--cloudsql_username', help='Cloud SQL username')
+    parser.addoption('--forseti_client_service_account',
+                     help='Forseti client service account email')
     parser.addoption('--forseti_server_bucket_name',
                      help='Forseti server bucket name')
     parser.addoption('--forseti_server_config_path',
@@ -104,6 +106,11 @@ def cloudsql_port(request):
 @pytest.fixture(scope="session")
 def cloudsql_username(request):
     return request.config.getoption('--cloudsql_username')
+
+
+@pytest.fixture(scope="session")
+def forseti_client_service_account(request):
+    return request.config.getoption('--forseti_client_service_account')
 
 
 @pytest.fixture(scope="session")

@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Explainer check_policy tests"""
-
 import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
 class TestExplainerCheckPolicy:
-    """Explainer check_policy tests
-
-    Run explain to check policy is working.
-    """
+    """Explainer check_policy tests."""
 
     @pytest.mark.client
     @pytest.mark.e2e
@@ -32,7 +27,8 @@ class TestExplainerCheckPolicy:
                           forseti_model_readonly,
                           forseti_server_service_account,
                           project_id):
-        """Explainer check_policy test
+        """Test check_policy with Forseti SA includes storage.objects.get
+        permission.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -50,5 +46,5 @@ class TestExplainerCheckPolicy:
             f'serviceAccount/{forseti_server_service_account}')
 
         # Assert
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert re.search(fr'"result":[\s+]true', str(result.stdout))

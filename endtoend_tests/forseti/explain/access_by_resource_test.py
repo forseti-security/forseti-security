@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Explainer access_by_resource tests"""
-
 import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
 class TestExplainerAccessByResource:
-    """Explainer access_by_resource tests
+    """Explainer access_by_resource tests.
 
-    Run explain to verify access by resource is working.
     TODO: Tests take a long time for explain commands, use different resources?
     """
 
@@ -33,7 +30,7 @@ class TestExplainerAccessByResource:
                                                  forseti_model_readonly,
                                                  forseti_server_service_account,
                                                  organization_id):
-        """Explainer access_by_resource for an org test
+        """Test access_by_resource for organization includes Forseti SA.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -50,7 +47,7 @@ class TestExplainerAccessByResource:
             f'organization/{organization_id}')
 
         # Assert
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert 10 == len(re.findall(forseti_server_service_account, str(result.stdout)))
 
     @pytest.mark.client
@@ -60,7 +57,7 @@ class TestExplainerAccessByResource:
                                             forseti_model_readonly,
                                             forseti_server_service_account,
                                             project_id):
-        """Explainer access_by_resource for a project test
+        """Test access_by_resource for project includes Forseti SA.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -77,5 +74,5 @@ class TestExplainerAccessByResource:
             f'project/{project_id}')
 
         # Assert
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert 15 == len(re.findall(forseti_server_service_account, str(result.stdout)))

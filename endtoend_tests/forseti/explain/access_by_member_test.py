@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Explainer access_by_member tests"""
-
 import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
 class TestExplainerAccessByMember:
-    """Explainer access_by_member tests
-
-    Run explain to verify access by member is working.
-    """
+    """Explainer access_by_member tests."""
 
     @pytest.mark.client
     @pytest.mark.e2e
@@ -32,7 +27,7 @@ class TestExplainerAccessByMember:
                               forseti_model_readonly,
                               forseti_server_service_account, organization_id,
                               project_id):
-        """Explainer access_by_member tests
+        """Test access_by_member with Forseti SA has expected roles.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -50,7 +45,7 @@ class TestExplainerAccessByMember:
             f'serviceaccount/{forseti_server_service_account}')
 
         # Assert Server SA has org browser role
-        assert result.returncode == 0
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert re.search(fr'"resources":[\s+]\[\\n'
                          fr'[\s+]*"organization\/{organization_id}"\\n'
                          fr'[\s+]*\],\\n'
@@ -78,7 +73,7 @@ class TestExplainerAccessByMember:
                                               forseti_model_readonly,
                                               forseti_server_service_account,
                                               organization_id):
-        """Explainer access_by_member with permission tests
+        """Test access_by_member with Forseti SA has expected permissions.
 
         Args:
             forseti_cli (ForsetiCli): Instance of the forseti cli helper
@@ -96,6 +91,7 @@ class TestExplainerAccessByMember:
             ['storage.buckets.list'])
 
         # Assert Server SA has org browser role
+        assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
         assert re.search(fr'"resources":[\s+]\[\\n'
                          fr'[\s+]*"organization\/{organization_id}"\\n'
                          fr'[\s+]*\],\\n'

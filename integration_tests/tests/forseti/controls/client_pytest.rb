@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-forseti_server_service_account = attribute('forseti-server-vm-name')
+forseti_client_service_account = attribute('forseti-client-service-account')
+forseti_server_service_account = attribute('forseti-server-service-account')
 forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
 org_id = attribute('org_id')
 project_id = attribute('project_id')
@@ -24,6 +25,7 @@ control "client-pytest" do
   end
 
   describe command("sudo pytest -m client -v $FORSETI_HOME/endtoend_tests/ \
+                        --forseti_client_service_account=#{forseti_client_service_account} \
                         --forseti_server_service_account=#{forseti_server_service_account} \
                         --organization_id=#{org_id} \
                         --project_id=#{project_id}") do
@@ -37,6 +39,19 @@ control "client-pytest" do
     its('stdout') { should match(/test_access_by_resource_for_project PASSED/) }
     its('stdout') { should match(/test_check_policy PASSED/) }
     its('stdout') { should match(/test_get_policy PASSED/) }
+    its('stdout') { should match(/test_list_members PASSED/) }
+    its('stdout') { should match(/test_list_members_with_prefix PASSED/) }
+    its('stdout') { should match(/test_list_permissions_for_iam PASSED/) }
+    its('stdout') { should match(/test_list_permissions_for_storage PASSED/) }
+    its('stdout') { should match(/test_list_permissions_with_role_prefix PASSED/) }
+    its('stdout') { should match(/test_list_roles PASSED/) }
+    its('stdout') { should match(/test_list_roles_with_iam_prefix PASSED/) }
+    its('stdout') { should match(/test_list_roles_with_storage_prefix PASSED/) }
+    its('stdout') { should match(/test_why_denied PASSED/) }
+    its('stdout') { should match(/test_why_granted_permission_for_org PASSED/) }
+    its('stdout') { should match(/test_why_granted_permission_for_project PASSED/) }
+    its('stdout') { should match(/test_why_granted_role_for_org PASSED/) }
+    its('stdout') { should match(/test_why_granted_role_for_project PASSED/) }
 
     # Model
     its('stdout') { should match(/test_model_use PASSED/) }
