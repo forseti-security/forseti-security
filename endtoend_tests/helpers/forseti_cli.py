@@ -51,10 +51,9 @@ class ForsetiCli:
                               stdout=subprocess.PIPE)
 
     @staticmethod
-    def explainer_access_by_resource(resource, grep=None):
+    def explainer_access_by_resource(resource):
         cmd = ['forseti', 'explainer', 'access_by_resource', resource]
-        if grep:
-            cmd.extend(['|', 'grep', '-c', grep])
+        print(f'Running Forseti command: {" ".join(cmd)}')
         return subprocess.run(cmd, stderr=subprocess.PIPE,
                               stdout=subprocess.PIPE)
 

@@ -23,6 +23,7 @@ class TestExplainerAccessByResource:
     """Explainer access_by_resource tests
 
     Run explain to verify access by resource is working.
+    TODO: Tests take a long time for explain commands, use different resources?
     """
 
     @pytest.mark.client
@@ -46,11 +47,11 @@ class TestExplainerAccessByResource:
 
         # Act
         result = forseti_cli.explainer_access_by_resource(
-            f'organization/{organization_id}', forseti_server_service_account)
+            f'organization/{organization_id}')
 
         # Assert
         assert result.returncode == 0
-        assert re.search(fr'10', str(result.stdout))
+        assert 10 == len(re.findall(forseti_server_service_account, str(result.stdout)))
 
     @pytest.mark.client
     @pytest.mark.e2e
@@ -73,8 +74,8 @@ class TestExplainerAccessByResource:
 
         # Act
         result = forseti_cli.explainer_access_by_resource(
-            f'project/{project_id}', forseti_server_service_account)
+            f'project/{project_id}')
 
         # Assert
         assert result.returncode == 0
-        assert re.search(fr'16', str(result.stdout))
+        assert 15 == len(re.findall(forseti_server_service_account, str(result.stdout)))

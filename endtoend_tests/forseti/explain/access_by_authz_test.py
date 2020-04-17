@@ -73,7 +73,7 @@ class TestExplainerAccessByAuthz:
 
         # Act
         result = forseti_cli.explainer_access_by_authz(
-            permission='roles/storage.objectCreator')
+            role='roles/storage.objectCreator')
 
         # Assert
         assert result.returncode == 0
