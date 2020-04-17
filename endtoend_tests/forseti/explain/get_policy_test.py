@@ -28,10 +28,8 @@ class TestExplainerGetPolicy:
     @pytest.mark.client
     @pytest.mark.e2e
     @pytest.mark.explainer
-    def test_get_policy(self, forseti_cli: ForsetiCli,
-                          forseti_model_readonly,
-                          forseti_server_service_account,
-                          project_id):
+    def test_get_policy(self, forseti_cli: ForsetiCli, forseti_model_readonly,
+                        forseti_server_service_account, project_id):
         """Explainer get_policy test
 
         Args:
