@@ -63,7 +63,19 @@ Enable the following APIs on the Forseti project:
 
 ### **Setting up environment variables**
 
-Set the following environment variables from the bash shell:
+- Running the email notification test and inventory performance tests involve 
+some manual work to encrypt the credentials using KMS key and setting
+environment variables to the mock data files. Please reach out to
+the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
+for guidance on running these tests.
+
+**Note:** Please comment out email notification test and inventory performance 
+tests if you do not want to run those tests, and set 
+`TF_VAR_inventory_performance_cai_dump_paths`, `TF_VAR_kms_key` and
+`TF_VAR_kms_keyring` variables as shown below.
+
+- Set the following environment variables from the bash shell as suggested below 
+to run rest of the integration tests:
 
 ```
 export SERVICE_ACCOUNT_JSON=<JSON_KEY_OF_THE_NEWLY_CREATED_SERVICE_ACCOUNT> \
@@ -72,26 +84,19 @@ export TF_VAR_billing_account=<YOUR_BILLING_ACCOUNT> \
 
 export TF_VAR_domain=<YOUR_DOMAIN> \
 
-export TF_VAR_forseti_email_recipient=<EMAIL_RECIPIENT> \
-
-export TF_VAR_forseti_email_sender=<EMAIL_SENDER> \ 
-
 export TF_VAR_forseti_version=<BRANCH_NAME> \ 
 
 export TF_VAR_gsuite_admin_email=<GSUITE_EMAIL_ADDRESS> \
 
-export TF_VAR_inventory_performance_cai_dump_paths=<PATH_TO_CAI_DUMP> \
+export TF_VAR_inventory_performance_cai_dump_paths="" \
 
-export TF_VAR_kms_key=<KMS_KEY> \
+export TF_VAR_kms_key="" \
 
-export TF_VAR_kms_keyring=<KMS_KEYRING> \ 
+export TF_VAR_kms_keyring="" \ 
 
 export TF_VAR_org_id=<YOUR_ORGANIZATION_ID> \
 
 export TF_VAR_project_id=<YOUR_PROJECT_ID> \
-
-export TF_VAR_sendgrid_api_key=<SENDGRID_API_KEY>
-
 ```
 
 ## **Running the test suite**
@@ -101,12 +106,10 @@ Run the following command after setting up environment variables:
 ```
 docker container run -it -e KITCHEN_TEST_BASE_PATH="integration_tests/tests" -e 
 SERVICE_ACCOUNT_JSON -e TF_VAR_project_id -e TF_VAR_org_id -e 
-TF_VAR_billing_account -e TF_VAR_domain -e TF_VAR_forseti_email_recipient -e
-TF_VAR_forseti_email_sender -e TF_VAR_forseti_version -e 
+TF_VAR_billing_account -e TF_VAR_domain -e TF_VAR_forseti_version -e 
 TF_VAR_gsuite_admin_email -e TF_VAR_inventory_performance_cai_dump_paths -e
-TF_VAR_kms_key -e TF_VAR_kms_keyring -e TF_VAR_sendgrid_api_key
--v $(pwd):/workspace gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1
-/bin/bash
+TF_VAR_kms_key -e TF_VAR_kms_keyring -v $(pwd):/workspace 
+gcr.io/cloud-foundation-cicd/cft/developer-tools:0.4.1 /bin/bash
 ```
 
 - Run `kitchen create --test-base-path="integration_tests/tests"`. This is 
