@@ -685,13 +685,13 @@ You will need to specify an additional value in your `main.tf` to maintain the p
 {% capture upgrading_2_24_0_to_2_25_0 %}
 
 ### Forseti on-GCE {#forseti-on-gce-224-to-225}
-1. Update the `version` inside `main.tf` file to `5.2.0`.
+1. Update the `version` inside `main.tf` file to `5.2.1`.
 1. Run command `terraform init` to initialize terraform.
 1. Run command `terraform plan` to see the infrastructure plan.
 1. Run command `terraform apply` to apply the infrastructure build.
 
 ### Forseti on-GKE {#forseti-on-gke-224-to-225}
-1. Update the `version` inside `main.tf` file to `5.2.0`.
+1. Update the `version` inside `main.tf` file to `5.2.1`.
 2. Run command `terraform init` to initialize terraform.
 4. Run command `terraform plan` to see the infrastructure plan.
 5. Run command `terraform apply` to apply the infrastructure build.
