@@ -17,15 +17,29 @@ roles to the Service Account manually or by running the helper script.
 
 ### **Creating Service Account by running the helper script**
 
-In order to execute this script, you must have an account with the
-`Billing Account Administrator` role should be granted to the admin account. This
-is required to create the Service Account using the helper script. You can revoke 
-this role after the service account is created.
-- To run the [helper script](https://github.com/terraform-google-modules/terraform-google-project-factory/blob/master/helpers/setup-sa.sh), 
-clone the [Terraform Google Project factory repository](https://github.com/terraform-google-modules/terraform-google-project-factory)
-and run the following command:
+- In order to execute this script, you must have an Organization Administrator 
+Cloud Identity and Access Management (Cloud IAM) role so the script can assign
+the Forseti services account roles on the organization Cloud IAM policy.
+- Follow the instructions [here](https://forsetisecurity.org/docs/latest/setup/install/index.html#create-the-service-account-and-enable-required-apis)
+to create the Service Account, grant most of the required roles to the Service 
+Account, and enable the APIs by running the helper script. 
+- Please enable the following roles to the Service Account:
 
-`./helpers/setup-sa.sh <ORGANIZATION_ID> <PROJECT_NAME> <BILLING_ACCOUNT>`
+On the organization:
+
+* roles/billing.user
+* roles/resourcemanager.folderViewer
+* roles/resourcemanager.organizationViewer
+* roles/resourcemanager.projectCreator
+
+On the project:
+
+* roles/cloudkms.admin
+
+Enable the following APIs on the Forseti project:
+
+* cloudkms.googleapis.com
+
 
 ### **Creating Service Account and granting roles manually**
 
@@ -69,10 +83,11 @@ environment variables to the mock data files. Please reach out to
 the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
 for guidance on running these tests.
 
-**Note:** Please comment out email notification test and inventory performance 
-tests if you do not want to run those tests, and set 
-`TF_VAR_inventory_performance_cai_dump_paths`, `TF_VAR_kms_key` and
-`TF_VAR_kms_keyring` variables as shown below.
+**Note:** To successfully run other tests, you need to comment out the contents
+of the files that run [email notification test](https://github.com/forseti-security/forseti-security/blob/master/integration_tests/tests/forseti/controls/notifier-inventory_summary_email.rb) 
+and [inventory performance tests](https://github.com/forseti-security/forseti-security/blob/master/integration_tests/tests/forseti/controls/inventory-performance.rb).
+these tests besides setting `TF_VAR_inventory_performance_cai_dump_paths`, 
+`TF_VAR_kms_key` and `TF_VAR_kms_keyring` variables as shown below.
 
 - Set the following environment variables from the bash shell as suggested below 
 to run rest of the integration tests:
