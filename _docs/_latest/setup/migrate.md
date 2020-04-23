@@ -1,6 +1,6 @@
 ---
 title: Migrate from Python Installer to Terraform Module
-order: 007
+order: 600
 ---
 
 # {{ page.title }}

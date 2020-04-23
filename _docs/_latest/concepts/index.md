@@ -38,3 +38,7 @@ Real-Time Enforcer.
 **[Forseti on Google Kubernetes Engine]({% link _docs/latest/concepts/forseti-on-gke.md %})**
 
 Learn about deploying Forseti on a GKE cluster.
+
+**[Config Validator]({% link _docs/latest/concepts/config-validator.md %})**
+
+Learn about how Config Validator works.
