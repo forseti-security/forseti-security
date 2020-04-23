@@ -12,7 +12,7 @@ and then test those changes.
 
 **[Run Unit Tests]({% link _docs/latest/develop/test/unit-tests/index.md %})**
 
-Learn how to build protos and run unit tests for your Forseti contributions.
+Learn how to run unit tests on your Forseti contributions.
 
 **[Run the Integration Test Suite]({% link _docs/latest/develop/test/integration-testing/index.md %})**
 
