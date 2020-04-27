@@ -21,59 +21,15 @@ roles to the Service Account manually or by running the helper script.
 Cloud Identity and Access Management (Cloud IAM) role so the script can assign
 the Forseti services account roles on the organization Cloud IAM policy.
 - Follow the instructions [here](https://forsetisecurity.org/docs/latest/setup/install/index.html#create-the-service-account-and-enable-required-apis)
-to create the Service Account, grant most of the required roles to the Service 
-Account, and enable the APIs by running the helper script. 
-- Please enable the following roles to the Service Account:
-
-On the organization:
-
-* roles/billing.user
-* roles/resourcemanager.folderViewer
-* roles/resourcemanager.organizationViewer
-* roles/resourcemanager.projectCreator
-
-On the project:
-
-* roles/cloudkms.admin
-
-Enable the following APIs on the Forseti project:
-
-* cloudkms.googleapis.com
-
+to run the helper script that creates the Service Account and grants required 
+roles to the Service Account.
 
 ### **Creating Service Account and granting roles manually**
 
-Alternatively, you can grant the following roles and enable the APIs manually.
+Alternatively, you can create a Service Account yourself, and grant it the 
+[documented](https://forsetisecurity.org/docs/latest/setup/install/roles-and-required-apis.html)
+IAM roles and enable the APIs on the Forseti project.
 
-On the organization:
-
-* roles/billing.user
-* roles/iam.securityReviewer
-* roles/resourcemanager.folderViewer
-* roles/resourcemanager.organizationAdmin
-* roles/resourcemanager.organizationViewer
-* roles/resourcemanager.projectCreator
-
-On the project:
-
-* roles/cloudkms.admin
-* roles/cloudsql.admin
-* roles/compute.instanceAdmin
-* roles/compute.networkViewer
-* roles/compute.securityAdmin
-* roles/iam.serviceAccountAdmin
-* roles/iam.serviceAccountUser
-* roles/owner
-* roles/serviceusage.serviceUsageAdmin
-* roles/storage.admin
-
-
-Enable the following APIs on the Forseti project:
-
-* cloudkms.googleapis.com
-* cloudresourcemanager.googleapis.com
-* compute.googleapis.com
-* serviceusage.googleapis.com
 
 ### **Setting up environment variables**
 
@@ -83,14 +39,17 @@ environment variables to the mock data files. Please reach out to
 the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
 for guidance on running these tests.
 
-**Note:** To successfully run other tests, you need to comment out the contents
-of the files that run [email notification test](https://github.com/forseti-security/forseti-security/blob/master/integration_tests/tests/forseti/controls/notifier-inventory_summary_email.rb) 
-and [inventory performance tests](https://github.com/forseti-security/forseti-security/blob/master/integration_tests/tests/forseti/controls/inventory-performance.rb).
-these tests besides setting `TF_VAR_inventory_performance_cai_dump_paths`, 
-`TF_VAR_kms_key` and `TF_VAR_kms_keyring` variables as shown below.
+**Note:** 
+- To successfully run other tests, you need to comment out 
+`inventory-performance` and `notifier-inventory-summary-email` controls from the 
+[kitchen config file](https://github.com/forseti-security/forseti-security/blob/master/.kitchen.yml),
+and set `TF_VAR_inventory_performance_cai_dump_paths`, `TF_VAR_kms_key` and 
+`TF_VAR_kms_keyring` environment variables to `""`.
+- `cloudkms.googleapis.com` API should be enabled to run inventory performance 
+tests.
 
-- Set the following environment variables from the bash shell as suggested below 
-to run rest of the integration tests:
+Set the following environment variables from the bash shell as suggested below 
+to run the rest of the integration tests:
 
 ```
 export SERVICE_ACCOUNT_JSON=<JSON_KEY_OF_THE_NEWLY_CREATED_SERVICE_ACCOUNT> \
@@ -111,7 +70,7 @@ export TF_VAR_kms_keyring="" \
 
 export TF_VAR_org_id=<YOUR_ORGANIZATION_ID> \
 
-export TF_VAR_project_id=<YOUR_PROJECT_ID> \
+export TF_VAR_project_id=<YOUR_PROJECT_ID>
 ```
 
 ## **Running the test suite**
