@@ -1,6 +1,6 @@
 ---
 title: Branch Management
-order: 003
+order: 002
 ---
 
 #  {{ page.title }}

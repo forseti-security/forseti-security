@@ -23,14 +23,15 @@ GitHub.
 
 Get set up and started with development.
 
-**[Install, Build, and Run Forseti Website]({% link _docs/latest/develop/website.md %})**
+**[Install, Build, and Run Forseti Website ]({% link _docs/latest/develop/website.md %})**
 
 Install, build, edit, and run the Forseti website locally.
 
-**[Get Help Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
+**[Start Testing on Forseti]({% link _docs/latest/develop/test/index.md %})**
+
+Get set up and started with testing.
+
+**[Get Help Developing on Forseti]({% link _docs/latest/develop/get-help.md %})**
 
 Find the best way to get help with development.
 
-**[Start Developing on Forseti Real-Time Enforcer]({% link _docs/latest/develop/dev/real-time-enforcer.md %})**
-
-Get set up and started locally to contribute to Forseti Real-Time Enforcer.
