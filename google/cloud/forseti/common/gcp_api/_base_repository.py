@@ -24,7 +24,6 @@ from urllib.parse import urljoin
 from future import standard_library
 
 import google_auth_httplib2
-import googleapiclient
 import pkg_resources
 import uritemplate
 from googleapiclient import discovery
