@@ -56,7 +56,7 @@ NUM_HTTP_RETRIES = 5
 # Support older versions of apiclient without cache support
 SUPPORT_DISCOVERY_CACHE = (
     pkg_resources.get_distribution(
-        "google-api-python-client").version >= '1.4.2')
+        'google-api-python-client').version >= '1.4.2')
 
 # Used by the record and replay decorator to store requests across all repos.
 REQUEST_RECORDER = dict()
