@@ -168,7 +168,8 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -513,12 +514,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
             elif 'iam_policy' in full_bucket_path:
                 fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
                                          'mock_cai_iam_policies.dump')
-            elif 'org_policy' in full_bucket_path:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_cai_org_policies.dump')
-            elif 'access_policy' in full_bucket_path:
-                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                         'mock_cai_access_policies.dump')
             with open(fake_file, 'rb') as f:
                 output_file.write(f.read())
 
@@ -529,7 +524,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -738,77 +734,49 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         filtered_iam = ''.join(filtered_iam)
 
-        filtered_org = []
-        with open(os.path.join(TEST_RESOURCE_DIR_PATH,
-                               'mock_cai_org_policies.dump'), 'r') as f:
-            for line in f:
-                if any('"%s"' % asset_type in line
-                       for asset_type in asset_types):
-                    filtered_org.append(line)
-
-        filtered_org = ''.join(filtered_org)
-
-        filtered_access = []
-        with open(os.path.join(TEST_RESOURCE_DIR_PATH,
-                               'mock_cai_access_policies.dump'), 'r') as f:
-            for line in f:
-                if any('"%s"' % asset_type in line
-                       for asset_type in asset_types):
-                    filtered_access.append(line)
-
-        filtered_access = ''.join(filtered_access)
-
         with unittest_utils.create_temp_file(filtered_assets) as resources:
             with unittest_utils.create_temp_file(filtered_iam) as iam_policies:
-                with unittest_utils.create_temp_file(
-                        filtered_org) as org_policies:
-                    with unittest_utils.create_temp_file(
-                            filtered_access) as access_policies:
-                        # Mock download to return correct test data file
-                        def _fake_download(full_bucket_path, output_file):
-                            if 'resource' in full_bucket_path:
-                                fake_file = resources
-                            elif 'iam_policy' in full_bucket_path:
-                                fake_file = iam_policies
-                            elif 'org_policy' in full_bucket_path:
-                                fake_file = org_policies
-                            elif 'access_policy' in full_bucket_path:
-                                fake_file = access_policies
-                            with open(fake_file, 'rb') as f:
-                                output_file.write(f.read())
+                # Mock download to return correct test data file
+                def _fake_download(full_bucket_path, output_file):
+                    if 'resource' in full_bucket_path:
+                        fake_file = resources
+                    elif 'iam_policy' in full_bucket_path:
+                        fake_file = iam_policies
+                    with open(fake_file, 'rb') as f:
+                        output_file.write(f.read())
 
-                        with MemoryStorage() as storage:
-                            progresser = NullProgresser()
-                            with gcp_api_mocks.mock_gcp() as gcp_mocks:
-                                gcp_mocks.mock_storage.download.side_effect = (
-                                    _fake_download)
-                                run_crawler(storage,
-                                            progresser,
-                                            inventory_config)
+                with MemoryStorage() as storage:
+                    progresser = NullProgresser()
+                    with gcp_api_mocks.mock_gcp() as gcp_mocks:
+                        gcp_mocks.mock_storage.download.side_effect = (
+                            _fake_download)
+                        run_crawler(storage,
+                                    progresser,
+                                    inventory_config)
 
-                                # Validate export_assets called with asset_types
-                                expected_calls = [
-                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                              output_config=mock.ANY,
-                                              content_type='RESOURCE',
-                                              asset_types=asset_types,
-                                              blocking=mock.ANY,
-                                              timeout=mock.ANY),
-                                    mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                              output_config=mock.ANY,
-                                              content_type='IAM_POLICY',
-                                              asset_types=asset_types,
-                                              blocking=mock.ANY,
-                                              timeout=mock.ANY)]
-                                (gcp_mocks.mock_cloudasset.export_assets
-                                .assert_has_calls(expected_calls, any_order=True))
+                        # Validate export_assets called with asset_types
+                        expected_calls = [
+                            mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                      output_config=mock.ANY,
+                                      content_type='RESOURCE',
+                                      asset_types=asset_types,
+                                      blocking=mock.ANY,
+                                      timeout=mock.ANY),
+                            mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                      output_config=mock.ANY,
+                                      content_type='IAM_POLICY',
+                                      asset_types=asset_types,
+                                      blocking=mock.ANY,
+                                      timeout=mock.ANY)]
+                        (gcp_mocks.mock_cloudasset.export_assets
+                        .assert_has_calls(expected_calls, any_order=True))
 
-                        self.assertEqual(0,
-                                         progresser.errors,
-                                         'No errors should have occurred')
+                self.assertEqual(0,
+                                 progresser.errors,
+                                 'No errors should have occurred')
 
-                        result_counts = self._get_resource_counts_from_storage(
-                            storage)
+                result_counts = self._get_resource_counts_from_storage(
+                    storage)
 
         expected_counts = {
             'folder': {'iam_policy': 3, 'resource': 3},
