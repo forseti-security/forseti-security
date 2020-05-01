@@ -34,12 +34,18 @@ def pytest_addoption(parser):
                      default=CLOUDSQL_PORT,
                      help='Cloud SQL port')
     parser.addoption('--cloudsql_username', help='Cloud SQL username')
+    parser.addoption('--forseti_client_service_account',
+                     help='Forseti client service account email')
     parser.addoption('--forseti_server_bucket_name',
                      help='Forseti server bucket name')
     parser.addoption('--forseti_server_config_path',
                      default=FORSETI_SERVER_CONFIG_PATH,
                      help='Path to Forseti server config')
+    parser.addoption('--forseti_server_service_account',
+                     help='Forseti server service account email')
     parser.addoption('--forseti_server_vm_name', help='Forseti server VM name')
+    parser.addoption('--organization_id', help='Org id being scanned')
+    parser.addoption('--project_id', help='Project id being scanned')
     parser.addoption('--root_resource_id',
                      help='Root resource id for inventory performance test')
 
@@ -50,6 +56,9 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         'markers', 'e2e: mark test to run only on named environment'
+    )
+    config.addinivalue_line(
+        'markers', 'explainer: mark to run all explainer tests'
     )
     config.addinivalue_line(
         'markers', 'inventory: mark to run all inventory tests'
@@ -100,6 +109,11 @@ def cloudsql_username(request):
 
 
 @pytest.fixture(scope="session")
+def forseti_client_service_account(request):
+    return request.config.getoption('--forseti_client_service_account')
+
+
+@pytest.fixture(scope="session")
 def forseti_server_bucket_name(request):
     return request.config.getoption('--forseti_server_bucket_name')
 
@@ -110,8 +124,23 @@ def forseti_server_config_path(request):
 
 
 @pytest.fixture(scope="session")
+def forseti_server_service_account(request):
+    return request.config.getoption('--forseti_server_service_account')
+
+
+@pytest.fixture(scope="session")
 def forseti_server_vm_name(request):
     return request.config.getoption('--forseti_server_vm_name')
+
+
+@pytest.fixture(scope="session")
+def organization_id(request):
+    return request.config.getoption('--organization_id')
+
+
+@pytest.fixture(scope="session")
+def project_id(request):
+    return request.config.getoption('--project_id')
 
 
 @pytest.fixture(scope="session")
