@@ -168,7 +168,8 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -523,7 +524,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
