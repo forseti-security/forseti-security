@@ -915,16 +915,11 @@ def run_inventory(client, config, output, _):
 
 
 def run_version():
-    """Run version commands.
-        Args:
-            client (iam_client.ClientComposition): client to use for requests.
-            config (object): argparser namespace to use.
-            output (Output): output writer to use.
-            _ (object): Unused.
-    """
+    """Run version command."""
 
     def do_show_version():
         """List the app version."""
+
         from google.cloud.forseti import __version__ as forseti_version
         print(forseti_version)
 
