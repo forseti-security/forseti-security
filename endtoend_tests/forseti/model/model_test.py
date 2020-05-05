@@ -12,14 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti end-to-end test configuration"""
+"""Model end-to-end tests"""
 
 import pytest
-from endtoend_tests.helpers.server_config import ServerConfig
+import re
+from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
 
-@pytest.fixture(scope="session")
-def server_config_helper(forseti_server_bucket_name, forseti_server_config_path):
-    server_config = ServerConfig(forseti_server_config_path)
-    yield server_config
-    server_config.copy_from_gcs(forseti_server_bucket_name)
+class TestModel:
+    """Model tests
+
+    Execute the basic model functionality such as: create, get, use, etc.
+    """
+
+    @pytest.mark.client
+    @pytest.mark.e2e
+    @pytest.mark.model
+    def test_model_use(self, forseti_cli: ForsetiCli, forseti_model_readonly):
+        # Arrange
+        model_name, handle, _ = forseti_model_readonly
+
+        # Act
+        forseti_cli.model_use(model_name)
+        result = forseti_cli.config_show()
+
+        # Assert
+        assert re.search(fr'{handle}', str(result.stdout))

@@ -26,6 +26,7 @@ class TestConfigValidatorComputeZone:
 
     @pytest.mark.e2e
     @pytest.mark.scanner
+    @pytest.mark.server
     def test_cv_compute_zone(self,
                              cloudsql_connection,
                              forseti_scan_readonly,
@@ -41,7 +42,7 @@ class TestConfigValidatorComputeZone:
         scanner_id, scanner_result = forseti_scan_readonly
 
         # Assert violation found
-        violation_type = 'CV_compute_zone_denylist'
+        violation_type = 'CV_compute-zone-denylist'
         query = text('SELECT '
                      'COUNT(*) '
                      'FROM forseti_security.violations '

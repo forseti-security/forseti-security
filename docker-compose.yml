@@ -43,6 +43,7 @@ services:
     container_name: forseti-server
     build: .
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/forseti/credentials.json
       - LOG_LEVEL=debug
       - PORT=50051
       - SERVICES=explain inventory model notifier scanner
@@ -52,3 +53,4 @@ services:
     restart: always
     volumes:
       - ${FORSETI_SERVER_CONFIG_PATH}:/forseti-security/forseti_conf_server.yaml
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/secrets/forseti/credentials.json

@@ -15,8 +15,10 @@
 """Forseti end-to-end test configuration"""
 
 import pytest
+import re
 import time
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
+from endtoend_tests.helpers.server_config import ServerConfig
 
 
 @pytest.fixture(scope="session")
@@ -34,9 +36,10 @@ def forseti_inventory_readonly(forseti_cli):
 @pytest.fixture(scope="session")
 def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
     model_name = f'Test{str(int(time.time()))}'
-    result = forseti_cli.model_create(forseti_inventory_readonly[0],
-                                      model_name)
-    yield model_name, result
+    handle, result = forseti_cli.model_create(forseti_inventory_readonly[0],
+                                              model_name)
+
+    yield model_name, handle, result
     forseti_cli.model_delete(model_name)
 
 
@@ -44,3 +47,10 @@ def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
 def forseti_scan_readonly(forseti_cli, forseti_model_readonly):
     forseti_cli.model_use(forseti_model_readonly[0])
     yield forseti_cli.scanner_run()
+
+
+@pytest.fixture(scope="session")
+def server_config_helper(forseti_server_bucket_name, forseti_server_config_path):
+    server_config = ServerConfig(forseti_server_config_path)
+    yield server_config
+    server_config.copy_from_gcs(forseti_server_bucket_name)
