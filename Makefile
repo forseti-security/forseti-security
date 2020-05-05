@@ -15,7 +15,7 @@
 # Make will use bash instead of sh
 SHELL := /usr/bin/env bash
 
-DEV_TOOLS_TAG := 0.4.1
+DEV_TOOLS_TAG := 0.7.5
 DEV_TOOLS_IMAGE := cft/developer-tools
 DEV_TOOLS_URL := gcr.io/cloud-foundation-cicd
 
@@ -74,32 +74,80 @@ docker_test_unit: docker_target_test
  		-c "python3 -m unittest discover --verbose -s /home/forseti/forseti-security/tests/ -p '*_test.py'"
 
 # Enter docker container for local development
-.PHONY: docker_e2etest_shell
-docker_e2etest_shell:
+.PHONY: docker_test_e2e_shell
+docker_test_e2e_shell:
 	docker run --rm -it \
-		-e KITCHEN_TEST_BASE_PATH="~/git_repos/forseti-security/integration_tests/tests" \
+		-e KITCHEN_TEST_BASE_PATH="/workspace/integration_tests/tests" \
 		-e SERVICE_ACCOUNT_JSON \
-		--env-file ~/forseti/environments/forseti-gce-fanta/travis-integration.env \
+		-e TF_VAR_billing_account \
+		-e TF_VAR_domain \
+		-e TF_VAR_forseti_email_recipient \
+		-e TF_VAR_forseti_email_sender \
+		-e TF_VAR_forseti_version \
+		-e TF_VAR_gsuite_admin_email \
+		-e TF_VAR_inventory_email_summary_enabled \
+		-e TF_VAR_inventory_performance_cai_dump_paths \
+		-e TF_VAR_kms_key \
+		-e TF_VAR_kms_keyring \
+		-e TF_VAR_org_id \
+		-e TF_VAR_project_id \
+		-e TF_VAR_sendgrid_api_key \
 		-v $(CURDIR):/workspace \
 		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
 		/bin/bash
 
 # Execute terraform init for the end-to-end tests
-.PHONY: e2etest_create
-e2etest_create:
-	kitchen create --test-base-path="integration_tests/tests"
+.PHONY: docker_test_e2e_create
+docker_test_e2e_create:
+	docker run --rm -it \
+		-e SERVICE_ACCOUNT_JSON \
+		-v $(CURDIR):/workspace \
+		--entrypoint /bin/bash \
+		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
+		-c 'source /usr/local/bin/task_helper_functions.sh && kitchen_do create'
 
 # Execute terraform apply for the end-to-end tests
-.PHONY: e2etest_converge
-e2etest_converge:
-	kitchen converge --test-base-path="integration_tests/tests"
+.PHONY: docker_test_e2e_converge
+docker_test_e2e_converge:
+	docker run --rm -it \
+		-e KITCHEN_TEST_BASE_PATH="/workspace/integration_tests/tests" \
+		-e SERVICE_ACCOUNT_JSON \
+		-e TF_VAR_billing_account \
+		-e TF_VAR_domain \
+		-e TF_VAR_forseti_email_recipient \
+		-e TF_VAR_forseti_email_sender \
+		-e TF_VAR_forseti_version \
+		-e TF_VAR_gsuite_admin_email \
+		-e TF_VAR_inventory_email_summary_enabled \
+		-e TF_VAR_inventory_performance_cai_dump_paths \
+		-e TF_VAR_kms_key \
+		-e TF_VAR_kms_keyring \
+		-e TF_VAR_org_id \
+		-e TF_VAR_project_id \
+		-e TF_VAR_sendgrid_api_key \
+		-v $(CURDIR):/workspace \
+		--entrypoint /bin/bash \
+		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
+		-c 'source /usr/local/bin/task_helper_functions.sh && kitchen_do converge'
 
 # Execute the end-to-end tests
-.PHONY: e2etest_verify
-e2etest_verify:
-	kitchen verify --test-base-path="integration_tests/tests"
+.PHONY: docker_test_e2e_verify
+docker_test_e2e_verify:
+	docker run --rm -it \
+		-e KITCHEN_TEST_BASE_PATH="/workspace/integration_tests/tests" \
+		-e SERVICE_ACCOUNT_JSON \
+		-v $(CURDIR):/workspace \
+		--entrypoint /bin/bash \
+		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
+		-c 'source /usr/local/bin/task_helper_functions.sh && kitchen_do verify'
 
 # Execute terraform destroy for the end-to-end tests
-.PHONY: e2etest_destroy
-e2etest_destroy:
-	kitchen destroy --test-base-path="integration_tests/tests"
+.PHONY: docker_test_e2e_destroy
+docker_test_e2e_destroy:
+	docker run --rm -it \
+		-e KITCHEN_TEST_BASE_PATH="/workspace/integration_tests/tests" \
+		-e SERVICE_ACCOUNT_JSON \
+		-v $(CURDIR):/workspace \
+		--entrypoint /bin/bash \
+		$(DEV_TOOLS_URL)/${DEV_TOOLS_IMAGE}:${DEV_TOOLS_TAG} \
+		-c 'source /usr/local/bin/task_helper_functions.sh && kitchen_do destroy'
