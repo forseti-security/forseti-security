@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 The Forseti Security Authors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 output "host" {
   description = "The external IP address of the bastion host."
-  value       = "${google_compute_instance.main.network_interface.0.access_config.0.nat_ip}"
+  value       = google_compute_instance.main.network_interface[0].access_config[0].nat_ip
 }
 
 output "port" {
@@ -26,11 +26,11 @@ output "port" {
 
 output "private_key" {
   description = "The contents of an SSH key file to use when connecting to the bastion host."
-  value       = "${tls_private_key.main.private_key_pem}"
+  value       = tls_private_key.main.private_key_pem
 }
 
 output "user" {
   description = "The user to use when connecting to the bastion host."
-  value       = "${local.user}"
+  value       = local.user
 }
 

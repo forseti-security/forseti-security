@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 The Forseti Security Authors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 variable "network" {
   description = "The name of the network in which the bastion host will be deployed."
-  type        = "string"
+  type        = string
 }
 
 variable "project_id" {
   description = "The ID of the project in which resources will be created."
-  type        = "string"
+  type        = string
 }
 
 /**
@@ -31,7 +31,7 @@ variable "project_id" {
  */
 variable "bastion_firewall_netblocks" {
   description = "Trusted Travis CI firewall network blocks for Forseti bastion host ssh access. "
-  type        = list
+  type        = list(string)
   default     = [
     "104.154.113.151/32",
     "104.154.120.187/32",
@@ -66,11 +66,11 @@ variable "bastion_firewall_netblocks" {
    
 variable "subnetwork" {
   description = "The name of the subnetwork in which the bastion host will be deployed."
-  type        = "string"
+  type        = string
 }
 
 variable "zone" {
   description = "The name of the zone in which the bastion host will be deployed."
-  type        = "string"
+  type        = string
 }
 
