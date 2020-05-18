@@ -138,6 +138,7 @@ data "template_file" "turbinia-server-startup-script" {
 }
 
 resource "google_compute_instance" "turbinia-server" {
+  count        = "${var.turbinia_server_count}"
   name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = "${var.turbinia_server_machine_type}"
   zone         = "${var.gcp_zone}"

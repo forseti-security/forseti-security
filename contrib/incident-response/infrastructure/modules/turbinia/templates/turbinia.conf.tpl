@@ -20,6 +20,8 @@ BUCKET_NAME         = '${bucket}'
 PSQ_TOPIC           = '${pubsub_topic_psq}'
 PUBSUB_TOPIC        = '${pubsub_topic}'
 GCS_OUTPUT_PATH     = 'gs://${bucket}/output'
+STACKDRIVER_LOGGING = False
+STACKDRIVER_TRACEBACK = False
 
 # Celery
 CELERY_BROKER       = None
@@ -30,3 +32,54 @@ KOMBU_DURABLE       = True
 REDIS_HOST          = None
 REDIS_PORT          = None
 REDIS_DB            = None
+
+# Docker
+DOCKER_ENABLED
+
+# Jobs and dependencies
+DISABLED_JOBS = []
+DEPENDENCIES = [{
+    'job': 'BinaryExtractorJob',
+    'programs': ['image_export.py'],
+    'docker_image': None
+}, {
+    'job': 'BulkExtractorJob',
+    'programs': ['bulk_extractor'],
+    'docker_image': None
+}, {
+    'job': 'GrepJob',
+    'programs': ['grep'],
+    'docker_image': None
+}, {
+    'job': 'HadoopAnalysisJob',
+    'programs': ['strings'],
+    'docker_image': None
+}, {
+    'job': 'HindsightJob',
+    'programs': ['hindsight.py'],
+    'docker_image': None
+}, {
+    'job': 'JenkinsAnalysisJob',
+    'programs': ['john'],
+    'docker_image': None
+}, {
+    'job': 'PhotorecJob',
+    'programs': ['photorec'],
+    'docker_image': None
+}{
+    'job': 'PlasoJob',
+    'programs': ['log2timeline.py'],
+    'docker_image': None
+}, {
+    'job': 'PsortJob',
+    'programs': ['psort.py'],
+    'docker_image': None
+}, {
+    'job': 'StringsJob',
+    'programs': ['strings'],
+    'docker_image': None
+}, {
+    'job': 'VolatilityJob',
+    'programs': ['vol.py'],
+    'docker_image': None
+}]
