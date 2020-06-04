@@ -214,7 +214,7 @@ resource "google_compute_instance" "turbinia-server" {
   }
 
   lifecycle {
-    ignore_changes = ["metadata_startup_script"]
+    ignore_changes = [metadata_startup_script]
   }
 
   # Provision the machine with a script.
@@ -260,7 +260,7 @@ resource "google_compute_instance" "turbinia-worker" {
   }
 
   lifecycle {
-    ignore_changes = ["metadata_startup_script"]
+    ignore_changes = [metadata_startup_script]
   }
 
   # Provision the machine with a script.
