@@ -171,7 +171,7 @@ resource "random_string" "timesketch-admin-password" {
 
 resource "google_compute_address" "timesketch-server-address" {
   name       = "timesketch-server-address"
-  depends_on = ["google_project_service.services"]
+  depends_on = [google_project_service.services]
 }
 
 resource "google_compute_firewall" "allow-external-timesketch-server" {
@@ -183,7 +183,7 @@ resource "google_compute_firewall" "allow-external-timesketch-server" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["timesketch-https-server"]
-  depends_on    = ["google_project_service.services"]
+  depends_on    = [google_project_service.services]
 }
 
 resource "google_compute_instance" "timesketch-server" {
