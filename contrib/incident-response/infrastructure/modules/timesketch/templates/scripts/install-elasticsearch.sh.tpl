@@ -59,7 +59,7 @@ cloud.gce.project_id: ${project}
 cloud.gce.zone: ${zone}
 discovery.zen.hosts_provider: gce
 network.host: _gce_
-cluster.initial_master_nodes: ${BOOTSTRAP_MASTER_NODE}
+cluster.initial_master_nodes: $${BOOTSTRAP_MASTER_NODE}
 EOF
 
 # More memory to Elasticsearch.
