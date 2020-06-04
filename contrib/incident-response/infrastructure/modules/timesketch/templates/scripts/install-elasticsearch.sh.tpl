@@ -48,6 +48,7 @@ echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install discovery-g
 
 # Export hostname so we can set the node name to it.
 echo "export HOSTNAME=\$(hostname -s)" >> /etc/default/elasticsearch
+echo "export BOOTSTRAP_MASTER_NODE=\$(hostname -s | sed s/'[0-9]$'/'0'/)" >> /etc/default/elasticsearch
 
 # Configure Elasticsearch.
 cat >> /etc/elasticsearch/elasticsearch.yml <<EOF
@@ -57,6 +58,7 @@ cloud.gce.project_id: ${project}
 cloud.gce.zone: ${zone}
 discovery.zen.hosts_provider: gce
 network.host: _gce_
+cluster.initial_master_nodes: $${BOOTSTRAP_MASTER_NODE}
 EOF
 
 # More memory to Elasticsearch.

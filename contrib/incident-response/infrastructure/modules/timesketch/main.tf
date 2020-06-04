@@ -26,16 +26,16 @@ locals {
 # Enable Google Cloud Resource Manager API for the project. This need to be
 # enabled before the Redis service.
 resource "google_project_service" "cloud-resource-service-api" {
-  project   = "${var.gcp_project}"
+  project   = var.gcp_project
   service   = "cloudresourcemanager.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "services" {
-  count              = "${length(local.services_list)}"
-  project            = "${var.gcp_project}"
-  service            = "${local.services_list[count.index]}"
-  depends_on         = ["google_project_service.cloud-resource-service-api"]
+  count              = length(local.services_list)
+  project            = var.gcp_project
+  service            = local.services_list[count.index]
+  depends_on         = [google_project_service.cloud-resource-service-api]
   disable_on_destroy = false
 }
 
@@ -43,21 +43,21 @@ resource "google_project_service" "services" {
 # Elasticsearch cluster #
 #-----------------------#
 data "template_file" "elasticsearch-startup-script" {
-  template = "${file("${path.module}/templates/scripts/install-elasticsearch.sh.tpl")}"
+  template = file("${path.module}/templates/scripts/install-elasticsearch.sh.tpl")
 
   vars = {
-    cluster_name  = "${var.elasticsearch_cluster_name}"
-    project       = "${var.gcp_project}"
-    zone          = "${var.gcp_zone}"
+    cluster_name  = var.elasticsearch_cluster_name
+    project       = var.gcp_project
+    zone          = var.gcp_zone
   }
 }
 
 resource "google_compute_instance" "elasticsearch" {
-  count        = "${var.elasticsearch_node_count}"
+  count        = var.elasticsearch_node_count
   name         = "elasticsearch-node-${var.infrastructure_id}-${count.index}"
-  machine_type = "${var.elasticsearch_machine_type}"
-  zone         = "${var.gcp_zone}"
-  depends_on   = ["google_project_service.services"]
+  machine_type = var.elasticsearch_machine_type
+  zone         = var.gcp_zone
+  depends_on   = [google_project_service.services]
 
 
   # Allow to stop/start the machine to enable change machine type.
@@ -66,8 +66,8 @@ resource "google_compute_instance" "elasticsearch" {
   # Use default Ubuntu image as operating system.
   boot_disk {
     initialize_params {
-      image = "${var.gcp_ubuntu_1804_image}"
-      size  = "${var.elasticsearch_disk_size_gb}"
+      image = var.gcp_ubuntu_1804_image
+      size  = var.elasticsearch_disk_size_gb
     }
   }
 
@@ -86,7 +86,7 @@ resource "google_compute_instance" "elasticsearch" {
   }
 
   # Provision the machine with a script.
-  metadata_startup_script = "${data.template_file.elasticsearch-startup-script.rendered}"
+  metadata_startup_script = data.template_file.elasticsearch-startup-script.rendered
 }
 
 #------------#
@@ -95,13 +95,13 @@ resource "google_compute_instance" "elasticsearch" {
 
 resource "google_sql_database" "timesketch-db" {
   name     = "timesketch-db"
-  instance = "${google_sql_database_instance.timesketch-db-instance.name}"
+  instance = google_sql_database_instance.timesketch-db-instance.name
 }
 
 resource "google_sql_user" "timesketch-db-user" {
   name     = "timesketch"
-  instance = "${google_sql_database_instance.timesketch-db-instance.name}"
-  password = "${random_string.timesketch-db-password.result}"
+  instance = google_sql_database_instance.timesketch-db-instance.name
+  password = random_string.timesketch-db-password.result
 }
 
 resource "random_string" "timesketch-db-password" {
@@ -111,9 +111,9 @@ resource "random_string" "timesketch-db-password" {
 
 resource "google_sql_database_instance" "timesketch-db-instance" {
   name              = "timesketch-db-instance-${var.infrastructure_id}"
-  region            = "${var.gcp_region}"
+  region            = var.gcp_region
   database_version  = "POSTGRES_9_6"
-  depends_on        = ["google_project_service.services"]
+  depends_on        = [google_project_service.services]
 
   settings {
     tier = "db-f1-micro"
@@ -123,12 +123,12 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
       require_ssl  = false
       authorized_networks {
         name  = "timesketch-server"
-        value = "${google_compute_address.timesketch-server-address.address}"
+        value = google_compute_address.timesketch-server-address.address
       }
     }
 
     location_preference {
-      zone = "${var.gcp_zone}"
+      zone = var.gcp_zone
     }
   }
 }
@@ -141,26 +141,26 @@ resource "google_sql_database_instance" "timesketch-db-instance" {
 resource "google_redis_instance" "redis" {
   name           = "redis-${var.infrastructure_id}"
   memory_size_gb = 1
-  depends_on     = ["google_project_service.services"]
+  depends_on     = [google_project_service.services]
 }
 
 #-------------------#
 # Timesketch server #
 #-------------------#
 data "template_file" "timesketch-server-startup-script" {
-  template = "${file("${path.module}/templates/scripts/install-timesketch.sh.tpl")}"
+  template = file("${path.module}/templates/scripts/install-timesketch.sh.tpl")
   vars = {
-    timesketch_admin_username = "${var.timesketch_admin_username}"
-    timesketch_admin_password = "${random_string.timesketch-admin-password.result}"
-    elasticsearch_node        = "${google_compute_instance.elasticsearch.*.name[0]}"
-    postgresql_host           = "${google_sql_database_instance.timesketch-db-instance.ip_address.0.ip_address}"
-    postgresql_db_name        = "${google_sql_database.timesketch-db.name}"
-    postgresql_user           = "${google_sql_user.timesketch-db-user.name}"
-    postgresql_password       = "${random_string.timesketch-db-password.result}"
-    redis_host                = "${google_redis_instance.redis.host}"
-    redis_port                = "${google_redis_instance.redis.port}"
-    gcp_project               = "${var.gcp_project}"
-    infrastructure_id         = "${var.infrastructure_id}"
+    timesketch_admin_username = var.timesketch_admin_username
+    timesketch_admin_password = random_string.timesketch-admin-password.result
+    elasticsearch_node        = google_compute_instance.elasticsearch.*.name[0]
+    postgresql_host           = google_sql_database_instance.timesketch-db-instance.ip_address.0.ip_address
+    postgresql_db_name        = google_sql_database.timesketch-db.name
+    postgresql_user           = google_sql_user.timesketch-db-user.name
+    postgresql_password       = random_string.timesketch-db-password.result
+    redis_host                = google_redis_instance.redis.host
+    redis_port                = google_redis_instance.redis.port
+    gcp_project               = var.gcp_project
+    infrastructure_id         = var.infrastructure_id
   }
 }
 
@@ -188,9 +188,9 @@ resource "google_compute_firewall" "allow-external-timesketch-server" {
 
 resource "google_compute_instance" "timesketch-server" {
   name         = "timesketch-server-${var.infrastructure_id}"
-  machine_type = "${var.timesketch_machine_type}"
-  zone         = "${var.gcp_zone}"
-  depends_on   = ["google_project_service.services"]
+  machine_type = var.timesketch_machine_type
+  zone         = var.gcp_zone
+  depends_on   = [google_project_service.services]
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
@@ -198,8 +198,8 @@ resource "google_compute_instance" "timesketch-server" {
   # Use default Ubuntu image as operating system.
   boot_disk {
     initialize_params {
-      image = "${var.gcp_ubuntu_1804_image}"
-      size  = "${var.timesketch_disk_size_gb}"
+      image = var.gcp_ubuntu_1804_image
+      size  = var.timesketch_disk_size_gb
     }
   }
 
@@ -208,7 +208,7 @@ resource "google_compute_instance" "timesketch-server" {
     network       = "default"
 
     access_config {
-      nat_ip = "${google_compute_address.timesketch-server-address.address}"
+      nat_ip = google_compute_address.timesketch-server-address.address
     }
   }
 
@@ -220,5 +220,5 @@ resource "google_compute_instance" "timesketch-server" {
   tags = ["timesketch-https-server", "https-server"]
 
   # Provision the machine with a script.
-  metadata_startup_script = "${data.template_file.timesketch-server-startup-script.rendered}"
+  metadata_startup_script = data.template_file.timesketch-server-startup-script.rendered
 }

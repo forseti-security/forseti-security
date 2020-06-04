@@ -21,10 +21,10 @@ output "timesketch-server-url" {
 
 output "timesketch-admin-username" {
   description = "Timesketch admin username"
-  value = "${var.timesketch_admin_username}"
+  value = var.timesketch_admin_username
 }
 
 output "timesketch-admin-password" {
   description = "Timesketch admin password"
-  value = "${random_string.timesketch-admin-password.result}"
+  value = random_string.timesketch-admin-password.result
 }
