@@ -50,6 +50,8 @@ apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 pip3 install google-cloud-pubsub google-cloud-storage
 
 # Install Timesketch from PyPi.
+wget https://raw.githubusercontent.com/google/timesketch/master/requirements.txt
+pip3 install -r requirements.txt
 pip3 install https://github.com/google/timesketch/archive/master.zip
 
 # Create default config.
