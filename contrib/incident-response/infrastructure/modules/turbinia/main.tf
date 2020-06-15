@@ -148,6 +148,7 @@ resource "google_cloudfunctions_function" "cloudfunctions" {
   trigger_http              = true
   source_archive_bucket     = google_storage_bucket.output-bucket.name
   source_archive_object     = google_storage_bucket_object.cloudfunction-archive.name
+  depends_on                = [data.archive_file.cloudfunction-archive, google_storage_bucket_object.cloudfunction-archive, google_project_service.services]
   timeouts {
     create = "60m"
     update = "60m"
@@ -189,9 +190,8 @@ resource "google_compute_instance" "turbinia-server" {
   name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = var.turbinia_server_machine_type
   zone         = var.gcp_zone
-  depends_on   = [google_project_service.services]
-
-
+  depends_on   = [google_project_service.services, google_pubsub_topic.pubsub-topic, google_pubsub_topic.pubsub-topic-psq]
+  
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
 
@@ -236,7 +236,7 @@ resource "google_compute_instance" "turbinia-worker" {
   name         = "turbinia-worker-${var.infrastructure_id}-${count.index}"
   machine_type = var.turbinia_worker_machine_type
   zone         = var.gcp_zone
-  depends_on   = [google_project_service.services]
+  depends_on   = [google_project_service.services, google_compute_instance.turbinia-server]
 
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
