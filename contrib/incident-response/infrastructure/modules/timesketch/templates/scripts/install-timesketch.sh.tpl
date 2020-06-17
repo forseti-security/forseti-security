@@ -47,7 +47,7 @@ apt-get update
 apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
 
 # Install Google Cloud dependencies
-pip3 install google-cloud-pubsub google-cloud-storage
+pip3 install grpcio==1.27.2 google-cloud-pubsub google-cloud-storage
 
 # Install Timesketch from PyPi.
 wget https://raw.githubusercontent.com/google/timesketch/master/requirements.txt

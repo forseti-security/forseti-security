@@ -28,11 +28,6 @@ variable "gcp_zone" {
   default     = "us-central1-f"
 }
 
-variable "appengine_location" {
-  description = "Location for AppEngine and Datastore"
-  default     = "us-central"
-}
-
 variable "gcp_ubuntu_1804_image" {
   description = "Ubuntu version 18.04 image"
   default     = "ubuntu-os-cloud/ubuntu-1804-lts"

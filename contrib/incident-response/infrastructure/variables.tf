@@ -37,7 +37,3 @@ variable "infrastructure_id" {
   description = "Unique indentifier for the deployment (default: random ID)"
   default     = ""
 }
-
-variable "access_token" {
-  description = "Oauth2 access token to use for authentication"
-}

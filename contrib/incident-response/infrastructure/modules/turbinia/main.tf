@@ -17,7 +17,6 @@
 locals {
   # API services to enable for the project
   services_list = [
-    "appengine.googleapis.com",
     "cloudfunctions.googleapis.com",
     "compute.googleapis.com",
     "datastore.googleapis.com",
@@ -95,12 +94,6 @@ resource "google_pubsub_subscription" "gcs-subscription" {
   }
 }
 
-# AppEngine is needed in order to activate datastore
-#resource "google_app_engine_application" "app" {
-#  project     = var.gcp_project
-#  location_id = var.appengine_location
-#}
-
 # Create datastore index
 data "local_file" "datastore-index-file" {
   filename = "${path.module}/data/index.yaml"
@@ -111,7 +104,6 @@ resource "null_resource" "cloud-datastore-create-index" {
   provisioner "local-exec" {
     command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
   }
-  #depends_on = [google_app_engine_application.app]
 }
 
 # Deploy cloud functions
@@ -149,7 +141,7 @@ resource "google_cloudfunctions_function" "cloudfunctions" {
   trigger_http              = true
   source_archive_bucket     = google_storage_bucket.output-bucket.name
   source_archive_object     = google_storage_bucket_object.cloudfunction-archive.name
-  depends_on                = [data.archive_file.cloudfunction-archive, google_storage_bucket_object.cloudfunction-archive, google_project_service.services]
+  depends_on                = [data.archive_file.cloudfunction-archive, google_storage_bucket_object.cloudfunction-archive, google_project_service.services, google_compute_instance.turbinia-worker]
   timeouts {
     create = "60m"
     update = "60m"
