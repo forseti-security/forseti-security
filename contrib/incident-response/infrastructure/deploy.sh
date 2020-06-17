@@ -34,6 +34,13 @@ export GOOGLE_APPLICATION_CREDENTIALS=~/key.json
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
+
+# Deploy cloud functions
+gcloud functions deploy gettasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+gcloud functions deploy closetask --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+gcloud functions deploy closetasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+
+# Run Terraform to setup the rest of the infrastructure
 terraform init
 terraform apply -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
 

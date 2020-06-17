@@ -17,7 +17,6 @@
 locals {
   # API services to enable for the project
   services_list = [
-    "cloudfunctions.googleapis.com",
     "compute.googleapis.com",
     "datastore.googleapis.com",
     "iam.googleapis.com",
@@ -25,11 +24,11 @@ locals {
     "storage-component.googleapis.com"
   ]
   # Cloud functions to deploy
-  cloudfunctions_list = [
-    "gettasks",
-    "closetasks",
-    "closetask"
-  ]
+  #cloudfunctions_list = [
+  #  "gettasks",
+  #  "closetasks",
+  #  "closetask"
+  #]
 }
 
 resource "google_project_service" "services" {
@@ -107,6 +106,7 @@ resource "null_resource" "cloud-datastore-create-index" {
 }
 
 # Deploy cloud functions
+/*
 data "archive_file" "cloudfunction-archive" {
   type        = "zip"
   output_path = "${path.module}/data/function.zip"
@@ -141,13 +141,13 @@ resource "google_cloudfunctions_function" "cloudfunctions" {
   trigger_http              = true
   source_archive_bucket     = google_storage_bucket.output-bucket.name
   source_archive_object     = google_storage_bucket_object.cloudfunction-archive.name
-  depends_on                = [data.archive_file.cloudfunction-archive, google_storage_bucket_object.cloudfunction-archive, google_project_service.services, google_compute_instance.turbinia-worker]
   timeouts {
     create = "60m"
     update = "60m"
     delete = "60m"
   }
 }
+*/
 
 # Template for systemd service file
 data "template_file" "turbinia-systemd" {
