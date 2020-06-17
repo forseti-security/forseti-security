@@ -23,12 +23,6 @@ locals {
     "pubsub.googleapis.com",
     "storage-component.googleapis.com"
   ]
-  # Cloud functions to deploy
-  #cloudfunctions_list = [
-  #  "gettasks",
-  #  "closetasks",
-  #  "closetask"
-  #]
 }
 
 resource "google_project_service" "services" {
@@ -104,50 +98,6 @@ resource "null_resource" "cloud-datastore-create-index" {
     command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
   }
 }
-
-# Deploy cloud functions
-/*
-data "archive_file" "cloudfunction-archive" {
-  type        = "zip"
-  output_path = "${path.module}/data/function.zip"
-
-  source {
-    content  = file("${path.module}/data/function.js")
-    filename = "function.js"
-  }
-
-  source {
-    content  = file("${path.module}/data/package.json")
-    filename = "package.json"
-  }
-}
-
-resource "google_storage_bucket_object" "cloudfunction-archive" {
-  name   = "function.zip"
-  bucket = google_storage_bucket.output-bucket.name
-  source = "${path.module}/data/function.zip"
-  depends_on = [data.archive_file.cloudfunction-archive]
-}
-
-resource "google_cloudfunctions_function" "cloudfunctions" {
-  count                     = length(local.cloudfunctions_list)
-  name                      = local.cloudfunctions_list[count.index]
-  entry_point               = local.cloudfunctions_list[count.index]
-  available_memory_mb       = 256
-  timeout                   = 60
-  runtime                   = "nodejs8"
-  project                   = var.gcp_project
-  region                    = var.gcp_region
-  trigger_http              = true
-  source_archive_bucket     = google_storage_bucket.output-bucket.name
-  source_archive_object     = google_storage_bucket_object.cloudfunction-archive.name
-  timeouts {
-    create = "60m"
-    update = "60m"
-    delete = "60m"
-  }
-}
-*/
 
 # Template for systemd service file
 data "template_file" "turbinia-systemd" {
