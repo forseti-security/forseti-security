@@ -12,7 +12,6 @@ SA_MEMBER="serviceAccount:$SA_NAME@$DEVSHELL_PROJECT_ID.iam.gserviceaccount.com"
 gcloud app create --region=us-central
 
 # Create service account
-echo "Create servide account for Terraform"
 gcloud iam service-accounts create "${SA_NAME}" --display-name "${SA_NAME}"
 
 # Grant IAM roles to the service account
@@ -26,19 +25,19 @@ gcloud projects add-iam-policy-binding $DEVSHELL_PROJECT_ID --member=$SA_MEMBER 
 gcloud projects add-iam-policy-binding $DEVSHELL_PROJECT_ID --member=$SA_MEMBER --role='roles/redis.admin'
 gcloud projects add-iam-policy-binding $DEVSHELL_PROJECT_ID --member=$SA_MEMBER --role='roles/cloudsql.admin'
 
-# Create and fetch the service account key
-echo "Fetch and store service account key"
-gcloud iam service-accounts keys create ~/key.json --iam-account "$SA_NAME@$DEVSHELL_PROJECT_ID.iam.gserviceaccount.com"
-export GOOGLE_APPLICATION_CREDENTIALS=~/key.json
-
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
 
 # Deploy cloud functions
-gcloud functions deploy gettasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
-gcloud functions deploy closetask --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
-gcloud functions deploy closetasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+gcloud -q services enable cloudfunctions.googleapis.com
+gcloud -q functions deploy gettasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+gcloud -q functions deploy closetask --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+gcloud -q functions deploy closetasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+
+# Create and fetch the service account key
+echo "Fetch and store service account key"
+gcloud iam service-accounts keys create ~/key.json --iam-account "$SA_NAME@$DEVSHELL_PROJECT_ID.iam.gserviceaccount.com"
+export GOOGLE_APPLICATION_CREDENTIALS=~/key.json
 
 # Run Terraform to setup the rest of the infrastructure
 terraform init
