@@ -30,9 +30,18 @@ cd $DIR
 
 # Deploy cloud functions
 gcloud -q services enable cloudfunctions.googleapis.com
-gcloud -q functions deploy gettasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
-gcloud -q functions deploy closetask --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
-gcloud -q functions deploy closetasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+
+# Deploying cloud functions is flaky. Retry until success.
+while true; do
+  num_functions="$(gcloud functions list | grep task | wc -l)"
+  if [[ "${num_functions}" -eq "3" ]]; then
+    echo "All Cloud Functions deployed"
+    break
+  fi
+  gcloud -q functions deploy gettasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+  gcloud -q functions deploy closetask --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+  gcloud -q functions deploy closetasks --source modules/turbinia/data/ --runtime nodejs8 --trigger-http --memory 256MB --timeout 60s
+done
 
 # Create and fetch the service account key
 echo "Fetch and store service account key"
