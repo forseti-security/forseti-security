@@ -17,6 +17,7 @@
 locals {
   # API services to enable for the project
   services_list = [
+    "appengine.googleapis.com",
     "cloudfunctions.googleapis.com",
     "compute.googleapis.com",
     "datastore.googleapis.com",
@@ -95,10 +96,10 @@ resource "google_pubsub_subscription" "gcs-subscription" {
 }
 
 # AppEngine is needed in order to activate datastore
-resource "google_app_engine_application" "app" {
-  project     = var.gcp_project
-  location_id = var.appengine_location
-}
+#resource "google_app_engine_application" "app" {
+#  project     = var.gcp_project
+#  location_id = var.appengine_location
+#}
 
 # Create datastore index
 data "local_file" "datastore-index-file" {
@@ -110,7 +111,7 @@ resource "null_resource" "cloud-datastore-create-index" {
   provisioner "local-exec" {
     command = "gcloud -q datastore indexes create ${data.local_file.datastore-index-file.filename} --project=${var.gcp_project}"
   }
-  depends_on = [google_app_engine_application.app]
+  #depends_on = [google_app_engine_application.app]
 }
 
 # Deploy cloud functions
@@ -191,7 +192,7 @@ resource "google_compute_instance" "turbinia-server" {
   machine_type = var.turbinia_server_machine_type
   zone         = var.gcp_zone
   depends_on   = [google_project_service.services, google_pubsub_topic.pubsub-topic, google_pubsub_topic.pubsub-topic-psq]
-  
+
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
 
