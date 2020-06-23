@@ -119,16 +119,11 @@ data "template_file" "turbinia-config-template" {
   depends_on  = [google_project_service.services]
 }
 
-# Turbinia server
-data "template_file" "turbinia-server-startup-script" {
-  template = file("${path.module}/templates/scripts/install-turbinia-server.sh.tpl")
-  vars = {
-    config = data.template_file.turbinia-config-template.rendered
-    systemd = data.template_file.turbinia-systemd.rendered
-    pip_source = var.turbinia_pip_source
-  }
+locals {
+  turbinia_config = base64encode(data.template_file.turbinia-config-template.rendered)
 }
 
+# # Turbinia server
 resource "google_compute_instance" "turbinia-server" {
   name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = var.turbinia_server_machine_type
@@ -138,39 +133,26 @@ resource "google_compute_instance" "turbinia-server" {
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
 
-  # Use default Ubuntu image as operating system.
   boot_disk {
+    auto_delete = true
     initialize_params {
-      image = var.gcp_ubuntu_1804_image
-      size  = var.turbinia_server_disk_size_gb
+      image = "${var.container_base_image}"
+      type = "pd-standard"
     }
   }
 
-  # Assign a generated public IP address. Needed for SSH access.
-  network_interface {
-    network       = "default"
-    access_config {}
+  metadata = {
+    gce-container-declaration = "spec:\n  containers:\n    - name: turbinia-server\n      image: '${var.turbinia_docker_image_server}'\n      securityContext:\n        privileged: false\n      env:\n        - name: TURBINIA_CONF\n          value: \"${local.turbinia_config}\"\n      stdin: true\n      tty: true\n  restartPolicy: Always\n\n"
+    google-logging-enabled = "true"
   }
 
   service_account {
     scopes = ["compute-ro", "storage-rw", "pubsub", "datastore"]
   }
 
-  lifecycle {
-    ignore_changes = [metadata_startup_script]
-  }
-
-  # Provision the machine with a script.
-  metadata_startup_script = data.template_file.turbinia-server-startup-script.rendered
-}
-
-# Turbinia worker
-data "template_file" "turbinia-worker-startup-script" {
-  template = file("${path.module}/templates/scripts/install-turbinia-worker.sh.tpl")
-  vars = {
-    config = data.template_file.turbinia-config-template.rendered
-    systemd = data.template_file.turbinia-systemd.rendered
-    pip_source = var.turbinia_pip_source
+  network_interface {
+    network = "default"
+    access_config {}
   }
 }
 
@@ -184,28 +166,25 @@ resource "google_compute_instance" "turbinia-worker" {
   # Allow to stop/start the machine to enable change machine type.
   allow_stopping_for_update = true
 
-  # Use default Ubuntu image as operating system.
   boot_disk {
+    auto_delete = true
     initialize_params {
-      image = var.gcp_ubuntu_1804_image
-      size  = var.turbinia_worker_disk_size_gb
+      image = "${var.container_base_image}"
+      type = "pd-standard"
     }
   }
 
-  # Assign a generated public IP address. Needed for SSH access.
-  network_interface {
-    network       = "default"
-    access_config {}
+  metadata = {
+    gce-container-declaration = "spec:\n  containers:\n    - name: turbinia-worker\n      image: '${var.turbinia_docker_image_worker}'\n      volumeMounts:\n        - name: host-path-0\n          mountPath: /dev/disk/\n          readOnly: false\n      securityContext:\n        privileged: true\n      env:\n        - name: TURBINIA_CONF\n          value: \"${local.turbinia_config}\"\n      stdin: true\n      tty: true\n  restartPolicy: Always\n  volumes:\n    - name: host-path-0\n      hostPath:\n        path: /dev/disk\n\n"
+    google-logging-enabled = "true"
   }
 
   service_account {
     scopes = ["compute-rw", "storage-rw", "pubsub", "datastore", "cloud-platform"]
   }
 
-  lifecycle {
-    ignore_changes = [metadata_startup_script]
+  network_interface {
+    network = "default"
+    access_config {}
   }
-
-  # Provision the machine with a script.
-  metadata_startup_script = data.template_file.turbinia-worker-startup-script.rendered
 }

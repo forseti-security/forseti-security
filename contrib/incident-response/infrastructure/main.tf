@@ -53,7 +53,6 @@ module "turbinia" {
   gcp_project                 = var.gcp_project
   gcp_region                  = var.gcp_region
   gcp_zone                    = var.gcp_zone
-  gcp_ubuntu_1804_image       = var.gcp_ubuntu_1804_image
   infrastructure_id           = coalesce(var.infrastructure_id, random_id.infrastructure-random-id.hex)
 }
 

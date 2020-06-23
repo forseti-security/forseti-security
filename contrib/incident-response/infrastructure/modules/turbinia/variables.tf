@@ -28,13 +28,23 @@ variable "gcp_zone" {
   default     = "us-central1-f"
 }
 
-variable "gcp_ubuntu_1804_image" {
-  description = "Ubuntu version 18.04 image"
-  default     = "ubuntu-os-cloud/ubuntu-1804-lts"
-}
-
 variable "infrastructure_id" {
   description = "Unique indentifier for the deployment"
+}
+
+variable "container_base_image" {
+  description = "Base GCP container image"
+  default = "cos-cloud/cos-stable"
+}
+
+variable "turbinia_docker_image_worker" {
+  description = "Turbinia worker docker image"
+  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-worker:dev"
+}
+
+variable "turbinia_docker_image_server" {
+  description = "Turbinia server docker image"
+  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-server:dev"
 }
 
 variable "turbinia_server_machine_type" {
