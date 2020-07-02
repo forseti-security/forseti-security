@@ -136,7 +136,7 @@ resource "google_compute_instance" "turbinia-server" {
   boot_disk {
     auto_delete = true
     initialize_params {
-      image = "${var.container_base_image}"
+      image = var.container_base_image
       type = "pd-standard"
     }
   }
@@ -169,7 +169,7 @@ resource "google_compute_instance" "turbinia-worker" {
   boot_disk {
     auto_delete = true
     initialize_params {
-      image = "${var.container_base_image}"
+      image = var.container_base_image
       type = "pd-standard"
     }
   }

@@ -37,14 +37,14 @@ variable "container_base_image" {
   default = "cos-cloud/cos-stable"
 }
 
-variable "turbinia_docker_image_worker" {
-  description = "Turbinia worker docker image"
-  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-worker:dev"
-}
-
 variable "turbinia_docker_image_server" {
   description = "Turbinia server docker image"
-  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-server:dev"
+  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-server:latest"
+}
+
+variable "turbinia_docker_image_worker" {
+  description = "Turbinia worker docker image"
+  default = "gcr.io/oss-forensics-registry/turbinia/turbinia-worker:latest"
 }
 
 variable "turbinia_server_machine_type" {
