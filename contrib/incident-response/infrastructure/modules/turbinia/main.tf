@@ -156,7 +156,6 @@ resource "google_compute_instance" "turbinia-server" {
   }
 }
 
-/*
 resource "google_compute_instance" "turbinia-worker" {
   count        = var.turbinia_worker_count
   name         = "turbinia-worker-${var.infrastructure_id}-${count.index}"
@@ -189,8 +188,9 @@ resource "google_compute_instance" "turbinia-worker" {
     access_config {}
   }
 }
-*/
 
+
+/*
 # Turbinia worker
 data "template_file" "turbinia-worker-startup-script" {
   template = file("${path.module}/templates/scripts/install-turbinia-worker.sh.tpl")
@@ -236,3 +236,4 @@ resource "google_compute_instance" "turbinia-worker" {
   # Provision the machine with a script.
   metadata_startup_script = data.template_file.turbinia-worker-startup-script.rendered
 }
+*/
