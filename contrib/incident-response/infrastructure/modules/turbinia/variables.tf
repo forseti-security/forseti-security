@@ -32,11 +32,6 @@ variable "infrastructure_id" {
   description = "Unique indentifier for the deployment"
 }
 
-variable "gcp_ubuntu_1804_image" {
-  description = "Ubuntu version 18.04 image"
-  default     = "ubuntu-os-cloud/ubuntu-1804-lts"
-}
-
 variable "container_base_image" {
   description = "Base GCP container image"
   default = "cos-cloud/cos-stable"
