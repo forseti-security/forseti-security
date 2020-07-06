@@ -1,0 +1,42 @@
+# Forseti-Security repo probot-stale configuration
+
+# Issues or Pull Requests with these labels will never be considered stale. Set to `[]` to disable
+exemptLabels:
+  - security
+
+# Set to true to ignore issues in a project (defaults to false)
+exemptProjects: false
+
+# Set to true to ignore issues in a milestone (defaults to false)
+exemptMilestones: false
+
+# Set to true to ignore issues with an assignee (defaults to false)
+exemptAssignees: true
+
+# Label to use when marking as stale
+staleLabel: stale
+
+# Limit the number of actions per hour, from 1-30. Default is 30
+limitPerRun: 1
+
+# Configuration settings specific to pull requests
+# Details: pull requests older than 14 days will be marked stale. After 21 days of no activity the issue is closed.
+# Stale notice message will be posted to the pull request at 14 days.
+pulls:
+    daysUntilStale: 14
+    daysUntilClose: 7
+    markComment: >
+      This pull request has been automatically marked as stale because it has not had
+      recent activity. It will be closed in 7 days if no further activity occurs. Thank you
+      for your contributions.
+
+# Configuration settings specific to issues
+# Details: Issues older than 45 days will be marked stale. After 60 days of no activity the issue is closed.
+# Stale notice message will be posted to the issue at 45 days.
+issues:
+    daysUntilStale: 45
+    daysUntilClose: 15
+    markComment: >
+      This issue has been automatically marked as stale because it has not had
+      recent activity. It will be closed in 15 days if no further activity occurs. Thank you
+      for your contributions.

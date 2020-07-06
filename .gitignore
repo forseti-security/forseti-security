@@ -53,3 +53,14 @@ htmlcov/
 
 # VSCode Metadata
 .vscode/
+
+# Kitchen and Terraform files
+.terraform/
+.kitchen/
+terraform.tfvars
+**/tls_private_key
+terraform.tfstate.d/
+
+# SSH key
+sshkey
+

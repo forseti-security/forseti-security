@@ -413,7 +413,7 @@ RULES10 = {
 }
 
 # Requiring projects to have owners from a specific domain, for context see
-# also https://github.com/GoogleCloudPlatform/forseti-security/issues/799
+# also https://github.com/forseti-security/forseti-security/issues/799
 RULES11 = {
     'rules': [
         {

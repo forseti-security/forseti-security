@@ -1,0 +1,56 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This docker-compose configuration will run the Cloud SQL Proxy and Forseti
+# server docker images. In order to interact with the Forseti server, install
+# the Forseti python package locally and use the CLI. Example commands:
+#   forseti config endpoint localhost:50051
+#   forseti inventory list
+
+# The following environment variables are required:
+#   GOOGLE_APPLICATION_CREDENTIALS: Local path to the service account
+#     credentials.json file that has access to the Cloud SQL database.
+#   FORSETI_SERVER_CONFIG_PATH: Local path to the forseti server configuration
+#     yaml file.
+#   FORSETI_SQL_CONNECTION: Connection string for the Forseti Cloud SQL database.
+#     Example: mysql+pymysql://{SQL_USER}:{SQL_PASSWORD}@cloudsql-proxy:5432/{SQL_DB_NAME}
+#   FORSETI_SQL_INSTANCE: Forseti Cloud SQL instance name.
+#     Example: {PROJECT_ID}:{REGION}:{INSTANCE_NAME}
+
+version: '3.3'
+services:
+  cloudsql-proxy:
+      container_name: cloudsql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:1.16
+      command: /cloud_sql_proxy --dir=/cloudsql -instances=${FORSETI_SQL_INSTANCE}=tcp:0.0.0.0:5432 -credential_file=/secrets/cloudsql/credentials.json
+      ports:
+        - 5432:5432
+      volumes:
+        - ${GOOGLE_APPLICATION_CREDENTIALS}:/secrets/cloudsql/credentials.json
+      restart: always
+  forseti-server:
+    container_name: forseti-server
+    build: .
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/forseti/credentials.json
+      - LOG_LEVEL=debug
+      - PORT=50051
+      - SERVICES=explain inventory model notifier scanner
+      - SQL_DB_CONNECTION_STRING=${FORSETI_SQL_CONNECTION}
+    ports:
+      - 50051:50051
+    restart: always
+    volumes:
+      - ${FORSETI_SERVER_CONFIG_PATH}:/forseti-security/forseti_conf_server.yaml
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/secrets/forseti/credentials.json

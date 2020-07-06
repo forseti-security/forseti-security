@@ -233,6 +233,7 @@ class Rule(object):
                 resource_name=cloudsql_acl.instance_name,
                 resource_type=resource_mod.ResourceType.CLOUD_SQL_INSTANCE,
                 resource_id=cloudsql_acl.instance_name,
+                project_id=cloudsql_acl.project_id,
                 full_name=cloudsql_acl.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
@@ -251,9 +252,10 @@ class Rule(object):
     # instance_name: string
     # authorized_networks: string
     # ssl_enabled: string
+    # project_id: string
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
                                 'instance_name', 'authorized_networks',
                                 'require_ssl', 'resource_data',
-                                'resource_name'])
+                                'resource_name', 'project_id'])

@@ -25,7 +25,8 @@ from future import standard_library
 from sqlalchemy.exc import SQLAlchemyError
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.inventory.storage import Storage as Inventory
+from google.cloud.forseti.services.inventory.storage import Categories
+from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
@@ -64,7 +65,10 @@ GCP_TYPE_LIST = [
     'compute_targetvpngateway',
     'compute_urlmap',
     'compute_vpntunnel',
+    'crm_access_policy',
+    'crm_access_level',
     'crm_org_policy',
+    'crm_service_perimeter',
     'dataproc_cluster',
     'dataset',
     'disk',
@@ -229,6 +233,15 @@ class InventoryImporter(object):
                 'Unexpected SQLAlchemyError occurred during model creation.')
             self.session.rollback()
 
+    def _commit_session(self):
+        """Commit the session with rollback on errors."""
+        try:
+            self.session.commit()
+        except SQLAlchemyError:
+            LOGGER.exception(
+                'Unexpected SQLAlchemyError occurred during model creation.')
+            self.session.rollback()
+
     # pylint: disable=too-many-statements
     def run(self):
         """Runs the import.
@@ -242,97 +255,126 @@ class InventoryImporter(object):
         try:
             self.session.autocommit = False
             self.session.autoflush = True
-            with Inventory(self.readonly_session, self.inventory_index_id,
-                           True) as inventory:
-                root = inventory.get_root()
-                description = {
-                    'source': 'inventory',
-                    'source_info': {
-                        'inventory_index_id': inventory.inventory_index.id},
-                    'source_root': self._type_name(root),
-                    'pristine': True,
-                    'gsuite_enabled': inventory.type_exists(
-                        ['gsuite_group', 'gsuite_user'])
-                }
-                LOGGER.debug('Model description: %s', description)
-                self.model.add_description(json.dumps(description,
-                                                      sort_keys=True))
+            root = DataAccess.get_root(self.readonly_session,
+                                       self.inventory_index_id)
+            inventory_index = DataAccess.get(self.readonly_session,
+                                             self.inventory_index_id)
 
-                if root.get_resource_type() in ['organization']:
-                    LOGGER.debug('Root resource is organization: %s', root)
-                else:
-                    LOGGER.debug('Root resource is not organization: %s.', root)
+            description = {
+                'source': 'inventory',
+                'source_info': {
+                    'inventory_index_id': self.inventory_index_id},
+                'source_root': self._type_name(root),
+                'pristine': True,
+                'gsuite_enabled': DataAccess.type_exists(
+                    self.readonly_session,
+                    self.inventory_index_id,
+                    ['gsuite_group', 'gsuite_user'])
+            }
+            LOGGER.debug('Model description: %s', description)
+            self.model.add_description(json.dumps(description,
+                                                  sort_keys=True))
 
-                item_counter = 0
-                LOGGER.debug('Start storing resources into models.')
-                for resource in inventory.iter(GCP_TYPE_LIST):
-                    item_counter += 1
-                    self._store_resource(resource)
-                    if not item_counter % 1000:
-                        # Flush database every 1000 resources
-                        LOGGER.debug('Flushing model write session: %s',
-                                     item_counter)
-                        self._flush_session()
+            if root.get_resource_type() in ['organization']:
+                LOGGER.debug('Root resource is organization: %s', root)
+            else:
+                LOGGER.debug('Root resource is not organization: %s.', root)
 
-                if item_counter % 1000:
-                    # Additional rows added since last flush.
+            item_counter = 0
+            LOGGER.debug('Start storing resources into models.')
+            for resource in DataAccess.iter(self.readonly_session,
+                                            self.inventory_index_id,
+                                            GCP_TYPE_LIST):
+                item_counter += 1
+                self._store_resource(resource)
+                if not item_counter % 1000:
+                    # Flush database every 1000 resources
+                    LOGGER.debug('Flushing model write session: %s',
+                                 item_counter)
                     self._flush_session()
-                LOGGER.debug('Finished storing resources into models.')
+                if not item_counter % 100000:
+                    # Commit every 100k resources while iterating
+                    # through all the resources.
+                    LOGGER.debug('Commiting model write session: %s',
+                                 item_counter)
+                    self._commit_session()
+            self._commit_session()
+            LOGGER.debug('Finished storing resources into models.')
 
-                item_counter += self.model_action_wrapper(
-                    inventory.iter(['role']),
-                    self._convert_role,
-                    post_action=self._convert_role_post
-                )
+            item_counter += self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                ['role']),
+                self._convert_role
+            )
 
-                item_counter += self.model_action_wrapper(
-                    inventory.iter(GCP_TYPE_LIST,
-                                   fetch_dataset_policy=True),
-                    self._convert_dataset_policy
-                )
+            item_counter += self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.dataset_policy),
+                self._convert_dataset_policy
+            )
 
-                item_counter += self.model_action_wrapper(
-                    inventory.iter(GCP_TYPE_LIST,
-                                   fetch_gcs_policy=True),
-                    self._convert_gcs_policy
-                )
+            item_counter += self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.gcs_policy),
+                self._convert_gcs_policy
+            )
 
-                item_counter += self.model_action_wrapper(
-                    inventory.iter(GCP_TYPE_LIST,
-                                   fetch_service_config=True),
-                    self._convert_service_config
-                )
+            item_counter += self.model_action_wrapper(
+                DataAccess.iter(
+                    self.readonly_session,
+                    self.inventory_index_id,
+                    GCP_TYPE_LIST,
+                    fetch_category=Categories.kubernetes_service_config),
+                self._convert_service_config
+            )
 
-                self.model_action_wrapper(
-                    inventory.iter(GSUITE_TYPE_LIST),
-                    self._store_gsuite_principal
-                )
+            self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GSUITE_TYPE_LIST),
+                self._store_gsuite_principal
+            )
 
-                self.model_action_wrapper(
-                    inventory.iter(GCP_TYPE_LIST, fetch_enabled_apis=True),
-                    self._convert_enabled_apis
-                )
+            self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.enabled_apis),
+                self._convert_enabled_apis
+            )
 
-                self.model_action_wrapper(
-                    inventory.iter(MEMBER_TYPE_LIST, with_parent=True),
-                    self._store_gsuite_membership,
-                    post_action=self._store_gsuite_membership_post
-                )
+            self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                MEMBER_TYPE_LIST,
+                                with_parent=True),
+                self._store_gsuite_membership,
+                post_action=self._store_gsuite_membership_post
+            )
 
-                self.model_action_wrapper(
-                    inventory.iter(GROUPS_SETTINGS_LIST),
-                    self._store_groups_settings
-                )
+            self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GROUPS_SETTINGS_LIST),
+                self._store_groups_settings
+            )
 
-                self.dao.denorm_group_in_group(self.session)
+            self.dao.denorm_group_in_group(self.session)
 
-                self.model_action_wrapper(
-                    inventory.iter(GCP_TYPE_LIST,
-                                   fetch_iam_policy=True),
-                    self._store_iam_policy
-                )
+            self.model_action_wrapper(
+                DataAccess.iter(self.readonly_session,
+                                self.inventory_index_id,
+                                GCP_TYPE_LIST,
+                                fetch_category=Categories.iam_policy),
+                self._store_iam_policy
+            )
 
-                self.dao.expand_special_members(self.session)
+            self.dao.expand_special_members(self.session)
 
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
@@ -344,8 +386,9 @@ class InventoryImporter(object):
             self.model.set_error(message)
         else:
             LOGGER.debug('Set model status.')
-            self.model.add_warning(
-                inventory.inventory_index.inventory_index_warnings)
+            for row in inventory_index.warning_messages:
+                self.model.add_warning('{}: {}'.format(row.resource_full_name,
+                                                       row.warning_message))
             self.model.set_done(item_counter)
         finally:
             LOGGER.debug('Finished running importer.')
@@ -358,7 +401,8 @@ class InventoryImporter(object):
                              inventory_iterable,
                              action,
                              post_action=None,
-                             flush_count=1000):
+                             flush_count=1000,
+                             commit_count=50000):
         """Model action wrapper. This is used to reduce code duplication.
 
         Args:
@@ -368,6 +412,7 @@ class InventoryImporter(object):
             post_action (func): Action taken after iterating the
                 inventory list.
             flush_count (int): Flush every flush_count times.
+            commit_count (int): Commit every commit_count times.
 
         Returns:
             int: Number of item iterated.
@@ -376,6 +421,7 @@ class InventoryImporter(object):
 
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
+            LOGGER.debug('Processing inventory data: %s', inventory_data)
             if isinstance(inventory_data, tuple):
                 action(*inventory_data)
             else:
@@ -385,14 +431,21 @@ class InventoryImporter(object):
                 # Flush database every flush_count resources
                 LOGGER.debug('Flushing write session: %s.', idx)
                 self._flush_session()
+            if not idx % commit_count:
+                LOGGER.debug('Committing write session: %s', idx)
+                self._commit_session()
 
         if idx % flush_count:
             # Additional rows added since last flush.
             self._flush_session()
 
         if post_action:
+            LOGGER.debug('Running post action: %s', post_action)
             post_action()
 
+        LOGGER.debug('Committing model action: %s, with resource count: %s',
+                     action, idx)
+        self._commit_session()
         return idx
 
     def _store_gsuite_principal(self, principal):
@@ -591,7 +644,10 @@ class InventoryImporter(object):
             'compute_targetvpngateway': self._convert_computeengine_resource,
             'compute_urlmap': self._convert_computeengine_resource,
             'compute_vpntunnel': self._convert_computeengine_resource,
+            'crm_access_policy': self._convert_crm_access_policy,
+            'crm_access_level': self._convert_crm_access_level,
             'crm_org_policy': self._convert_crm_org_policy,
+            'crm_service_perimeter': self._convert_crm_service_perimeter,
             'dataproc_cluster': self._convert_dataproc_cluster,
             'dataset': self._convert_dataset,
             'disk': self._convert_computeengine_resource,
@@ -640,7 +696,7 @@ class InventoryImporter(object):
             self.model.add_warning('No handler for type "{}"'.format(res_type))
 
     def _convert_resource(self, resource, cached=False, display_key='name',
-                          email_key='email'):
+                          email_key='email', display_name=''):
         """Convert resource to a database object.
 
         Args:
@@ -651,6 +707,7 @@ class InventoryImporter(object):
                 get the display name for the resource.
             email_key (str): The key in the resource dictionary to lookup to get
                 the email associated with the resource.
+            display_name (str): Display name of the resource.
         """
         data = resource.get_resource_data()
         if self._is_root(resource):
@@ -666,14 +723,56 @@ class InventoryImporter(object):
             type_name=type_name,
             name=resource.get_resource_id(),
             type=resource.get_resource_type(),
-            display_name=data.get(display_key, ''),
-            email=data.get(email_key, ''),
+            # display_key key is not present for org policy and display_name is
+            # needed. So it is specifically passed in.
+            display_name=display_name or data.get(display_key, ''),
+            # email_key key is not always present and it can be empty in
+            # certain cases such as for org policy.
+            email=data.get(email_key, '') if isinstance(data, dict) else '',
             data=resource.get_resource_data_raw(),
             parent=parent)
 
         self.session.add(row)
         if cached:
             self._add_to_cache(row, resource.id)
+
+    def _convert_crm_access_level(self, crm_access_level):
+        """Convert an access level to a database object.
+
+        Args:
+            crm_access_level (object): access level to store.
+        """
+        self._convert_resource(crm_access_level, cached=False,
+                               display_key='name')
+
+    def _convert_crm_access_policy(self, crm_access_policy):
+        """Convert an access policy to a database object.
+
+        Args:
+            crm_access_policy (object): access policy to store.
+        """
+        self._convert_resource(crm_access_policy, cached=True,
+                               display_key='name')
+
+    def _convert_crm_org_policy(self, crm_org_policy):
+        """Convert an org policy to a database object.
+
+        Args:
+            crm_org_policy (object): org policy to store.
+        """
+        self._convert_resource(crm_org_policy, cached=False,
+                               display_key='name',
+                               display_name=crm_org_policy.get_resource_id())
+
+    def _convert_crm_service_perimeter(self, crm_service_perimeter):
+        """Convert a service perimeter to a database object.
+
+        Args:
+            crm_service_perimeter (dict): A Service Perimeter to store.
+        """
+        self._convert_resource(crm_service_perimeter,
+                               cached=False,
+                               display_key='name')
 
     def _convert_billing_account(self, billing_account):
         """Convert a billing account to a database object.
@@ -715,15 +814,6 @@ class InventoryImporter(object):
             resource (dict): An appengine resource to store.
         """
         self._convert_resource(resource, cached=False)
-
-    def _convert_crm_org_policy(self, org_policy):
-        """Convert an org policy to a database object.
-
-        Args:
-            org_policy (object): org policy to store.
-        """
-        self._convert_resource(org_policy, cached=False,
-                               display_key='constraint')
 
     def _convert_dataproc_cluster(self, cluster):
         """Convert a dataproc cluster to a database object.
@@ -1079,7 +1169,16 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
         data = role.get_resource_data()
-        is_custom = not data['name'].startswith('roles/')
+        role_name = data.get('name')
+
+        LOGGER.debug('Converting role: %s', role_name)
+        LOGGER.debug('role data: %s', data)
+
+        if role_name in self.role_cache:
+            LOGGER.warning('Duplicate role_name: %s', role_name)
+            return
+
+        is_custom = not role_name.startswith('roles/')
         db_permissions = []
         if 'includedPermissions' not in data:
             self.model.add_warning(
@@ -1091,18 +1190,19 @@ class InventoryImporter(object):
                     permission = self.dao.TBL_PERMISSION(
                         name=perm_name)
                     self.permission_cache[perm_name] = permission
+                    self.session.add(permission)
                 db_permissions.append(self.permission_cache[perm_name])
 
-        if not self._is_role_unique(data['name']):
-            return
         dbrole = self.dao.TBL_ROLE(
-            name=data['name'],
+            name=role_name,
             title=data.get('title', ''),
             stage=data.get('stage', ''),
             description=data.get('description', ''),
             custom=is_custom,
             permissions=db_permissions)
         self.role_cache[data['name']] = dbrole
+        self.session.add(dbrole)
+        LOGGER.debug('Adding role %s to session', role_name)
 
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
@@ -1119,6 +1219,8 @@ class InventoryImporter(object):
 
             self._add_to_cache(role_resource, role.id)
             self.session.add(role_resource)
+            LOGGER.debug('Adding role resource :%s to session', role_name)
+            LOGGER.debug('Role resource :%s', role_resource)
 
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
@@ -1196,26 +1298,6 @@ class InventoryImporter(object):
         """
         parent_id = resource.get_parent_id()
         return self.resource_cache[parent_id]
-
-    def _is_role_unique(self, role_name):
-        """Check to see if the session contains Role with
-        primary key = role_name.
-
-        Args:
-            role_name (str): The role name (Primary key of the role table).
-
-        Returns:
-            bool: Whether or not session contains Role with
-                primary key = role_name.
-        """
-
-        # one_or_none returns None if the query selects no rows.
-        exists = role_name in self.role_cache
-
-        if exists:
-            LOGGER.warning('Duplicate role_name: %s', role_name)
-            return False
-        return True
 
     def _is_root(self, resource):
         """Checks if the resource is an inventory root. Result is cached.

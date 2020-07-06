@@ -24,11 +24,11 @@ from urllib.parse import urljoin
 from future import standard_library
 
 import google_auth_httplib2
-import googleapiclient
+import pkg_resources
+import uritemplate
 from googleapiclient import discovery
 from ratelimiter import RateLimiter
 from retrying import retry
-import uritemplate
 
 import google.auth
 from google.auth.credentials import with_scopes_if_required
@@ -54,7 +54,9 @@ LOGGER = logger.get_logger(__name__)
 NUM_HTTP_RETRIES = 5
 
 # Support older versions of apiclient without cache support
-SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
+SUPPORT_DISCOVERY_CACHE = (
+    pkg_resources.get_distribution(
+        'google-api-python-client').version >= '1.4.2')
 
 # Used by the record and replay decorator to store requests across all repos.
 REQUEST_RECORDER = dict()

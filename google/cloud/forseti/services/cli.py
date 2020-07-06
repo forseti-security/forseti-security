@@ -51,6 +51,24 @@ class DefaultParser(ArgumentParser):
         sys.exit(2)
 
 
+def define_version_parser(parent):
+    """Define the inventory service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('version', help='version service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action'
+    )
+
+    _ = action_subparser.add_parser(
+        'show',
+        help='Shows the Forseti Security version')
+
+
 def define_inventory_parser(parent):
     """Define the inventory service parser.
 
@@ -231,6 +249,11 @@ def define_server_parser(parent):
               'the default path will be used. Note: Please specify '
               'a path that the server has access to (e.g. a path in '
               'the server vm or a gcs path starts with gs://).')
+    )
+
+    action_subparser.add_parser(
+        'run',
+        help='Run the Forseti process, end-to-end.'
     )
 
 
@@ -569,6 +592,10 @@ def define_parent_parser(parser_cls, config_env):
         '--out-format',
         default=config_env['format'],
         choices=['json'])
+    parent_parser.add_argument(
+        '--version',
+        action='store_true',
+        help='Forseti Security server version')
     return parent_parser
 
 
@@ -588,6 +615,7 @@ def create_parser(parser_cls, config_env):
         title='service',
         dest='service')
     define_explainer_parser(service_subparsers)
+    define_version_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
@@ -707,6 +735,8 @@ def run_server(client, config, output, _):
             config (object): argparser namespace to use.
             output (Output): output writer to use.
             _ (object): Configuration environment.
+        Raises:
+            AttributeError: If action is not 'run' and the subaction is missing.
     """
 
     client = client.server_config
@@ -728,6 +758,11 @@ def run_server(client, config, output, _):
         """Get the configuration of the server."""
         output.write(client.get_server_configuration())
 
+    def do_server_run():
+        """Run the Forseti server, end-to-end"""
+        message = client.server_run()
+        output.write(message)
+
     actions = {
         'log_level': {
             'get': do_get_log_level,
@@ -736,10 +771,16 @@ def run_server(client, config, output, _):
         'configuration': {
             'get': do_get_configuration,
             'reload': do_reload_configuration
-        }
+        },
+        'run': do_server_run
     }
 
-    actions[config.action][config.subaction]()
+    try:
+        actions[config.action][config.subaction]()
+    except AttributeError:
+        if config.action != 'run':
+            raise AttributeError
+        actions[config.action]()
 
 
 def run_notifier(client, config, output, _):
@@ -873,6 +914,18 @@ def run_inventory(client, config, output, _):
     actions[config.action]()
 
 
+def run_version():
+    """Run version command."""
+
+    def do_show_version():
+        """List the app version."""
+
+        from google.cloud.forseti import __version__ as forseti_version
+        print(forseti_version)
+
+    do_show_version()
+
+
 def run_explainer(client, config, output, _):
     """Run explain commands.
         Args:
@@ -992,6 +1045,7 @@ OUTPUTS = {
 
 SERVICES = {
     'explainer': run_explainer,
+    'version': run_version,
     'inventory': run_inventory,
     'config': run_config,
     'model': run_model,
@@ -1172,7 +1226,10 @@ def main(args=None,
         services = SERVICES
     output = outputs[config.out_format]()
     try:
-        services[config.service](client, config, output, config_env)
+        if config.version is True:
+            run_version()
+        else:
+            services[config.service](client, config, output, config_env)
     except (KeyError, ValueError) as e:
         parser.error(str(e))
     except grpc.RpcError as e:
@@ -1184,7 +1241,10 @@ def main(args=None,
                   'If you are accessing from a client VM, make sure the '
                   '`server_ip` field inside the client configuration file in '
                   'the Forseti client GCS bucket contains the right IP '
-                  'address.\n')
+                  'address.\n'
+                  'If the server was just deployed, you may need to wait a few '
+                  'more minutes before running Forseti. You can check the '
+                  'Stackdriver logs for more detailed status.\n')
         else:
             print('Error occurred on the server side, message: {}'.format(e))
     except ModelNotSetError:

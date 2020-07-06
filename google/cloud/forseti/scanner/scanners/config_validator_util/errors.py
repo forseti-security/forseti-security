@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,16 +20,16 @@ class ConfigValidatorAddDataError(Exception):
     pass
 
 
-class ConfigValidatorServerUnavailableError(Exception):
-    """ConfigValidator Server Unavailable Error."""
-    pass
-
-
 class ConfigValidatorAuditError(Exception):
     """ConfigValidator Audit Error."""
     pass
 
 
-class ConfigValidatorResetError(Exception):
-    """ConfigValidator Reset Error."""
+class ConfigValidatorPolicyLibraryError(Exception):
+    """ConfigValidator Policy Library Error."""
+    pass
+
+
+class ConfigValidatorServerUnavailableError(Exception):
+    """ConfigValidator Server Unavailable Error."""
     pass

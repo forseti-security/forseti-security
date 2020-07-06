@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 Google LLC
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,14 +16,30 @@
 # gcr.io/forseti-security-container/forseti:2.xx.x and
 # gcr.io/forseti-security-container/forseti:latest
 
+timeout: 1200s
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  id: Build forseti-security container image
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/forseti:$TAG_NAME', '.']
+  id: Build forseti-security image
+  args: ['build', '--target', 'runtime', '-t', 'gcr.io/$PROJECT_ID/forseti:$TAG_NAME', '.']
 - name: 'gcr.io/cloud-builders/docker'
   id: Tag forseti-security image as latest
   args: ['tag', 'gcr.io/$PROJECT_ID/forseti:$TAG_NAME', 'gcr.io/$PROJECT_ID/forseti:latest']
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-server iamage
+  args: ['build', '--target', 'forseti-server', '-t', 'gcr.io/$PROJECT_ID/forseti-server:$TAG_NAME', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  id: Tag forseti-server image as latest
+  args: ['tag', 'gcr.io/$PROJECT_ID/forseti-server:$TAG_NAME', 'gcr.io/$PROJECT_ID/forseti-server:latest']
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build forseti-security test image
+  args: ['build', '--target', 'forseti-test', '-t', 'gcr.io/$PROJECT_ID/forseti-test:$TAG_NAME', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  id: Tag forseti-security test image
+  args: ['build', '--target', 'forseti-test', '-t', 'gcr.io/$PROJECT_ID/forseti-test:latest', '.']
 images:
 - gcr.io/$PROJECT_ID/forseti:$TAG_NAME
 - gcr.io/$PROJECT_ID/forseti:latest
-timeout: 1200s
+- gcr.io/$PROJECT_ID/forseti-server:$TAG_NAME
+- gcr.io/$PROJECT_ID/forseti-server:latest
+- gcr.io/$PROJECT_ID/forseti-test:$TAG_NAME
+- gcr.io/$PROJECT_ID/forseti-test:latest

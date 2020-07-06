@@ -87,12 +87,12 @@ inventory:
           max_calls: 9
           period: 1.0
           disable_polling: False
-        securitycenter:
-          max_calls: 1
-          period: 1.1
-          disable_polling: False
         servicemanagement:
           max_calls: 2
+          period: 1.1
+          disable_polling: False
+        serviceusage:
+          max_calls: 4
           period: 1.1
           disable_polling: False
         sqladmin:
@@ -163,6 +163,7 @@ inventory:
         #    - compute.googleapis.com/RegionBackendService
         #    - compute.googleapis.com/Route
         #    - compute.googleapis.com/Router
+        #    - compute.googleapis.com/SecurityPolicy
         #    - compute.googleapis.com/Snapshot
         #    - compute.googleapis.com/SslCertificate
         #    - compute.googleapis.com/Subnetwork
@@ -185,12 +186,14 @@ inventory:
         #    - k8s.io/Namespace
         #    - k8s.io/Node
         #    - k8s.io/Pod
+        #    - k8s.io/Service
         #    - pubsub.googleapis.com/Subscription
         #    - pubsub.googleapis.com/Topic
         #    - rbac.authorization.k8s.io/ClusterRole
         #    - rbac.authorization.k8s.io/ClusterRoleBinding
         #    - rbac.authorization.k8s.io/Role
         #    - rbac.authorization.k8s.io/RoleBinding
+        #    - serviceusage.googleapis.com/Service
         #    - spanner.googleapis.com/Database
         #    - spanner.googleapis.com/Instance
         #    - sqladmin.googleapis.com/Instance
@@ -258,6 +261,10 @@ scanner:
 ##############################################################################
 
 notifier:
+    api_quota:
+        securitycenter:
+            max_calls: 14
+            period: 1.0
 
     # Provide connector details
     email_connector:

@@ -31,6 +31,7 @@ from google.cloud.forseti.common.gcp_api import container
 from google.cloud.forseti.common.gcp_api import groups_settings
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
+from google.cloud.forseti.common.gcp_api import serviceusage
 from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
@@ -74,6 +75,30 @@ class ResourceNotSupported(Exception):
 
 class ApiClient(with_metaclass(abc.ABCMeta, object)):
     """The gcp api client interface"""
+
+    @abc.abstractmethod
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate Access Levels from GCP API.
+
+        Args:
+            access_policy_id (str): id of the access policy.
+        """
+
+    @abc.abstractmethod
+    def iter_crm_org_access_policies(self, org_id):
+        """Iterate Access Policies from GCP API.
+
+        Args:
+            org_id (str): id of the organization.
+        """
+
+    @abc.abstractmethod
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Gets Service Perimeter from GCP API.
+
+        Args:
+            access_policy_id (str): id of the access policy.
+        """
 
     @abc.abstractmethod
     def fetch_bigquery_dataset_policy(self, project_id,
@@ -366,6 +391,13 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Security Policies from GCP API.
         Args:
             project_number (str): number of the project to query.
         """
@@ -734,6 +766,15 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
+    def iter_iam_serviceaccount_keys(self, project_id, serviceaccount_id):
+        """Iterate Service Account Keys in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            serviceaccount_id (str): id of the service account to query.
+        """
+
+    @abc.abstractmethod
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from GCP API.
 
@@ -794,6 +835,17 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
         """Iterate k8s pods in a namespace from GCP API.
+
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+        """
+
+    @abc.abstractmethod
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
 
          Args:
             project_id (str): id of the project to query.
@@ -898,6 +950,14 @@ class ApiClient(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def fetch_services_enabled_apis(self, project_number):
         """Project enabled API services from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage services from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -1065,6 +1125,7 @@ class ApiClientImpl(ApiClient):
         self.container = None
         self.iam = None
         self.servicemanagement = None
+        self.serviceusage = None
         self.stackdriver_logging = None
         self.storage = None
 
@@ -1234,6 +1295,22 @@ class ApiClientImpl(ApiClient):
             raise ResourceNotSupported('Service Management API disabled by '
                                        'server configuration.')
         return servicemanagement.ServiceManagementClient(self.config)
+
+    def _create_serviceusage(self):
+        """Create serviceusage API client.
+
+        Returns:
+            object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+            the GCP API client configuration.
+
+        """
+        if is_api_disabled(self.config, serviceusage.API_NAME):
+            raise ResourceNotSupported('Service Usage API disabled by server '
+                                       'configuration.')
+        return serviceusage.ServiceUsageClient(self.config)
 
     def _create_stackdriver_logging(self):
         """Create stackdriver_logging API client.
@@ -1482,6 +1559,42 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('Compute Addresses are not supported by '
                                    'this API client')
+
+    def iter_crm_organization_access_levels(self, access_policy_id):
+        """Iterate Access Policies from GCP API.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('AccessLevels are not supported '
+                                   'by this API client')
+
+    def fetch_crm_organization_service_perimeter(self, access_policy_id):
+        """Iterate Access Policies from GCP API.
+
+        Args:
+            access_policy_id (str): id of the policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('ServicePerimeter is not '
+                                   'supported by this API client')
+
+    def iter_crm_org_access_policies(self, org_id):
+        """Iterate Access Policies from GCP API.
+
+        Args:
+            org_id (str): id of the organization.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('AccessPolicies are not supported '
+                                   'by this API client')
 
     def iter_compute_autoscalers(self, project_number):
         """Iterate Autoscalers from GCP API.
@@ -1751,6 +1864,18 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('Compute Routers are not supported '
                                    'by this API client')
 
+    def iter_compute_securitypolicies(self, project_number):
+        """Iterate Compute Engine Security Policies from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Security Policies are not '
+                                   'supported by this API client')
+
     @create_lazy('compute', _create_compute)
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from GCP API.
@@ -2018,45 +2143,45 @@ class ApiClientImpl(ApiClient):
         return self.crm.get_project_iam_policies(project_number), None
 
     @create_lazy('crm', _create_crm)
-    def iter_crm_folder_org_policies(self, folder_id):
-        """Folder organization policies from gcp API call.
-
-        Args:
-            folder_id (str): id of the folder to get policy.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of org policies and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for org_policy in self.crm.get_folder_org_policies(folder_id):
-            yield org_policy, None
-
-    @create_lazy('crm', _create_crm)
-    def iter_crm_folders(self, parent_id):
-        """Iterate Folders from GCP API.
-
-        Args:
-            parent_id (str): id of the parent of the folder.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of folders and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for folder in self.crm.get_folders(parent_id):
-            yield folder, None
-
-    @create_lazy('crm', _create_crm)
     def iter_crm_organization_org_policies(self, org_id):
-        """Organization organization policies from gcp API call.
+        """Iterate org policies in an org from gcp API call.
 
         Args:
-            org_id (str): id of the organization to get policy.
+            org_id (str): id of the organization.
 
         Yields:
             Tuple[dict, AssetMetadata]: Generator of org policies and asset
                 metadata that defaults to None for all GCP clients.
         """
         for org_policy in self.crm.get_org_org_policies(org_id):
+            yield org_policy, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_project_org_policies(self, project_number):
+        """Iterate organization policies in a project from gcp API call.
+
+        Args:
+            project_number (str): number of the parent project of the policy.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of org policies in a project
+            and asset metadata that defaults to None for all GCP clients.
+        """
+        for org_policy in self.crm.get_project_org_policies(project_number):
+            yield org_policy, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Iterate organization policies in a folder from gcp API call.
+
+        Args:
+            folder_id (str): id of the folder to get the policy.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of org policies in a folder
+            and asset metadata that defaults to None for all GCP clients.
+        """
+        for org_policy in self.crm.get_folder_org_policies(folder_id):
             yield org_policy, None
 
     @create_lazy('crm', _create_crm)
@@ -2074,20 +2199,6 @@ class ApiClientImpl(ApiClient):
             yield lien, None
 
     @create_lazy('crm', _create_crm)
-    def iter_crm_project_org_policies(self, project_number):
-        """Project organization policies from gcp API call.
-
-        Args:
-            project_number (str): number of the parent project of the policy.
-
-        Yields:
-            Tuple[dict, AssetMetadata]: Generator of org policies and asset
-                metadata that defaults to None for all GCP clients.
-        """
-        for org_policy in self.crm.get_project_org_policies(project_number):
-            yield org_policy, None
-
-    @create_lazy('crm', _create_crm)
     def iter_crm_projects(self, parent_type, parent_id):
         """Iterate Projects from GCP API.
 
@@ -2103,6 +2214,20 @@ class ApiClientImpl(ApiClient):
                                           parent_type=parent_type):
             for project in page.get('projects', []):
                 yield project, None
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_folders(self, parent_id):
+        """Iterate folders from GCP API.
+
+        Args:
+            parent_id (str): id of the parent of the folder.
+
+        Yields:
+            Tuple[dict, AssetMetadata]: Generator of folders and asset
+                metadata that defaults to None for all GCP clients.
+        """
+        for folder in self.crm.get_folders(parent_id):
+            yield folder, None
 
     def fetch_dataproc_cluster_iam_policy(self, cluster):
         """Fetch Dataproc Cluster IAM Policy from GCP API.
@@ -2365,6 +2490,19 @@ class ApiClientImpl(ApiClient):
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount, None
 
+    def iter_iam_serviceaccount_keys(self, project_id, serviceaccount_id):
+        """Iterate Service Account Keys in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            serviceaccount_id (str): id of the service account to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Service Account Keys are not supported by '
+                                   'this API client.')
+
     def fetch_kms_cryptokey_iam_policy(self, cryptokey):
         """Fetch KMS Cryptokey IAM Policy from GCP API.
 
@@ -2447,6 +2585,19 @@ class ApiClientImpl(ApiClient):
 
     def iter_kubernetes_pods(self, project_id, zone, cluster, namespace):
         """Iterate k8s pods in a namespace from GCP API.
+         Args:
+            project_id (str): id of the project to query.
+            zone (str): The zone the cluster is in.
+            cluster (str): The cluster name.
+            namespace (str): The namespace name.
+         Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Kubernetes resources are not supported '
+                                   'by this API client')
+
+    def iter_kubernetes_services(self, project_id, zone, cluster, namespace):
+        """Iterate k8s services in a namespace from GCP API.
          Args:
             project_id (str): id of the project to query.
             zone (str): The zone the cluster is in.
@@ -2577,7 +2728,7 @@ class ApiClientImpl(ApiClient):
         raise ResourceNotSupported('PubSub Topics are not supported by this '
                                    'API client')
 
-    @create_lazy('servicemanagement', _create_servicemanagement)
+    @create_lazy('serviceusage', _create_serviceusage)
     def fetch_services_enabled_apis(self, project_number):
         """Project enabled API services from gcp API call.
 
@@ -2585,10 +2736,22 @@ class ApiClientImpl(ApiClient):
             project_number (str): number of the project to query.
 
         Returns:
-            Tuple[list, AssetMetadata]:A list of ManagedService resource dicts
+            Tuple[list, AssetMetadata]:A list of Service resource dicts
                 and asset metadata that defaults to None for all GCP clients.
         """
-        return self.servicemanagement.get_enabled_apis(project_number), None
+        return self.serviceusage.get_enabled_apis(project_number), None
+
+    def iter_serviceusage_services(self, project_number):
+        """Iterate Service Usage Services from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Service Usage Services are not supported '
+                                   'by this API client.')
 
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from GCP API.

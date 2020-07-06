@@ -44,7 +44,7 @@ class GroupsSettings(resource.Resource):
             whoCanViewMembership (str): Setting for who can view membership.
             whoCanViewGroup (str): Setting for who can view group.
             whoCanInvite (str): Setting for who can invite to group.
-            allowExternalMembers (str): Setting for are external members
+            allowExternalMembers (bool): Setting for are external members
             allowed.
             whoCanLeaveGroup (str): Setting for who can leave group.
         """
@@ -57,7 +57,7 @@ class GroupsSettings(resource.Resource):
         self.whoCanViewMembership = whoCanViewMembership
         self.whoCanViewGroup = whoCanViewGroup
         self.whoCanInvite = whoCanInvite
-        self.allowExternalMembers = bool(allowExternalMembers)
+        self.allowExternalMembers = allowExternalMembers
         self.whoCanLeaveGroup = whoCanLeaveGroup
 
     @classmethod
@@ -79,5 +79,6 @@ class GroupsSettings(resource.Resource):
             whoCanViewMembership=settings.get('whoCanViewMembership'),
             whoCanViewGroup=settings.get('whoCanViewGroup'),
             whoCanInvite=settings.get('whoCanInvite'),
-            allowExternalMembers=settings.get('allowExternalMembers'),
+            allowExternalMembers=str(
+                settings.get('allowExternalMembers', '')).lower() == 'true',
             whoCanLeaveGroup=settings.get('whoCanLeaveGroup'))

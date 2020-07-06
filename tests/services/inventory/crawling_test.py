@@ -15,17 +15,14 @@
 
 import copy
 import os
+import time
 import unittest
 import unittest.mock as mock
-from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
-from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
 from tests import unittest_utils
-from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
-from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
@@ -69,7 +66,6 @@ GCP_API_RESOURCES = {
                 'resource': 4},
     'role': {'resource': 20},
     'serviceaccount': {'iam_policy': 2, 'resource': 2},
-    'serviceaccount_key': {'resource': 1},
     'sink': {'resource': 7},
     'snapshot': {'resource': 3},
     'subnetwork': {'resource': 24},
@@ -94,6 +90,7 @@ class NullProgresser(Progresser):
     def __init__(self):
         super(NullProgresser, self).__init__()
         self.errors = 0
+        self.inventory_index_id = int(time.time())
         self.objects = 0
         self.warnings = 0
 
@@ -153,27 +150,26 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
 
         return result_counts
 
-    def _run_crawler(self, config, has_org_access=True, session=None):
+    def _run_crawler(self, config, has_org_access=True):
         """Runs the crawler with a specific InventoryConfig.
 
         Args:
             config (InventoryConfig): The configuration to test.
             has_org_access (bool): True if crawler has access to the org
                 resource.
-            session (object): An existing sql session, required for testing
-                Cloud Asset API integration.
+            client (object): An API Client implementation, used for CAI testing.
 
         Returns:
             dict: the resource counts returned by the crawler.
         """
-
-        with MemoryStorage(session=session) as storage:
+        with MemoryStorage() as storage:
             progresser = NullProgresser()
             with gcp_api_mocks.mock_gcp(has_org_access=has_org_access):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -378,7 +374,6 @@ class CrawlerTest(CrawlerBase):
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 2},
             'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
@@ -424,7 +419,6 @@ class CrawlerTest(CrawlerBase):
                         'resource': 2},
             'role': {'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 3},
             'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
@@ -491,10 +485,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
     def setUp(self):
         """Setup method."""
         CrawlerBase.setUp(self)
-        self.engine, self.dbfile = create_test_engine_with_file()
-        session_maker = sessionmaker()
-        self.session = session_maker(bind=self.engine)
-        initialize(self.engine)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
                                                 {},
@@ -502,46 +492,59 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                                 {'enabled': True,
                                                  'gcs_path': 'gs://test-bucket'}
                                                )
-        self.inventory_config.set_service_config(FakeServerConfig(self.engine))
+        self.inventory_config.set_service_config(
+            FakeServerConfig('mock_engine'))
 
-        # Ensure test data doesn't get deleted
-        self.mock_unlink = mock.patch.object(
-            os, 'unlink', autospec=True).start()
-        self.mock_copy_file_from_gcs = mock.patch.object(
-            file_loader,
-            'copy_file_from_gcs',
-            autospec=True).start()
         self.maxDiff = None
 
-        # Mock copy_file_from_gcs to return correct test data file
-        def _copy_file_from_gcs(file_path, *args, **kwargs):
-            """Fake copy_file_from_gcs."""
-            del args, kwargs
-            if 'resource' in file_path:
-                return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                    'mock_cai_resources.dump')
-            elif 'iam_policy' in file_path:
-                return os.path.join(TEST_RESOURCE_DIR_PATH,
-                                    'mock_cai_iam_policies.dump')
+    def _run_crawler(self, config):
+        """Runs the crawler with a specific InventoryConfig.
 
-        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+        Args:
+            config (InventoryConfig): The configuration to test.
+
+        Returns:
+            dict: the resource counts returned by the crawler.
+        """
+        # Mock download to return correct test data file
+        def _fake_download(full_bucket_path, output_file):
+            if 'resource' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_resources.dump')
+            elif 'iam_policy' in full_bucket_path:
+                fake_file = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                         'mock_cai_iam_policies.dump')
+            with open(fake_file, 'rb') as f:
+                output_file.write(f.read())
+
+        with MemoryStorage() as storage:
+            progresser = NullProgresser()
+            with gcp_api_mocks.mock_gcp() as gcp_mocks:
+                gcp_mocks.mock_storage.download.side_effect = _fake_download
+                run_crawler(storage,
+                            progresser,
+                            config,
+                            parallel=False,
+                            threads=1)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+            return self._get_resource_counts_from_storage(storage)
 
     def tearDown(self):
         """tearDown."""
         CrawlerBase.tearDown(self)
         mock.patch.stopall()
 
-        # Stop mocks before unlinking the database file.
-        os.unlink(self.dbfile)
-
     def test_cai_crawl_to_memory(self):
         """Crawl mock environment, test that there are items in storage."""
-        result_counts = self._run_crawler(self.inventory_config,
-                                          session=self.session)
+        result_counts = self._run_crawler(self.inventory_config)
 
         expected_counts = copy.deepcopy(GCP_API_RESOURCES)
         expected_counts.update({
             'backendservice': {'resource': 2},
+            'bigquery_table': {'resource': 1},
             'bigtable_cluster': {'resource': 1},
             'bigtable_instance': {'resource': 1},
             'bigtable_table': {'resource': 1},
@@ -556,6 +559,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_interconnect_attachment': {'resource': 1},
             'compute_license': {'resource': 1},
             'compute_router': {'resource': 1},
+            'compute_securitypolicy': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
             'compute_targethttpsproxy': {'resource': 1},
@@ -568,6 +572,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_vpntunnel': {'resource': 1},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
+            'disk': {'resource': 5},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
             'forwardingrule': {'resource': 2},
@@ -583,11 +588,17 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kubernetes_pod': {'resource': 1},
             'kubernetes_role': {'resource': 1},
             'kubernetes_rolebinding': {'resource': 1},
+            'kubernetes_service': {'resource': 1},
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
+            'service': {'resource': 1},
+            'serviceaccount': {'iam_policy': 2, 'resource': 3},
+            'serviceaccount_key': {'resource': 1},
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
         })
+
+        del expected_counts['crm_org_policy']
 
         self.assertEqual(expected_counts, result_counts)
 
@@ -604,11 +615,11 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'iam': {'disable_polling': True},
             'logging': {'disable_polling': True},
             'servicemanagement': {'disable_polling': True},
+            'serviceusage': {'disable_polling': True},
             'sqladmin': {'disable_polling': True},
             'storage': {'disable_polling': True},
         }
-        result_counts = self._run_crawler(self.inventory_config,
-                                          session=self.session)
+        result_counts = self._run_crawler(self.inventory_config)
         # Any resource not included in Cloud Asset export will not be in the
         # inventory.
         expected_counts = {
@@ -620,6 +631,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'bigtable_instance': {'resource': 1},
             'bigtable_table': {'resource': 1},
             'billing_account': {'iam_policy': 2, 'resource': 2},
+            'bigquery_table': {'resource': 1},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 2},
             'compute_address': {'resource': 2},
@@ -633,6 +645,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_license': {'resource': 1},
             'compute_project': {'resource': 2},
             'compute_router': {'resource': 1},
+            'compute_securitypolicy': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
             'compute_targethttpsproxy': {'resource': 1},
@@ -645,7 +658,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_vpntunnel': {'resource': 1},
             'dataproc_cluster': {'resource': 2, 'iam_policy': 1},
             'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 3},
-            'disk': {'resource': 4},
+            'disk': {'resource': 5},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
@@ -668,13 +681,16 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'kubernetes_pod': {'resource': 1},
             'kubernetes_role': {'resource': 1},
             'kubernetes_rolebinding': {'resource': 1},
+            'kubernetes_service': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
             'pubsub_subscription': {'iam_policy': 1, 'resource': 1},
             'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 2},
-            'serviceaccount': {'iam_policy': 2, 'resource': 2},
+            'service': {'resource': 1},
+            'serviceaccount': {'iam_policy': 2, 'resource': 3},
+            'serviceaccount_key': {'resource': 1},
             'snapshot': {'resource': 3},
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
@@ -694,7 +710,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
                                             'gcs_path': 'gs://test-bucket',
                                             'asset_types': asset_types}
                                           )
-        inventory_config.set_service_config(FakeServerConfig(self.engine))
+        inventory_config.set_service_config(FakeServerConfig('fake_engine'))
 
         # Create subsets of the mock resource dumps that only contain the
         # filtered asset types
@@ -720,17 +736,20 @@ class CloudAssetCrawlerTest(CrawlerBase):
 
         with unittest_utils.create_temp_file(filtered_assets) as resources:
             with unittest_utils.create_temp_file(filtered_iam) as iam_policies:
-                def _copy_file_from_gcs(file_path, *args, **kwargs):
-                    """Fake copy_file_from_gcs."""
-                    del args, kwargs
-                    if 'resource' in file_path:
-                        return resources
-                    elif 'iam_policy' in file_path:
-                        return iam_policies
-                self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
-                with MemoryStorage(session=self.session) as storage:
+                # Mock download to return correct test data file
+                def _fake_download(full_bucket_path, output_file):
+                    if 'resource' in full_bucket_path:
+                        fake_file = resources
+                    elif 'iam_policy' in full_bucket_path:
+                        fake_file = iam_policies
+                    with open(fake_file, 'rb') as f:
+                        output_file.write(f.read())
+
+                with MemoryStorage() as storage:
                     progresser = NullProgresser()
                     with gcp_api_mocks.mock_gcp() as gcp_mocks:
+                        gcp_mocks.mock_storage.download.side_effect = (
+                            _fake_download)
                         run_crawler(storage,
                                     progresser,
                                     inventory_config)
@@ -738,29 +757,28 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         # Validate export_assets called with asset_types
                         expected_calls = [
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      mock.ANY,
+                                      output_config=mock.ANY,
                                       content_type='RESOURCE',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,
                                       timeout=mock.ANY),
                             mock.call(gcp_api_mocks.ORGANIZATION_ID,
-                                      mock.ANY,
+                                      output_config=mock.ANY,
                                       content_type='IAM_POLICY',
                                       asset_types=asset_types,
                                       blocking=mock.ANY,
                                       timeout=mock.ANY)]
                         (gcp_mocks.mock_cloudasset.export_assets
-                         .assert_has_calls(expected_calls, any_order=True))
+                        .assert_has_calls(expected_calls, any_order=True))
 
-                    self.assertEqual(0,
-                                     progresser.errors,
-                                     'No errors should have occurred')
+                self.assertEqual(0,
+                                 progresser.errors,
+                                 'No errors should have occurred')
 
-                    result_counts = self._get_resource_counts_from_storage(
-                        storage)
+                result_counts = self._get_resource_counts_from_storage(
+                    storage)
 
         expected_counts = {
-            'crm_org_policy': {'resource': 5},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},

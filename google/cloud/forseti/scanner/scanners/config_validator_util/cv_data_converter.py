@@ -32,9 +32,9 @@ _RESOURCE = 'resource'
 
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
 
-CAI_RESOURCE_TYPE_MAPPING = {
-    # TODO: Support non cai resource type by creating a fake cai resource type.
-    # e.g. 'lien' -> 'google.SOME_RESOURCE_TYPE.Lien'
+MOCK_CAI_RESOURCE_TYPE_MAPPING = {
+    'lien': 'cloudresourcemanager.googleapis.com/Lien',
+    'sink': 'logging.googleapis.com/LogSink'
 }
 
 
@@ -59,6 +59,32 @@ def generate_ancestry_path(full_name):
     return ancestry_path
 
 
+def convert_data_to_cai_asset(primary_key, resource, resource_type):
+    """Convert non-CAI data to CAI formatted fields to be used by
+    Config Validator.
+
+    This conversion is necessary because Config Validator can only
+    process data in CAI data structure.
+
+    Args:
+        primary_key (str): The unique identifier of the resource object.
+        resource (Resource): The Resource object that will be converted.
+        resource_type (str): The resource type (e.g. lien, sink, etc.).
+
+    Returns:
+        Resource: converted Resource object in CAI data structure.
+
+    """
+    resource.cai_resource_type = (
+        MOCK_CAI_RESOURCE_TYPE_MAPPING.get(resource_type))
+    resource.cai_resource_name = '//{}/{}'.format(resource.cai_resource_type,
+                                                  primary_key)
+    if not resource.full_name:
+        resource.full_name = '{}/{}'.format(resource.cai_resource_type,
+                                            primary_key)
+    return resource
+
+
 def convert_data_to_cv_asset(resource, data_type):
     """Convert data to CAI format.
 
@@ -77,7 +103,7 @@ def convert_data_to_cv_asset(resource, data_type):
         raise ValueError('Data type {} not supported.'.format(data_type))
 
     if (not resource.cai_resource_name and
-            resource.type not in CAI_RESOURCE_TYPE_MAPPING):
+            resource.type not in MOCK_CAI_RESOURCE_TYPE_MAPPING):
         raise ValueError('Resource {} not supported to use Config'
                          ' Validator scanner.'.format(resource.type))
 
@@ -122,6 +148,7 @@ def resource_wrapper(data):
     }
 
 
+# TODO: Determine why this method is needed. What CAI resources need this? :)
 def cleanup_dict(raw_dict):
     """Replace empty value to None in dict.
 
@@ -129,7 +156,7 @@ def cleanup_dict(raw_dict):
         raw_dict (dict): Dict to clean up.
     """
     for key, value in list(raw_dict.items()):
-        if not value:
+        if not value and not isinstance(value, bool):
             raw_dict[key] = None
         elif isinstance(value, list):
             for i in value:

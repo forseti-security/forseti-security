@@ -23,6 +23,7 @@ PYTHONPATH=. python tests/services/inventory/update_cai_dumps.py
 from builtins import object
 import json
 import os
+import time
 
 from tests.services.inventory import gcp_api_mocks
 from google.cloud.forseti.common.util import logger
@@ -64,6 +65,7 @@ class NullProgresser(Progresser):
 
     def __init__(self):
         super(NullProgresser, self).__init__()
+        self.inventory_index_id = int(time.time())
 
     def on_new_object(self, resource):
         pass
@@ -158,6 +160,18 @@ def bigquery_dataset(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def bigquery_table(item):
+    name = '//bigquery.googleapis.com/projects/{}/datasets/{}/tables/{}'.format(
+        item['tableReference']['projectId'],
+        item['tableReference']['datasetId'],
+        item['tableReference']['tableId'])
+    asset_type = 'bigquery.googleapis.com/Table'
+    parent_name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+        item['tableReference']['projectId'],
+        item['tableReference']['datasetId'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def billing_account(item):
     name = '//cloudbilling.googleapis.com/{}'.format(item['name'])
     asset_type = 'cloudbilling.googleapis.com/BillingAccount'
@@ -208,6 +222,16 @@ def role(item):
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
+def service(item):
+    parent = item.parent()
+    name = '//serviceusage.googleapis.com/projects/{}/services/{}'.format(
+        parent['projectNumber'], item['data']['name'])
+    asset_type = 'serviceusage.googleapis.com/Service'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def serviceaccount(item):
     parent = item.parent()
     name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
@@ -218,6 +242,15 @@ def serviceaccount(item):
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
+def serviceaccount_key(item):
+    parent = item.parent()
+    key_id = item['name'].split("/")[-1]
+    name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}/keys/{}'.format(
+        parent['projectId'], parent['uniqueId'], key_id)
+    asset_type = 'iam.googleapis.com/ServiceAccountKey'
+    parent_name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+        parent['projectId'], parent['uniqueId'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 def kubernetes_cluster(item):
     parent = item.parent()
@@ -228,6 +261,25 @@ def kubernetes_cluster(item):
     asset_type = 'container.googleapis.com/Cluster'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
+def kubernetes_service(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/projects/{}/zones/{}/'
+            'clusters/{}/k8s/namespaces/{}/services/{}'.format(
+                parent['projectId'],
+                parent['zone'],
+                parent['name'],
+                item['metadata']['namespace'],
+                item['metadata']['name']))
+    asset_type = 'k8s.io/Service'
+    parent_name = ('//container.googleapis.com/projects/{}/zones/{}/'
+                   'clusters/{}/k8s/namespaces/{}'.format(
+                    parent['projectId'],
+                    parent['zone'],
+                    parent['name'],
+                    item['metadata']['namespace']))
     return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
@@ -322,11 +374,15 @@ CAI_TYPE_MAP = {
     'interconnect': interconnect,
     'interconnect_attachment': interconnect_attachment,
     'kubernetes_cluster': kubernetes_cluster,
+    'kubernetes_service': kubernetes_service,
     'network': network,
     'role': role,
+    'service': service,
     'serviceaccount': serviceaccount,
+    'serviceaccount_key': serviceaccount_key,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
+    'table': bigquery_table,
 }
 
 

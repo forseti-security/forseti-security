@@ -21,7 +21,8 @@ locals {
     "datastore.googleapis.com",
     "iam.googleapis.com",
     "pubsub.googleapis.com",
-    "storage-component.googleapis.com"
+    "storage-component.googleapis.com",
+    "logging.googleapis.com"
   ]
 }
 
@@ -125,6 +126,7 @@ locals {
 
 # # Turbinia server
 resource "google_compute_instance" "turbinia-server" {
+  count        = "${var.turbinia_server_count}"
   name         = "turbinia-server-${var.infrastructure_id}"
   machine_type = var.turbinia_server_machine_type
   zone         = var.gcp_zone

@@ -1,0 +1,82 @@
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+platforms:
+  - name: local
+
+provisioner:
+  name: terraform
+
+verifier:
+  name: terraform
+  color: false
+  fail_fast: false
+
+suites:
+  - name: forseti
+    driver:
+      name: terraform
+      root_module_directory: integration_tests/fixtures/forseti
+      command_timeout: 1800
+    lifecycle:
+      pre_verify:
+        - chmod go-rwx integration_tests/fixtures/bastion/tls_private_key
+    verifier:
+      systems:
+        - name: forseti-client
+          backend: ssh
+          controls:
+            - client-pytest
+            - inventory-cai-gcs-export
+            - model-list
+            - notifier-inventory-summary-export
+            - scanner-external-project-access-scanner
+          hosts_output: forseti-client-vm-ip
+          user: ubuntu
+          key_files:
+            - integration_tests/fixtures/forseti/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          shell: true
+          shell_options: "--login"
+          show_progress: true
+        - name: forseti-server
+          backend: ssh
+          controls:
+            - enforcer-remediates-firewall-rule
+            - explain-resource-count-match
+            - inventory-cai-enabled-vs-disabled
+            - inventory-create
+            - inventory-delete
+            - inventory-get-list
+            - inventory-performance
+#            - inventory-purge
+            - logs-debug-level
+            - model-create-get
+            - model-delete
+            - notifier-inventory-summary-email
+            - notifier-temp-file-deletion
+            - scanner-bucket-acl-scanner
+            - scanner-config-validator
+            - scanner-enabled-apis-scanner
+            - scanner-enable-audit-logging-scanner
+            - scanner-firewall-scanner
+            - scanner-run
+          hosts_output: forseti-server-vm-ip
+          user: ubuntu
+          key_files:
+            - integration_tests/fixtures/forseti/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          shell: true
+          shell_options: "--login"
+          show_progress: true

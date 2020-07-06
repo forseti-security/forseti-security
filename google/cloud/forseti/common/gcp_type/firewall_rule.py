@@ -686,20 +686,11 @@ class FirewallAction(object):
                 raise InvalidFirewallActionError(
                     'Action must have field IPProtocol')
             if 'ports' in rule:
-                if rule['IPProtocol'] not in ['tcp', 'udp']:
-                    raise InvalidFirewallActionError(
-                        'Only "tcp" and "udp" can have ports specified: %s' %
-                        rule)
                 for port in rule['ports']:
                     if '-' in port:
                         validate_port_range(port)
                     else:
                         validate_port(port)
-            invalid_keys = set(rule.keys()) - {'IPProtocol', 'ports'}
-            if invalid_keys:
-                raise InvalidFirewallActionError(
-                    'Action can only have "IPProtocol" and "ports": %s' %
-                    invalid_keys)
 
     @property
     def applies_to_all(self):

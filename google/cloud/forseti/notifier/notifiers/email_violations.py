@@ -206,4 +206,8 @@ class EmailViolations(base_notification.BaseNotification):
         """Run the email notifier"""
         email_notification = self._compose()
         if email_notification:
-            self._send(notification=email_notification)
+            try:
+                self._send(notification=email_notification)
+            except Exception:  # pylint: disable=broad-except
+                LOGGER.exception('Please check your email connector '
+                                 'configuration')

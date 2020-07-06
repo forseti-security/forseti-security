@@ -62,6 +62,11 @@ variable "turbinia_server_disk_size_gb" {
   default     = 200
 }
 
+variable "turbinia_server_count"{
+  description = "Number of Turbinia server machines to run."
+  default     = 1  
+}
+
 variable "turbinia_worker_disk_size_gb" {
   description = "Disk size for Turbinia worker machine."
   default     = 200

@@ -43,11 +43,12 @@ RUN_CLIENT=false
 RUN_TEST=false
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
+SQL_DATABASE_NAME=forseti_security
 SQL_HOST=127.0.0.1
 SQL_PORT=3306
 
 SERVER_HOST=127.0.0.1
-SERVER_PORT=50051
+SERVER_PORT=${PORT:=50051}
 
 # Check if the k8s cloud sql proxy environment variables have been set, if so
 # overwrite our cloud sql variables with their contents
@@ -83,6 +84,10 @@ while [[ "$1" != "" ]]; do
             shift
             SERVICES=$1
             ;;
+        --sql_database_name )
+            shift
+            SQL_DATABASE_NAME=$1
+            ;;
         --sql_host )
             shift
             SQL_HOST=$1
@@ -107,7 +112,7 @@ start_server(){
 
     forseti_server \
     --endpoint ${SERVER_HOST}:${SERVER_PORT} \
-    --forseti_db "mysql+pymysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
+    --forseti_db "mysql+pymysql://${SQL_DB_USER}:${SQL_DB_PASSWORD}@${SQL_HOST}:${SQL_PORT}/${SQL_DATABASE_NAME}" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} \
