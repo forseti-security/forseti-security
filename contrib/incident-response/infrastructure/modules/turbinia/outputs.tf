@@ -15,5 +15,5 @@
  */
 output "turbinia-config" {
   description = "Turbinia configuration"
-  value = "${data.template_file.turbinia-config-template.rendered}"
+  value = data.template_file.turbinia-config-template.rendered
 }

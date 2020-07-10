@@ -38,7 +38,7 @@ done
 
 # Install Elasticsearch.
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
-echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-6.x.list
+echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-7.x.list
 apt-get update
 apt-get install -y openjdk-11-jre-headless
 apt-get install -y elasticsearch
@@ -49,6 +49,8 @@ echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install discovery-g
 # Export hostname so we can set the node name to it.
 echo "export HOSTNAME=\$(hostname -s)" >> /etc/default/elasticsearch
 
+BOOTSTRAP_MASTER_NODE="$(hostname -s | sed s/'[0-9]$'/'0'/)"
+
 # Configure Elasticsearch.
 cat >> /etc/elasticsearch/elasticsearch.yml <<EOF
 cluster.name: ${cluster_name}
@@ -57,6 +59,7 @@ cloud.gce.project_id: ${project}
 cloud.gce.zone: ${zone}
 discovery.zen.hosts_provider: gce
 network.host: _gce_
+cluster.initial_master_nodes: $${BOOTSTRAP_MASTER_NODE}
 EOF
 
 # More memory to Elasticsearch.

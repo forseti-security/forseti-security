@@ -16,18 +16,18 @@
 
 # Timesketch outputs
 output "timesketch-server-url" {
-  value = "${module.timesketch.timesketch-server-url}"
+  value = module.timesketch.timesketch-server-url
 }
 
 output "timesketch-admin-username" {
-  value = "${module.timesketch.timesketch-admin-username}"
+  value = module.timesketch.timesketch-admin-username
 }
 
 output "timesketch-admin-password" {
-  value = "${module.timesketch.timesketch-admin-password}"
+  value = module.timesketch.timesketch-admin-password
 }
 
 # Turbinia outputs
 output "turbinia-config" {
-  value = "${module.turbinia.turbinia-config}"
+  value = module.turbinia.turbinia-config
 }

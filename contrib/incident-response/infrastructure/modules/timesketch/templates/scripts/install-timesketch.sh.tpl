@@ -44,26 +44,32 @@ add-apt-repository -y ppa:gift/stable
 
 # Install dependencies.
 apt-get update
-apt-get install -y nginx python-pip gunicorn python-psycopg2 python-plaso plaso-tools
+apt-get install -y nginx python3-pip python3-psycopg2 python-plaso plaso-tools
+
+# Install Google Cloud dependencies
+pip3 install google-cloud-pubsub google-cloud-storage
 
 # Install Timesketch from PyPi.
-pip install timesketch
+wget https://raw.githubusercontent.com/google/timesketch/master/requirements.txt
+pip3 install -r requirements.txt
+pip3 install https://github.com/google/timesketch/archive/master.zip
 
 # Create default config.
-cp /usr/local/share/timesketch/timesketch.conf /etc/
+mkdir /etc/timesketch
+wget https://raw.githubusercontent.com/google/timesketch/master/data/timesketch.conf -O /etc/timesketch/timesketch.conf
 
 # Set session key.
-sed -i s/"SECRET_KEY = '<KEY_GOES_HERE>'"/"SECRET_KEY = '$${SECRET_KEY}'"/ /etc/timesketch.conf
+sed -i s/"SECRET_KEY = '<KEY_GOES_HERE>'"/"SECRET_KEY = '$${SECRET_KEY}'"/ /etc/timesketch/timesketch.conf
 
 # Configure database password.
-sed -i s/"<USERNAME>:<PASSWORD>@localhost\/timesketch"/"${postgresql_user}:${postgresql_password}@${postgresql_host}\/${postgresql_db_name}"/ /etc/timesketch.conf
+sed -i s/"<USERNAME>:<PASSWORD>@localhost\/timesketch"/"${postgresql_user}:${postgresql_password}@${postgresql_host}\/${postgresql_db_name}"/ /etc/timesketch/timesketch.conf
 
 # What Elasticsearch server to use.
-sed -i s/"ELASTIC_HOST = '127.0.0.1'"/"ELASTIC_HOST = '${elasticsearch_node}'"/ /etc/timesketch.conf
+sed -i s/"ELASTIC_HOST = '127.0.0.1'"/"ELASTIC_HOST = '${elasticsearch_node}'"/ /etc/timesketch/timesketch.conf
 
 # Enable upload.
-sed -i s/"UPLOAD_ENABLED = False"/"UPLOAD_ENABLED = True"/ /etc/timesketch.conf
-sed -i s/"redis:\/\/127.0.0.1:6379"/"redis:\/\/${redis_host}:${redis_port}"/ /etc/timesketch.conf
+sed -i s/"UPLOAD_ENABLED = False"/"UPLOAD_ENABLED = True"/ /etc/timesketch/timesketch.conf
+sed -i s/"redis:\/\/127.0.0.1:6379"/"redis:\/\/${redis_host}:${redis_port}"/ /etc/timesketch/timesketch.conf
 
 
 # Systemd configuration for Gunicorn.
@@ -119,7 +125,7 @@ server {
   ssl_certificate /etc/nginx/ssl/nginx.crt;
   ssl_certificate_key /etc/nginx/ssl/nginx.key;
 
-  client_max_body_size 100m;
+  client_max_body_size 0;
 
   location / {
     proxy_pass http://unix:/run/gunicorn/socket;
@@ -169,12 +175,29 @@ EOF
 mkdir -p /var/{lib,log,run}/celery
 chown www-data /var/{lib,log,run}/celery
 
+# GCS importer
+wget https://raw.githubusercontent.com/google/timesketch/master/contrib/gcs_importer.py -O /usr/local/bin/gcs-importer.py
+
+cat > /etc/systemd/system/gcs-importer.service <<EOF
+[Unit]
+Description=Google Cloud Storage importer for Timesketch
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/gcs-importer.py --project ${gcp_project} --bucket turbinia-${infrastructure_id} --subscription gcs-subscription --output /tmp/
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Enable and start WSGI, Celery and NGINX servers.
 /bin/systemctl daemon-reload
 /bin/systemctl enable gunicorn.socket
 /bin/systemctl restart gunicorn.socket
 /bin/systemctl enable celery.service
 /bin/systemctl restart celery.service
+/bin/systemctl enable gcs-importer.service
+/bin/systemctl restart gcs-importer.service
 /bin/systemctl restart nginx
 
 # --- END MAIN ---
