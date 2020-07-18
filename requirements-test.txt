@@ -1,3 +1,4 @@
 # End-to-end test requirements
+protobuf==3.9.0
 google-cloud-storage==1.25.0
 pytest==5.3.3

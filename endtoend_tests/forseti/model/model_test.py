@@ -17,6 +17,7 @@
 import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
+from sqlalchemy.sql import text
 
 
 class TestModel:
@@ -37,4 +38,21 @@ class TestModel:
         result = forseti_cli.config_show()
 
         # Assert
+        assert handle
         assert re.search(fr'{handle}', str(result.stdout))
+
+    @pytest.mark.e2e
+    @pytest.mark.model
+    @pytest.mark.server
+    def test_model_roles(self, cloudsql_connection, forseti_model_readonly):
+        # Arrange/Act
+        model_name, handle, _ = forseti_model_readonly
+
+        # Assert
+        table_name = f'forseti_security.{handle}_roles'
+        query = text('SELECT '
+                     'COUNT(*) '
+                     f'FROM {table_name}')
+        model_roles = (cloudsql_connection.execute(query).fetchone())
+        assert model_roles
+        assert model_roles[0] > 0

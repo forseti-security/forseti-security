@@ -305,8 +305,8 @@ def define_model(model_name, dbengine, model_seed):
         This is used to make MySQL column case sensitive by adding
         an encoding type.
         Args:
-            db_dialect (String): The db dialect.
-            column_size (Integer): The size of the column.
+            db_dialect (str): The db dialect.
+            column_size (int): The size of the column.
 
         Returns:
             String: Sqlalchemy String.
@@ -478,7 +478,8 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM permission."""
 
         __tablename__ = permissions_tablename
-        name = Column(String(256), primary_key=True)
+        name = Column(get_string_by_dialect(dbengine.dialect.name, 256),
+                      primary_key=True)
         roles = relationship('Role',
                              secondary=role_permissions,
                              back_populates='permissions')

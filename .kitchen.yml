@@ -67,11 +67,11 @@ suites:
             - notifier-inventory-summary-email
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
-            - scanner-config-validator
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
             - scanner-firewall-scanner
             - scanner-run
+            - server-pytest
           hosts_output: forseti-server-vm-ip
           user: ubuntu
           key_files:
