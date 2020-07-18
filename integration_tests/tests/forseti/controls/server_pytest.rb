@@ -26,6 +26,7 @@ control "server-pytest" do
   end
 
   describe command("sudo pytest -m server -v $FORSETI_HOME/endtoend_tests/ \
+        --ignore=$FORSETI_HOME/endtoend_tests/forseti/inventory \
         --cloudsql_instance_name=#{cloudsql_instance_name} \
         --cloudsql_password=#{cloudsql_password} \
         --cloudsql_username=#{cloudsql_username} \
