@@ -1187,8 +1187,7 @@ class InventoryImporter(object):
         else:
             for perm_name in data['includedPermissions']:
                 if perm_name not in self.permission_cache:
-                    permission = self.dao.TBL_PERMISSION(
-                        name=perm_name)
+                    permission = self.dao.TBL_PERMISSION(name=perm_name)
                     self.permission_cache[perm_name] = permission
                     self.session.add(permission)
                 db_permissions.append(self.permission_cache[perm_name])

@@ -129,7 +129,7 @@ class ForsetiCli:
         cmd = ['forseti', 'model', 'create', '--inventory_index_id',
                inventory_id, model_name]
         result = ForsetiCli.run_process(cmd)
-        regex = re.compile('handle": "([0-9]*)"')
+        regex = re.compile('handle": "([a-z0-9]*)"')
         match = regex.search(str(result.stdout))
         if match:
             return match.group(1), result

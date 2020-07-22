@@ -75,4 +75,4 @@ class TestExplainerAccessByResource:
 
         # Assert
         assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
-        assert 16 == len(re.findall(forseti_server_service_account, str(result.stdout)))
+        assert 17 == len(re.findall(forseti_server_service_account, str(result.stdout)))
