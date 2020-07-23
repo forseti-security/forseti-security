@@ -151,9 +151,9 @@ service account, see
 
 ### Create a Forseti client VM Instance
 
-* For information about the specifications needed for a Forseti server
+* For information about the specifications needed for a Forseti client
   VM instance, see the
-  [Compute Engine deployment template](https://github.com/forseti-security/forseti-security/blob/master-old/deployment-templates/compute-engine/server/forseti-instance-server.py).
+  [Compute Engine deployment template](https://github.com/forseti-security/forseti-security/blob/master-old/deployment-templates/compute-engine/client/forseti-instance-client.py).
 * When you create the instance, bind the server service account to the VM instance.
 * [Enable Compute Engine OS Login](https://cloud.google.com/compute/docs/instances/managing-instance-access#enable_oslogin).
 
