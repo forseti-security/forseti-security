@@ -4,7 +4,7 @@ The Service account and required APIs can also be configured manually by followi
 the instructions documented [here]({% link _docs/latest/setup/install/roles-and-required-apis.md %}). Alternatively, if you are an Org Admin, you can use your own credentials to install Forseti.
 
 ```bash
-git clone --branch modulerelease521 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
+git clone --branch modulerelease522 --depth 1 https://github.com/forseti-security/terraform-google-forseti.git
 ```
 
 ```bash
