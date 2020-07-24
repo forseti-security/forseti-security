@@ -1,7 +1,7 @@
 ## Cloud SQL
 
 **Description:** Cloud SQL instances can be configured to grant external 
-networks access. The Cloud SQL scanner supports a blacklist mode, to ensure 
+networks access. The Cloud SQL scanner supports a denylist mode, to ensure 
 unauthorized users don’t gain access to your Cloud SQL instances.
 
 {: .table .table-striped}
