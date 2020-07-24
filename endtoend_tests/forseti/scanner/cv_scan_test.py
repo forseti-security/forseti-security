@@ -26,6 +26,7 @@ class TestConfigValidatorScan:
 
     @pytest.mark.e2e
     @pytest.mark.scanner
+    @pytest.mark.server
     def test_cv_scan(self, forseti_scan_readonly):
         """Config Validator Scan test
 

@@ -26,6 +26,7 @@ class TestConfigValidatorComputeZone:
 
     @pytest.mark.e2e
     @pytest.mark.scanner
+    @pytest.mark.server
     def test_cv_compute_zone(self,
                              cloudsql_connection,
                              forseti_scan_readonly,

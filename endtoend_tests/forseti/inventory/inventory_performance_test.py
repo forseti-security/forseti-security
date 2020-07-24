@@ -36,6 +36,7 @@ class TestInventoryPerformance:
 
     @pytest.mark.e2e
     @pytest.mark.inventory
+    @pytest.mark.server
     def test_inventory_performance(self,
                                    cai_dump_file_gcs_paths,
                                    cloudsql_connection,

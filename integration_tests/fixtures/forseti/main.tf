@@ -43,7 +43,8 @@ module "bastion" {
 # Forseti
 #-------------------------#
 module "forseti" {
-  source = "git::github.com/forseti-security/terraform-google-forseti"
+  source  = "terraform-google-modules/forseti/google"
+  version = "~> 5.2.0"
 
   project_id               = var.project_id
   org_id                   = var.org_id
