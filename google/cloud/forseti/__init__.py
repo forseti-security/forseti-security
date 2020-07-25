@@ -14,5 +14,5 @@
 
 """Google Cloud Forseti."""
 
-__version__ = '2.24.2'
+__version__ = '2.24.3'
 __package_name__ = 'forseti-security'

@@ -169,7 +169,8 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -526,7 +527,8 @@ class CloudAssetCrawlerTest(CrawlerBase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False,
+                            threads=1)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -764,12 +766,12 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         (gcp_mocks.mock_cloudasset.export_assets
                          .assert_has_calls(expected_calls, any_order=True))
 
-                    self.assertEqual(0,
-                                     progresser.errors,
-                                     'No errors should have occurred')
+                self.assertEqual(0,
+                                 progresser.errors,
+                                 'No errors should have occurred')
 
-                    result_counts = self._get_resource_counts_from_storage(
-                        storage)
+                result_counts = self._get_resource_counts_from_storage(
+                    storage)
 
         expected_counts = {
             'crm_org_policy': {'resource': 5},
