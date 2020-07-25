@@ -1,14 +1,14 @@
 ## BigQuery Dataset ACL
 
 **Description:** BigQuery datasets have access properties that can publicly 
-expose your datasets. The BigQuery scanner supports blacklist and whitelist 
+expose your datasets. The BigQuery scanner supports denylist and allowlist 
 modes to ensure unauthorized users don’t gain access to your datasets, and only 
 authorized users can gain access.
 
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [bigquery_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bigquery_rules.yaml) | [gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) | [iam_blacklist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_blacklist_public.yaml)
+| [bigquery_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bigquery_rules.yaml) | [gcp_iam_allowed_bindings.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings.yaml) | [iam_deny_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_deny_public.yaml)
 
 ### Rego constraint asset type
 
@@ -56,24 +56,24 @@ by groups with `googlegroups.com` addresses.
 ```
 
 Add the Rego constraint template 
-[gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 
+[gcp_iam_allowed_bindings.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings.yaml) 
 in your `policies/templates/`directory.
 
 Create a new yaml file in your `policies/constraints/`directory with the following:
 
-`bigquery_rules_iam_blacklist_googlegroups.yaml`:
+`bigquery_rules_iam_denylist_googlegroups.yaml`:
 ```
 apiVersion: constraints.gatekeeper.sh/v1alpha1
-kind: GCPIAMAllowedBindingsConstraintV1
+kind: GCPIAMAllowedBindingsConstraintV3
 metadata:
-  name: bigquery_rules_iam_blacklist_googlegroups
+  name: bigquery_rules_iam_denylist_googlegroups
 spec:
   match:
     target: [“organizations/123456”]
   parameters:
-    mode: “blacklist”
-    assetType: “bigquery.googleapis.com/Dataset”
-    role: "roles/*"
+    mode: denylist
+    assetType: bigquery.googleapis.com/Dataset
+    role: roles/*
     members:
     - "group:*@googlegroups.com"
 ```

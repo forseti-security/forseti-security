@@ -1,7 +1,7 @@
 ## Enabled APIs
 
 **Description:** The Enabled APIs scanner detects if a project has appropriate 
-APIs enabled. It supports whitelisting supported APIs, blacklisting unsupported 
+APIs enabled. It supports allowlisting supported APIs, denylisting unsupported 
 APIs, and specifying required APIs that must be enabled.
 
 {: .table .table-striped}
@@ -32,7 +32,7 @@ for any APIs that are not listed in the allowed services defined.
 
 `enabled_apis_rules.yaml`:
 ```
-   - name: Example Enabled APIs whitelist
+   - name: Example Enabled APIs allowlist
      mode: whitelist
      resource:
        - type: project
