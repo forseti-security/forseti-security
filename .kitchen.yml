@@ -37,6 +37,7 @@ suites:
         - name: forseti-client
           backend: ssh
           controls:
+            - client-pytest
             - explain
             - inventory-cai-gcs-export
             - model-list
@@ -61,18 +62,18 @@ suites:
             - inventory-delete
             - inventory-get-list
             - inventory-performance
-            - inventory-purge
+#            - inventory-purge # TODO: Replace with pytest
             - logs-debug-level
             - model-create-get
             - model-delete
             - notifier-inventory-summary-email
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
-            - scanner-config-validator
             - scanner-enabled-apis-scanner
             - scanner-enable-audit-logging-scanner
             - scanner-firewall-scanner
             - scanner-run
+            - server-pytest
           hosts_output: forseti-server-vm-ip
           user: ubuntu
           key_files:

@@ -21,7 +21,7 @@ terraform {
     google      = "~> 3.7.0"
     google-beta = "~> 3.7.0"
     helm        = "~> 0.10.4"
-    http        = "~> 1.1.0"
+    http        = "~> 1.2.0"
     kubernetes  = "~> 1.10.0"
     local       = "~> 1.4.0"
     tls         = "~> 2.1.1"
