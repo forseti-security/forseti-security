@@ -1,6 +1,6 @@
 ---
 title: Developing on Forseti
-order: 100
+order: 031
 hide:
   right_sidebar: true
 ---
@@ -32,7 +32,3 @@ make sure it's securely configured.
 **[Develop on Real-Time Enforcer]({% link _docs/latest/develop/dev/real-time-enforcer.md %})**
 
 Add new resources and policies to Forseti Real-Time Enforcer.
-
-**[Testing Your Changes]({% link _docs/latest/develop/dev/testing.md %})**
-
-Learn how to build protos and run unit tests for your Forseti contributions.

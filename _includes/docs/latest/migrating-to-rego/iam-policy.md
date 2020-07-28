@@ -2,12 +2,12 @@
 **Description:** Cloud IAM policies directly grant access on GCP. To ensure 
 only authorized members and permissions are granted in Cloud IAM policies, 
 IAM policy scanner supports the following:
-- Whitelist, blacklist, and required modes.
+- Allowlist, denylist, and required modes.
 
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [iam_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/iam_rules.yaml) | [gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml)<br><br>[gcp_iam_required_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_required_bindings_v1.yaml) | [iam_allowed_roles.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_allowed_roles.yaml)<br><br>[iam_restrict_gmail.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_restrict_gmail.yaml)<br><br>[iam_blacklist_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_blacklist_role.yaml)<br><br>[iam_blacklist_service_account_creator_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_blacklist_service_account_creator_role.yaml)<br><br>[iam_blacklist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_blacklist_public.yaml)<br><br>[iam_restrict_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_restrict_role.yaml)<br><br>[iam_required_roles.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_required_roles.yaml)
+| [iam_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/iam_rules.yaml) | [gcp_iam_allowed_bindings.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings.yaml)<br><br>[gcp_iam_required_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_required_bindings_v1.yaml) | [iam_allowed_roles.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_allowed_roles.yaml)<br><br>[iam_restrict_gmail.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_restrict_gmail.yaml)<br><br>[iam_deny_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_deny_role.yaml)<br><br>[iam_block_service_account_creator_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_block_service_account_creator_role.yaml)<br><br>[iam_deny_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_deny_public.yaml)<br><br>[iam_restrict_role.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_restrict_role.yaml)<br><br>[iam_required_roles.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/iam_required_roles.yaml)
 
 ### Rego constraint asset type
 
@@ -18,7 +18,7 @@ E.g.
 
 ### Rego constraint properties
 
-[gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 
+[gcp_iam_allowed_bindings.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings.yaml) 
 
 {: .table .table-striped}
 | Python Scanner field | Rego Constraint field
@@ -80,43 +80,43 @@ The following Python scanner rules utilizes the IAM Policy scanner to:
 ```
 
 Add the Rego constraint template 
-[gcp_iam_allowed_bindings_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings_v1.yaml) 
+[gcp_iam_allowed_bindings.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_iam_allowed_bindings.yaml) 
 in your `policies/templates/`directory.
 
 Create a new yaml file in your `policies/constraints/`directory with the following:
 
-`iam_whitelist_domain.yaml`:
+`iam_allowlist_domain.yaml`:
 ```
 apiVersion: constraints.gatekeeper.sh/v1alpha1
-kind: GCPIAMAllowedBindingsConstraintV1
+kind: GCPIAMAllowedBindingsConstraintV3
 metadata:
-  name: whitelist_domain
+  name: allowlist_domain
 spec:
   severity: high
   match:
     target: ["organizations/123456"]
   parameters:
-    mode: whitelist
-    role: “roles/resourcemanager.organizationAdmin”
+    mode: allowlist
+    role: roles/resourcemanager.organizationAdmin
     members:
     - "user:*@my-cool-domain.com"
     - “group:*@my-cool-domain.com”
 ```
 
-`iam_blacklist_public.yaml`:
+`iam_deny_public.yaml`:
 ```
 apiVersion: constraints.gatekeeper.sh/v1alpha1
-kind: GCPIAMAllowedBindingsConstraintV1
+kind: GCPIAMAllowedBindingsConstraintV3
 metadata:
-  name: blacklist_all_users
+  name: deny_allusers
 spec:
   severity: high
   match:
     target: ["organizations/123456"]
   parameters:
-    mode: blacklist
-    assetType: “storage.googleapis.com/Bucket”
-    role: "roles/*"
+    mode: denylist
+    assetType: storage.googleapis.com/Bucket
+    role: roles/*
     members:
     - "allUsers"
     - "allAuthenticatedUsers"

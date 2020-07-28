@@ -1,6 +1,6 @@
 ---
 title: Inventory
-order: 102
+order: 033
 ---
 
 # {{ page.title }}

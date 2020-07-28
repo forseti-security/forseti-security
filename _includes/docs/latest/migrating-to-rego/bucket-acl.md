@@ -2,13 +2,13 @@
 
 **Description:** Cloud Storage buckets have ACLs that can grant public access 
 to your Cloud Storage bucket and objects. The bucket scanner supports a 
-blacklist mode, to ensure unauthorized users don’t gain access to your 
+denylist mode, to ensure unauthorized users don’t gain access to your 
 Cloud Storage bucket.
 
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [bucket_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bucket_rules.yaml) | [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) | [storage_blacklist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_blacklist_public.yaml)
+| [bucket_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/bucket_rules.yaml) | [gcp_storage_bucket_world_readable_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_bucket_world_readable_v1.yaml) | [storage_denylist_public.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_denylist_public.yaml)
 
 ### Rego constraint asset type
 
@@ -56,12 +56,12 @@ in your `policies/templates/`directory.
 
 Create a new yaml file in your `policies/constraints/`directory with the following:
 
-`storage_blacklist_public.yaml`:
+`storage_denylist_public.yaml`:
 ```
 apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPStorageBucketWorldReadableConstraintV1
 metadata:
-  name: blacklist_public_users
+  name: denylist_public_users
 spec:
   match:
     target: [“organizations/123456”]

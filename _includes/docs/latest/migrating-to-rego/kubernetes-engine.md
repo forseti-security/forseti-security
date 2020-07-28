@@ -8,7 +8,7 @@ for violations. It supports the following features:
 
 - Any cluster property can be checked in a rule by providing a JMESPath expression that extracts the right fields.
 See http://jmespath.org/ for a tutorial and detailed specifications.
-- Rules can be whitelists or blacklists.
+- Rules can be allowlists or denylists.
 
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample

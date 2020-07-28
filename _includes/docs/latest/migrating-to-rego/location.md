@@ -7,7 +7,7 @@ deployment.
 {: .table .table-striped}
 | Python Scanner | Rego Constraint Template | Constraint Sample
 | ------------- | ------------- | -----------------
-| [location_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/location_rules.yaml) | [gcp_storage_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_location_v1.yaml)<br><br>[gcp_sql_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_sql_location_v1.yaml)<br><br>[gcp_bq_dataset_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_bq_dataset_location_v1.yaml)<br><br>[gcp_gke_cluster_location_v2.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location_v2.yaml)<br><br>[gcp_compute_zone_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_compute_zone_v1.yaml) | [storage_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_location.yaml)<br><br>[sql_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/sql_location.yaml)<br><br>[bq_dataset_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/bq_dataset_location.yaml)<br><br>[gke_cluster_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gke_cluster_location.yaml)<br><br>[compute_zone.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/compute_zone.yaml)
+| [location_rules.yaml](https://github.com/forseti-security/terraform-google-forseti/blob/master/modules/rules/templates/rules/location_rules.yaml) | [gcp_storage_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_storage_location_v1.yaml)<br><br>[gcp_sql_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_sql_location_v1.yaml)<br><br>[gcp_bq_dataset_location_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_bq_dataset_location_v1.yaml)<br><br>[gcp_gke_cluster_location.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location.yaml)<br><br>[gcp_compute_zone_v1.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_compute_zone_v1.yaml) | [storage_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/storage_location.yaml)<br><br>[sql_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/sql_location.yaml)<br><br>[bq_dataset_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/bq_dataset_location.yaml)<br><br>[gke_cluster_location.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/gke_cluster_location.yaml)<br><br>[compute_zone.yaml](https://github.com/forseti-security/policy-library/blob/master/samples/compute_zone.yaml)
 
 ### Rego constraint asset type
 
@@ -23,7 +23,7 @@ deployment.
 
 - bigquery.googleapis.com/Dataset
 
-[gcp_gke_cluster_location_v2.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location_v2.yaml) scans for the following CAI asset types:
+[gcp_gke_cluster_location.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location.yaml) scans for the following CAI asset types:
 
 - container.googleapis.com/Cluster
 
@@ -68,7 +68,7 @@ deployment.
 | resource.resource_ids | metadata.spec.match.target
 | locations | metadata.spec.parameters.locations
 
-[gcp_gke_cluster_location_v2.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location_v2.yaml) 
+[gcp_gke_cluster_location.yaml](https://github.com/forseti-security/policy-library/blob/master/policies/templates/gcp_gke_cluster_location.yaml) 
 
 {: .table .table-striped}
 | Python Scanner field | Rego Constraint field
