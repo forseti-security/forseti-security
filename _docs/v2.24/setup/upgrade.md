@@ -680,7 +680,7 @@ You will need to specify an additional value in your `main.tf` to maintain the p
 5. Run command `terraform apply` to apply the infrastructure build.
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.23.0 to 2.24.0" content=upgrading_2_23_0_to_2_24_0 uid=25 %}
+{% include site/zippy/item.html title="Upgrading 2.23.0 to 2.24.3" content=upgrading_2_23_0_to_2_24_0 uid=25 %}
 
 {% capture deployment_manager_error %}
 
