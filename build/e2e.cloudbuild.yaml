@@ -21,6 +21,7 @@ steps:
   - 'KITCHEN_TEST_BASE_PATH=integration_tests/tests'
   - 'SERVICE_ACCOUNT_JSON=$_SERVICE_ACCOUNT_JSON'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  - 'TF_VAR_cscc_source_id=$_CSCC_SOURCE_ID'
   - 'TF_VAR_domain=$_DOMAIN'
   - 'TF_VAR_forseti_email_recipient=$_FORSETI_EMAIL_RECIPIENT'
   - 'TF_VAR_forseti_email_sender=$_FORSETI_EMAIL_SENDER'
@@ -32,6 +33,7 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_project_id=$_PROJECT_ID'
   - 'TF_VAR_sendgrid_api_key=$_SENDGRID_API_KEY'
+  - 'TF_VAR_server_service_account=$_SERVER_SERVICE_ACCOUNT'
 tags:
 - 'ci'
 - 'integration'

@@ -146,10 +146,12 @@ class ForsetiCli:
         return ForsetiCli.run_process(cmd)
 
     @staticmethod
-    def notifier_run(inventory_id: str = None):
-        cmd = ['forseti', 'scanner', 'run']
+    def notifier_run(inventory_id: str = None, scanner_index_id: str = None):
+        cmd = ['forseti', 'notifier', 'run']
         if inventory_id:
             cmd.extend(['--inventory_index_id', inventory_id])
+        if scanner_index_id:
+            cmd.extend(['--scanner_index_id', scanner_index_id])
         return ForsetiCli.run_process(cmd)
 
     @staticmethod

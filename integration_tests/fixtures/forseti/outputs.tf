@@ -18,6 +18,10 @@ output "bastion_host" {
   value = module.bastion.host
 }
 
+output "cscc_source_id" {
+  value = var.cscc_source_id
+}
+
 output "forseti-cai-storage-bucket" {
   description = "Forseti CAI storage bucket"
   value       = module.forseti.forseti-cai-storage-bucket

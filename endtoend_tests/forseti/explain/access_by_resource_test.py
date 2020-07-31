@@ -16,6 +16,11 @@ import pytest
 import re
 from endtoend_tests.helpers.forseti_cli import ForsetiCli
 
+# These values are the number of roles assigned to the Forseti server SA.
+# They will need to be updated as the roles change.
+EXPECTED_COUNT_FOR_ORG = 11
+EXPECTED_COUNT_FOR_PROJECT = 18
+
 
 class TestExplainerAccessByResource:
     """Explainer access_by_resource tests.
@@ -48,7 +53,7 @@ class TestExplainerAccessByResource:
 
         # Assert
         assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
-        assert 10 == len(re.findall(forseti_server_service_account, str(result.stdout)))
+        assert EXPECTED_COUNT_FOR_ORG == len(re.findall(forseti_server_service_account, str(result.stdout)))
 
     @pytest.mark.client
     @pytest.mark.e2e
@@ -75,4 +80,4 @@ class TestExplainerAccessByResource:
 
         # Assert
         assert result.returncode == 0, f'Forseti stdout: {str(result.stdout)}'
-        assert 17 == len(re.findall(forseti_server_service_account, str(result.stdout)))
+        assert EXPECTED_COUNT_FOR_PROJECT == len(re.findall(forseti_server_service_account, str(result.stdout)))

@@ -1,4 +1,7 @@
 # End-to-end test requirements
-protobuf==3.9.0
+protobuf==3.12.4
+grpcio==1.30.0
+grpcio-tools==1.30.0
+google-cloud-securitycenter==0.6.0
 google-cloud-storage==1.25.0
 pytest==5.3.3

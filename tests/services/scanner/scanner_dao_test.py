@@ -46,6 +46,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.test_violation_full_name = ''
         self.test_inventory_data = ''
         self.test_violation_data = {}
+        self.test_rule_name = ''
 
     def test_save_violations(self):
         """Test violations can be saved."""
@@ -53,14 +54,13 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         saved_violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
 
-        expected_hash_values = [
-            (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69'
-             '041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff'
-            ),
-            (u'3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4'
-             'db577d67c0b91c5914902d906bf1703d5bbba0ceaf29809ac90fef3bf6aa5417'
-            ),
-        ]
+        expected_hash_values = [(
+            'f3eb2be2ed015563d7dc4d4aea798a0b269b76ea590a7672b43113428d48da943'
+            'f2f5a1b44ad7850aa266add296cc548df88a12a30ba307519af9b314e6eaef8'
+        ), (
+            '73f4a4ac87a76a2e9d2c7854ac8fa0774fe5192b2801e9a5026fc39854bc6a49a'
+            'a0043b4afbcb8b1f0277da5a88e60766c35f7e9a775e9568106919de581a2cc'
+        )]
 
         keys = ['scanner_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
@@ -68,7 +68,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                 'created_at_datetime']
 
         for fake, saved in zip(scanner_base_db.FAKE_VIOLATIONS,
-                                saved_violations):
+                               saved_violations):
             for key in keys:
                 if key == 'scanner_index_id':
                     expected_key_value = fake.get(key, scanner_index_id)
@@ -174,14 +174,16 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         test_hash.update(
             json.dumps(self.test_violation_full_name).encode() +
             json.dumps(self.test_inventory_data).encode() +
-            json.dumps(self.test_violation_data).encode()
+            json.dumps(self.test_violation_data).encode() +
+            json.dumps(self.test_rule_name).encode()
         )
         expected_hash = test_hash.hexdigest()
 
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             self.test_inventory_data,
-            self.test_violation_data)
+            self.test_violation_data,
+            self.test_rule_name)
 
         self.assertEqual(expected_hash, returned_hash)
 
@@ -193,7 +195,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             self.test_inventory_data,
-            self.test_violation_data)
+            self.test_violation_data,
+            self.test_rule_name)
 
         self.assertEqual('', returned_hash)
 
@@ -208,28 +211,31 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             self.test_inventory_data,
-            self.test_violation_data)
+            self.test_violation_data,
+            self.test_rule_name)
 
         self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_inventory_data_not_string(self):
-        expected_hash = ('fc59c859e9a088d14627f363d629142920225c8b1ea40f2df8b45'
-                         '0ff7296c3ad99addd6a1ab31b5b8ffb250e1f25f2a8a6ecf2068a'
-                         'fd5f0c46bc2d810f720b9a')
+        expected_hash = ('8280128e6ab64d38fcedd1554c5fef1b1adfa15314a45a98180e'
+                         'a69dd7bcb0c53beb4e37ab089865fafe3b30fd33b41f6fbdf844'
+                         '9d02781fc79a77f551c8cc05')
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
-            self.test_violation_data)
+            self.test_violation_data,
+            self.test_rule_name)
         self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
-        expected_hash = ('f8813c34ab225002fb2c04ee392691b4e37c9a0eee1a08b277c36'
-                         'b7bb0309f9150a88231dbd3f4ec5e908a5a39a8e38515b8e532d5'
-                         '09aa3220e71ab4844a0284')
+        expected_hash = ('d21284c534c43adf89d9eb15a04ffc8431fa2410f9297ffc63d5'
+                         '9392ce8532c86cc76c0c91a693b7f2c5271dac6a3a5713eddd29'
+                         'fb2e71820c3755c8c29d772b')
         returned_hash = scanner_dao._create_violation_hash(
             None,
             self.test_inventory_data,
-            self.test_violation_data)
+            self.test_violation_data,
+            self.test_rule_name)
         self.assertEqual(expected_hash, returned_hash)
 
     def test_get_latest_scanner_index_id_with_empty_table(self):
