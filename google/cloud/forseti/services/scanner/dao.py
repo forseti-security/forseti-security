@@ -233,6 +233,7 @@ class ViolationAccess(object):
                 violation.get('full_name', ''),
                 violation.get('resource_data', ''),
                 violation.get('violation_data', ''),
+                violation.get('rule_name', '')
             )
 
             violation = Violation(
@@ -278,7 +279,7 @@ class ViolationAccess(object):
         if not (inv_index_id or scanner_index_id):
             return self.session.query(Violation).all()
 
-        if (inv_index_id and scanner_index_id):
+        if inv_index_id and scanner_index_id:
             raise ValueError(
                 'Please call list() with the inventory index XOR the scanner '
                 'index, not both.')
@@ -363,13 +364,14 @@ def map_by_resource(violation_rows):
     return dict(v_by_type)
 
 
-def _create_violation_hash(violation_full_name, resource_data, violation_data):
+def _create_violation_hash(violation_full_name, resource_data, violation_data, rule_name):
     """Create a hash of violation data.
 
     Args:
         violation_full_name (str): The full name of the violation.
         resource_data (str): The inventory data.
         violation_data (dict): A violation.
+        rule_name (str): Rule or constraint name.
 
     Returns:
         str: The resulting hex digest or '' if we can't successfully create
@@ -392,7 +394,8 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
         violation_hash.update(
             json.dumps(violation_full_name).encode() +
             json.dumps(resource_data, sort_keys=True).encode() +
-            json.dumps(violation_data, sort_keys=True).encode()
+            json.dumps(violation_data, sort_keys=True).encode() +
+            json.dumps(rule_name).encode()
         )
     except TypeError:
         LOGGER.exception('Cannot create hash for a violation: %s',

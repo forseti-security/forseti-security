@@ -52,9 +52,9 @@ REQUIRED_PACKAGES = [
     'simple-crypt==4.1.7',
     'unicodecsv==0.14.1',
     # Setup related.
-    'grpcio==1.22.0',
-    'grpcio-tools==1.22.0',
-    'protobuf==3.9.0',
+    'grpcio>=1.22.0',
+    'grpcio-tools>=1.22.0',
+    'protobuf>=3.9.0',
     # Testing related.
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',

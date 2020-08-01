@@ -66,10 +66,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
     def test_can_transform_to_findings_in_api_mode(self):
 
         expected_findings = [
-            ['539cfbdb1113a74ec18edf583eada77a',
+            ['f3eb2be2ed015563d7dc4d4aea798a0b',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_111',
               'resource_name': 'full_name_111',
-              'name': 'organizations/11111/sources/22222/findings/539cfbdb1113a74ec18edf583eada77a',
+              'name': 'organizations/11111/sources/22222/findings/f3eb2be2ed015563d7dc4d4aea798a0b',
               'parent': 'organizations/11111/sources/22222',
               'event_time': '2010-08-28T10:20:30Z',
               'state': 'ACTIVE',
@@ -84,10 +84,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                   'resource_id': 'fake_firewall_111',
                   'scanner_index_id': 1282990830000000,
                   'resource_type': 'firewall_rule'}}],
-            ['3eff279ccb96799d9eb18e6b76055b22',
+            ['73f4a4ac87a76a2e9d2c7854ac8fa077',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_222',
               'resource_name': 'full_name_222',
-              'name': 'organizations/11111/sources/22222/findings/3eff279ccb96799d9eb18e6b76055b22',
+              'name': 'organizations/11111/sources/22222/findings/73f4a4ac87a76a2e9d2c7854ac8fa077',
               'parent': 'organizations/11111/sources/22222',
               'event_time': '2010-08-28T10:20:30Z',
               'state': 'ACTIVE',

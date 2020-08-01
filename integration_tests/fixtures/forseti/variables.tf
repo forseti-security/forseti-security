@@ -23,6 +23,11 @@ variable "config_validator_enabled" {
   default     = true
 }
 
+variable "cscc_source_id" {
+  description = "Source ID for CSCC Beta API"
+  default     = ""
+}
+
 variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
@@ -73,5 +78,10 @@ variable "project_id" {
 
 variable "sendgrid_api_key" {
   description = "Sendgrid.com API key to enable email notifications"
+  default     = ""
+}
+
+variable "server_service_account" {
+  description = "Service account email to assign to the Server VM. If empty, a new Service Account will be created"
   default     = ""
 }

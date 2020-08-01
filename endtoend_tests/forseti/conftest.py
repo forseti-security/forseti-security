@@ -44,6 +44,12 @@ def forseti_model_readonly(forseti_cli, forseti_inventory_readonly):
 
 
 @pytest.fixture(scope="session")
+def forseti_notifier_readonly(forseti_cli, forseti_scan_readonly):
+    scanner_id, _ = forseti_scan_readonly
+    yield forseti_cli.notifier_run(scanner_index_id=scanner_id)
+
+
+@pytest.fixture(scope="session")
 def forseti_scan_readonly(forseti_cli, forseti_model_readonly):
     forseti_cli.model_use(forseti_model_readonly[0])
     yield forseti_cli.scanner_run()

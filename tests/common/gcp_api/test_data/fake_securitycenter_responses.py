@@ -20,7 +20,7 @@ FAKE_ALPHA_FINDING = """
     "assetIds": ["full_name_111"],
     "category": "UNKNOWN_RISK",
     "eventTime": "2010-08-28T10:20:30Z",
-    "id": "539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff",
+    "id": "f3eb2be2ed015563d7dc4d4aea798a0b269b76ea590a7672b43113428d48da943f2f5a1b44ad7850aa266add296cc548df88a12a30ba307519af9b314e6eaef8",
         "properties": {
             "inventory_index_id": "iii",
             "resource_data": "inventory_data_111",

@@ -50,22 +50,28 @@ module "forseti" {
   domain                   = var.domain
   forseti_version          = var.forseti_version
 
-  config_validator_enabled = var.config_validator_enabled
-
-  # run the cron job every 10 so it does not run while tests are executing
+  # Run the cron job every 10 hours so it does not run while tests are executing
   forseti_run_frequency    = "0 */10 * * *"
 
-  inventory_email_summary_enabled = var.inventory_email_summary_enabled
-  forseti_email_recipient = var.forseti_email_recipient
-  forseti_email_sender = var.forseti_email_sender
-  sendgrid_api_key = var.sendgrid_api_key
-
+  # Client/Server
   client_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
   }
   server_instance_metadata = {
     sshKeys = "ubuntu:${tls_private_key.main.public_key_openssh}"
   }
+  server_service_account   = var.server_service_account
+
+  # Scanner
+  config_validator_enabled = var.config_validator_enabled
+
+  # Notifier
+  cscc_source_id                  = var.cscc_source_id
+  cscc_violations_enabled         = true
+  inventory_email_summary_enabled = var.inventory_email_summary_enabled
+  forseti_email_recipient         = var.forseti_email_recipient
+  forseti_email_sender            = var.forseti_email_sender
+  sendgrid_api_key                = var.sendgrid_api_key
 }
 
 resource "null_resource" "wait_for_client" {

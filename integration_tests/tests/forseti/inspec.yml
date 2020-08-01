@@ -20,6 +20,9 @@ attributes:
 - name: bucket_acl_scanner_all_users_bucket_name
   required: true
   type: string
+- name: cscc_source_id
+  required: true
+  type: string
 - name: enforcer_allow_all_icmp_rule_name
   required: true
   type: string
