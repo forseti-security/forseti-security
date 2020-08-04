@@ -84,7 +84,7 @@ REDIS_PORT          = None
 REDIS_DB            = None
 
 # Docker
-DOCKER_ENABLED
+DOCKER_ENABLED = False
 
 # Jobs and dependencies
 DISABLED_JOBS = []
@@ -116,7 +116,7 @@ DEPENDENCIES = [{
     'job': 'PhotorecJob',
     'programs': ['photorec'],
     'docker_image': None
-}{
+}, {
     'job': 'PlasoJob',
     'programs': ['log2timeline.py'],
     'docker_image': None
