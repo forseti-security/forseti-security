@@ -5,9 +5,10 @@ if [ -z "$DEVSHELL_PROJECT_ID" ]; then
   exit 1
 fi
 
+TIMESKETCH="1"
 if [[ "$*" == --no-timesketch ]]
 then
-  TIMESKETCH=0
+  TIMESKETCH="0"
   echo "--no-timesketch found: Not deploying Timesketch."
 fi
 
@@ -56,7 +57,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=~/key.json
 
 # Run Terraform to setup the rest of the infrastructure
 terraform init
-if $TIMESKETCH
+if [ $TIMESKETCH -eq "1" ]
 then
   terraform apply -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
 else
@@ -73,7 +74,7 @@ cd $DIR
 terraform output turbinia-config > ~/.turbiniarc
 sed -i s/"\/var\/log\/turbinia\/turbinia.log"/"\/tmp\/turbinia.log"/ ~/.turbiniarc
 
-if $TIMESKETCH
+if [ $TIMESKETCH -eq "1" ]
 then
   url="$(terraform output timesketch-server-url)"
   user="$(terraform output timesketch-admin-username)"
