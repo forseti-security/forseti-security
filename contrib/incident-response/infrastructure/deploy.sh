@@ -5,6 +5,13 @@ if [ -z "$DEVSHELL_PROJECT_ID" ]; then
   exit 1
 fi
 
+TIMESKETCH="1"
+if [[ "$*" == --no-timesketch ]]
+then
+  TIMESKETCH="0"
+  echo "--no-timesketch found: Not deploying Timesketch."
+fi
+
 SA_NAME="terraform"
 SA_MEMBER="serviceAccount:$SA_NAME@$DEVSHELL_PROJECT_ID.iam.gserviceaccount.com"
 
@@ -50,7 +57,12 @@ export GOOGLE_APPLICATION_CREDENTIALS=~/key.json
 
 # Run Terraform to setup the rest of the infrastructure
 terraform init
-terraform apply -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
+if [ $TIMESKETCH -eq "1" ]
+then
+  terraform apply -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
+else
+  terraform apply --target=module.turbinia -var gcp_project=$DEVSHELL_PROJECT_ID -auto-approve
+fi
 
 # Turbinia
 cd ~
@@ -62,26 +74,29 @@ cd $DIR
 terraform output turbinia-config > ~/.turbiniarc
 sed -i s/"\/var\/log\/turbinia\/turbinia.log"/"\/tmp\/turbinia.log"/ ~/.turbiniarc
 
-url="$(terraform output timesketch-server-url)"
-user="$(terraform output timesketch-admin-username)"
-pass="$(terraform output timesketch-admin-password)"
+if [ $TIMESKETCH -eq "1" ]
+then
+  url="$(terraform output timesketch-server-url)"
+  user="$(terraform output timesketch-admin-username)"
+  pass="$(terraform output timesketch-admin-password)"
 
-echo
-echo "Waiting for Timesketch installation to finish. This may take a few minutes.."
-echo
-while true; do
-  response="$(curl -k -o /dev/null --silent --head --write-out '%{http_code}' $url)"
-  if [[ "${response}" -eq "302" ]]; then
-    break
-  fi
-  sleep 3
-done
+  echo
+  echo "Waiting for Timesketch installation to finish. This may take a few minutes.."
+  echo
+  while true; do
+    response="$(curl -k -o /dev/null --silent --head --write-out '%{http_code}' $url)"
+    if [[ "${response}" -eq "302" ]]; then
+      break
+    fi
+    sleep 3
+  done
 
-echo "****************************************************************************"
-echo "Timesketch server: ${url}"
-echo "User: ${user}"
-echo "Password: ${pass}"
-echo "****************************************************************************"
+  echo "****************************************************************************"
+  echo "Timesketch server: ${url}"
+  echo "User: ${user}"
+  echo "Password: ${pass}"
+  echo "****************************************************************************"
+fi
 
 echo
 echo "Deployment done"
