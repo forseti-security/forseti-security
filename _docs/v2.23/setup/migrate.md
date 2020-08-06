@@ -11,7 +11,7 @@ deprecated Python Installer to the new Terraform module.
 If you have any
 questions about this process, please contact us by
 [email](mailto:discuss@forsetisecurity.org) or on
-[Slack](https://join.slack.com/t/forsetisecurity/shared_invite/enQtOTM4NTkwMDcwMDA1LTk1ZDExYTExZTJlNjY3NjIwZmVhZmJkMjk3YzVhZmYwNGRmYmU0N2UzZDc2Njg4NmEwYWU4ODc3MWI3NjJkZTE).
+[Slack](https://join.slack.com/t/forsetisecurity/shared_invite/zt-ge5ocs1h-aAiz44vJ3FS5A~qBp_lj3g).
 
 ---
 
