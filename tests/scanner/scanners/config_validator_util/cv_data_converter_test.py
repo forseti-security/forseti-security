@@ -90,6 +90,18 @@ class ConfigValidatorUtilTest(ForsetiTestCase):
         actual_path = cv_data_converter.generate_ancestry_path(full_name)
         self.assertEqual(expected_path, actual_path)
 
+    def test_generate_ancestors_for_org(self):
+        full_name = 'organization/1234567890/project/test-project-123/firewall/1234567890123456789/'
+        expected_ancestors = ['organization/1234567890', 'project/test-project-123']
+        actual_ancestors = cv_data_converter.generate_ancestors(full_name)
+        self.assertListEqual(expected_ancestors, actual_ancestors)
+
+    def test_generate_ancestors_for_folder(self):
+        full_name = 'folder/folder-1/project/project-2/lien/p123/'
+        expected_ancestors = ['folder/folder-1', 'project/project-2']
+        actual_ancestors = cv_data_converter.generate_ancestors(full_name)
+        self.assertListEqual(expected_ancestors, actual_ancestors)
+
     def test_cleanup_dict_does_not_replace_false(self):
         firewall = mock_cai_resources.FIREWALL_DATA
         cv_data_converter.cleanup_dict(firewall)
