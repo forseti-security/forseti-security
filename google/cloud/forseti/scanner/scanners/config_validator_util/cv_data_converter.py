@@ -72,7 +72,7 @@ def generate_ancestors(full_name):
     full_name_items = full_name.split('/')
     for i in range(0, len(full_name_items) - 1):
         if full_name_items[i] in SUPPORTED_ANCESTORS:
-            ancestors.append(f'{full_name_items[i]}/{full_name_items[i + 1]}')
+            ancestors.append(f'{full_name_items[i]}s/{full_name_items[i + 1]}')
     return ancestors
 
 
