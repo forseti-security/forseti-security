@@ -1,4 +1,4 @@
-# Copyright 2019 The Forseti Security Authors. All rights reserved.
+# Copyright 2020 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ LOGGER = logger.get_logger(__name__)
 _IAM_POLICY = 'iam_policy'
 _RESOURCE = 'resource'
 
+SUPPORTED_ANCESTORS = ['organization', 'folder', 'project']
 SUPPORTED_DATA_TYPE = frozenset([_IAM_POLICY, _RESOURCE])
 
 MOCK_CAI_RESOURCE_TYPE_MAPPING = {
@@ -47,16 +48,32 @@ def generate_ancestry_path(full_name):
     Returns:
         str: Ancestry path.
     """
-    supported_ancestors = ['organization', 'folder', 'project']
     ancestry_path = ''
     full_name_items = full_name.split('/')
     for i in range(0, len(full_name_items) - 1):
-        if full_name_items[i] in supported_ancestors:
+        if full_name_items[i] in SUPPORTED_ANCESTORS:
             ancestry_path += (full_name_items[i] + '/' +
                               full_name_items[i + 1] + '/')
         else:
             continue
     return ancestry_path
+
+
+def generate_ancestors(full_name):
+    """Generate ancestor list from full_name.
+
+    Args:
+        full_name (str): Full name of the resource.
+
+    Returns:
+        list: List of ancestors.
+    """
+    ancestors = []
+    full_name_items = full_name.split('/')
+    for i in reversed(range(0, len(full_name_items) - 1)):
+        if full_name_items[i] in SUPPORTED_ANCESTORS:
+            ancestors.append(f'{full_name_items[i]}s/{full_name_items[i + 1]}')
+    return ancestors
 
 
 def convert_data_to_cai_asset(primary_key, resource, resource_type):
@@ -109,6 +126,7 @@ def convert_data_to_cv_asset(resource, data_type):
 
     # Generate ancestry path that ends at project as the lowest level.
     ancestry_path = generate_ancestry_path(resource.full_name)
+    ancestors = generate_ancestors(resource.full_name)
 
     data = json.loads(resource.data)
     cleanup_dict(data)
@@ -126,7 +144,8 @@ def convert_data_to_cv_asset(resource, data_type):
                                asset_type=resource.cai_resource_type,
                                ancestry_path=ancestry_path,
                                resource=asset_resource,
-                               iam_policy=asset_iam_policy)
+                               iam_policy=asset_iam_policy,
+                               ancestors=ancestors)
 
 
 def resource_wrapper(data):
