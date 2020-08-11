@@ -92,15 +92,15 @@ class ConfigValidatorUtilTest(ForsetiTestCase):
 
     def test_generate_ancestors_for_org(self):
         full_name = 'organization/1234567890/project/test-project-123/firewall/1234567890123456789/'
-        expected_ancestors = ['organizations/1234567890', 'projects/test-project-123']
+        expected_ancestors = ['projects/test-project-123', 'organizations/1234567890']
         actual_ancestors = cv_data_converter.generate_ancestors(full_name)
-        self.assertListEqual(expected_ancestors, actual_ancestors)
+        self.assertEqual(expected_ancestors, actual_ancestors)
 
     def test_generate_ancestors_for_folder(self):
         full_name = 'folder/1234567890/project/project-2/lien/p123/'
-        expected_ancestors = ['folders/1234567890', 'projects/project-2']
+        expected_ancestors = ['projects/project-2', 'folders/1234567890']
         actual_ancestors = cv_data_converter.generate_ancestors(full_name)
-        self.assertListEqual(expected_ancestors, actual_ancestors)
+        self.assertEqual(expected_ancestors, actual_ancestors)
 
     def test_cleanup_dict_does_not_replace_false(self):
         firewall = mock_cai_resources.FIREWALL_DATA
