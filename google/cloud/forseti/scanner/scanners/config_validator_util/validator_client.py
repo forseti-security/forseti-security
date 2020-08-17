@@ -54,44 +54,7 @@ class ValidatorClient(object):
             ('grpc.max_receive_message_length', self.max_length)])
         self.stub = validator_pb2_grpc.ValidatorStub(self.channel)
 
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=10, wait_exponential_max=100,
-           stop_max_attempt_number=5)
-    def add_data(self, assets):
-        """Add asset data.
-
-        Args:
-            assets (list): A list of asset data.
-
-        Raises:
-            ConfigValidatorAddDataError: Config Validator Add Data Error.
-            ConfigValidatorServerUnavailableError: Config Validator
-                Server Unavailable Error.
-        """
-        try:
-            request = validator_pb2.AddDataRequest()
-            request.assets.extend(assets)  # pylint: disable=no-member
-            self.stub.AddData(request)
-        except grpc.RpcError as e:
-            # pylint: disable=no-member
-            if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(e)
-            else:
-                LOGGER.exception('Failed to add data: %s', assets[0])
-                # LOGGER.exception('ConfigValidatorAddDataError: %s', e)
-                # raise errors.ConfigValidatorAddDataError(e)
-                return
-
-    def add_data_in_bulk(self, assets):
-        """Add asset data to buffer, intended to manage sending data in bulk.
-
-        Args:
-            assets (list): A list of asset data.
-        """
-        for asset in assets:
-            self.buffer_sender.add(asset)
-        self.buffer_sender.flush()
-
+    # paged_review: Called by CV scanner to scan a generator of resources
     def paged_review(self, assets):
         """Review in a paged manner to avoid memory problem.
 
@@ -126,30 +89,6 @@ class ValidatorClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
            wait_exponential_multiplier=10, wait_exponential_max=100,
            stop_max_attempt_number=5)
-    def audit(self):
-        """Audit existing data in Config Validator.
-
-        Returns:
-            list: List of violations.
-
-        Raises:
-            ConfigValidatorAuditError: Config Validator Audit Error.
-            ConfigValidatorServerUnavailableError: Config Validator Server
-                Unavailable Error.
-        """
-        try:
-            return self.stub.Audit(validator_pb2.AuditRequest()).violations
-        except grpc.RpcError as e:
-            # pylint: disable=no-member
-            if e.code() == grpc.StatusCode.UNAVAILABLE:
-                raise errors.ConfigValidatorServerUnavailableError(e)
-            else:
-                LOGGER.exception('ConfigValidatorAuditError: %s', e)
-                raise errors.ConfigValidatorAuditError(e)
-
-    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception_cv,
-           wait_exponential_multiplier=10, wait_exponential_max=100,
-           stop_max_attempt_number=5)
     def review(self, assets):
         """Review existing data in Config Validator (Audit in parallel
         per policy).
@@ -171,8 +110,7 @@ class ValidatorClient(object):
             # pylint: disable=no-member
             review_request.assets.extend(assets)
             # pylint: enable=no-member
-            LOGGER.info('Reviewing %s assets, content: %s',
-                        len(assets), assets)
+            LOGGER.info(f'Config Validator - reviewing {len(assets)} assets')
             return self.stub.Review(review_request).violations
         except grpc.RpcError as e:
             # pylint: disable=no-member

@@ -54,7 +54,7 @@ REQUIRED_PACKAGES = [
     # Setup related.
     'grpcio>=1.22.0',
     'grpcio-tools>=1.22.0',
-    'protobuf>=3.9.0',
+    'protobuf==3.13.0',
     # Testing related.
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
