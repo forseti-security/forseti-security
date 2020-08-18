@@ -5,14 +5,14 @@ order: 700
 
 # {{ page.title }}
 
-This page lists the steps to set up Config Validator Scanner. 
+This page lists the steps to configure Config Validator with the Forseti Terraform module. Config Validator is 
+supported with Forseti on GCE and Forseti on GKE.
 
 ---
 
-## **Setting up Config Validator Scanner**
+## **Enable the Config Validator Scanner**
 
-In your `main.tf` file, set the `config_validator_enabled` variable in the 
-Forseti Terraform module to `"true"`:
+In your `main.tf` file, set the `config_validator_enabled` variable in the Forseti Terraform module to `true`:
 
 ```
 module "forseti" {
@@ -23,54 +23,50 @@ module "forseti" {
   
   ...
   
-  config_validator_enabled   = "true"
-  config_validator_image     = "CONFIG_VALIDATOR_IMAGE"
-  config_validator_image_tag = "CONFIG_VALIDATOR_IMAGE_TAG"
-}
+  config_validator_enabled = true
 ```
 
-**Note:**
-- You will be notified when Config Validator violations are found as 
-`config_validator_violations_should_notify` is set to `"true"` by default.
-- `config_validator_image` and `config_validator_image_tag` should be set 
-only when you want to use a specific Config Validator image or tag. Default 
-values can be found [here](https://github.com/forseti-security/terraform-google-forseti#inputs).
-Please reach out to the [Forseti Security Team](https://forsetisecurity.org/docs/latest/use/get-help.html) 
-to see if the specific Config Validator image/tag that you want to you use is 
-supported.
+### **Additional Config Validator variables**
 
-Apply the Terraform module.
+There are some additional Config Validator variables that can be set within the Terraform configuration:
+
+- `config_validator_image`: The path to the Config Validator image. **The default value is strongly recommended.**
+- `config_validator_image_tag`: The tag or version of the Config Validator image. **The default value is strongly 
+recommended.**
+- `config_validator_violations_should_notify`: Include Config Validator violations for any notifiers; this is enabled by
+default.
+
+## **Policy Library**
+
+Before deploying Forseti, the Policy Library will need to be set up so that Config Validator knows what to scan. The 
+Forseti Policy Library offers a great list of [sample constraints](https://github.com/forseti-security/policy-library/tree/master/samples) 
+that you can use to get started.
+
+You can provide policies to the Forseti Server in two ways:
+- [Sync policies from GCS (default behavior)]({% link _docs/latest/configure/config-validator/policy-library-sync-from-gcs.md %})
+- [Sync policies from a Git repository]({% link _docs/latest/configure/config-validator/policy-library-sync-from-git-repo.md %})
+
+## **Deploy Forseti with Config Validator**
+
+Once you have configured the Forseti Terraform module and set up a Policy Library, then deploy Forseti with Terraform.
 
 ```
 terraform apply
 ```
 
-At this point, you are ready to add your own constraints in your policy-library 
-and start scanning your infrastructure for violations based on them. The Forseti 
-project offers a great list of [sample constraints](https://github.com/forseti-security/policy-library/tree/master/samples) 
-you can use freely to get started.
+## **Logs and Troubleshooting**
 
-You can provide policies to the Forseti Server in two ways:
-- Sync policies from GCS to the Forseti Server (default behavior)
-- Enable the git sync feature to allow Forseti to automatically sync policy 
-updates to your Forseti Server to be used by future scans. 
-
-## **Troubleshooting**
-
-- You can find out what errors have happened by viewing any logs related to this 
-process from Operations Logging by searching for `config-validator`.
-- Operations Logging displays `All Logs` from the Forseti Server VM by default. 
-Change the log filter by selecting `forseti` from the drop-down menu to 
-view Forseti logs. Similarly, select `gcplogs-docker-driver` to view the
-docker logs for `config-validator` and `git-sync` services.   
-- You can also check that the config-validator service is running and healthy by 
-running the following command in the Forseti server VM:
+- Config Validator logs can be found in the Forseti server VM [Cloud logs](https://cloud.google.com/logging).
+- All Config Validator logs are logged to the `gcplogs-docker-driver` log with no log level.
+- To only view the Config Validator logs, select the `gcplogs-docker-driver` log and search for `config-validator`; 
+there are some other processes that log to the log as well, such as the git-sync process.
+- You can check that the config-validator service is actively running with the following command in the Forseti server 
+VM:
 
 ```bash
   sudo systemctl status config-validator
 ```
 
-## **What’s next**
-* Learn about syncing policies from GCS to the Forseti Server [here]({% link _docs/latest/configure/config-validator/policy-library-sync-from-gcs.md %}).
-* Learn about enabling the git sync feature to provide policies to the Forseti 
-Server [here]({% link _docs/latest/configure/config-validator/policy-library-sync-from-git-repo.md %}).
+## Support
+
+Please reach out to the [Forseti Security Team]({% link _docs/latest/use/get-help.md %}) for support.
