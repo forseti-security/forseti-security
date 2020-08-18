@@ -14,6 +14,10 @@ _sym_db = _symbol_database.Default()
 from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from google.cloud.asset.v1 import assets_pb2 as google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2
+from google.cloud.orgpolicy.v1 import orgpolicy_pb2 as google_dot_cloud_dot_orgpolicy_dot_v1_dot_orgpolicy__pb2
+from google.identity.accesscontextmanager.v1 import access_level_pb2 as google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__level__pb2
+from google.identity.accesscontextmanager.v1 import access_policy_pb2 as google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__policy__pb2
+from google.identity.accesscontextmanager.v1 import service_perimeter_pb2 as google_dot_identity_dot_accesscontextmanager_dot_v1_dot_service__perimeter__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +25,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='validator',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x0fvalidator.proto\x12\tvalidator\x1a\x1agoogle/iam/v1/policy.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\"google/cloud/asset/v1/assets.proto\"\xb1\x01\n\x05\x41sset\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x12\n\nasset_type\x18\x02 \x01(\t\x12\x15\n\rancestry_path\x18\x03 \x01(\t\x12\x31\n\x08resource\x18\x04 \x01(\x0b\x32\x1f.google.cloud.asset.v1.Resource\x12)\n\niam_policy\x18\x05 \x01(\x0b\x32\x15.google.iam.v1.Policy\x12\x11\n\tancestors\x18\x06 \x03(\t\"6\n\nConstraint\x12(\n\x08metadata\x18\x05 \x01(\x0b\x32\x16.google.protobuf.Value\"\x9e\x01\n\tViolation\x12\x12\n\nconstraint\x18\x01 \x01(\t\x12\x10\n\x08resource\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x08metadata\x18\x04 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x30\n\x11\x63onstraint_config\x18\x05 \x01(\x0b\x32\x15.validator.Constraint\"2\n\x0e\x41\x64\x64\x44\x61taRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\"\x11\n\x0f\x41\x64\x64\x44\x61taResponse\"\x0e\n\x0c\x41uditRequest\"9\n\rAuditResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation\"\x0e\n\x0cResetRequest\"\x0f\n\rResetResponse\"1\n\rReviewRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\":\n\x0eReviewResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation2\x8c\x02\n\tValidator\x12\x42\n\x07\x41\x64\x64\x44\x61ta\x12\x19.validator.AddDataRequest\x1a\x1a.validator.AddDataResponse\"\x00\x12<\n\x05\x41udit\x12\x17.validator.AuditRequest\x1a\x18.validator.AuditResponse\"\x00\x12<\n\x05Reset\x12\x17.validator.ResetRequest\x1a\x18.validator.ResetResponse\"\x00\x12?\n\x06Review\x12\x18.validator.ReviewRequest\x1a\x19.validator.ReviewResponse\"\x00\x62\x06proto3'
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x0fvalidator.proto\x12\tvalidator\x1a\x1agoogle/iam/v1/policy.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\"google/cloud/asset/v1/assets.proto\x1a)google/cloud/orgpolicy/v1/orgpolicy.proto\x1a:google/identity/accesscontextmanager/v1/access_level.proto\x1a;google/identity/accesscontextmanager/v1/access_policy.proto\x1a?google/identity/accesscontextmanager/v1/service_perimeter.proto\"\xf7\x03\n\x05\x41sset\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x12\n\nasset_type\x18\x02 \x01(\t\x12\x15\n\rancestry_path\x18\x03 \x01(\t\x12\x31\n\x08resource\x18\x04 \x01(\x0b\x32\x1f.google.cloud.asset.v1.Resource\x12)\n\niam_policy\x18\x05 \x01(\x0b\x32\x15.google.iam.v1.Policy\x12\x11\n\tancestors\x18\x06 \x03(\t\x12\x35\n\norg_policy\x18\x07 \x03(\x0b\x32!.google.cloud.orgpolicy.v1.Policy\x12N\n\raccess_policy\x18\x08 \x01(\x0b\x32\x35.google.identity.accesscontextmanager.v1.AccessPolicyH\x00\x12L\n\x0c\x61\x63\x63\x65ss_level\x18\t \x01(\x0b\x32\x34.google.identity.accesscontextmanager.v1.AccessLevelH\x00\x12V\n\x11service_perimeter\x18\n \x01(\x0b\x32\x39.google.identity.accesscontextmanager.v1.ServicePerimeterH\x00\x42\x17\n\x15\x61\x63\x63\x65ss_context_policy\"6\n\nConstraint\x12(\n\x08metadata\x18\x05 \x01(\x0b\x32\x16.google.protobuf.Value\"\xb0\x01\n\tViolation\x12\x12\n\nconstraint\x18\x01 \x01(\t\x12\x10\n\x08resource\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x08metadata\x18\x04 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x30\n\x11\x63onstraint_config\x18\x05 \x01(\x0b\x32\x15.validator.Constraint\x12\x10\n\x08severity\x18\x06 \x01(\t\"2\n\x0e\x41\x64\x64\x44\x61taRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\"\x11\n\x0f\x41\x64\x64\x44\x61taResponse\"\x0e\n\x0c\x41uditRequest\"9\n\rAuditResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation\"\x0e\n\x0cResetRequest\"\x0f\n\rResetResponse\"1\n\rReviewRequest\x12 \n\x06\x61ssets\x18\x01 \x03(\x0b\x32\x10.validator.Asset\":\n\x0eReviewResponse\x12(\n\nviolations\x18\x01 \x03(\x0b\x32\x14.validator.Violation2\x8c\x02\n\tValidator\x12\x42\n\x07\x41\x64\x64\x44\x61ta\x12\x19.validator.AddDataRequest\x1a\x1a.validator.AddDataResponse\"\x00\x12<\n\x05\x41udit\x12\x17.validator.AuditRequest\x1a\x18.validator.AuditResponse\"\x00\x12<\n\x05Reset\x12\x17.validator.ResetRequest\x1a\x18.validator.ResetResponse\"\x00\x12?\n\x06Review\x12\x18.validator.ReviewRequest\x1a\x19.validator.ReviewResponse\"\x00\x62\x06proto3'
   ,
-  dependencies=[google_dot_iam_dot_v1_dot_policy__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_iam_dot_v1_dot_policy__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2.DESCRIPTOR,google_dot_cloud_dot_orgpolicy_dot_v1_dot_orgpolicy__pb2.DESCRIPTOR,google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__level__pb2.DESCRIPTOR,google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__policy__pb2.DESCRIPTOR,google_dot_identity_dot_accesscontextmanager_dot_v1_dot_service__perimeter__pb2.DESCRIPTOR,])
 
 
 
@@ -34,6 +39,7 @@ _ASSET = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='name', full_name='validator.Asset.name', index=0,
@@ -41,42 +47,70 @@ _ASSET = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='asset_type', full_name='validator.Asset.asset_type', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ancestry_path', full_name='validator.Asset.ancestry_path', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='resource', full_name='validator.Asset.resource', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='iam_policy', full_name='validator.Asset.iam_policy', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ancestors', full_name='validator.Asset.ancestors', index=5,
       number=6, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='org_policy', full_name='validator.Asset.org_policy', index=6,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='access_policy', full_name='validator.Asset.access_policy', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='access_level', full_name='validator.Asset.access_level', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='service_perimeter', full_name='validator.Asset.service_perimeter', index=9,
+      number=10, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -88,9 +122,14 @@ _ASSET = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='access_context_policy', full_name='validator.Asset.access_context_policy',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
-  serialized_start=125,
-  serialized_end=302,
+  serialized_start=354,
+  serialized_end=857,
 )
 
 
@@ -100,6 +139,7 @@ _CONSTRAINT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='metadata', full_name='validator.Constraint.metadata', index=0,
@@ -107,7 +147,7 @@ _CONSTRAINT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -120,8 +160,8 @@ _CONSTRAINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=304,
-  serialized_end=358,
+  serialized_start=859,
+  serialized_end=913,
 )
 
 
@@ -131,6 +171,7 @@ _VIOLATION = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='constraint', full_name='validator.Violation.constraint', index=0,
@@ -138,35 +179,42 @@ _VIOLATION = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='resource', full_name='validator.Violation.resource', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='message', full_name='validator.Violation.message', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='metadata', full_name='validator.Violation.metadata', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='constraint_config', full_name='validator.Violation.constraint_config', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='severity', full_name='validator.Violation.severity', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -179,8 +227,8 @@ _VIOLATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=361,
-  serialized_end=519,
+  serialized_start=916,
+  serialized_end=1092,
 )
 
 
@@ -190,6 +238,7 @@ _ADDDATAREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='assets', full_name='validator.AddDataRequest.assets', index=0,
@@ -197,7 +246,7 @@ _ADDDATAREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -210,8 +259,8 @@ _ADDDATAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=521,
-  serialized_end=571,
+  serialized_start=1094,
+  serialized_end=1144,
 )
 
 
@@ -221,6 +270,7 @@ _ADDDATARESPONSE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
   ],
   extensions=[
@@ -234,8 +284,8 @@ _ADDDATARESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=573,
-  serialized_end=590,
+  serialized_start=1146,
+  serialized_end=1163,
 )
 
 
@@ -245,6 +295,7 @@ _AUDITREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
   ],
   extensions=[
@@ -258,8 +309,8 @@ _AUDITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=592,
-  serialized_end=606,
+  serialized_start=1165,
+  serialized_end=1179,
 )
 
 
@@ -269,6 +320,7 @@ _AUDITRESPONSE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='violations', full_name='validator.AuditResponse.violations', index=0,
@@ -276,7 +328,7 @@ _AUDITRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -289,8 +341,8 @@ _AUDITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=608,
-  serialized_end=665,
+  serialized_start=1181,
+  serialized_end=1238,
 )
 
 
@@ -300,6 +352,7 @@ _RESETREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
   ],
   extensions=[
@@ -313,8 +366,8 @@ _RESETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=667,
-  serialized_end=681,
+  serialized_start=1240,
+  serialized_end=1254,
 )
 
 
@@ -324,6 +377,7 @@ _RESETRESPONSE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
   ],
   extensions=[
@@ -337,8 +391,8 @@ _RESETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=683,
-  serialized_end=698,
+  serialized_start=1256,
+  serialized_end=1271,
 )
 
 
@@ -348,6 +402,7 @@ _REVIEWREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='assets', full_name='validator.ReviewRequest.assets', index=0,
@@ -355,7 +410,7 @@ _REVIEWREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -368,8 +423,8 @@ _REVIEWREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=700,
-  serialized_end=749,
+  serialized_start=1273,
+  serialized_end=1322,
 )
 
 
@@ -379,6 +434,7 @@ _REVIEWRESPONSE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='violations', full_name='validator.ReviewResponse.violations', index=0,
@@ -386,7 +442,7 @@ _REVIEWRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -399,12 +455,25 @@ _REVIEWRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=751,
-  serialized_end=809,
+  serialized_start=1324,
+  serialized_end=1382,
 )
 
 _ASSET.fields_by_name['resource'].message_type = google_dot_cloud_dot_asset_dot_v1_dot_assets__pb2._RESOURCE
 _ASSET.fields_by_name['iam_policy'].message_type = google_dot_iam_dot_v1_dot_policy__pb2._POLICY
+_ASSET.fields_by_name['org_policy'].message_type = google_dot_cloud_dot_orgpolicy_dot_v1_dot_orgpolicy__pb2._POLICY
+_ASSET.fields_by_name['access_policy'].message_type = google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__policy__pb2._ACCESSPOLICY
+_ASSET.fields_by_name['access_level'].message_type = google_dot_identity_dot_accesscontextmanager_dot_v1_dot_access__level__pb2._ACCESSLEVEL
+_ASSET.fields_by_name['service_perimeter'].message_type = google_dot_identity_dot_accesscontextmanager_dot_v1_dot_service__perimeter__pb2._SERVICEPERIMETER
+_ASSET.oneofs_by_name['access_context_policy'].fields.append(
+  _ASSET.fields_by_name['access_policy'])
+_ASSET.fields_by_name['access_policy'].containing_oneof = _ASSET.oneofs_by_name['access_context_policy']
+_ASSET.oneofs_by_name['access_context_policy'].fields.append(
+  _ASSET.fields_by_name['access_level'])
+_ASSET.fields_by_name['access_level'].containing_oneof = _ASSET.oneofs_by_name['access_context_policy']
+_ASSET.oneofs_by_name['access_context_policy'].fields.append(
+  _ASSET.fields_by_name['service_perimeter'])
+_ASSET.fields_by_name['service_perimeter'].containing_oneof = _ASSET.oneofs_by_name['access_context_policy']
 _CONSTRAINT.fields_by_name['metadata'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
 _VIOLATION.fields_by_name['metadata'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
 _VIOLATION.fields_by_name['constraint_config'].message_type = _CONSTRAINT
@@ -510,8 +579,9 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=812,
-  serialized_end=1080,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=1385,
+  serialized_end=1653,
   methods=[
   _descriptor.MethodDescriptor(
     name='AddData',
@@ -521,6 +591,7 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
     input_type=_ADDDATAREQUEST,
     output_type=_ADDDATARESPONSE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Audit',
@@ -530,6 +601,7 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
     input_type=_AUDITREQUEST,
     output_type=_AUDITRESPONSE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Reset',
@@ -539,6 +611,7 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
     input_type=_RESETREQUEST,
     output_type=_RESETRESPONSE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Review',
@@ -548,6 +621,7 @@ _VALIDATOR = _descriptor.ServiceDescriptor(
     input_type=_REVIEWREQUEST,
     output_type=_REVIEWRESPONSE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_VALIDATOR)
