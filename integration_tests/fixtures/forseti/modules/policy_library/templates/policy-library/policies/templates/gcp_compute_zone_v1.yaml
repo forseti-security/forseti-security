@@ -22,7 +22,6 @@ apiVersion: templates.gatekeeper.sh/v1alpha1
 kind: ConstraintTemplate
 metadata:
   name: gcp-compute-zone-v1
-  annoations:
 spec:
   crd:
     spec:
@@ -34,18 +33,20 @@ spec:
             mode:
               type: string
               enum: [denylist, allowlist]
-              description: "String identifying the operational mode, allowlist or denylist. In allowlist mode, 
-              resources are only allowed in the zones specified in the 'zones' parameter. In denylist mode, resources 
+              description: "String identifying the operational mode, allowlist or denylist. In allowlist mode,
+              resources are only allowed in the zones specified in the 'zones' parameter. In denylist mode, resources
               are allowed in all zones except those listed in the 'zones' parameter."
             exemptions:
               type: array
-              items: string
-              description: "Array of compute assets to exempt from zonal restriction. String values in the array should 
+              items:
+                type: string
+              description: "Array of compute assets to exempt from zonal restriction. String values in the array should
               correspond to the full name values of exempted devices."
             zones:
               type: array
-              items: string
-              description: "Array of zone names to be allowed or denied. Should be the simple form of the zone name, 
+              items:
+                type: string
+              description: "Array of zone names to be allowed or denied. Should be the simple form of the zone name,
               e.g. asia-east1-b."
   targets:
     validation.gcp.forsetisecurity.org:
@@ -65,11 +66,11 @@ spec:
            # See the License for the specific language governing permissions and
            # limitations under the License.
            #
-           
+
            package templates.gcp.GCPComputeZoneConstraintV1
-           
+
            import data.validator.gcp.lib as lib
-           
+
            #####################################
            # Find Compute Asset Zone Violations
            #####################################
@@ -79,16 +80,16 @@ spec:
            }] {
            	constraint := input.constraint
            	lib.get_constraint_params(constraint, params)
-           
+
            	# Verify that resource is Instance or Disk
            	asset := input.asset
            	{asset.asset_type} == {asset.asset_type} & {"compute.googleapis.com/Instance", "compute.googleapis.com/Disk"}
-           
+
            	# Check if resource is in exempt list
            	exempt_list := params.exemptions
            	matches := {asset.name} & cast_set(exempt_list)
            	count(matches) == 0
-           
+
            	# Check that zone is in allowlist/denylist
            	target_zones := params.zones
            	asset_zone_tokens := split(asset.resource.data.zone, "/")
@@ -96,21 +97,21 @@ spec:
            	zone_matches := {asset_zone} & cast_set(target_zones)
            	target_zone_match_count(params.mode, desired_count)
            	count(zone_matches) == desired_count
-           
+
            	message := sprintf("%v is in a disallowed zone.", [asset.name])
            	metadata := {"zone": asset_zone}
            }
-           
+
            #################
            # Rule Utilities
            #################
-           
+
            # Determine the overlap between zones under test and constraint
            # By default (allowlist), we violate if there isn't overlap
            target_zone_match_count(mode) = 0 {
            	mode != "denylist"
            }
-           
+
            target_zone_match_count(mode) = 1 {
            	mode == "denylist"
            }

@@ -16,10 +16,14 @@ apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPSQLLocationConstraintV1
 metadata:
   name: sql-location-denylist
+  annotations:
+    description: Checks Cloud SQL instance locations against allowed or disallowed
+      locations.
 spec:
   severity: high
   match:
-    target: ["organization/*"]
+    target: # {"$ref":"#/definitions/io.k8s.cli.setters.target"}
+    - "organizations/**"
   parameters:
     mode: "denylist"
     locations:

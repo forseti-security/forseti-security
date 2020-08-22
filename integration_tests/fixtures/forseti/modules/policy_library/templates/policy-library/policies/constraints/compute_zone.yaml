@@ -16,10 +16,12 @@ apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPComputeZoneConstraintV1
 metadata:
   name: compute-zone-denylist
+  annotations:
+    description: Checks the instances and Persistent Disks are in desired zones.
 spec:
   severity: high
   parameters:
     mode: "denylist"
     zones:
-      - us-central1-c
+    - us-central1-c
     exemptions: []
