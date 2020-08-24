@@ -19,7 +19,7 @@ from endtoend_tests.helpers.forseti_cli import ForsetiCli
 # These values are the number of roles assigned to the Forseti server SA.
 # They will need to be updated as the roles change.
 EXPECTED_COUNT_FOR_ORG = 11
-EXPECTED_COUNT_FOR_PROJECT = 18
+EXPECTED_COUNT_FOR_PROJECT = 19
 
 
 class TestExplainerAccessByResource:
