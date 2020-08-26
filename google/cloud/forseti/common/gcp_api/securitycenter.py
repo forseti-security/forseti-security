@@ -52,7 +52,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         use_versioned_discovery_doc = True
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            API_NAME, versions=['v1'],
+            API_NAME, versions=['v1p1beta1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
@@ -66,7 +66,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._findings:
             self._findings = self._init_repository(
                 _SecurityCenterOrganizationsFindingsRepository,
-                version='v1')
+                version='v1p1beta1')
         return self._findings
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
@@ -205,3 +205,11 @@ class SecurityCenterClient(object):
             violation_data = (
                 finding.get('source_properties').get('violation_data'))
             raise api_errors.ApiExecutionError(violation_data, e)
+
+
+class FindingSeverity:
+    LOW = 'LOW'
+    MEDIUM = 'MEDIUM'
+    HIGH = 'HIGH'
+    CRITICAL = 'CRITICAL'
+    SEVERITY_UNSPECIFIED = 'SEVERITY_UNSPECIFIED'

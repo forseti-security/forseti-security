@@ -137,6 +137,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                  '["fw-tag-match_111"]}}'),
              'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111',
              'violation_hash': scanner_base_db.FAKE_VIOLATION_HASH,
+             'severity': '',
             },
             {'full_name': u'full_name_222',
              'id': 2,
@@ -154,6 +155,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
                  '["fw-tag-match_222"]}}'),
              'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222',
              'violation_hash': scanner_base_db.FAKE_VIOLATION_HASH,
+             'severity': 'high',
             }
         ]
 

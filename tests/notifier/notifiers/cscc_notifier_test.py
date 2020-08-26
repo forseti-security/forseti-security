@@ -19,8 +19,9 @@ import datetime
 import json
 import unittest.mock as mock
 
+from google.cloud.forseti.common.gcp_api import securitycenter
 from google.cloud.forseti.notifier import notifier
-from google.cloud.forseti.notifier.notifiers import cscc_notifier
+from google.cloud.forseti.notifier.notifiers.cscc_notifier import CsccNotifier
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.scanner import scanner_base_db
 
@@ -31,13 +32,17 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         """Setup method."""
         super(CsccNotifierTest, self).setUp()
         self.maxDiff = None
-
         self.api_quota = {
             'securitycenter': {
                 'max_calls': 14,
                 'period': 1.0
             }
         }
+        self.inventory_index_id = '1234567890'
+        self.cscc_notifier = CsccNotifier(self.inventory_index_id,
+                                          self.api_quota,
+                                          mock.MagicMock())
+        self.cscc_notifier.LOGGER = mock.MagicMock()
 
     def tearDown(self):
         """Tear down method."""
@@ -64,7 +69,6 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         return violations_as_dict
 
     def test_can_transform_to_findings_in_api_mode(self):
-
         expected_findings = [
             ['f3eb2be2ed015563d7dc4d4aea798a0b',
              {'category': 'FIREWALL_BLACKLIST_VIOLATION_111',
@@ -73,6 +77,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
               'parent': 'organizations/11111/sources/22222',
               'event_time': '2010-08-28T10:20:30Z',
               'state': 'ACTIVE',
+              'severity': securitycenter.FindingSeverity.SEVERITY_UNSPECIFIED,
               'source_properties': {
                   'source': 'FORSETI',
                   'rule_name': 'disallow_all_ports_111',
@@ -91,6 +96,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
               'parent': 'organizations/11111/sources/22222',
               'event_time': '2010-08-28T10:20:30Z',
               'state': 'ACTIVE',
+              'severity': securitycenter.FindingSeverity.HIGH,
               'source_properties': {
                   'source': 'FORSETI',
                   'rule_name': 'disallow_all_ports_222',
@@ -106,31 +112,28 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         violations_as_dict = self._populate_and_retrieve_violations()
 
         finding_results = (
-            cscc_notifier.CsccNotifier('iii', self.api_quota)._transform_for_api(
+            CsccNotifier('iii', self.api_quota, mock.MagicMock())._transform_for_api(
                 violations_as_dict,
                 source_id='organizations/11111/sources/22222'))
 
         self.assertEqual(expected_findings,
-                          ast.literal_eval(json.dumps(finding_results)))
-
+                         ast.literal_eval(json.dumps(finding_results)))
 
     def test_api_is_invoked_correctly(self):
+        cscc_notifier = self.cscc_notifier
 
-        notifier = cscc_notifier.CsccNotifier(self.api_quota, None)
+        cscc_notifier._send_findings_to_cscc = mock.MagicMock()
+        cscc_notifier.LOGGER = mock.MagicMock()
 
-        notifier._send_findings_to_cscc = mock.MagicMock()
-        notifier.LOGGER = mock.MagicMock()
-
-        self.assertEqual(0, notifier._send_findings_to_cscc.call_count)
-        notifier.run(None, source_id='111')
+        self.assertEqual(0, cscc_notifier._send_findings_to_cscc.call_count)
+        cscc_notifier.run(None, source_id='111')
         
-        calls = notifier._send_findings_to_cscc.call_args_list
+        calls = cscc_notifier._send_findings_to_cscc.call_args_list
         call = calls[0]
         _, kwargs = call
         self.assertEqual('111', kwargs['source_id'])
 
     def test_outdated_findings_are_found(self):
-
         NEW_FINDINGS = [['abc',
                             {'category': 'BUCKET_VIOLATION',
                              'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
@@ -138,6 +141,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'ACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -156,6 +160,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'ACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -173,6 +178,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'INACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -192,6 +198,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'INACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -203,15 +210,13 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
-        notifier = cscc_notifier.CsccNotifier('123', self.api_quota)
+        inactive_findings = self.cscc_notifier.find_inactive_findings(
+            NEW_FINDINGS, FINDINGS_IN_CSCC)
 
-        inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
-                                                            FINDINGS_IN_CSCC)
         self.assertEqual(EXPECTED_INACTIVE_FINDINGS[0][1]['state'],
-                          inactive_findings[0][1]['state'])
+                         inactive_findings[0][1]['state'])
 
     def test_outdated_findings_are_not_found(self):
-
         NEW_FINDINGS = [['abc',
                             {'category': 'BUCKET_VIOLATION',
                              'resource_name': 'organization/123/project/inventoryscanner/bucket/isthispublic/',
@@ -219,6 +224,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'ACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -237,6 +243,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                              'parent': 'organizations/123/sources/560',
                              'event_time': '2019-03-12T16:06:19Z',
                              'state': 'ACTIVE',
+                             'severity': securitycenter.FindingSeverity.HIGH,
                              'source_properties': {'source': 'FORSETI',
                                                    'rule_name': 'Bucket acls rule to search for public buckets',
                                                    'inventory_index_id': 789,
@@ -248,10 +255,8 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                                    'scanner_index_id': 1551913369403591,
                                                    'resource_type': 'bucket'}}]]
 
-        notifier = cscc_notifier.CsccNotifier('123', self.api_quota)
-
-        inactive_findings = notifier.find_inactive_findings(NEW_FINDINGS,
-                                                            FINDINGS_IN_CSCC)
+        inactive_findings = self.cscc_notifier.find_inactive_findings(
+            NEW_FINDINGS, FINDINGS_IN_CSCC)
 
         assert(len(inactive_findings)) == 0
 
@@ -281,9 +286,16 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                                u'authorized_networks': [u'0.0.0.0/0'],
                                u'full_name': u'organization/123/project/cicd-henry/cloudsqlinstance/456/'},
             'id': 99185,
-            'resource_type': 'cloudsqlinstance'}]
+            'resource_type': 'cloudsqlinstance',
+            'severity': 'high'}]
 
         mock_list.list_findings.return_value = {'readTime': '111'}
-        notifier = cscc_notifier.CsccNotifier('abc', self.api_quota)
-        notifier._send_findings_to_cscc(violations, source_id)
+        self.cscc_notifier._send_findings_to_cscc(violations, source_id)
         self.assertFalse(mock_list.update_finding.called)
+
+    def test_transform_severity_for_api(self):
+        assert self.cscc_notifier.transform_severity_for_api('low') == securitycenter.FindingSeverity.LOW
+        assert self.cscc_notifier.transform_severity_for_api('medium') == securitycenter.FindingSeverity.MEDIUM
+        assert self.cscc_notifier.transform_severity_for_api('high') == securitycenter.FindingSeverity.HIGH
+        assert self.cscc_notifier.transform_severity_for_api('critical') == securitycenter.FindingSeverity.CRITICAL
+        assert self.cscc_notifier.transform_severity_for_api('fake') == securitycenter.FindingSeverity.SEVERITY_UNSPECIFIED

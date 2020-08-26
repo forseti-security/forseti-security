@@ -178,12 +178,12 @@ def run(inventory_index_id,
             if violation_configs:
                 if violation_configs.get('cscc').get('enabled'):
                     source_id = violation_configs.get('cscc').get('source_id')
-                    # beta mode
-                    LOGGER.debug(
-                        'Running CSCC notifier with beta API. source_id: '
-                        '%s', source_id)
+                    log_message = f'Running CSCC notifier. source_id: ' \
+                                  f'{source_id}'
+                    LOGGER.debug(log_message)
+                    progress_queue.put(log_message)
                     (cscc_notifier.CsccNotifier(inventory_index_id,
-                                                api_quota)
+                                                api_quota, progress_queue)
                      .run(violations_as_dict, source_id=source_id))
 
         # Inventory Summary - Save to GCS and/or send email

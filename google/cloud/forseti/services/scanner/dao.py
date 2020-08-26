@@ -176,6 +176,7 @@ class Violation(BASE):
     violation_hash = Column(String(256))
     violation_message = Column(Text)
     violation_type = Column(String(256), nullable=False)
+    severity = Column(String(256), nullable=True, default='')
 
     def __repr__(self):
         """String representation.
@@ -202,7 +203,8 @@ class Violation(BASE):
 
         columns_to_create = [
             Column('resource_name', String(256), default=''),
-            Column('violation_message', Text(), default='')
+            Column('violation_message', Text(), default=''),
+            Column('severity', String(256), default='', nullable=True)
         ]
 
         return {'ALTER': columns_to_alter, 'CREATE': columns_to_create}
@@ -250,7 +252,8 @@ class ViolationAccess(object):
                     violation.get('violation_data'), sort_keys=True),
                 violation_hash=violation_hash,
                 violation_message=violation.get('violation_message', ''),
-                violation_type=violation.get('violation_type')
+                violation_type=violation.get('violation_type'),
+                severity=violation.get('severity', '')
             )
             self.session.add(violation)
 

@@ -33,7 +33,7 @@ LOGGER = logger.get_logger(__name__)
 class CsccNotifier(object):
     """Send violations to CSCC via API or via GCS bucket."""
 
-    def __init__(self, inv_index_id, api_quota):
+    def __init__(self, inv_index_id, api_quota, progress_queue):
         """`Findingsnotifier` initializer.
 
         # TODO: Find out why the InventoryConfig is empty.
@@ -42,9 +42,9 @@ class CsccNotifier(object):
             inv_index_id (str): inventory index ID
             api_quota (dict): API quota configs
         """
-        self.inv_index_id = inv_index_id
-
         self.api_quota = api_quota
+        self.inv_index_id = inv_index_id
+        self.progress_queue = progress_queue
 
     def _transform_for_gcs(self, violations, gcs_upload_path):
         """Transform forseti violations to GCS findings format.
@@ -119,7 +119,7 @@ class CsccNotifier(object):
         """Transform forseti violations to findings for CSCC API.
 
         Args:
-            violations (dict): Violations to be sent to CSCC as findings.
+            violations (list): Violations to be sent to CSCC as findings.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
 
@@ -141,6 +141,8 @@ class CsccNotifier(object):
                 'state': 'ACTIVE',
                 'category': violation.get('violation_type'),
                 'event_time': violation.get('created_at_datetime'),
+                'severity': CsccNotifier.transform_severity_for_api(
+                    violation.get('severity', '')),
                 'source_properties': {
                     'source': 'FORSETI',
                     'db_source': 'table:{}/id:{}'.format(
@@ -205,7 +207,7 @@ class CsccNotifier(object):
         """Send violations to CSCC directly via the CSCC API.
 
         Args:
-            violations (dict): Violations to be uploaded as findings.
+            violations (list): Violations to be uploaded as findings.
             source_id (str): Unique ID assigned by CSCC, to the organization
                 that the violations are originating from.
         """
@@ -241,6 +243,8 @@ class CsccNotifier(object):
                 new_findings,
                 formatted_cscc_findings)
 
+            self.progress_queue.put(f'Creating or updating {len(new_findings)}'
+                                    ' CSCC findings.')
             for finding_list in new_findings:
                 finding_id = finding_list[0]
                 finding = finding_list[1]
@@ -252,6 +256,8 @@ class CsccNotifier(object):
                     LOGGER.exception('Encountered CSCC API error.')
                     continue
 
+            self.progress_queue.put(f'Deactivating {len(inactive_findings)} '
+                                    'CSCC findings.')
             for finding_list in inactive_findings:
                 finding_id = finding_list[0]
                 finding = finding_list[1]
@@ -282,3 +288,27 @@ class CsccNotifier(object):
         LOGGER.debug('Running CSCC. source_id: %s', source_id)
         self._send_findings_to_cscc(violations, source_id=source_id)
         return
+
+    @staticmethod
+    def transform_severity_for_api(severity):
+        """Transform the Config Validator constraint severity to CSCC severity.
+
+        Args:
+            severity (str): Config Validator constraint severity. Expected
+            values from CV are: low, medium, high.
+
+        Returns:
+            str: CSCC severity.
+        """
+        if not severity:
+            return securitycenter.FindingSeverity.SEVERITY_UNSPECIFIED
+
+        constraint_to_cscc_severity_map = {
+            'low': securitycenter.FindingSeverity.LOW,
+            'medium': securitycenter.FindingSeverity.MEDIUM,
+            'high': securitycenter.FindingSeverity.HIGH,
+            'critical': securitycenter.FindingSeverity.CRITICAL
+        }
+        return constraint_to_cscc_severity_map.get(
+            severity.lower(),
+            securitycenter.FindingSeverity.SEVERITY_UNSPECIFIED)

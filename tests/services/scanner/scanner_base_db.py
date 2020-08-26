@@ -35,6 +35,7 @@ FAKE_VIOLATIONS = [
      'resource_type': 'firewall_rule',
      'resource_data': 'inventory_data_111',
      'resource_name': 'fw-tag-match_111',
+     'severity': ''
     },
     {'resource_id': 'fake_firewall_222',
      'full_name': 'full_name_222',
@@ -48,6 +49,7 @@ FAKE_VIOLATIONS = [
      'resource_type': 'firewall_rule',
      'resource_data': 'inventory_data_222',
      'resource_name': 'fw-tag-match_222',
+     'severity': 'high'
     }
 ]
 

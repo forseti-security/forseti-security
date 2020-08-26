@@ -96,7 +96,8 @@ class ConfigValidatorScanner(base_scanner.BaseScanner):
                 'violation_data': json_format.MessageToDict(
                     violation.metadata, including_default_value_fields=True),
                 'resource_data': resource_data,
-                'violation_message': violation.message
+                'violation_message': violation.message,
+                'severity': violation.severity
             }
 
     def _output_results(self, all_violations):
