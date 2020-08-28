@@ -294,6 +294,9 @@ class CsccNotifier(object):
         for "docker image" assets
         for ALL compute type assets
         for DNS managed zone and managed policy assets
+
+        Note that we didn't handle DNS managed zone and managed policy assets
+        since we don't have the enough information by default.
         """
         # 1. Cluster (Always switch to `zones`)
         # Type: "container.googleapis.com/Cluster"
@@ -302,6 +305,11 @@ class CsccNotifier(object):
         # //container.googleapis.com/projects/%s/(zones|regions|locations)/%s/clusters/%s
         # Transformed Format:
         # //container.googleapis.com/projects/%s/zones/%s/clusters/%s
+
+        # If resource_name is empty, return resource_name instead.
+        if not violation.get('resource_name'):
+            return violation.get('full_name')
+
         if violation.get('resource_type') == 'container.googleapis.com/Cluster':
             # Retrieve zone from resource data
             zone = violation.get('resource_data').get('zone', '')
