@@ -47,6 +47,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         self.test_inventory_data = ''
         self.test_violation_data = {}
         self.test_rule_name = ''
+        self.test_resource_name = ''
 
     def test_save_violations(self):
         """Test violations can be saved."""
@@ -175,7 +176,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             json.dumps(self.test_violation_full_name).encode() +
             json.dumps(self.test_inventory_data).encode() +
             json.dumps(self.test_violation_data).encode() +
-            json.dumps(self.test_rule_name).encode()
+            json.dumps(self.test_rule_name).encode(),
+            json.dumps(self.test_resource_name).encode()
         )
         expected_hash = test_hash.hexdigest()
 
@@ -183,7 +185,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             self.test_inventory_data,
             self.test_violation_data,
-            self.test_rule_name)
+            self.test_rule_name,
+            self.test_resource_name)
 
         self.assertEqual(expected_hash, returned_hash)
 
@@ -196,7 +199,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             self.test_inventory_data,
             self.test_violation_data,
-            self.test_rule_name)
+            self.test_rule_name,
+            self.test_resource_name)
 
         self.assertEqual('', returned_hash)
 
@@ -212,7 +216,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             self.test_inventory_data,
             self.test_violation_data,
-            self.test_rule_name)
+            self.test_rule_name,
+            self.test_resource_name)
 
         self.assertEqual(expected_hash, returned_hash)
 
@@ -224,7 +229,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
             self.test_violation_data,
-            self.test_rule_name)
+            self.test_rule_name,
+            self.test_resource_name)
         self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
@@ -235,7 +241,8 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             None,
             self.test_inventory_data,
             self.test_violation_data,
-            self.test_rule_name)
+            self.test_rule_name,
+            self.test_resource_name)
         self.assertEqual(expected_hash, returned_hash)
 
     def test_get_latest_scanner_index_id_with_empty_table(self):

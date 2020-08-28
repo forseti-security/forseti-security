@@ -137,7 +137,8 @@ class CsccNotifier(object):
                 'name': '{0}/findings/{1}'.format(
                     source_id, violation.get('violation_hash')[:32]),
                 'parent': source_id,
-                'resource_name': violation.get('full_name'),
+                'resource_name':
+                    self._cscc_resource_name_transformer(violation),
                 'state': 'ACTIVE',
                 'category': violation.get('violation_type'),
                 'event_time': violation.get('created_at_datetime'),
@@ -282,3 +283,58 @@ class CsccNotifier(object):
         LOGGER.debug('Running CSCC. source_id: %s', source_id)
         self._send_findings_to_cscc(violations, source_id=source_id)
         return
+
+    def _cscc_resource_name_transformer(self, violation):
+        """Generate resource_name that CSCC accepts.
+
+        There are certain assets where CSCC's resource name
+        format differs from CAI's.
+        There are 4 cases where CSCC differ:
+        for "Cluster" assets
+        for "docker image" assets
+        for ALL compute type assets
+        for DNS managed zone and managed policy assets
+        """
+        # 1. Cluster (Always switch to `zones`)
+        # Type: "container.googleapis.com/Cluster"
+        #
+        # Original Format:
+        # //container.googleapis.com/projects/%s/(zones|regions|locations)/%s/clusters/%s
+        # Transformed Format:
+        # //container.googleapis.com/projects/%s/zones/%s/clusters/%s
+        if violation.get('resource_type') == 'container.googleapis.com/Cluster':
+            # Retrieve zone from resource data
+            zone = violation.get('resource_data').get('zone', '')
+            # //container.googleapis.com/projects/forseti-gke-mango/locations/us-west1/clusters/forseti-cluster
+            resource_name_arr = violation.get('resource_name').split('/')
+            resource_name_arr[5] = 'zones'
+            resource_name_arr[6] = zone
+            return '/'.join(resource_name_arr)
+        # 2.Docker Image(Strip prefix)
+        # Type: "containerregistry.googleapis.com/Image"
+        #
+        # Original Format:
+        # //containerregistry.googleapis.com/us.gcr.io/...
+        #
+        # Transformed Format:
+        # us.gcr.io/...
+        elif violation.get('resource_type') == 'containerregistry.googleapis.com/Image':
+            resource_name_arr = violation.get('resource_name').split('/')
+            # Remove first three element: '', '', 'containerregistry.googleapis.com'
+            return '/'.join(resource_name_arr[3:])
+
+        # 3.ALL Compute Types
+        # Type: Begin with "compute.googleapis.com"
+        # Original Format:
+        # //compute.googleapis.com/.../compute-asset-display-name
+        #
+        # Transformed Format:
+        # //compute.googleapis.com/.../compute-asset-numerical-id
+        elif violation.get('resource_type').startswith('compute.googleapis.com'):
+            resource_name_arr = violation.get('resource_name').split('/')
+            # Replace last element with 'compute-asset-numerical-id'
+            numerical_id = violation.get('resource_data').get('id')
+            resource_name_arr[-1] = numerical_id
+            return '/'.join(resource_name_arr)
+
+        return violation.get('resource_name')
