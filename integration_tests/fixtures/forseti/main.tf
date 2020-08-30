@@ -64,6 +64,7 @@ module "forseti" {
 
   # Scanner
   config_validator_enabled = var.config_validator_enabled
+  enabled_apis_enabled     = var.enabled_apis_enabled
 
   # Notifier
   cscc_source_id                  = var.cscc_source_id
