@@ -32,6 +32,12 @@ variable "domain" {
   description = "GCP Organization domain details that will be used for integration tests"
 }
 
+variable "enabled_apis_enabled" {
+  description = "Enabled APIs scanner enabled."
+  type        = bool
+  default     = true
+}
+
 variable "forseti_version" {
   description = "The version of Forseti to deploy"
   default     = "master"
