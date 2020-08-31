@@ -29,6 +29,7 @@ class TestEnabledApisScannerTest:
     @pytest.mark.e2e
     @pytest.mark.scanner
     @pytest.mark.server
+    @pytest.mark.skip(reason="Flaky test, sometimes no violation is found.")
     def test_enabled_apis_scanner(self, cloudsql_connection,
                                   forseti_scan_readonly,
                                   project_id):
