@@ -141,6 +141,11 @@ class ForsetiCli:
         return ForsetiCli.run_process(cmd)
 
     @staticmethod
+    def model_get(model_name: str):
+        cmd = ['forseti', 'model', 'get', model_name]
+        return ForsetiCli.run_process(cmd)
+
+    @staticmethod
     def model_use(model_name: str):
         cmd = ['forseti', 'model', 'use', model_name]
         return ForsetiCli.run_process(cmd)

@@ -38,10 +38,19 @@ control "server-pytest" do
                         --forseti_server_vm_name=#{forseti_server_vm_name} \
                         --project_id=#{project_id}") do
     its('exit_status') { should eq 0 }
+
+    # Model
+    its('stdout') { should match(/test_model_create PASSED/) }
+    its('stdout') { should match(/test_model_delete PASSED/) }
+    its('stdout') { should match(/test_model_roles PASSED/) }
+
+    # Notifiers
     its('stdout') { should match(/test_cscc_findings_match_violations PASSED/) }
+
+    # Scanners
+    # its('stdout') { should match(/test_enabled_apis_scanner PASSED/) }
     its('stdout') { should match(/test_cv_cloudsql_location PASSED/) }
     its('stdout') { should match(/test_cv_compute_zone PASSED/) }
     its('stdout') { should match(/test_cv_scan PASSED/) }
-    its('stdout') { should match(/test_model_roles PASSED/) }
   end
 end
