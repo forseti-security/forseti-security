@@ -372,7 +372,6 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data, r
         resource_data (str): The inventory data.
         violation_data (dict): A violation.
         rule_name (str): Rule or constraint name.
-        resource_name (str): Resource name for this violation.
 
     Returns:
         str: The resulting hex digest or '' if we can't successfully create
