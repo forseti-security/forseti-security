@@ -233,8 +233,7 @@ class ViolationAccess(object):
                 violation.get('full_name', ''),
                 violation.get('resource_data', ''),
                 violation.get('violation_data', ''),
-                violation.get('rule_name', ''),
-                violation.get('resource_name', '')
+                violation.get('rule_name', '')
             )
 
             violation = Violation(
@@ -365,7 +364,7 @@ def map_by_resource(violation_rows):
     return dict(v_by_type)
 
 
-def _create_violation_hash(violation_full_name, resource_data, violation_data, rule_name, resource_name):
+def _create_violation_hash(violation_full_name, resource_data, violation_data, rule_name):
     """Create a hash of violation data.
 
     Args:
@@ -397,8 +396,7 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data, r
             json.dumps(violation_full_name).encode() +
             json.dumps(resource_data, sort_keys=True).encode() +
             json.dumps(violation_data, sort_keys=True).encode() +
-            json.dumps(rule_name).encode() +
-            json.dumps(resource_name).encode()
+            json.dumps(rule_name).encode()
         )
     except TypeError:
         LOGGER.exception('Cannot create hash for a violation: %s',
