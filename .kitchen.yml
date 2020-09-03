@@ -39,7 +39,6 @@ suites:
           controls:
             - client-pytest
             - inventory-cai-gcs-export
-            - model-list
             - notifier-inventory-summary-export
             - scanner-external-project-access-scanner
           hosts_output: forseti-client-vm-ip
@@ -62,12 +61,9 @@ suites:
             - inventory-performance
 #            - inventory-purge
             - logs-debug-level
-            - model-create-get
-            - model-delete
             - notifier-inventory-summary-email
             - notifier-temp-file-deletion
             - scanner-bucket-acl-scanner
-            - server-pytest
             - scanner-enable-audit-logging-scanner
             - scanner-firewall-scanner
             - scanner-run

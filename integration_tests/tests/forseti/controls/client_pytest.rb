@@ -54,6 +54,8 @@ control "client-pytest" do
     its('stdout') { should match(/test_why_granted_role_for_project PASSED/) }
 
     # Model
+    its('stdout') { should match(/test_model_get PASSED/) }
+    its('stdout') { should match(/test_model_list PASSED/) }
     its('stdout') { should match(/test_model_use PASSED/) }
   end
 end
