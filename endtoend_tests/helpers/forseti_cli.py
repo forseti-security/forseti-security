@@ -120,6 +120,16 @@ class ForsetiCli:
         return '', result
 
     @staticmethod
+    def inventory_get(inventory_index_id):
+        cmd = ['forseti', 'inventory', 'get', inventory_index_id]
+        return ForsetiCli.run_process(cmd)
+
+    @staticmethod
+    def inventory_list():
+        cmd = ['forseti', 'inventory', 'list']
+        return ForsetiCli.run_process(cmd)
+
+    @staticmethod
     def inventory_delete(inventory_id: str):
         cmd = ['forseti', 'inventory', 'delete', inventory_id]
         return ForsetiCli.run_process(cmd)

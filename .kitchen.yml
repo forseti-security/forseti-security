@@ -38,7 +38,6 @@ suites:
           backend: ssh
           controls:
             - client-pytest
-            - inventory-cai-gcs-export
             - notifier-inventory-summary-export
             - scanner-external-project-access-scanner
           hosts_output: forseti-client-vm-ip
@@ -55,9 +54,7 @@ suites:
             - enforcer-remediates-firewall-rule
             - explain-resource-count-match
             - inventory-cai-enabled-vs-disabled
-            - inventory-create
             - inventory-delete
-            - inventory-get-list
             - inventory-performance
 #            - inventory-purge
             - logs-debug-level
