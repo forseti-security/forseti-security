@@ -19,6 +19,7 @@ import tempfile
 
 from retrying import retry
 from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import Index
 from sqlalchemy import PrimaryKeyConstraint
@@ -72,12 +73,14 @@ class CaiTemporaryStore(BASE):
     content_type = Column(Enum(ContentTypes), nullable=False)
     asset_type = Column(String(255), nullable=False)
     asset_data = Column(LargeBinary(length=(2**32) - 1), nullable=False)
+    update_time = Column(DateTime, nullable=True)
 
     __table_args__ = (
         Index('idx_parent_name', 'parent_name'),
         PrimaryKeyConstraint('content_type',
                              'asset_type',
                              'name',
+                             'update_time',
                              name='cai_temp_store_pk'))
 
     # Assets with no parent resource.
@@ -145,7 +148,8 @@ class CaiTemporaryStore(BASE):
                 'parent_name': parent_name,
                 'content_type': content_type,
                 'asset_type': asset['asset_type'],
-                'asset_data': asset_data.encode('utf-8')}
+                'asset_data': asset_data.encode('utf-8'),
+                'update_time': asset['update_time']}
 
     @classmethod
     def delete_all(cls, engine):
@@ -365,6 +369,9 @@ class CaiDataAccess(object):
             base_query = base_query.where(qry_filter)
 
         base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+
+        # TODO: Construct subquery to get latest asset
+
         results = engine.execute(base_query)
 
         for row in results:
@@ -396,6 +403,9 @@ class CaiDataAccess(object):
 
         for qry_filter in filters:
             base_query = base_query.where(qry_filter)
+
+        # Order by update time so that the latest asset is returned
+        base_query.order_by(CaiTemporaryStore.update_time.desc())
 
         results = engine.execute(base_query)
         row = results.first()
