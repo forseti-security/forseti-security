@@ -341,9 +341,7 @@ class CaiDataAccess(object):
                 if row:
                     num_rows += 1
                     rows.append(row)
-                    # Datetime doesn't have length so assume 21 bytes for now (length of the string)
-                    rows_total_length += len(row['name']) + len(row['parent_name']) + len(row['content_type']) +\
-                                         len(row['asset_type']) + len(row['asset_data']) + 21
+                    rows_total_length += sum(len(str(v)) for v in row.values())
                     if rows_total_length > MAX_ALLOWED_INSERT_SIZE * .9:
                         LOGGER.debug('Flushing %i rows to CAI table', len(rows))
                         engine.execute(cai_table_insert(), rows)
