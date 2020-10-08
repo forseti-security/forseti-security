@@ -64,12 +64,14 @@ Install mysql_config:
 
 ## Creating a virtualenv
 
-Ensure virtualenv is installed in your system. Virtualenv allows you to
-create multiple environments to contain different modules and dependencies
-in different projects:
+Ensure virtualenv and virtualenvwrapper are installed in your system. Virtualenv
+allows you to create multiple environments to contain different modules and
+dependencies in different projects:
 
   ```bash
   sudo pip3 install virtualenv
+  sudo pip3 install virtualenvwrapper
+  echo "source '$(which virtualenvwrapper.sh)' > /dev/null" >> ~/.bash_profile
   ```
 
 Use the following command to create a virtualenv:
@@ -194,7 +196,7 @@ You can also put these into your bash profile:
   export WORKON_HOME=$HOME/.virtualenvs
   source /usr/local/bin/virtualenvwrapper.sh
   ```
- 
+
 ------------------
 
 If on Linux executing ``python3 setup.py install``
@@ -223,7 +225,7 @@ results in ``my_config.h`` not found, then try the following:
   brew unlink mysql-connector-c
 
   brew link --overwrite mysql
-  
+
   ```
 
 ------------------
