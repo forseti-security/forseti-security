@@ -16,6 +16,7 @@ import json
 import os
 import enum
 import tempfile
+from datetime import datetime
 
 from retrying import retry
 from sqlalchemy import Column
@@ -25,6 +26,8 @@ from sqlalchemy import Index
 from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import LargeBinary
+from sqlalchemy import func, and_
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.pool import SingletonThreadPool
@@ -77,6 +80,7 @@ class CaiTemporaryStore(BASE):
 
     __table_args__ = (
         Index('idx_parent_name', 'parent_name'),
+        Index('idx_name_update_time', 'name', 'update_time'),
         PrimaryKeyConstraint('content_type',
                              'asset_type',
                              'name',
@@ -149,7 +153,7 @@ class CaiTemporaryStore(BASE):
                 'content_type': content_type,
                 'asset_type': asset['asset_type'],
                 'asset_data': asset_data.encode('utf-8'),
-                'update_time': asset['update_time']}
+                'update_time': datetime.strptime(asset['update_time'], "%Y-%m-%dT%H:%M:%SZ") }
 
     @classmethod
     def delete_all(cls, engine):
@@ -285,6 +289,17 @@ class CaiTemporaryStore(BASE):
 
         return ''
 
+    def _get_asset_data(self):
+        """Extracts the data from the database row of table type.
+
+        Returns:
+            Tuple[dict, AssetMetadata]: The dict representation of the asset
+                data and an Asset metadata along with it.
+        """
+        asset = json.loads(self.asset_data)
+        asset_metadata = AssetMetadata(cai_name=self.name,
+                                       cai_type=self.asset_type)
+        return asset, asset_metadata
 
 class CaiDataAccess(object):
     """Access to the CAI temporary store table."""
@@ -326,7 +341,7 @@ class CaiDataAccess(object):
                 if row:
                     num_rows += 1
                     rows.append(row)
-                    rows_total_length += sum(len(v) for v in row.values())
+                    rows_total_length += sum(len(str(v)) for v in row.values())
                     if rows_total_length > MAX_ALLOWED_INSERT_SIZE * .9:
                         LOGGER.debug('Flushing %i rows to CAI table', len(rows))
                         engine.execute(cai_table_insert(), rows)
@@ -358,24 +373,26 @@ class CaiDataAccess(object):
         Yields:
             object: The content_type data for each resource.
         """
-        base_query = CaiTemporaryStore.__table__.select()
-        filters = [
-            CaiTemporaryStore.parent_name == parent_name,
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-        ]
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
-        for qry_filter in filters:
-            base_query = base_query.where(qry_filter)
+        join_query = session.query( CaiTemporaryStore, CaiTemporaryStore.name,
+                                    func.max(CaiTemporaryStore.update_time).label('update_time_join')
+                                  ).group_by( CaiTemporaryStore.name ).subquery( 'joinq' )
 
-        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+        query = session.query( CaiTemporaryStore ).filter(CaiTemporaryStore.parent_name == parent_name).\
+                                                   filter(CaiTemporaryStore.content_type == content_type).\
+                                                   filter(CaiTemporaryStore.asset_type == asset_type)
 
-        # TODO: Construct subquery to get latest asset
+        query = query.join( join_query, and_(CaiTemporaryStore.name == join_query.c.name,
+                                             CaiTemporaryStore.update_time == join_query.c.update_time_join)
+                          ).order_by(CaiTemporaryStore.name.asc())
 
-        results = engine.execute(base_query)
-
+        results = query.all()
         for row in results:
-            yield CaiDataAccess._extract_asset_data(row)
+            yield row._get_asset_data()
+
+        session.commit()
 
     @staticmethod
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
