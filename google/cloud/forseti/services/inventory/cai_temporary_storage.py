@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Inventory temporary storage for Cloud Asset data."""
+import dateutil.parser
+import enum
 import json
 import os
-import enum
 import tempfile
-from datetime import datetime
 
 from retrying import retry
 from sqlalchemy import Column
@@ -27,7 +27,6 @@ from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import LargeBinary
 from sqlalchemy import func, and_
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.pool import SingletonThreadPool
@@ -148,12 +147,14 @@ class CaiTemporaryStore(BASE):
                            asset)
             return None
 
-        return {'name': name or asset['name'],
-                'parent_name': parent_name,
-                'content_type': content_type,
-                'asset_type': asset['asset_type'],
-                'asset_data': asset_data.encode('utf-8'),
-                'update_time': datetime.strptime(asset['update_time'], "%Y-%m-%dT%H:%M:%SZ") }
+        return {
+            'name': name or asset['name'],
+            'parent_name': parent_name,
+            'content_type': content_type,
+            'asset_type': asset['asset_type'],
+            'asset_data': asset_data.encode('utf-8'),
+            'update_time': dateutil.parser.parse(asset['update_time'])
+        }
 
     @classmethod
     def delete_all(cls, engine):
@@ -289,17 +290,6 @@ class CaiTemporaryStore(BASE):
 
         return ''
 
-    def _get_asset_data(self):
-        """Extracts the data from the database row of table type.
-
-        Returns:
-            Tuple[dict, AssetMetadata]: The dict representation of the asset
-                data and an Asset metadata along with it.
-        """
-        asset = json.loads(self.asset_data)
-        asset_metadata = AssetMetadata(cai_name=self.name,
-                                       cai_type=self.asset_type)
-        return asset, asset_metadata
 
 class CaiDataAccess(object):
     """Access to the CAI temporary store table."""
@@ -373,26 +363,43 @@ class CaiDataAccess(object):
         Yields:
             object: The content_type data for each resource.
         """
-        Session = sessionmaker(bind=engine)
-        session = Session()
+        base_query = CaiTemporaryStore.__table__.select()
+        filters = [
+            CaiTemporaryStore.parent_name == parent_name,
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+        ]
+        for qry_filter in filters:
+            base_query = base_query.where(qry_filter)
 
-        join_query = session.query( CaiTemporaryStore, CaiTemporaryStore.name,
-                                    func.max(CaiTemporaryStore.update_time).label('update_time_join')
-                                  ).group_by( CaiTemporaryStore.name ).subquery( 'joinq' )
+        # Sub-query used by the join to get the latest asset based on update_time
+        sub_query_columns = [
+            CaiTemporaryStore.name.label('name2'),
+            CaiTemporaryStore.asset_type.label('asset_type2'),
+            CaiTemporaryStore.content_type.label('content_type2'),
+            func.max(CaiTemporaryStore.update_time).label('update_time_join')
+        ]
+        sub_query = CaiTemporaryStore.__table__.select().with_only_columns(sub_query_columns)
+        sub_query = sub_query.group_by(CaiTemporaryStore.name)
+        sub_query = sub_query.group_by(CaiTemporaryStore.asset_type)
+        sub_query = sub_query.group_by(CaiTemporaryStore.content_type)
 
-        query = session.query( CaiTemporaryStore ).filter(CaiTemporaryStore.parent_name == parent_name).\
-                                                   filter(CaiTemporaryStore.content_type == content_type).\
-                                                   filter(CaiTemporaryStore.asset_type == asset_type)
+        join = CaiTemporaryStore.__table__.join(
+            sub_query,
+            and_(
+                base_query.c.name == sub_query.c.name2,
+                base_query.c.asset_type == sub_query.c.asset_type2,
+                base_query.c.content_type == sub_query.c.content_type2,
+                base_query.c.update_time == sub_query.c.update_time_join
+            )
+        )
 
-        query = query.join( join_query, and_(CaiTemporaryStore.name == join_query.c.name,
-                                             CaiTemporaryStore.update_time == join_query.c.update_time_join)
-                          ).order_by(CaiTemporaryStore.name.asc())
+        query = base_query.select_from(join)
+        results = engine.execute(query)
 
-        results = query.all()
+        # Process results
         for row in results:
-            yield row._get_asset_data()
-
-        session.commit()
+            yield CaiDataAccess._extract_asset_data(row)
 
     @staticmethod
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -427,10 +434,10 @@ class CaiDataAccess(object):
         results = engine.execute(base_query)
         row = results.first()
 
-        if row:
-            return CaiDataAccess._extract_asset_data(row)
+        if not row:
+            return {}, None
 
-        return {}, None
+        return CaiDataAccess._extract_asset_data(row)
 
     @staticmethod
     def _extract_asset_data(row):

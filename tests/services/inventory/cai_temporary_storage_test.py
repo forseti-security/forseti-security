@@ -1,14 +1,14 @@
 """Tests for google.services.inventory.cai_temporary_storage."""
 
-from future import standard_library
-standard_library.install_aliases()
-from io import StringIO
 import unittest
-
-from tests.unittest_utils import ForsetiTestCase
-
+from future import standard_library
+from io import StringIO
 from google.cloud.forseti.services.inventory.base.gcp import AssetMetadata
 from google.cloud.forseti.services.inventory import cai_temporary_storage
+from tests.unittest_utils import ForsetiTestCase
+
+standard_library.install_aliases()
+
 
 class CaiTemporaryStoreTest(ForsetiTestCase):
     """Test the CaiTemporaryStore table and DAO."""
@@ -124,7 +124,6 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         self.assertEqual((expected_iam_policy,
                           AssetMetadata(cai_type=cai_type, cai_name=cai_name)),
                          results)
-
 
 
 CAI_RESOURCE_DATA = """{"name":"//cloudresourcemanager.googleapis.com/organizations/1234567890","asset_type":"cloudresourcemanager.googleapis.com/Organization","resource":{"version":"v1beta1","discovery_document_uri":"https://cloudresourcemanager.googleapis.com/$discovery/rest","discovery_name":"Organization","data":{"creationTime":"2016-09-02T18:55:58.783Z","displayName":"test.forseti","lastModifiedTime":"2017-02-14T05:43:45.012Z","lifecycleState":"ACTIVE","name":"organizations/1234567890","organizationId":"1234567890","owner":{"directoryCustomerId":"C00h00n00"}}},"update_time":"2020-02-27T14:00:00Z"}
