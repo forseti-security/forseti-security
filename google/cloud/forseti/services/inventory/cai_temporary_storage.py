@@ -429,7 +429,7 @@ class CaiDataAccess(object):
             base_query = base_query.where(qry_filter)
 
         # Order by update time so that the latest asset is returned
-        base_query.order_by(CaiTemporaryStore.update_time.desc())
+        base_query = base_query.order_by(CaiTemporaryStore.update_time.desc())
 
         results = engine.execute(base_query)
         row = results.first()
