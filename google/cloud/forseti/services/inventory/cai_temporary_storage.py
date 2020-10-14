@@ -78,8 +78,12 @@ class CaiTemporaryStore(BASE):
     update_time = Column(DateTime, nullable=True)
 
     __table_args__ = (
+        # old
         Index('idx_parent_name', 'parent_name'),
         Index('idx_name_update_time', 'name', 'update_time'),
+        # new
+        # Index('idx_name_asset_type_content_type_update_time', 'name', 'asset_type', 'content_type', 'update_time'),
+        # Index('idx_parent_name_asset_type_content_type', 'parent_name', 'asset_type', 'content_type'),
         PrimaryKeyConstraint('content_type',
                              'asset_type',
                              'name',
@@ -364,13 +368,9 @@ class CaiDataAccess(object):
             object: The content_type data for each resource.
         """
         base_query = CaiTemporaryStore.__table__.select()
-        filters = [
-            CaiTemporaryStore.parent_name == parent_name,
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-        ]
-        for qry_filter in filters:
-            base_query = base_query.where(qry_filter)
+        base_query = base_query.where(CaiTemporaryStore.parent_name == parent_name)
+        base_query = base_query.where(CaiTemporaryStore.asset_type == asset_type)
+        base_query = base_query.where(CaiTemporaryStore.content_type == content_type)
 
         # Sub-query used by the join to get the latest asset based on update_time
         sub_query_columns = [
@@ -380,6 +380,9 @@ class CaiDataAccess(object):
             func.max(CaiTemporaryStore.update_time).label('update_time_join')
         ]
         sub_query = CaiTemporaryStore.__table__.select().with_only_columns(sub_query_columns)
+        sub_query = sub_query.where(CaiTemporaryStore.parent_name == parent_name)
+        sub_query = sub_query.where(CaiTemporaryStore.asset_type == asset_type)
+        sub_query = sub_query.where(CaiTemporaryStore.content_type == content_type)
         sub_query = sub_query.group_by(CaiTemporaryStore.name)
         sub_query = sub_query.group_by(CaiTemporaryStore.asset_type)
         sub_query = sub_query.group_by(CaiTemporaryStore.content_type)
@@ -420,9 +423,9 @@ class CaiDataAccess(object):
         """
         base_query = CaiTemporaryStore.__table__.select()
         filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
             CaiTemporaryStore.name == name,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.content_type == content_type,
         ]
 
         for qry_filter in filters:
