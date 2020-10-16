@@ -93,6 +93,7 @@ class ProjectEnforcer(object):
 
     def enforce_firewall_policy(self,
                                 firewall_policy,
+                                current_rules=None,
                                 networks=None,
                                 allow_empty_ruleset=False,
                                 prechange_callback=None,
@@ -104,6 +105,8 @@ class ProjectEnforcer(object):
         Args:
             firewall_policy (list): A list of firewall rules that should be
                 configured on the project networks.
+            current_rules (str): A JSON str of firewall rules that specify
+                current firewall policies.
             networks (list): A list of networks on the project that the
                 policy applies to. If undefined, then the policy will be applied
                 to all networks.
@@ -137,9 +140,12 @@ class ProjectEnforcer(object):
 
             expected_rules = self._get_expected_rules(networks,
                                                       firewall_policy)
-
-            rules_before_enforcement = self._get_current_fw_rules(
-                add_rule_callback)
+            if not current_rules:
+                rules_before_enforcement = self._get_current_fw_rules(
+                    add_rule_callback)
+            else:
+                rules_before_enforcement = fe.FirewallRules(self.project_id)
+                rules_before_enforcement.add_rules_from_json(current_rules)
 
         except EnforcementError as e:
             self._set_error_status(e.reason())
@@ -173,6 +179,38 @@ class ProjectEnforcer(object):
             LOGGER.info('Firewall policy not changed for %s', self.project_id)
 
         return self.result
+
+    def _check_changes_fully_made(self,
+                                  rules_after_enforcement,
+                                  expected_rules,
+                                  rules_to_delete,
+                                  rules_to_add,
+                                  rules_to_update):
+        """Check if all changes are fully made after enforcement.
+
+        Args:
+            rules_after_enforcement (fe.FirewallRules): Rules after enforcement.
+            expected_rules (fe.FirewallRules): Expected rules.
+            rules_to_delete (list): Rules to delete.
+            rules_to_add (list): Rules to add.
+            rules_to_update (list): Rules to update.
+
+        Returns:
+            bool: Are changes fully made after enforcement.
+        """
+        for rule in rules_to_delete:
+            if rule in rules_after_enforcement.rules:
+                return False
+        for rule in rules_to_add:
+            if rule not in rules_after_enforcement.rules:
+                return False
+        for rule in rules_to_update:
+            if (rule not in rules_after_enforcement.rules or
+                rules_after_enforcement.rules[rule] !=
+                expected_rules.rules[rule]):
+                return False
+
+        return True
 
     def _apply_firewall_policy(self,
                                firewall_enforcer,
@@ -215,11 +253,14 @@ class ProjectEnforcer(object):
         retry_enforcement_count = 0
         while self.result.status not in (STATUS_ERROR, STATUS_DELETED):
             change_count = 0
+            rules_to_delete, rules_to_add, rules_to_update = [], [], []
             try:
                 change_count = firewall_enforcer.apply_firewall(
                     prechange_callback=prechange_callback,
                     allow_empty_ruleset=allow_empty_ruleset,
                     networks=networks)
+                (rules_to_delete, rules_to_add,
+                 rules_to_update) = firewall_enforcer.fetch_rules_to_change()
             except fe.FirewallEnforcementFailedError as e:
                 self._set_error_status(
                     'error enforcing firewall for project: %s', e)
@@ -239,7 +280,11 @@ class ProjectEnforcer(object):
                 break
 
             if ((self._dry_run and not retry_on_dry_run) or
-                    rules_after_enforcement == expected_rules):
+                self._check_changes_fully_made(rules_after_enforcement,
+                                               expected_rules,
+                                               rules_to_delete,
+                                               rules_to_add,
+                                               rules_to_update)):
                 break
 
             retry_enforcement_count += 1
