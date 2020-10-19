@@ -206,8 +206,8 @@ class ProjectEnforcer(object):
                 return False
         for rule in rules_to_update:
             if (rule not in rules_after_enforcement.rules or
-                rules_after_enforcement.rules[rule] !=
-                expected_rules.rules[rule]):
+                 rules_after_enforcement.rules[rule] !=
+                 expected_rules.rules[rule]):
                 return False
 
         return True
