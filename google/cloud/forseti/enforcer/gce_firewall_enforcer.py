@@ -648,6 +648,17 @@ class FirewallEnforcer(object):
 
         return changed_count
 
+    def fetch_rules_to_change(self):
+        """Fetches the rules that are supposed to be changed.
+
+        Returns:
+            list: Rules to delete.
+            list: Rules to insert.
+            list: Rules to update.
+        """
+        return (self._rules_to_delete, self._rules_to_insert,
+                self._rules_to_update)
+
     def refresh_current_rules(self):
         """Updates the current rules for the project using the compute API."""
         current_rules = FirewallRules(self.project,
