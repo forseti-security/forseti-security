@@ -18,7 +18,7 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = cai_temporary_storage.create_sqlite_db()
 
-    def _add_resource_data(self, data):
+    def _add_cai_data(self, data):
         """Add CAI resources to temporary table."""
         resource_data = StringIO(data)
         rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
@@ -26,30 +26,14 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         expected_rows = len(data.split('\n'))
         self.assertEqual(expected_rows, rows)
 
-    def _add_resources(self):
-        """Add CAI resources to temporary table."""
-        resource_data = StringIO(CAI_RESOURCE_DATA)
-        rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
-            resource_data, self.engine)
-        expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
-        self.assertEqual(expected_rows, rows)
-
-    def _add_iam_policies(self):
-        """Add CAI IAM Policies to temporary table."""
-        iam_policy_data = StringIO(CAI_IAM_POLICY_DATA)
-        rows = cai_temporary_storage.CaiDataAccess.populate_cai_data(
-            iam_policy_data, self.engine)
-        expected_rows = len(CAI_IAM_POLICY_DATA.split('\n'))
-        self.assertEqual(expected_rows, rows)
-
     def test_populate_cai_data(self):
         """Validate CAI data insert."""
-        self._add_resources()
-        self._add_iam_policies()
+        self._add_cai_data(CAI_RESOURCE_DATA)
+        self._add_cai_data(CAI_IAM_POLICY_DATA)
 
     def test_clear_cai_data(self):
         """Validate CAI data delete."""
-        self._add_resources()
+        self._add_cai_data(CAI_RESOURCE_DATA)
 
         rows = cai_temporary_storage.CaiDataAccess.clear_cai_data(self.engine)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
@@ -62,17 +46,16 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
             self.engine)
         self.assertEqual(0, len(list(results)))
 
-    def test_iter_cai_assets(self):
-        """Validate querying CAI asset data."""
-        self._add_resources()
-
+    def test_iter_cai_assets_for_organization(self):
+        """Validate querying CAI asset data for organization parent."""
+        self._add_cai_data(CAI_RESOURCE_DATA)
         cai_type = 'cloudresourcemanager.googleapis.com/Folder'
 
         results = cai_temporary_storage.CaiDataAccess.iter_cai_assets(
-            cai_temporary_storage.ContentTypes.resource,
-            cai_type,
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
-            self.engine)
+            content_type=cai_temporary_storage.ContentTypes.resource,
+            asset_type=cai_type,
+            parent_name='//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            engine=self.engine)
 
         expected_results = [
             ('folders/11111',
@@ -85,13 +68,16 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
                          [(asset['name'], metadata)
                           for asset, metadata in results])
 
+    def test_iter_cai_assets_for_project(self):
+        """Validate querying CAI asset data for project parent."""
+        self._add_cai_data(CAI_RESOURCE_DATA)
         cai_type = 'appengine.googleapis.com/Service'
 
         results = cai_temporary_storage.CaiDataAccess.iter_cai_assets(
-            cai_temporary_storage.ContentTypes.resource,
-            cai_type,
-            '//appengine.googleapis.com/apps/forseti-test-project',
-            self.engine)
+            content_type=cai_temporary_storage.ContentTypes.resource,
+            asset_type=cai_type,
+            parent_name='//appengine.googleapis.com/apps/forseti-test-project',
+            engine=self.engine)
 
         expected_results = [
           ('apps/forseti-test-project/services/default',
@@ -103,19 +89,51 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
                          [(asset['name'], metadata)
                           for asset, metadata in results])
 
-    def test_fetch_cai_asset(self):
-        """Validate querying single CAI asset."""
-        self._add_iam_policies()
+    def test_iter_cai_assets_returns_latest_asset(self):
+        """Validate querying single CAI asset with multiple entries returns
+        the latest."""
+        self._add_cai_data(CAI_RESOURCE_DATA)
+        self._add_cai_data(CAI_IAM_POLICY_DATA)
+        name = '//storage.googleapis.com/foresti-test-bucket-12345'
+        asset_type = 'storage.googleapis.com/Bucket'
 
+        results = cai_temporary_storage.CaiDataAccess.iter_cai_assets(
+            content_type=cai_temporary_storage.ContentTypes.iam_policy,
+            asset_type=asset_type,
+            parent_name=name,
+            engine=self.engine)
+
+        expected_iam_policy = [(
+            {
+                'etag': 'BEWt4fkUMSo=',
+                'bindings': [
+                    {
+                        'role': 'roles/storage.legacyBucketOwner',
+                        'members': [
+                            'projectEditor:forseti-gce-test',
+                            'projectOwner:forseti-gce-test'
+                        ]
+                    }
+                ]
+            },
+            AssetMetadata(cai_type=asset_type, cai_name=name)
+        )]
+        self.assertEqual(expected_iam_policy, list(results))
+
+    def test_fetch_cai_asset(self):
+        """Validate querying single CAI asset with multiple entries returns
+        the latest."""
+        self._add_cai_data(CAI_IAM_POLICY_DATA)
         cai_type = 'cloudresourcemanager.googleapis.com/Organization'
         cai_name = ('//cloudresourcemanager.googleapis.com/organizations/'
                     '1234567890')
 
         results = cai_temporary_storage.CaiDataAccess.fetch_cai_asset(
-            cai_temporary_storage.ContentTypes.iam_policy,
-            cai_type,
-            cai_name,
-            self.engine)
+            content_type=cai_temporary_storage.ContentTypes.iam_policy,
+            asset_type=cai_type,
+            name=cai_name,
+            engine=self.engine)
+
         expected_iam_policy = {
             'etag': 'BwVvLqcT+M4=',
             'bindings': [
@@ -136,7 +154,7 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
     def test_fetch_cai_asset_returns_latest_asset(self):
         """Validate querying single CAI asset with multiple entries returns
         the latest."""
-        self._add_resource_data(CAI_BUCKET_RESOURCE_DATA)
+        self._add_cai_data(CAI_IAM_POLICY_DATA)
         name = '//storage.googleapis.com/foresti-test-bucket-12345'
         asset_type = 'storage.googleapis.com/Bucket'
         content_type = cai_temporary_storage.ContentTypes.iam_policy
@@ -174,17 +192,18 @@ CAI_RESOURCE_DATA = """{"name":"//cloudresourcemanager.googleapis.com/organizati
 {"name":"//storage.googleapis.com/Bucket-Test-55555","asset_type":"storage.googleapis.com/Bucket","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/storage/v1/rest","discovery_name":"Bucket","parent":"//cloudresourcemanager.googleapis.com/projects/44444","data":{"acl":[],"billing":{},"cors":[],"defaultObjectAcl":[],"encryption":{},"etag":"CAE=","id":"Bucket-Test-55555","kind":"storage#bucket","labels":{},"lifecycle":{"rule":[]},"location":"US","logging":{},"metageneration":1,"name":"Bucket-Test-55555","owner":{},"projectNumber":44444,"retentionPolicy":{},"selfLink":"https://www.googleapis.com/storage/v1/b/Bucket-Test-55555","storageClass":"STANDARD","timeCreated":"2018-08-29T01:37:30.689Z","updated":"2018-08-29T02:37:30.689Z","versioning":{},"website":{}}},"update_time":"2020-02-27T14:00:00Z"}
 {"name":"//appengine.googleapis.com/apps/forseti-test-project","asset_type":"appengine.googleapis.com/Application","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Application","parent":"//cloudresourcemanager.googleapis.com/projects/33333","data":{"authDomain":"gmail.com","codeBucket":"staging.forseti-test-project.testing","defaultBucket":"forseti-test-project.testing","defaultHostname":"forseti-test-project.testing","gcrDomain":"us.gcr.io","id":"forseti-test-project","locationId":"us-central","name":"apps/forseti-test-project","servingStatus":"SERVING"}},"update_time":"2020-02-27T14:00:00Z"}
 {"name":"//appengine.googleapis.com/apps/forseti-test-project/services/default","asset_type":"appengine.googleapis.com/Service","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Service","data":{"id":"default","name":"apps/forseti-test-project/services/default","split":{"allocations":{"20161228t180613":1}}}},"update_time":"2020-02-27T14:00:00Z"}
-{"name":"//appengine.googleapis.com/apps/forseti-test-project/services/default/versions/20161228t180613","asset_type":"appengine.googleapis.com/Version","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Version","data":{"automaticScaling":{"coolDownPeriod":"120s","cpuUtilization":{"targetUtilization":0.5},"maxTotalInstances":20,"minTotalInstances":2},"betaSettings":{"has_docker_image":"true","module_yaml_path":"app.yaml"},"createTime":"2016-12-29T02:07:12Z","deployment":{"container":{"image":"us.gcr.io/forseti-test-project/appengine/default.20161228t180613@sha256:b48abad1caa549dd03070e53d1124f9474ac20472c7f61ee14d653d0a2ae2a5e"}},"envVariables":{"POLICY_SCANNER_DATAFLOW_TMP_BUCKET":"forseti-test-project.testing","POLICY_SCANNER_INPUT_REPOSITORY_URL":"forseti-test-project.testing","POLICY_SCANNER_ORG_ID":"1234567890","POLICY_SCANNER_ORG_NAME":"Forseti Test","POLICY_SCANNER_SINK_URL":"gs://forseti-test-project.testing/OUTPUT","PROJECT_ID":"forseti-test-project"},"id":"20161228t180613","name":"apps/forseti-test-project/services/default/versions/20161228t180613","runtime":"java","runtimeApiVersion":"1.0","servingStatus":"SERVING","threadsafe":true,"versionUrl":"https://20161228t180613-dot-forseti-test-project.testing","vm":true}},"update_time":"2020-02-27T14:00:00Z"}"""
+{"name":"//appengine.googleapis.com/apps/forseti-test-project/services/default/versions/20161228t180613","asset_type":"appengine.googleapis.com/Version","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/appengine/v1/rest","discovery_name":"Version","data":{"automaticScaling":{"coolDownPeriod":"120s","cpuUtilization":{"targetUtilization":0.5},"maxTotalInstances":20,"minTotalInstances":2},"betaSettings":{"has_docker_image":"true","module_yaml_path":"app.yaml"},"createTime":"2016-12-29T02:07:12Z","deployment":{"container":{"image":"us.gcr.io/forseti-test-project/appengine/default.20161228t180613@sha256:b48abad1caa549dd03070e53d1124f9474ac20472c7f61ee14d653d0a2ae2a5e"}},"envVariables":{"POLICY_SCANNER_DATAFLOW_TMP_BUCKET":"forseti-test-project.testing","POLICY_SCANNER_INPUT_REPOSITORY_URL":"forseti-test-project.testing","POLICY_SCANNER_ORG_ID":"1234567890","POLICY_SCANNER_ORG_NAME":"Forseti Test","POLICY_SCANNER_SINK_URL":"gs://forseti-test-project.testing/OUTPUT","PROJECT_ID":"forseti-test-project"},"id":"20161228t180613","name":"apps/forseti-test-project/services/default/versions/20161228t180613","runtime":"java","runtimeApiVersion":"1.0","servingStatus":"SERVING","threadsafe":true,"versionUrl":"https://20161228t180613-dot-forseti-test-project.testing","vm":true}},"update_time":"2020-02-27T14:00:00Z"}
+{"name":"//storage.googleapis.com/foresti-test-bucket-12345","asset_type":"storage.googleapis.com/Bucket","resource":{"version":"v1","discovery_document_uri":"https://www.googleapis.com/discovery/v1/apis/storage/v1/rest","discovery_name":"Bucket","parent":"//cloudresourcemanager.googleapis.com/projects/44444","data":{"acl":[],"billing":{},"cors":[],"defaultObjectAcl":[],"encryption":{},"etag":"CAE=","iamConfiguration":{"bucketPolicyOnly":{"enabled":true,"lockedTime":"2020-11-12T18:15:46.663Z"},"uniformBucketLevelAccess":{"enabled":true,"lockedTime":"2020-11-12T18:15:46.663Z"}},"id":"foresti-test-bucket-12345","kind":"storage#bucket","labels":{},"lifecycle":{"rule":[{"action":{"type":"Delete"},"condition":{"age":14,"matchesStorageClass":[]}}]},"location":"US-CENTRAL1","locationType":"region","logging":{},"metageneration":1,"name":"foresti-test-bucket-12345","owner":{},"projectNumber":44444,"retentionPolicy":{},"selfLink":"https://www.googleapis.com/storage/v1/b/foresti-test-bucket-12345","storageClass":"STANDARD","timeCreated":"2020-08-14T18:15:46.663Z","updated":"2020-08-14T18:15:46.663Z","versioning":{},"website":{},"zoneAffinity":[]},"location":"us-central1"},"ancestors":["projects/44444","folders/22222","folders/11111","organizations/1234567890"],"update_time":"2020-08-14T18:15:46.663Z"}"""
 
 CAI_IAM_POLICY_DATA = """{"name":"//cloudresourcemanager.googleapis.com/folders/11111","asset_type":"cloudresourcemanager.googleapis.com/Folder","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/resourcemanager.folderAdmin","members":["user:user1@test.forseti"]},{"role":"roles/resourcemanager.folderEditor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}
 {"name":"//cloudresourcemanager.googleapis.com/folders/22222","asset_type":"cloudresourcemanager.googleapis.com/Folder","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/resourcemanager.folderAdmin","members":["user:user1@test.forseti"]},{"role":"roles/resourcemanager.folderEditor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}
 {"name":"//cloudresourcemanager.googleapis.com/projects/33333","asset_type":"cloudresourcemanager.googleapis.com/Project","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Editor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}
 {"name":"//cloudresourcemanager.googleapis.com/projects/33333","asset_type":"cloudresourcemanager.googleapis.com/Project","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Editor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:01Z"}
 {"name":"//cloudresourcemanager.googleapis.com/projects/44444","asset_type":"cloudresourcemanager.googleapis.com/Project","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Editor","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}
-{"name":"//cloudresourcemanager.googleapis.com/organizations/1234567890","asset_type":"cloudresourcemanager.googleapis.com/Organization","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Viewer","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}"""
-
-CAI_BUCKET_RESOURCE_DATA = """{"name":"//storage.googleapis.com/foresti-test-bucket-12345","asset_type":"storage.googleapis.com/Bucket","iam_policy":{"etag":"BvWt4fyUMSE=","bindings":[]},"ancestors":["projects/0987654321","organizations/1234567890"],"update_time":"2020-08-27T20:43:24.564773Z"}
+{"name":"//cloudresourcemanager.googleapis.com/organizations/1234567890","asset_type":"cloudresourcemanager.googleapis.com/Organization","iam_policy":{"etag":"BwVvLqcT+M4=","bindings":[{"role":"roles/Owner","members":["user:user1@test.forseti"]},{"role":"roles/Viewer","members":["serviceAccount:forseti-server-gcp-d9fffac@forseti-test-project.iam.gserviceaccount.com","user:user1@test.forseti"]}]},"update_time":"2020-02-27T14:00:00Z"}
+{"name":"//storage.googleapis.com/foresti-test-bucket-12345","asset_type":"storage.googleapis.com/Bucket","iam_policy":{"etag":"BvWt4fyUMSE=","bindings":[]},"ancestors":["projects/0987654321","organizations/1234567890"],"update_time":"2020-08-27T20:43:24.564773Z"}
 {"name":"//storage.googleapis.com/foresti-test-bucket-12345","asset_type":"storage.googleapis.com/Bucket","iam_policy":{"etag":"BEWt4fkUMSo=","bindings":[{"role":"roles/storage.legacyBucketOwner","members":["projectEditor:forseti-gce-test","projectOwner:forseti-gce-test"]}]},"ancestors":["projects/0987654321","organizations/1234567890"],"update_time":"2020-08-27T20:44:24.564773Z"}"""
+
 
 if __name__ == '__main__':
     unittest.main()
