@@ -78,10 +78,6 @@ class CaiTemporaryStore(BASE):
     update_time = Column(DateTime, nullable=True)
 
     __table_args__ = (
-        # old
-        # Index('idx_parent_name', 'parent_name'),
-        # Index('idx_name_update_time', 'name', 'update_time'),
-        # new
         Index('idx_name_asset_type_content_type_update_time', 'name', 'asset_type', 'content_type', 'update_time'),
         Index('idx_parent_name_asset_type_content_type', 'parent_name', 'asset_type', 'content_type'),
         PrimaryKeyConstraint('content_type',
