@@ -46,7 +46,7 @@ suites:
           shell: true
           shell_options: "--login"
           show_progress: true
-        - name: forseti-server
+        - name: forseti-server-inventory
           backend: ssh
           controls:
             - enforcer-remediates-firewall-rule
@@ -55,6 +55,17 @@ suites:
             - inventory-delete
             - inventory-performance
 #            - inventory-purge
+          hosts_output: forseti-server-vm-ip
+          user: ubuntu
+          key_files:
+            - integration_tests/fixtures/forseti/sshkey
+          proxy_command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o LogLevel=ERROR -o ForwardAgent=no -i integration_tests/fixtures/bastion/tls_private_key ubuntu@<%= `terraform output -state integration_tests/fixtures/forseti/terraform.tfstate.d/kitchen-terraform-forseti-local/terraform.tfstate bastion_host 2> /dev/null`.strip %> -p 22 -W %h:%p
+          shell: true
+          shell_options: "--login"
+          show_progress: true
+        - name: forseti-server-scanner-notifier
+          backend: ssh
+          controls:
             - logs-debug-level
             - notifier-inventory-summary-email
             - notifier-temp-file-deletion
