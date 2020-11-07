@@ -35,7 +35,8 @@ class TestInventory:
                                       organization_id):
         # Arrange
         inventory_id, _ = forseti_inventory_readonly
-        expected_path = f'gs://{forseti_server_bucket_name}/organizations-{organization_id}-resource-{inventory_id}.dump'
+        expected_path = (f'gs://{forseti_server_bucket_name}/organizations-'
+                         f'{organization_id}-resource-{inventory_id}.dump')
 
         # Act
         cmd = ['sudo', 'gsutil', 'ls', expected_path]
@@ -78,7 +79,6 @@ class TestInventory:
         assert inventory_counts[0] > 0
 
         # Assert inventory lifecycle state
-        # describe command("mysql -u #{db_user_name} -p#{db_password} --host 127.0.0.1 --database forseti_security --execute \"SELECT count(DISTINCT resource_data->>'$.lifecycleState') FROM gcp_inventory WHERE category = 'resource' and resource_type = 'project' and resource_data->>'$.lifecycleState' = 'ACTIVE';\"") do
         query = text('SELECT '
                      "COUNT(DISTINCT resource_data->>'$.lifecycleState') "
                      'FROM forseti_security.gcp_inventory '
@@ -125,7 +125,7 @@ class TestInventory:
     @pytest.mark.inventory
     @pytest.mark.server
     def test_inventory_list(self, forseti_cli: ForsetiCli,
-                           forseti_inventory_readonly):
+                            forseti_inventory_readonly):
         # Arrange
         inventory_id, _ = forseti_inventory_readonly
 
