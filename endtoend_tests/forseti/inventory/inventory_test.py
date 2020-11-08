@@ -66,7 +66,7 @@ class TestInventory:
                      f"id = '{inventory_id}'")
         inventory_status = cloudsql_connection.execute(query).fetchone()
         assert inventory_status
-        assert inventory_status == 'SUCCESS'
+        assert inventory_status[0] == 'SUCCESS'
 
         # Assert inventory counts
         query = text('SELECT '

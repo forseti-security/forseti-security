@@ -18,6 +18,7 @@ cscc_source_id = attribute('cscc_source_id')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
 forseti_server_vm_name = attribute('forseti-server-vm-name')
 forseti_suffix = attribute('suffix')
+org_id = attribute('org_id')
 project_id = attribute('project_id')
 forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
 
@@ -35,7 +36,9 @@ control "server-pytest" do
                         --cloudsql_password=#{cloudsql_password} \
                         --cloudsql_username=#{cloudsql_username} \
                         --cscc_source_id=#{cscc_source_id} \
+                        --forseti_server_bucket_name=${forseti_server_bucket} \
                         --forseti_server_vm_name=#{forseti_server_vm_name} \
+                        --organization_id=${org_id} \
                         --project_id=#{project_id}") do
     its('exit_status') { should eq 0 }
 
