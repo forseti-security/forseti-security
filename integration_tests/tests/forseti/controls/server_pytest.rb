@@ -18,6 +18,7 @@ cscc_source_id = attribute('cscc_source_id')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
 forseti_server_vm_name = attribute('forseti-server-vm-name')
 forseti_suffix = attribute('suffix')
+org_id = attribute('org_id')
 project_id = attribute('project_id')
 forseti_test_requirements = '/home/ubuntu/forseti-security/requirements-test.txt'
 
@@ -30,27 +31,36 @@ control "server-pytest" do
   end
 
   describe command("sudo pytest -m server -v $FORSETI_HOME/endtoend_tests/ \
-                        --ignore=$FORSETI_HOME/endtoend_tests/forseti/inventory \
+                        --ignore=$FORSETI_HOME/endtoend_tests/forseti/inventory/inventory_performance_test.py \
                         --cloudsql_instance_name=#{cloudsql_instance_name} \
                         --cloudsql_password=#{cloudsql_password} \
                         --cloudsql_username=#{cloudsql_username} \
                         --cscc_source_id=#{cscc_source_id} \
+                        --forseti_server_bucket_name=${forseti_server_bucket} \
                         --forseti_server_vm_name=#{forseti_server_vm_name} \
+                        --organization_id=${org_id} \
                         --project_id=#{project_id}") do
     its('exit_status') { should eq 0 }
+
+    # Inventory
+    its('stdout') { should match(/test_inventory_cai_gcs_export PASSED/) }
+    its('stdout') { should match(/test_inventory_create PASSED/) }
+    its('stdout') { should match(/test_inventory_get PASSED/) }
+    its('stdout') { should match(/test_inventory_list PASSED/) }
 
     # Model
     its('stdout') { should match(/test_model_create PASSED/) }
     its('stdout') { should match(/test_model_delete PASSED/) }
     its('stdout') { should match(/test_model_roles PASSED/) }
 
-    # Notifiers
-    its('stdout') { should match(/test_cscc_findings_match_violations PASSED/) }
-
     # Scanners
     # its('stdout') { should match(/test_enabled_apis_scanner PASSED/) }
     its('stdout') { should match(/test_cv_cloudsql_location PASSED/) }
     its('stdout') { should match(/test_cv_compute_zone PASSED/) }
     its('stdout') { should match(/test_cv_scan PASSED/) }
+
+    # Notifiers
+    its('stdout') { should match(/test_cscc_findings_match_violations PASSED/) }
+
   end
 end

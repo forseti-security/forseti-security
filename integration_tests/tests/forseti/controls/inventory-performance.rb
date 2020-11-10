@@ -26,7 +26,7 @@ control "inventory-performance" do
     its('exit_status') { should eq 0 }
   end
 
-  describe command("sudo pytest -v $FORSETI_HOME/endtoend_tests/forseti/inventory \
+  describe command("sudo pytest -v $FORSETI_HOME/endtoend_tests/forseti/inventory/inventory_performance_test.py \
         --cai_dump_file_gcs_paths=#{cai_dump_file_gcs_paths} \
         --cloudsql_password=#{cloudsql_password} \
         --cloudsql_username=#{cloudsql_username} \
