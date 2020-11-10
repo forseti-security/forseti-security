@@ -478,6 +478,11 @@ class InventoryImporter(object):
     def _store_gsuite_membership_post(self):
         """Flush storing gsuite memberships."""
 
+        item_counter = 0
+        membership_items_count = (
+            len(self.membership_items) if self.membership_items else 0)
+        rows_per_flush = 1000
+
         if not self.member_cache:
             return
 
@@ -491,9 +496,17 @@ class InventoryImporter(object):
                     stmt = self.dao.TBL_MEMBERSHIP.insert(item)
                     self.session.execute(stmt)
             else:
-                stmt = self.dao.TBL_MEMBERSHIP.insert(
-                    self.membership_items)
-                self.session.execute(stmt)
+                LOGGER.debug(f'Storing {membership_items_count} G Suite '
+                             f'membership rows.')
+                while item_counter < membership_items_count:
+                    items_to_insert = [
+                        x for x
+                        in self.membership_items[item_counter:rows_per_flush]
+                        if 'group_name' in x and x['group_name']
+                    ]
+                    stmt = self.dao.TBL_MEMBERSHIP.insert(items_to_insert)
+                    self.session.execute(stmt)
+                    item_counter += rows_per_flush
 
     def _store_gsuite_membership(self, child, parent):
         """Store a gsuite principal such as a group, user or member.
@@ -530,6 +543,10 @@ class InventoryImporter(object):
             self.session.add(self.member_cache[member])
 
         parent_group = group_name(parent)
+        if not parent_group:
+            LOGGER.debug(f'G Suite member {member} does not have a parent '
+                         f'group. Parent: {parent}')
+            return
 
         if parent_group not in self.membership_map:
             self.membership_map[parent_group] = set()
@@ -537,7 +554,7 @@ class InventoryImporter(object):
         if member not in self.membership_map[parent_group]:
             self.membership_map[parent_group].add(member)
             self.membership_items.append(
-                dict(group_name=group_name(parent), members_name=member))
+                dict(group_name=parent_group, members_name=member))
 
     def _store_groups_settings(self, settings):
         """Store gsuite settings.
