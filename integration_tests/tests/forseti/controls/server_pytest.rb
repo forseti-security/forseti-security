@@ -15,6 +15,7 @@
 cloudsql_password = attribute('forseti-cloudsql-password')
 cloudsql_username = attribute('forseti-cloudsql-user')
 cscc_source_id = attribute('cscc_source_id')
+forseti_cai_storage_bucket = attribute('forseti-cai-storage-bucket')
 forseti_server_bucket = attribute('forseti-server-storage-bucket')
 forseti_server_vm_name = attribute('forseti-server-vm-name')
 forseti_suffix = attribute('suffix')
@@ -36,9 +37,10 @@ control "server-pytest" do
                         --cloudsql_password=#{cloudsql_password} \
                         --cloudsql_username=#{cloudsql_username} \
                         --cscc_source_id=#{cscc_source_id} \
-                        --forseti_server_bucket_name=${forseti_server_bucket} \
+                        --forseti_cai_storage_bucket=#{forseti_cai_storage_bucket} \
+                        --forseti_server_bucket_name=#{forseti_server_bucket} \
                         --forseti_server_vm_name=#{forseti_server_vm_name} \
-                        --organization_id=${org_id} \
+                        --organization_id=#{org_id} \
                         --project_id=#{project_id}") do
     its('exit_status') { should eq 0 }
 
@@ -61,6 +63,6 @@ control "server-pytest" do
 
     # Notifiers
     its('stdout') { should match(/test_cscc_findings_match_violations PASSED/) }
-
+    its('stdout') { should match(/test_inventory_summary_export_gcs PASSED/) }
   end
 end

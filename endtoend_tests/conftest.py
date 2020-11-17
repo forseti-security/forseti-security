@@ -35,6 +35,8 @@ def pytest_addoption(parser):
                      help='Cloud SQL port')
     parser.addoption('--cloudsql_username', help='Cloud SQL username')
     parser.addoption('--cscc_source_id', help='CSCC Source Id')
+    parser.addoption('--forseti_cai_storage_bucket',
+                     help='Forseti CAI storage bucket')
     parser.addoption('--forseti_client_service_account',
                      help='Forseti client service account email')
     parser.addoption('--forseti_server_bucket_name',
@@ -115,6 +117,11 @@ def cloudsql_username(request):
 @pytest.fixture(scope="session")
 def cscc_source_id(request):
     return request.config.getoption('--cscc_source_id')
+
+
+@pytest.fixture(scope="session")
+def forseti_cai_storage_bucket(request):
+    return request.config.getoption('--forseti_cai_storage_bucket')
 
 
 @pytest.fixture(scope="session")
