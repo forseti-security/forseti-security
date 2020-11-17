@@ -38,7 +38,6 @@ suites:
           backend: ssh
           controls:
             - client-pytest
-            - notifier-inventory-summary-export
             - scanner-external-project-access-scanner
           hosts_output: forseti-client-vm-ip
           user: ubuntu

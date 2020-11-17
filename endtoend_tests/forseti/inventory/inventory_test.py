@@ -30,20 +30,17 @@ class TestInventory:
     @pytest.mark.e2e
     @pytest.mark.inventory
     @pytest.mark.server
-    def test_inventory_cai_gcs_export(self, forseti_inventory_readonly,
-                                      forseti_server_bucket_name,
+    def test_inventory_cai_gcs_export(self,  forseti_cai_storage_bucket,
+                                      forseti_inventory_readonly,
                                       organization_id):
-        # Arrange
         inventory_id, _ = forseti_inventory_readonly
-        expected_path = (f'gs://{forseti_server_bucket_name}/organizations-'
+        expected_path = (f'gs://{forseti_cai_storage_bucket}/organizations-'
                          f'{organization_id}-resource-{inventory_id}.dump')
 
-        # Act
         cmd = ['sudo', 'gsutil', 'ls', expected_path]
         result = subprocess.run(cmd, stderr=subprocess.PIPE,
                                 stdout=subprocess.PIPE)
 
-        # Assert
         assert result.returncode == 0
 
     @pytest.mark.e2e

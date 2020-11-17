@@ -131,7 +131,6 @@ class TestModel:
         assert model_roles
         assert model_roles[0] > 0
 
-
     @pytest.mark.client
     @pytest.mark.e2e
     @pytest.mark.model
