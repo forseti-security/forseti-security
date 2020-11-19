@@ -170,6 +170,12 @@ class ForsetiCli:
         return ForsetiCli.run_process(cmd)
 
     @staticmethod
+    def run_external_project_access_scanner():
+        cmd = ['forseti', 'scanner', 'run', '--scanner',
+               'external_project_access_scanner']
+        return ForsetiCli.run_process(cmd)
+
+    @staticmethod
     def run_process(cmd):
         print(f'Running Forseti command: {" ".join(cmd)}')
         return subprocess.run(cmd, stderr=subprocess.PIPE,

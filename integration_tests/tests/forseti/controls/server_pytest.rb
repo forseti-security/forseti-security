@@ -56,10 +56,11 @@ control "server-pytest" do
     its('stdout') { should match(/test_model_roles PASSED/) }
 
     # Scanners
-    # its('stdout') { should match(/test_enabled_apis_scanner PASSED/) }
     its('stdout') { should match(/test_cv_cloudsql_location PASSED/) }
     its('stdout') { should match(/test_cv_compute_zone PASSED/) }
     its('stdout') { should match(/test_cv_scan PASSED/) }
+    # its('stdout') { should match(/test_enabled_apis_scanner PASSED/) }
+    its('stdout') { should match(/test_external_project_access_scanner PASSED/) }
 
     # Notifiers
     its('stdout') { should match(/test_cscc_findings_match_violations PASSED/) }
