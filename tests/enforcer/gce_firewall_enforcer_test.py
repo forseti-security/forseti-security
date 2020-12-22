@@ -845,14 +845,15 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         """Validate apply_change works with no errors."""
         delete_function = self.gce_api_client.delete_firewall_rule
         insert_function = self.gce_api_client.insert_firewall_rule
-        update_function = self.gce_api_client.patch_firewall_rule
+        patch_function = self.gce_api_client.patch_firewall_rule
+        replace_function = self.gce_api_client.replace_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
                 'test-network-allow-internal-0'])
         ]
 
-        for function in [delete_function, insert_function, update_function]:
+        for function in [delete_function, insert_function, patch_function, replace_function]:
             (successes, failures, change_errors) = self.enforcer._apply_change(
                 function, test_rules)
             self.assertSameStructure(test_rules, successes)

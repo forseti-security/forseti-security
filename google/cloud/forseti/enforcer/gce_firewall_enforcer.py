@@ -188,11 +188,11 @@ def filter_rules_by_network(rules, network):
 def _rule_update_can_patch(rule_from, rule_to):
     if not rule_to or not rule_from:
         raise ValueError('from and to must both exist for checking replace vs patch.')
-    if 'allow' in rule_from and 'allow' not in rule_to:
-        return False # Patch fails to update denied -> denied
-    if 'denied' in rule_from and 'denied' not in rule_to:
+    if 'allowed' in rule_from and 'denied' in rule_to:
+        return False # Patch fails to update allowed -> denied
+    if 'denied' in rule_from and 'allowed' in rule_to:
         return False # Patch fails to update denied -> allowed
-    return False
+    return True
 
 
 class FirewallRules(object):
