@@ -270,6 +270,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
             self.gce_api_client.delete_firewall_rule(
                 self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
 
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_insert_firewall_rule_errors(self, name, response, status,
                                        expected_exception):
         """Verify error conditions for insert firewall rule."""
