@@ -577,6 +577,32 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         self.assertSameStructure([expected_updated_rule],
                                  self.enforcer.get_updated_rules())
 
+    def test_apply_firewall_denied_to_allowed(self):
+        """Validate apply_firewall works with replacing (delete & insert) rules.
+
+        Setup:
+          Set EXPECTED_FIREWALL_RULES as the enforced policy.
+
+          Modify one of the firewall rules to change allowed to be denied.
+          This registers as an update, but cannot use the patch method.
+
+        Expected Results:
+          * firewall will register as an update (as they share a name)
+          * updated rule will update to match the expected rule (allowed)
+        """
+        self.expected_rules.rules = copy.deepcopy(constants.EXPECTED_FIREWALL_RULES)
+        self.current_rules.rules = copy.deepcopy(constants.EXPECTED_FIREWALL_RULES)
+
+        # update current rule from allowed to denied
+        # This registers as an update since they share the same name, but this
+        # type of update will fail if attempting to use the patch method.
+        self.current_rules.rules['test-network-allow-public-0']['denied'] = self.current_rules.rules['test-network-allow-public-0'].pop('allowed')
+
+        _ = self.enforcer.apply_firewall()
+
+        self.assertSameStructure([constants.EXPECTED_FIREWALL_RULES['test-network-allow-public-0']],
+                      self.enforcer.get_updated_rules())
+
     def test_apply_firewall_prechange_callback_false(self):
         """Prechange callback that returns False stops changes from being made.
 
