@@ -1030,8 +1030,8 @@ class ComputeClient(object):
             json.dumps(rule, sort_keys=True), results)
         return results
 
-    def replace_firewall_rule(self, project_id, rule, delete_uuid = None,
-                              insert_uuid = None, blocking=True, retry_count=0,
+    def replace_firewall_rule(self, project_id, rule, delete_uuid=None,
+                              insert_uuid=None, blocking=True, retry_count=0,
                               timeout=0):
         """Replace a firewall rule using delete & insert.
 

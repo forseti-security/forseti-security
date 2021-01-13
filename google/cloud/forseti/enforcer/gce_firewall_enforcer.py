@@ -956,7 +956,7 @@ class FirewallEnforcer(object):
             raise FirewallEnforcementUpdateFailedError(
                 'Firewall enforcement failed while deleting rules for '
                 'project {}. The following errors were encountered: {}'
-              .format(self.project, change_errors))
+                .format(self.project, change_errors))
         return len(successes)
 
     def _replace_rules(self, rules):
@@ -969,7 +969,7 @@ class FirewallEnforcer(object):
             raise FirewallEnforcementUpdateFailedError(
                 'Firewall enforcement failed while deleting rules for '
                 'project {}. The following errors were encountered: {}'
-              .format(self.project, change_errors))
+                .format(self.project, change_errors))
         return len(successes)
 
     def _apply_change(self, firewall_function, rules):
