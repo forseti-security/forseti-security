@@ -189,9 +189,9 @@ def _rule_update_can_patch(rule_from, rule_to):
     if not rule_to or not rule_from:
         raise ValueError('from and to must both exist for checking replace vs patch.')
     if 'allowed' in rule_from and 'denied' in rule_to:
-        return False # Patch fails to update allowed -> denied
+        return False  # Patch fails to update allowed -> denied
     if 'denied' in rule_from and 'allowed' in rule_to:
-        return False # Patch fails to update denied -> allowed
+        return False  # Patch fails to update denied -> allowed
     return True
 
 
@@ -956,7 +956,7 @@ class FirewallEnforcer(object):
             raise FirewallEnforcementUpdateFailedError(
                 'Firewall enforcement failed while deleting rules for '
                 'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
+              .format(self.project, change_errors))
         return len(successes)
 
     def _replace_rules(self, rules):
@@ -969,10 +969,8 @@ class FirewallEnforcer(object):
             raise FirewallEnforcementUpdateFailedError(
                 'Firewall enforcement failed while deleting rules for '
                 'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
+              .format(self.project, change_errors))
         return len(successes)
-
-        return change_count
 
     def _apply_change(self, firewall_function, rules):
         """Modify the firewall using the passed in function and rules.
