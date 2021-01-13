@@ -280,6 +280,24 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                 self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_patch_firewall_rule_errors(self, name, response, status,
+        expected_exception):
+        """Verify error conditions for patching firewall rule."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.patch_firewall_rule(
+                self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_replace_firewall_rule_errors(self, name, response, status,
+        expected_exception):
+        """Verify error conditions for replacing firewall rule."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.replace_firewall_rule(
+                self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_update_firewall_rule_errors(self, name, response, status,
                                        expected_exception):
         """Verify error conditions for update firewall rule."""

@@ -185,6 +185,16 @@ def filter_rules_by_network(rules, network):
     return filtered_rules
 
 
+def _rule_update_can_patch(rule_from, rule_to):
+    if not rule_to or not rule_from:
+        raise ValueError('from and to must both exist for checking replace vs patch.')
+    if 'allowed' in rule_from and 'denied' in rule_to:
+        return False  # Patch fails to update allowed -> denied
+    if 'denied' in rule_from and 'allowed' in rule_to:
+        return False  # Patch fails to update denied -> allowed
+    return True
+
+
 class FirewallRules(object):
     """A collection of validated firewall rules."""
 
@@ -923,18 +933,44 @@ class FirewallEnforcer(object):
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_update
             ], network)
-            patch_function = self.compute_client.patch_firewall_rule
-            (successes, failures, change_errors) = self._apply_change(
-                patch_function, rules)
-            self._updated_rules.extend(successes)
-            change_count += len(successes)
-            if failures:
-                raise FirewallEnforcementUpdateFailedError(
-                    'Firewall enforcement failed while deleting rules for '
-                    'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
-
+            rules_to_patch = []
+            rules_to_replace = []
+            for rule in rules:
+                if _rule_update_can_patch(self.current_rules.rules[rule['name']], rule):
+                    rules_to_patch.append(rule)
+                else:
+                    rules_to_replace.append(rule)
+            if rules_to_patch:
+                change_count += self._patch_rules(rules_to_patch)
+            if rules_to_replace:
+                change_count += self._replace_rules(rules_to_replace)
         return change_count
+
+    def _patch_rules(self, rules):
+        LOGGER.info('Patching rules: %s', ', '.join(rule['name'] for rule in rules))
+        patch_function = self.compute_client.patch_firewall_rule
+        (successes, failures, change_errors) = self._apply_change(
+            patch_function, rules)
+        self._updated_rules.extend(successes)
+        if failures:
+            raise FirewallEnforcementUpdateFailedError(
+                'Firewall enforcement failed while deleting rules for '
+                'project {}. The following errors were encountered: {}'
+                .format(self.project, change_errors))
+        return len(successes)
+
+    def _replace_rules(self, rules):
+        LOGGER.info('Replacing rules: %s', ', '.join(rule['name'] for rule in rules))
+        patch_function = self.compute_client.replace_firewall_rule
+        (successes, failures, change_errors) = self._apply_change(
+            patch_function, rules)
+        self._updated_rules.extend(successes)
+        if failures:
+            raise FirewallEnforcementUpdateFailedError(
+                'Firewall enforcement failed while deleting rules for '
+                'project {}. The following errors were encountered: {}'
+                .format(self.project, change_errors))
+        return len(successes)
 
     def _apply_change(self, firewall_function, rules):
         """Modify the firewall using the passed in function and rules.

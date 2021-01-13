@@ -1030,6 +1030,76 @@ class ComputeClient(object):
             json.dumps(rule, sort_keys=True), results)
         return results
 
+    def replace_firewall_rule(self, project_id, rule, delete_uuid=None,
+                              insert_uuid=None, blocking=True, retry_count=0,
+                              timeout=0):
+        """Replace a firewall rule using delete & insert.
+
+            Args:
+              project_id (str): The project id.
+              rule (dict): The firewall rule dict to insert.
+              uuid (str): An optional UUID to identify this request. If the same
+                request is resent to the API, it will ignore the additional
+                requests. If uuid is not set, one will be generated for the request.
+              blocking (bool): Required to be true, don't return until the async
+                operation completes on the backend or timeout seconds pass.
+              retry_count (int): If greater than 0, retry on operation timeout.
+              timeout (float): If greater than 0 and blocking is True, then raise an
+                exception if timeout seconds pass before the operation completes.
+
+            Returns:pyspanner.py:1528
+                dict: Global Operation status and info.
+                https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+            Raises:
+                ApiNotEnabledError: The api is not enabled.
+                ApiExecutionError: The api returned an error.
+                KeyError: The 'name' key is missing from the rule dict.
+                OperationTimeoutError: Raised if the operation times out.
+            """
+        if not blocking:
+            raise ValueError('blocking must be true.')
+        repository = self.repository.firewalls
+        if not delete_uuid:
+            delete_uuid = uuid4()
+        if not insert_uuid:
+            insert_uuid = uuid4()
+
+        try:
+            results = repository.delete(
+                project_id, target=rule['name'], requestId=delete_uuid)
+
+            self.wait_for_completion(project_id, results, timeout)
+
+            results = repository.insert(project_id, data=rule, requestId=insert_uuid)
+
+            results = self.wait_for_completion(project_id, results, timeout)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error replacing firewall rule %s: %s', rule['name'], e)
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+        except api_errors.OperationTimeoutError as e:
+            LOGGER.warning('Timeout replacing firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.replace_firewall_rule(project_id=project_id,
+                                                  rule=rule,
+                                                  insert_uuid=insert_uuid,
+                                                  delete_uuid=delete_uuid,
+                                                  blocking=blocking,
+                                                  retry_count=retry_count,
+                                                  timeout=timeout)
+            else:
+                raise
+
+        LOGGER.info(
+            'Replacing firewall rule %s on project %s. Rule: %s, '
+            'Result: %s', rule['name'], project_id,
+            json.dumps(rule, sort_keys=True), results)
+        return results
+
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.
 
