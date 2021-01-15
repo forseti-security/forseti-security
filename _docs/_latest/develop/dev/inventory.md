@@ -205,4 +205,4 @@ resources are accounted for in the inventory.
 
 Now that the new Inventory resource will be included in the test data, the
 `test_crawling_to_memory_storage` test can be run by following the
-[Testing instructions](https://forsetisecurity.org/docs/latest/develop/dev/testing.html).
+[Testing instructions](https://forsetisecurity.org/docs/latest/develop/test/index.html).

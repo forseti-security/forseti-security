@@ -20,7 +20,7 @@ of resources, but Explain will not be supported.
 
 ## How to Install
 
-Run the Forseti [Installer]({% link _docs/latest/setup/install.md %}).
+Run the Forseti [Installer]({% link _docs/latest/setup/intall/index.md %}).
 
 By default, the installer will try to assign org-level roles. If you are not
 an Org Admin, there will be errors, but you can safely disregard, as you will

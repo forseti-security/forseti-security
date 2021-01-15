@@ -232,7 +232,7 @@ Cloud SCC API is now Generally Available (GA). Please see the steps below to
 setup and configure.
 
 #### Prerequisites
-1. [Install]({% link _docs/latest/setup/install.md %})
+1. [Install]({% link _docs/latest/setup/intall/index.md %})
 or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.14+. 
 1. The person performing the onboarding needs the following org-level IAM roles:
 - `Organization Admin`
