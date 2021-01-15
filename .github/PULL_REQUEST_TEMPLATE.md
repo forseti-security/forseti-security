@@ -6,7 +6,7 @@ Here's a handy checklist to ensure your PR goes smoothly.
 - [ ] My code conforms to Google's [python style](https://google.github.io/styleguide/pyguide.html).
 - [ ] My PR at a minimum doesn't decrease unit-test coverage (if applicable).
 - [ ] My PR has been functionally tested.
-- [ ] All of the [tests](https://forsetisecurity.org/docs/latest/develop/dev/testing.html) pass.
+- [ ] All of the [tests](https://forsetisecurity.org/docs/latest/develop/test/index.html) pass.
 - [ ] I have submitted a corresponding PR for documentation in the `forsetisecurity.org-dev branch` and included this on this PR (if applicable).
 - [ ] My documentation has been functionally tested and used (if applicable).
 - [ ] I have submitted a corresponding PR in the [Forseti Terraform module](https://github.com/forseti-security/terraform-google-forseti) (if applicable).
