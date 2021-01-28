@@ -1,5 +1,5 @@
 To run Forseti, you'll need to set up your configuration file. Please see the 
-[detailed guide](https://forsetisecurity.org/docs/latest/setup/install.html) to 
+[detailed guide](https://forsetisecurity.org/docs/latest/setup/install/index.html) to
 get a default installation of Forseti setup that can be used in production 
 environment. 
 
