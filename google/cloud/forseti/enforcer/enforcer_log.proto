@@ -99,6 +99,9 @@ message ProjectResult {
   optional string status_reason = 7;
 
   optional GceFirewallEnforcementResult gce_firewall_enforcement = 8;
+
+  // Names of the networks that were enforced
+  repeated string networks = 9;
 }
 
 message EnforcerLog {
