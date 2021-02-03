@@ -137,6 +137,7 @@ class ProjectEnforcer(object):
                 if not networks:
                     self._set_error_status('no networks found for project')
                     return self.result
+            self.result.networks.extend(networks)
 
             expected_rules = self._get_expected_rules(networks,
                                                       firewall_policy)

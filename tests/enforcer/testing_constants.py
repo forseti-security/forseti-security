@@ -572,6 +572,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
     rules_modified_count: 7
     all_rules_changed: true
   }
+  networks: "test-network"
 """
 
 

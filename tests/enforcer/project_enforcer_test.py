@@ -43,7 +43,8 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
 
         self.expected_proto = enforcer_log_pb2.ProjectResult(
             timestamp_sec=constants.MOCK_MICROTIMESTAMP,
-            project_id=self.project)
+            project_id=self.project,
+            networks=['test-network'])
 
         self.expected_rules = copy.deepcopy(
             list(constants.EXPECTED_FIREWALL_RULES.values()))
@@ -667,6 +668,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         self.expected_proto.status_reason = (
                 'error getting current networks from API: <HttpError 403 '
                 '"Failed">')
+        self.expected_proto.ClearField('networks')
 
         self.validate_results(self.expected_proto, result)
         self.assertTrue(mock_logger.exception.called)
@@ -757,6 +759,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_DELETED
+        self.expected_proto.ClearField('networks')
 
         # Match first part of error reason string
         self.assertStartsWith(result.status_reason,
