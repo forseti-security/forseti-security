@@ -61,7 +61,7 @@ echo "Running Forseti inventory."
 forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 
-GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print(json.load(sys.stdin)['status'])\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
 if ([ "$MODEL_STATUS" != "SUCCESS" ] && [ "$MODEL_STATUS" != "PARTIAL_SUCCESS" ])
