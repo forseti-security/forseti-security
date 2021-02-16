@@ -14,7 +14,8 @@
 
 """Forseti Server utilities."""
 
-
+import string
+import random
 import logging
 
 
@@ -193,7 +194,7 @@ def to_type_name(resource_type, resource_name):
         str: type_name of the resource
     """
 
-    return '{}/{}'.format(resource_type, resource_name)
+    return '{}_{}/{}'.format(id_generator(),resource_type, resource_name)
 
 
 def split_type_name(resource_type_name):
@@ -268,3 +269,7 @@ def get_resource_id_from_type_name(type_name):
     if '/' in type_name:
         return type_name.split('/')[-1]
     return type_name
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
