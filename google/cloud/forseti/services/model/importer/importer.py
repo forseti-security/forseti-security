@@ -535,7 +535,7 @@ class InventoryImporter(object):
             self.membership_map[parent_group] = set()
 
         if member not in self.membership_map[parent_group]:
-            self.membership_map[parent_group].zmember)
+            self.membership_map[parent_group].add(member)
             self.membership_items.append(
                 dict(group_name=group_name(parent), members_name=member))
 
