@@ -50,7 +50,6 @@ REQUIRED_PACKAGES = [
     'requests[security]==2.21.0',
     'sendgrid==5.6.0',
     'simple-crypt==4.1.7',
-    'unicodecsv==0.14.1',
     # Setup related.
     'grpcio>=1.22.0',
     'grpcio-tools>=1.22.0',
