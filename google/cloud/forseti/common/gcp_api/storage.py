@@ -112,7 +112,9 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
                  credentials=None,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 cache_discovery=False,
+                 cache=None):
         """Constructor.
 
         Args:
@@ -123,6 +125,11 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to limit the requests within.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            cache_discovery (bool): When set to true, googleapiclient will cache
+                HTTP requests to API discovery endpoints.
+            cache (googleapiclient.discovery_cache.base.Cache): instance of a
+                class that can cache API discovery documents. If None,
+                googleapiclient will attempt to choose a default.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -138,7 +145,9 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
             credentials=credentials,
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            cache_discovery=cache_discovery,
+            cache=cache)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -410,25 +419,28 @@ class _StorageObjectAclsRepository(
 class StorageClient(object):
     """Storage Client."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, global_configs, **kwargs):
         """Initialize.
 
         Args:
-            *args (dict): Default args passed to all API Clients, not used by
-                the StorageClient.
+            global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        del args
         # Storage API has unlimited rate.
         if 'user_project' in kwargs:
             self._user_project = kwargs['user_project']
         else:
             self._user_project = _get_projectid_from_metadata()
 
+        cache_discovery = global_configs[
+            'cache_discovery'] if 'cache_discovery' in global_configs else False
+
         self.repository = StorageRepositoryClient(
             credentials=kwargs.get('credentials'),
             quota_max_calls=None,
-            use_rate_limiter=False)
+            use_rate_limiter=False,
+            cache_discovery=cache_discovery,
+            cache=global_configs.get('cache'))
 
     def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.

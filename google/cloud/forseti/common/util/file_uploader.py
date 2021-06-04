@@ -37,7 +37,7 @@ def upload_json(data, gcs_upload_path):
         with tempfile.NamedTemporaryFile() as tmp_data:
             tmp_data.write(parser.json_stringify(data).encode())
             tmp_data.flush()
-            storage_client = StorageClient()
+            storage_client = StorageClient({})
             storage_client.put_text_file(tmp_data.name, gcs_upload_path)
     except Exception:  # pylint: disable=broad-except
         LOGGER.exception('Unable to upload json document to bucket %s:\n%s',
@@ -55,7 +55,7 @@ def upload_csv(resource_name, data, gcs_upload_path):
     try:
         with csv_writer.write_csv(resource_name, data, True) as csv_file:
             LOGGER.info('CSV filename: %s', csv_file.name)
-            storage_client = StorageClient()
+            storage_client = StorageClient({})
             storage_client.put_text_file(csv_file.name, gcs_upload_path)
     except Exception:  # pylint: disable=broad-except
         LOGGER.exception('Unable to upload csv document to bucket %s:\n%s\n%s',
