@@ -41,7 +41,7 @@ class CloudResourceManagerRepositoryClient(
                  use_rate_limiter=True,
                  credentials=None,
                  cache_discovery=False,
-cache=None):
+                 cache=None):
         """Constructor.
 
         Args:

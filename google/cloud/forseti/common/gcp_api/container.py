@@ -35,7 +35,7 @@ class ContainerRepositoryClient(_base_repository.BaseRepositoryClient):
                  quota_period=100.0,
                  use_rate_limiter=True,
                  cache_discovery=False,
-cache=None):
+                 cache=None):
         """Constructor.
 
         Args:

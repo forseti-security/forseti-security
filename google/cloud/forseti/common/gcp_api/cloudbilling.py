@@ -35,7 +35,7 @@ class CloudBillingRepositoryClient(_base_repository.BaseRepositoryClient):
                  quota_period=60.0,
                  use_rate_limiter=True,
                  cache_discovery=False,
-cache=None):
+                 cache=None):
         """Constructor.
 
         Args:
