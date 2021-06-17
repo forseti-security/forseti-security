@@ -60,7 +60,7 @@ def copy_file_from_gcs(file_path, output_path=None, storage_client=None):
         str: The output_path the file was copied to.
     """
     if not storage_client:
-        storage_client = storage.StorageClient()
+        storage_client = storage.StorageClient({})
 
     if not output_path:
         tmp_file, output_path = tempfile.mkstemp()
@@ -171,7 +171,7 @@ def _read_file_from_gcs(file_path, storage_client=None):
         dict: The parsed dict from the loaded file.
     """
     if not storage_client:
-        storage_client = storage.StorageClient()
+        storage_client = storage.StorageClient({})
 
     file_content = storage_client.get_text_file(full_bucket_path=file_path)
 

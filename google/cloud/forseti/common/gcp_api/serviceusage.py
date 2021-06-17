@@ -33,7 +33,9 @@ class ServiceUsageRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=100.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 cache_discovery=False,
+                 cache=None):
         """Constructor.
 
         Args:
@@ -53,8 +55,9 @@ class ServiceUsageRepositoryClient(_base_repository.BaseRepositoryClient):
             API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter
-        )
+            use_rate_limiter=use_rate_limiter,
+            cache_discover=cache_discovery,
+            cache=cache)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -118,10 +121,15 @@ class ServiceUsageClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             global_configs, API_NAME)
 
+        cache_discovery = global_configs[
+            'cache_discovery'] if 'cache_discovery' in global_configs else False
+
         self.repository = ServiceUsageRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            use_rate_limiter=kwargs.get('use_rate_limiter', True),
+            cache_discovery=cache_discovery,
+            cache=global_configs.get('cache'))
 
     def get_enabled_apis(self, project_id):
         """Gets the enabled APIs for a project.

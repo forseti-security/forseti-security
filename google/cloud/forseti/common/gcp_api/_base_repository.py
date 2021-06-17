@@ -71,7 +71,7 @@ DISCOVERY_DOCS_BASE_DIR = os.path.join(os.path.abspath(
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
 def _create_service_api(credentials, service_name, version, is_private_api,
-                        developer_key=None, cache_discovery=False,
+                        developer_key=None, cache_discovery=False, cache=None,
                         use_versioned_discovery_doc=False):
     """Builds and returns a cloud API service object.
 
@@ -85,6 +85,9 @@ def _create_service_api(credentials, service_name, version, is_private_api,
             associated with the API call, most API services do not require
             this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
+        cache (googleapiclient.discovery_cache.base.Cache): instance of a class
+            that can cache API discovery documents. If None, googleapiclient
+            will attempt to choose a default.
         use_versioned_discovery_doc (bool): When set to true, will use the
             discovery doc with the version suffix in the filename.
 
@@ -118,6 +121,7 @@ def _create_service_api(credentials, service_name, version, is_private_api,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
+        discovery_kwargs['cache'] = cache
 
     return discovery.build(**discovery_kwargs)
 
@@ -155,6 +159,8 @@ class BaseRepositoryClient(object):
                  use_rate_limiter=False,
                  read_only=False,
                  use_versioned_discovery_doc=False,
+                 cache_discovery=False,
+                 cache=None,
                  **kwargs):
         """Constructor.
 
@@ -172,6 +178,11 @@ class BaseRepositoryClient(object):
                 would modify a resource within the repository.
             use_versioned_discovery_doc (bool): When set to true, will use the
                 discovery doc with the version suffix in the filename.
+            cache_discovery (bool): When set to true, googleapiclient will cache
+                HTTP requests to API discovery endpoints.
+            cache (googleapiclient.discovery_cache.base.Cache): instance of a class
+                that can cache API discovery documents. If None, googleapiclient
+                will attempt to choose a default.
             **kwargs (dict): Additional args such as version.
         """
         self._use_cached_http = False
@@ -229,7 +240,8 @@ class BaseRepositoryClient(object):
                 version,
                 self.is_private_api,
                 kwargs.get('developer_key'),
-                kwargs.get('cache_discovery', False),
+                cache_discovery,
+                cache,
                 use_versioned_discovery_doc)
 
     def __repr__(self):

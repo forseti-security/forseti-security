@@ -34,7 +34,9 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 cache_discovery=False,
+                 cache=None):
         """Constructor.
         Args:
             quota_max_calls (int): Allowed requests per <quota_period> for the
@@ -42,6 +44,11 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            cache_discovery (bool): When set to true, googleapiclient will cache
+                HTTP requests to API discovery endpoints.
+            cache (googleapiclient.discovery_cache.base.Cache): instance of a
+                class that can cache API discovery documents. If None,
+                googleapiclient will attempt to choose a default.
         """
         LOGGER.debug('Initializing SecurityCenterRepositoryClient')
         if not quota_max_calls:
@@ -103,19 +110,24 @@ class SecurityCenterClient(object):
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, api_quota):
+    def __init__(self, global_configs):
         """Initialize.
 
         Args:
-            api_quota (dict): API quota configs
+            global_configs (dict): Global configurations.
         """
 
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            api_quota, API_NAME)
+            global_configs, API_NAME)
+
+        cache_discovery = global_configs[
+            'cache_discovery'] if 'cache_discovery' in global_configs else False
 
         self.repository = SecurityCenterRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=quota_period)
+            quota_period=quota_period,
+            cache_discovery=cache_discovery,
+            cache=global_configs.get('cache'))
 
     def create_finding(self, finding, source_id=None, finding_id=None):
         """Creates a finding in CSCC.

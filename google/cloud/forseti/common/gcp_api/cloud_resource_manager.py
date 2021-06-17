@@ -39,7 +39,9 @@ class CloudResourceManagerRepositoryClient(
                  quota_max_calls=None,
                  quota_period=100.0,
                  use_rate_limiter=True,
-                 credentials=None):
+                 credentials=None,
+                 cache_discovery=False,
+                 cache=None):
         """Constructor.
 
         Args:
@@ -50,6 +52,11 @@ class CloudResourceManagerRepositoryClient(
                 limiter for this service.
             credentials (OAuth2Credentials): Credentials that will be used to
                 authenticate the API calls.
+            cache_discovery (bool): When set to true, googleapiclient will cache
+                HTTP requests to API discovery endpoints.
+            cache (googleapiclient.discovery_cache.base.Cache): instance of a
+                class that can cache API discovery documents. If None,
+                googleapiclient will attempt to choose a default.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -65,7 +72,9 @@ class CloudResourceManagerRepositoryClient(
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
-            credentials=credentials)
+            credentials=credentials,
+            cache_discovery=cache_discovery,
+            cache=cache)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -274,11 +283,16 @@ class CloudResourceManagerClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             global_configs, API_NAME)
 
+        cache_discovery = global_configs[
+            'cache_discovery'] if 'cache_discovery' in global_configs else False
+
         self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True),
-            credentials=kwargs.get('credentials', None))
+            credentials=kwargs.get('credentials', None),
+            cache_discovery=cache_discovery,
+            cache=global_configs.get('cache'))
 
     def get_project(self, project_id):
         """Get all the projects from organization.

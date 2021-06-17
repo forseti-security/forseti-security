@@ -160,7 +160,7 @@ def load_cloudasset_data(engine, config, inventory_index_id):
     """
     cai_gcs_dump_paths = config.get_cai_dump_file_paths()
 
-    storage_client = storage.StorageClient()
+    storage_client = storage.StorageClient({})
     imported_assets = 0
 
     if not cai_gcs_dump_paths:

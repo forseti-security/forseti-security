@@ -56,7 +56,9 @@ class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 cache_discovery=False,
+                 cache=None):
         """Constructor.
 
         Args:
@@ -65,6 +67,11 @@ class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            cache_discovery (bool): When set to true, googleapiclient will cache
+                HTTP requests to API discovery endpoints.
+            cache (googleapiclient.discovery_cache.base.Cache): instance of a
+                class that can cache API discovery documents. If None,
+                googleapiclient will attempt to choose a default.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -78,7 +85,9 @@ class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
             API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            cache_discovery=cache_discovery,
+            cache=cache)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -262,10 +271,15 @@ class AppEngineClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             global_configs, API_NAME)
 
+        cache_discovery = global_configs[
+            'cache_discovery'] if 'cache_discovery' in global_configs else False
+
         self.repository = AppEngineRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            use_rate_limiter=kwargs.get('use_rate_limiter', True),
+            cache_discovery=cache_discovery,
+            cache=global_configs.get('cache'))
 
     def get_app(self, project_id):
         """Gets information about an application.
