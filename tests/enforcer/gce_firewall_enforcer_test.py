@@ -1331,6 +1331,15 @@ class FirewallRulesAreEqualTest(ForsetiTestCase):
         self.firewall_rules_2.add_rule(self.rule_two)
         self.assertEqual(self.firewall_rules_1, self.firewall_rules_2)
 
+    def test_equal_numeric_ip_proto(self):
+        """Test that comparison func doesn't blow up with numeric protocols."""
+        self.rule_one['allowed'].append({'IPProtocol': 47})
+        self.rule_two['allowed'].append({'IPProtocol': 47})
+
+        self.firewall_rules_1.add_rule(self.rule_one)
+        self.firewall_rules_2.add_rule(self.rule_two)
+        self.assertEqual(self.firewall_rules_1, self.firewall_rules_2)
+
     def test_inequal_network(self):
         """Test that inequal networks cause inequality."""
         self.rule_two['network'] = self.rule_two['network'].replace(
