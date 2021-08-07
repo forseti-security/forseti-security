@@ -43,7 +43,7 @@ configs/client/*.yaml
 .eggs/
 *.egg/
 *.egg-info*
-build/
+build/lib/
 dist/
 out/
 

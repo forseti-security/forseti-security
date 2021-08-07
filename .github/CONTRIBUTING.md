@@ -20,7 +20,7 @@ To maintain consistency, we ask that you follow the style guidelines suggested
 in the
 [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
 and any existing styles in the current codebase. Style is checked using pylint.
-To confirm your pull request (PR) passes the Travis pylint test, the following
+To confirm your pull request (PR) passes the pylint test, the following
 test must run without any output:
 
 ```bash
