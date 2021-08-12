@@ -12,7 +12,7 @@
 # limitations under the License.
 
 # Purpose - This Google Cloudbuild configuration mimics the same steps found
-# in .travis.yml.  This could potentially be used in lieu of TravisCI
+# in the deleted .travis.yml.
 
 steps:
 - name: 'gcr.io/cloud-builders/docker'
