@@ -25,8 +25,6 @@ from tests.unittest_utils import ForsetiTestCase
 
 
 class NotifierTest(ForsetiTestCase):
-    def setUp(self):
-        pass
 
     def test_can_convert_created_at_datetime_to_timestamp_string(self):
         violations = [
@@ -98,8 +96,8 @@ class NotifierTest(ForsetiTestCase):
 
         mock_email_violations = mock.MagicMock(spec=email_violations.EmailViolations)
         mock_email_violations_cls.return_value = mock_email_violations
-        mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
-        mock_gcs_violations_cls.return_value = mock_gcs_violations
+        mock_email_violations = mock_email_violations_cls.return_value
+        mock_gcs_violations = mock_gcs_violations_cls.return_value
         mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
         notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
 
@@ -149,8 +147,8 @@ class NotifierTest(ForsetiTestCase):
 
         mock_email_violations = mock.MagicMock(spec=email_violations.EmailViolations)
         mock_email_violations_cls.return_value = mock_email_violations
-        mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
-        mock_gcs_violations_cls.return_value = mock_gcs_violations
+        mock_email_violations = mock_email_violations_cls.return_value
+        mock_gcs_violations = mock_gcs_violations_cls.return_value
         mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
         notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
 
