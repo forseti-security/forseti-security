@@ -857,12 +857,10 @@ def define_model(model_name, dbengine, model_seed):
 
                 root = None
                 for parent in resource_hierarchy.keys():
-                    is_root = True
                     for children in resource_hierarchy.values():
                         if parent in children:
-                            is_root = False
                             break
-                    if is_root:
+                    else:
                         root = parent
                 chain = [root]
                 cur = root
