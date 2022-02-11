@@ -2,7 +2,7 @@
 # here should also be added to setup.py
 
 # Needed for compiling of Forseti protos during the build & install.
-protobuf==3.13.0
+protobuf==3.15.0
 grpcio==1.22.0
 grpcio-tools==1.22.0
 pyyaml==4.2b4
