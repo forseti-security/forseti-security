@@ -21,6 +21,7 @@ from builtins import next
 from builtins import object
 import binascii
 import collections
+import hashlib
 import hmac
 import json
 import os
@@ -353,7 +354,7 @@ def define_model(model_name, dbengine, model_seed):
             msg += self.full_name.encode()
             seed = (model_seed if isinstance(model_seed, bytes)
                     else model_seed.encode())
-            return hmac.new(seed, msg).hexdigest()
+            return hmac.new(seed, msg, digestmod=hashlib.md5).hexdigest()
 
         def __repr__(self):
             """String representation.
