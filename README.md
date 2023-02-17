@@ -30,7 +30,7 @@ The team will support patching critical defects or security issues in the curren
 ## Issue Triage
 The triage process is a multi-step process that is collaboratively performed by the core project team and our issue bot. Triaging typically should occur within 1 - 2 business days, but may take longer, if the project team is not around.
 The purpose of triaging is to clearly understand the request and determine the next steps for what will happen with your issue. 
-It's straightforward to understand whether or not your issue is triaged: if the issue contains the *triaged :yes* label this indiacts the issue has been reviewed and classified by the project team.
+It's straightforward to understand whether or not your issue is triaged: if the issue contains the *triaged :yes* label this indicates the issue has been reviewed and classified by the project team.
 In the case of a bug the a team member may request more details or information in order to better understand the problem, help determine prioritization or aid in reproducing the issue.
 We close issues for the following reasons:
 | Reason | Label |
