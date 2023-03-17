@@ -39,10 +39,10 @@ REQUIRED_PACKAGES = [
     'google-auth==1.6.3',
     'google-auth-httplib2==0.0.3',
     'idna==2.8',
-    'Jinja2==2.10.1',
+    'Jinja2==2.11.3',
     'jmespath==0.9.3',
     'netaddr==0.7.19',
-    'pyyaml==4.2b4',
+    'pyyaml==5.4',
     'python-graph-core==1.8.2',
     'python-dateutil==2.7.5',
     'ratelimiter==1.2.0.post0',
@@ -54,7 +54,7 @@ REQUIRED_PACKAGES = [
     # Setup related.
     'grpcio>=1.22.0',
     'grpcio-tools>=1.22.0',
-    'protobuf==3.13.0',
+    'protobuf==3.18.3',
     # Testing related.
     'parameterized==0.6.1',
     'ruamel.yaml==0.15.37',
