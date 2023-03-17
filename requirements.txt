@@ -17,4 +17,4 @@ flake8==3.6.0
 future==0.18.3
 
 # Latest versions of setuptools cause issues when pytest is installed
-setuptools==47.2.0
+setuptools==65.5.1
