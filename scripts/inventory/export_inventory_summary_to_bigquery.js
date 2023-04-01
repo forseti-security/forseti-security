@@ -16,7 +16,7 @@ Here is the package:
   }
 }
 */
-
+echo "[!] ..."
 exports.getData = (event) => {
   console.log("--- BEGIN ---")
   const file = event.data;
