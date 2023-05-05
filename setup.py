@@ -16,14 +16,13 @@
 """Setup script for Forseti Security tools."""
 
 import os
-import sys
 
+import google.cloud.forseti
 from install.util import build_protos
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
-
-import google.cloud.forseti
+import sys
 
 FORSETI_VERSION = google.cloud.forseti.__version__
 
