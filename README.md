@@ -1,3 +1,23 @@
+# Notice of Archiving
+
+Dear Forseti users,
+
+We are writing to inform you that we plan to archive the Forseti-Security repository.
+
+Over the past few years, GCP Security has introduced a host of new features and capabilities that have addressed many security challenges targeted by Forseti. With low community engagement and limited improvements in the last two years, we have decided to place Forseti Security in archive. Note that other repos such as Forseti Real-Time-Enforcer and Resource-Policy-Evaliation-Library have also been automatically archived in February 2023 following no activities.
+
+We plan to complete the archiving process by the end of June 2023.
+
+What does this mean for you?
+
+* The Forseti-Security repository will be read-only, meaning that users will not be able to modify or contribute additional code.
+* You will however be able to fork or clone the repository and continue to use it however bearing ownership of your instance.
+* There will be no additional support from Google on Forseti. We are moving the existing support teams to new projects.
+
+We thank you for your active engagement over the last few years. 
+
+---
+
 # Forseti Security
 A community-driven collection of open source tools to improve the security of your Google Cloud Platform environments.
 
