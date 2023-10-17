@@ -21,7 +21,7 @@ We thank you for your active engagement over the last few years.
 # Forseti Security
 A community-driven collection of open source tools to improve the security of your Google Cloud Platform environments.
 
-[Get Started](https://forsetisecurity.org/docs/latest/setup/install.html) with Forseti Security.
+[Get Started](https://forsetisecurity.org/docs/latest/setup/install/index.html) with Forseti Security.
 
 ## Contributing
 We are continually improving Forseti Security and invite you to submit feature requests and bug reports. If you would like to contribute to our development efforts, please review our [contributing guidelines](/.github/CONTRIBUTING.md) and submit a pull request.
